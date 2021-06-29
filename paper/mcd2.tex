@@ -2,7 +2,7 @@
 
 \usepackage[total={6.3in,9.2in},top=1.1in,left=1.1in]{geometry}
 
-\usepackage{times,bm,bbm,empheq,fancyvrb,graphicx}
+\usepackage{times,bm,bbm,empheq,fancyvrb,graphicx,amsthm}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{longtable}
 \usepackage{booktabs}
@@ -28,7 +28,7 @@ urlcolor=black    % ...
 
 \allowdisplaybreaks[1]  % allow display breaks in align environments, if they avoid major underfulls
 
-\newtheoremstyle{claim}% name
+\newtheoremstyle{cstyle}% name
   {5pt}% space above
   {5pt}% space below
   {\itshape}% body font
@@ -37,9 +37,30 @@ urlcolor=black    % ...
   {.}% punctuation after theorem head
   {.5em}% space after theorem head
   {\thmname{#1}\thmnumber{ #2}\thmnote{ (#3)}}% theorem head spec
-\theoremstyle{claim}
+\theoremstyle{cstyle}
+
 \newtheorem{theorem}{Theorem}
-\newtheorem{lemma}{Lemma}
+\newtheorem{lemma}[theorem]{Lemma}
+
+\newtheoremstyle{dstyle}% name
+  {5pt}% space above
+  {5pt}% space below
+  {}%{\itshape}% body font
+  {}% indent amount
+  {\itshape}% theorem head font
+  {.}% punctuation after theorem head
+  {.5em}% space after theorem head
+  {\thmname{#1}\thmnumber{ #2}\thmnote{ (#3)}}% theorem head spec
+\theoremstyle{dstyle}
+
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+
+% numbering
+\numberwithin{equation}{section}
+\numberwithin{figure}{section}
+\numberwithin{table}{section}
+\numberwithin{theorem}{section}
 
 \newcommand{\eps}{\epsilon}
 \newcommand{\RR}{\mathbb{R}}
@@ -60,18 +81,18 @@ urlcolor=black    % ...
 \newcommand{\bv}{\mathbf{v}}
 \newcommand{\bw}{\mathbf{w}}
 \newcommand{\bx}{\mathbf{x}}
-
 \newcommand{\bF}{\mathbf{F}}
 \newcommand{\bV}{\mathbf{V}}
 \newcommand{\bX}{\mathbf{X}}
-
 \newcommand{\bxi}{\bm{\xi}}
-
 \newcommand{\bzero}{\bm{0}}
+
+\newcommand{\cK}{\mathcal{K}}
+\newcommand{\cV}{\mathcal{V}}
 
 \newcommand{\rhoi}{\rho_{\text{i}}}
 
-\newcommand{\ip}[2]{\left(#1,#2\right)}
+\newcommand{\ip}[2]{\left<#1,#2\right>}
 
 \newcommand{\mR}{R^{\bm{\oplus}}}
 \newcommand{\iR}{R^{\bullet}}
@@ -81,26 +102,11 @@ urlcolor=black    % ...
 \newcommand{\qq}{{\text{q}}}
 \newcommand{\rr}{{\text{r}}}
 
-\newcommand{\bus}{\bu|_s}
-
-% norm |||x|||
-\newcommand{\vertiii}[1]{{\left\vert\kern-0.25ex\left\vert\kern-0.25ex\left\vert #1 \right\vert\kern-0.25ex\right\vert\kern-0.25ex\right\vert}}
-
-% numbering
-\setcounter{tocdepth}{3}
-\makeatletter
-\def\l@subsection{\@tocline{2}{0pt}{4pc}{5pc}{}}
-\makeatother
-
-\numberwithin{equation}{section}
-\numberwithin{figure}{section}
-\numberwithin{table}{section}
-\numberwithin{theorem}{section}
-
 \DeclareFloatingEnvironment[name=Pseudocode]{pcode}
 
+
 \begin{document}
-\title[On MCD methods for nonlinear or nonlocal VIs]{On multilevel constraint decomposition methods for nonlinear or nonlocal variational inequalities}
+\title[On MCD methods for nonlinear and nonlocal VIs]{On multilevel constraint decomposition methods \\ for nonlinear and nonlocal variational inequalities}
 
 \author{Ed Bueler}
 
@@ -120,10 +126,71 @@ urlcolor=black    % ...
 
 FIXME the goal is to generalize and improve the method of \cite{Tai2003}
 
-
 \section{$p$-coercive variational inequalities} \label{sec:vi}
 
+Suppose $\cV$ is a reflexive Banach space with norm $\|\cdot\|$, $\cV'$ its topological dual space, and $\ip{z}{v} = z(v)$ the dual pairing of $z \in \cV'$ and $v\in \cV$.  Note that $\|z\|_{\cV'} = \sup_{\|v\|=1} |\ip{z}{v}|$ defines the norm on $\cV'$, which is also a Banach space.  Let $\cK \subset \cV$ be a nonempty closed and convex subset of $\cV$.  The following definitions and theorem are standard \cite{KinderlehrerStampacchia1980}.
+
+\begin{definition}  A map $f:\cK \to \cV'$ is \emph{monotone} if
+\begin{equation}
+\ip{f(u)-f(v)}{u-v} \ge 0 \qquad \text{for all } u,v \in \cK, \label{eq:monotone}
+\end{equation}
+\emph{strictly monotone} if equality in \eqref{eq:monotone} implies $u=v$, and \emph{coercive} if there exists $w \in \cK$ so that
+\begin{equation}
+\frac{\ip{f(u)-f(w)}{u-w}}{\|u-w\|} \to +\infty \qquad \text{as } \|u\|\to +\infty.
+\end{equation}
+\end{definition}
+
+\begin{definition} For $u\in \cK$, the statement that
+\begin{equation}
+\ip{f(u)}{v-u} \ge 0 \qquad \text{for all } v\in \cK \label{eq:vi}
+\end{equation}
+is called a \emph{variational inequality} (VI).
+\end{definition}
+
+
+Speaking informally, and conceptualizing the dual pairing as an inner product, such a VI says that the angle between $f(u)$ and any arbitrary vector $v-u$ pointing into $\cK$ from $u$, is at most $90^\circ$, thus $f(u)$ points straight into $\cK$.  Note that if $u$ is in the interior of $\cK$ then \eqref{eq:vi} implies $f(u)=0$, so in this sense the VI generalizes a system of equations.
+
+It is well-known that if $f:\cK \to \cV'$ is continuous, monotone, and coercive then VI \eqref{eq:vi} has a solution, and furthermore that that solution is unique if $f$ is strictly monotone \cite[Corollary III.1.8]{KinderlehrerStampacchia1980}.  The condition of continuity in Theorem \ref{thm:viwellposed} can be weakened to continuity on finite-dimensional subspaces \cite{KinderlehrerStampacchia1980}.  However, the continuity of $f$ will apply in our examples.
+
+As in the calculus of variations \cite{Evans2010}, the condition of coercivity in Theorem \ref{thm:viwellposed} permits a (weak) compactness argument even for unbounded sets $\cK$.   However, the VIs solved in this paper satisfy a stronger form of coercivity which will be critical in proving convergence of MCD methods; note that \cite{Tai2003} uses ``coercive'' from ``$2$-coercive'' in the following definition.
+
+\begin{definition}  $f:\cK \to \cV'$ is \emph{$p$-coercive} if there exists $\kappa>0$ such that
+\begin{equation}
+\ip{f(u)-f(v)}{u-v} \ge \kappa \|u-v\|^p \qquad \text{for all } u,v \in \cK. \label{eq:pcoercive}
+\end{equation}
+\end{definition}
+
+It is easy to see that if $f$ is $p$-coercive for $p>1$ then it is monotone, strictly monotone, and coercive.  The following result is thus also well-known, but it is important to state as it shows we are addressing well-posed problems.
+
+\begin{theorem}  \label{thm:viwellposed}  If $f:\cK \to \cV'$ is continuous and $p$-coercive for $p>1$ then there exists a unique $u\in \cK$ so that VI \eqref{eq:vi} holds.
+\end{theorem}
+
+\begin{example}  Inequality-constrained optimization of convex and differentiable scalar functionals generate VI problems.  In fact, suppose $F:V \to \RR$ is convex and (G\^ateau) differentiable.  Then VI \eqref{eq:vi} holds for $f=F'$ if and only if
+\begin{equation}
+u = \operatorname{arg-min}_{v\in\cK} F(v). \label{eq:minimization}
+\end{equation}
+Tai \cite{Tai2003} addresses MCD convergence for problem \eqref{eq:minimization} under the assumption that $f=F'$ is $2$-coercive.
+\end{example}
+
+\begin{example}  However, not all VIs \eqref{eq:vi} correspond to optimization problems.  For example, consider the following nonlinear problem of porous-medium type.  Suppose $\Omega \subset \RR^d$ is bounded and open with polygonal boundary.  Let $\cV = H_0^1(\Omega)$ and consider $\cK = \{v\ge 0\} \subset \cV$.  Let $g\in \cV'$.  For $u$ in $\cK$ let
+\begin{equation}
+\ip{f(u)}{v} = \int_\Omega (1+e^{-u}) \grad u \cdot \grad v\,dx - \ip{g}{v}. \label{eq:nongradientexample}
+\end{equation}
+It is easy to see that $|\ip{f(u)}{v}| \le (c \|u\|_{\cV} + \|g\|_{\cV'}) \|v\|_{\cV}$, thus that $f:\cK \to \cV'$ is continuous.  FIXME IS IT $2$-coercive?  FIXME $f\ne F'$
+\end{example}
+
+\section{Multilevel constraint decomposition algorithms} \label{sec:algorithms}
+
+FIXME state the decomposition, the basis algorithm, the FAS version which has $O(m)$ residual evaluation complexity on each level
+
+\section{Convergence of the basic algorithm} \label{sec:convergence}
+
 FIXME
+
+\section{Results} \label{sec:results}
+
+FIXME
+
 
 \small
 
