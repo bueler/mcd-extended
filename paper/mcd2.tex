@@ -128,9 +128,17 @@ FIXME the goal is to generalize and improve the method of \cite{Tai2003}
 
 \section{$p$-coercive variational inequalities} \label{sec:vi}
 
-Suppose $\cV$ is a reflexive Banach space with norm $\|\cdot\|$, $\cV'$ its topological dual space, and $\ip{z}{v} = z(v)$ the dual pairing of $z \in \cV'$ and $v\in \cV$.  Note that $\|z\|_{\cV'} = \sup_{\|v\|=1} |\ip{z}{v}|$ defines the norm on $\cV'$, which is also a Banach space.  Let $\cK \subset \cV$ be a nonempty closed and convex subset of $\cV$.  The following definitions and theorem are standard \cite{KinderlehrerStampacchia1980}.
+Suppose $\cV$ is a real, reflexive Banach space with norm $\|\cdot\|$ and topological dual space $\cV'$.  Denote the dual pairing of $z \in \cV'$ and $v\in \cV$ by $\ip{z}{v} = z(v)$.  Note that $\|z\|_{\cV'} = \sup_{\|v\|=1} |\ip{z}{v}|$ defines the norm on $\cV'$, which is also a Banach space.
 
-\begin{definition}  A map $f:\cK \to \cV'$ is \emph{monotone} if
+Let $\cK \subset \cV$ be a nonempty closed and convex subset of $\cV$.  We consider the following \emph{variational inequality} (VI) for $u\in \cK$:
+\begin{equation}
+\ip{f(u)}{v-u} \ge 0 \qquad \text{for all } v\in \cK. \label{eq:vi}
+\end{equation}
+Informally, conceptualizing the dual pairing as an inner product, \eqref{eq:vi} would say that the angle between $f(u)$ and any arbitrary vector $v-u$ pointing from $u$ into $\cK$ is at most $90^\circ$.  That is, $f(u)$ points straight into $\cK$ if $u$ solves \eqref{eq:vi}, and if $u$ is in the interior of $\cK$ then \eqref{eq:vi} further implies $f(u)=0$.  Thus such a VI generalizes a system of equations.
+
+The following definitions \cite{KinderlehrerStampacchia1980} are standard.
+
+\begin{definition} A map $f:\cK \to \cV'$ is \emph{monotone} if
 \begin{equation}
 \ip{f(u)-f(v)}{u-v} \ge 0 \qquad \text{for all } u,v \in \cK, \label{eq:monotone}
 \end{equation}
@@ -140,44 +148,36 @@ Suppose $\cV$ is a reflexive Banach space with norm $\|\cdot\|$, $\cV'$ its topo
 \end{equation}
 \end{definition}
 
-\begin{definition} For $u\in \cK$, the statement that
+It is well-known that if $f:\cK \to \cV'$ is continuous, monotone, and coercive then VI \eqref{eq:vi} has a solution \cite[Corollary III.1.8]{KinderlehrerStampacchia1980}, and that the solution is unique if $f$ is strictly monotone.  As in the calculus of variations \cite{Evans2010}, coercivity permits a (weak) compactness argument even for unbounded sets $\cK$.  The condition of continuity can be weakened to continuity on finite-dimensional subspaces \cite{KinderlehrerStampacchia1980}, but the stronger condition will apply in our examples.
+
+Monotone VI \eqref{eq:vi} generalizes the problem of minimizing convex objective functionals.  In fact, suppose $F:\cV \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cV \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, if $F$ is convex and $\cK$ is convex and closed then VI \eqref{eq:vi} holds for $f=F'$ and $u\in \cK$ if and only if
 \begin{equation}
-\ip{f(u)}{v-u} \ge 0 \qquad \text{for all } v\in \cK \label{eq:vi}
+u = \operatorname{arg-min}_{v\in\cK} F(v) \label{eq:minimization}
 \end{equation}
-is called a \emph{variational inequality} (VI).
-\end{definition}
+\cite[Proposition II.2.1]{EkelandTemam1976}.  Note that \cite{Tai2003} addresses MCD convergence for problem \eqref{eq:minimization}.
 
+However, not all VIs correspond to optimization problems.  For example, consider the following problem of porous-medium type.
 
-Speaking informally, and conceptualizing the dual pairing as an inner product, such a VI says that the angle between $f(u)$ and any arbitrary vector $v-u$ pointing into $\cK$ from $u$, is at most $90^\circ$, thus $f(u)$ points straight into $\cK$.  Note that if $u$ is in the interior of $\cK$ then \eqref{eq:vi} implies $f(u)=0$, so in this sense the VI generalizes a system of equations.
-
-It is well-known that if $f:\cK \to \cV'$ is continuous, monotone, and coercive then VI \eqref{eq:vi} has a solution, and furthermore that that solution is unique if $f$ is strictly monotone \cite[Corollary III.1.8]{KinderlehrerStampacchia1980}.  The condition of continuity in Theorem \ref{thm:viwellposed} can be weakened to continuity on finite-dimensional subspaces \cite{KinderlehrerStampacchia1980}.  However, the continuity of $f$ will apply in our examples.
-
-As in the calculus of variations \cite{Evans2010}, the condition of coercivity in Theorem \ref{thm:viwellposed} permits a (weak) compactness argument even for unbounded sets $\cK$.   However, the VIs solved in this paper satisfy a stronger form of coercivity which will be critical in proving convergence of MCD methods; note that \cite{Tai2003} uses ``coercive'' from ``$2$-coercive'' in the following definition.
-
-\begin{definition}  $f:\cK \to \cV'$ is \emph{$p$-coercive} if there exists $\kappa>0$ such that
-\begin{equation}
-\ip{f(u)-f(v)}{u-v} \ge \kappa \|u-v\|^p \qquad \text{for all } u,v \in \cK. \label{eq:pcoercive}
-\end{equation}
-\end{definition}
-
-It is easy to see that if $f$ is $p$-coercive for $p>1$ then it is monotone, strictly monotone, and coercive.  The following result is thus also well-known, but it is important to state as it shows we are addressing well-posed problems.
-
-\begin{theorem}  \label{thm:viwellposed}  If $f:\cK \to \cV'$ is continuous and $p$-coercive for $p>1$ then there exists a unique $u\in \cK$ so that VI \eqref{eq:vi} holds.
-\end{theorem}
-
-\begin{example}  Inequality-constrained optimization of convex and differentiable scalar functionals generate VI problems.  In fact, suppose $F:V \to \RR$ is convex and (G\^ateau) differentiable.  Then VI \eqref{eq:vi} holds for $f=F'$ if and only if
-\begin{equation}
-u = \operatorname{arg-min}_{v\in\cK} F(v). \label{eq:minimization}
-\end{equation}
-Tai \cite{Tai2003} addresses MCD convergence for problem \eqref{eq:minimization} under the assumption that $f=F'$ is $2$-coercive.
-\end{example}
-
-\begin{example}  However, not all VIs \eqref{eq:vi} correspond to optimization problems.  For example, consider the following nonlinear problem of porous-medium type.  Suppose $\Omega \subset \RR^d$ is bounded and open with polygonal boundary.  Let $\cV = H_0^1(\Omega)$ and consider $\cK = \{v\ge 0\} \subset \cV$.  Let $g\in \cV'$.  For $u$ in $\cK$ let
+\begin{example}  Suppose $\Omega \subset \RR^d$ is bounded and open with polygonal boundary.  Let $\cV = H_0^1(\Omega)$ and consider $\cK = \{v\ge 0\} \subset \cV$.  For $g\in \cV'$ and $u$ in $\cK$ let
 \begin{equation}
 \ip{f(u)}{v} = \int_\Omega (1+e^{-u}) \grad u \cdot \grad v\,dx - \ip{g}{v}. \label{eq:nongradientexample}
 \end{equation}
 It is easy to see that $|\ip{f(u)}{v}| \le (c \|u\|_{\cV} + \|g\|_{\cV'}) \|v\|_{\cV}$, thus that $f:\cK \to \cV'$ is continuous.  FIXME IS IT $2$-coercive?  FIXME $f\ne F'$
 \end{example}
+
+However, the VIs solved in this paper satisfy a stronger form of coercivity which will be important in proving convergence of MCD methods.
+
+\begin{definition}  $f:\cK \to \cV'$ is \emph{$p$-coercive} if there exists $\kappa>0$ such that
+\begin{equation}
+\ip{f(u)-f(v)}{u-v} \ge \kappa \|u-v\|^p \qquad \text{for all } u,v \in \cK. \label{eq:pcoercive}
+\end{equation}
+(Note \cite{Tai2003} uses ``coercive'' for $2$-coercive.)
+\end{definition}
+
+It is easy to see that if $f$ is $p$-coercive for $p>1$ then it is monotone, strictly monotone, and coercive, and thus the following result, which states that we are addressing well-posed problems, is immediate.
+
+\begin{theorem}  \label{thm:viwellposed}  If $f:\cK \to \cV'$ is continuous and $p$-coercive for $p>1$ then there exists a unique $u\in \cK$ so that VI \eqref{eq:vi} holds.
+\end{theorem}
 
 \section{Multilevel constraint decomposition algorithms} \label{sec:algorithms}
 
