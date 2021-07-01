@@ -126,7 +126,7 @@ urlcolor=black    % ...
 
 FIXME the goal is to generalize and improve the method of \cite{Tai2003}
 
-\section{$p$-coercive variational inequalities} \label{sec:vi}
+\section{Coercive variational inequalities and constraint decomposition} \label{sec:vi}
 
 Suppose $\cV$ is a real, reflexive Banach space with norm $\|\cdot\|$ and topological dual space $\cV'$.  Denote the dual pairing of $z \in \cV'$ and $v\in \cV$ by $\ip{z}{v} = z(v)$.  Note that $\|z\|_{\cV'} = \sup_{\|v\|=1} |\ip{z}{v}|$ defines the norm on $\cV'$, which is also a Banach space.
 
@@ -156,14 +156,16 @@ u = \operatorname{arg-min}_{v\in\cK} F(v) \label{eq:minimization}
 \end{equation}
 \cite[Proposition II.2.1]{EkelandTemam1976}.  Note that \cite{Tai2003} addresses MCD convergence for problem \eqref{eq:minimization}.
 
-However, not all VIs correspond to optimization problems.  For example, consider the following problem of porous-medium type.
+However, not all VIs correspond to optimization problems.  For example, consider the following steady advection-diffusion problem.
 
-\begin{example}  Suppose $\Omega \subset \RR^d$ is bounded and open with polygonal boundary.  Let $\cV = H_0^1(\Omega)$ and consider $\cK = \{v\ge 0\} \subset \cV$.  For $g\in \cV'$ and $u$ in $\cK$ let
+\begin{example}  Suppose $\Omega \subset \RR^d$ is bounded and open with polygonal boundary.  Let $\cV = H_0^1(\Omega)$ and consider $\cK = \{v\ge 0\} \subset \cV$.  For $g\in \cV'$, $\bX \in L^\infty(\Omega)^d$, and $u$ in $\cK$ let
 \begin{equation}
-\ip{f(u)}{v} = \int_\Omega (1+e^{-u}) \grad u \cdot \grad v\,dx - \ip{g}{v}. \label{eq:nongradientexample}
+\ip{f(u)}{v} = \int_\Omega \grad u \cdot \grad v\,dx - (\bX \cdot \grad u) v - \ip{g}{v}. \label{eq:nongradientexample}
 \end{equation}
-It is easy to see that $|\ip{f(u)}{v}| \le (c \|u\|_{\cV} + \|g\|_{\cV'}) \|v\|_{\cV}$, thus that $f:\cK \to \cV'$ is continuous.  FIXME IS IT $2$-coercive?  FIXME $f\ne F'$
+FIXME POINT OUT THAT IS STEADY ADVECTION-DIFFUSION VI; IF $\bX=0$ THEN IT IS OPTIMIZATION BUT OTHERWISE NOT; ALWAYS CONTINUOUS; IF $\bX$ IS SMALL THEN $2$-coercive; It is easy to see that $|\ip{f(u)}{v}| \le (c \|u\|_{\cV} + \|g\|_{\cV'}) \|v\|_{\cV}$, thus that $f:\cK \to \cV'$ is continuous.
 \end{example}
+
+Other examples of VI problems which are not of optimization type are found in ice sheet applications \cite{Calvoetal2002,JouvetBueler2012} and other geophysical fluids problems \cite{Bueler2021conservation}.
 
 However, the VIs solved in this paper satisfy a stronger form of coercivity which will be important in proving convergence of MCD methods.
 
@@ -179,13 +181,33 @@ It is easy to see that if $f$ is $p$-coercive for $p>1$ then it is monotone, str
 \begin{theorem}  \label{thm:viwellposed}  If $f:\cK \to \cV'$ is continuous and $p$-coercive for $p>1$ then there exists a unique $u\in \cK$ so that VI \eqref{eq:vi} holds.
 \end{theorem}
 
-\section{Multilevel constraint decomposition algorithms} \label{sec:algorithms}
+The multilevel algorithms we consider later are based on both subspace \cite{Xu1992} and constraint \cite{Tai2003} decompositions, as follows.  Suppose $\cV_i \subset \cV$ are $m<\infty$ subspaces so that
+\begin{equation}
+\cV = \sum_{i=1}^m \cV_i \label{eq:subspacedecomp}
+\end{equation}
+in the sense that if $w \in \cV$ then there exist $w_i \in \cV_i$ so that $w = \sum_i w_i$.  Suppose further that $\cK_i \subset \cV$ are nonempty, closed, and convex subsets such that
+\begin{equation}
+\cK_i \subset \cV_i \qquad \text{and} \qquad \cK = \sum_{i=1}^m \cK_i. \label{eq:constraintdecomp}
+\end{equation}
+The sum in \eqref{eq:constraintdecomp} is required to hold in two senses: \emph{(i)}~if $w \in \cK$ then there exist $w_i \in \cK_i$ so that $w = \sum_i w_i$, and \emph{(ii)}~if $z_i \in \cK_i$ for each $i$ then $\sum_i z_i \in \cK$.  (The latter sense is automatic in \eqref{eq:subspacedecomp} because $\cV_i$ are subspaces.)  Neither decomposition is unique in general.  Note that $\cK_i \not\subset \cK$ in most applications.
 
-FIXME state the decomposition, the basis algorithm, the FAS version which has $O(m)$ residual evaluation complexity on each level
+In practice the space $\cV$ will be a finite-dimensional finite element (FE) space because we will solve VI \eqref{eq:vi} over a mesh.  We FIXME triangulation etc. Though our 
+
+\begin{example}  FIXME $\cV_i$ are 1d spaces on a single level; $\psi,\cK,\cK_i$ for obstacle problem; note $\cK_i \not\subset \cK$ when $\psi>0$
+\end{example}
+
+FIXME state the basic algorithm
+
+
+\section{Multilevel constraint decomposition algorithms} \label{sec:multilevel}
+
+FIXME state essentially Algorithm 4.7 \cite{GraeserKornhuber2009} but with $\text{V}(\nu_1,\nu_2)$ cycles which works for linear; observe that up-smoothing is more efficient; state the FAS version which has $O(m)$ residual evaluation complexity on each level
+
 
 \section{Convergence of the basic algorithm} \label{sec:convergence}
 
 FIXME
+
 
 \section{Results} \label{sec:results}
 
