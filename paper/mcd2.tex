@@ -2,7 +2,7 @@
 
 \usepackage[total={6.3in,9.2in},top=1.1in,left=1.1in]{geometry}
 
-\usepackage{times,bm,bbm,empheq,fancyvrb,graphicx,amsthm}
+\usepackage{times,bm,bbm,empheq,fancyvrb,graphicx,amsthm,amssymb}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{longtable}
 \usepackage{booktabs}
@@ -108,7 +108,7 @@ urlcolor=black    % ...
 
 
 \begin{document}
-\title[On MCD methods for nonlinear and nonlocal VIs]{On multilevel constraint decomposition methods \\ for nonlinear and nonlocal variational inequalities}
+\title[On MCD methods for nonlinear and nonlocal VIs]{On multilevel constraint decomposition methods \\ for nonlinear variational inequalities}
 
 \author{Ed Bueler}
 
@@ -126,18 +126,34 @@ urlcolor=black    % ...
 
 \section{Introduction} \label{sec:intro}
 
-FIXME the goal is to generalize and improve the method of \cite{Tai2003}
+The goal of this paper is to generalize the constraint decomposition (CD) method of X.-C.~Tai \cite{Tai2003}.  We extend this solution method to nonlinear variational inequality (VI) problems for which it has not been previously considered, we address important finite element (FE) implementation details, and we demonstrate the resulting performance.
+
+The convergence of the CD method for several types of decompositions was proven in \cite{Tai2003} in the case of coercive VIs which arise from minimization of a convex functional over a convex set.  In its multilevel form the CD method has been shown to have optimal complexity for elliptic, linear obstacle problems \cite[subsection 5.4]{Tai2003}; see also Theorem 4.6 and Algorithm 4.7 in \cite{GraeserKornhuber2009}.  However, especially for the classical obstacle problem, i.e.~for a Laplacian functional, certain other methods are known to improve performance relative to the multilevel CD method \cite{GraeserKornhuber2009}.  On the other hand, these improved multilevel methods either track the active set or modify the nodal basis functions, and in this sense they are discrete algorithms.  By contrast the CD methods apply at the level of the continuum problem (see below), so the method is more fundamental than the truncated monotone multigrid method \cite{GraeserKornhuber2009,Kornhuber1994}, for example, in that sense.
+
+We extend the original algorithms and theory presented in \cite{Tai2003} in three particular directions:
+\renewcommand{\labelenumi}{\emph{(\roman{enumi})}}
+\begin{enumerate}
+\item We do not assume that the continuum VI problem arises from optimization of a scalar objective, and, as shown by examples in Section \ref{sec:vi}, this represents the removal of a symmetry assumption in \cite{Tai2003}.  Nonetheless we can prove convergence at essentially the same rate (Section \ref{sec:convergence}). % HOPE
+\item In the multilevel case we make the observation that, if implemented appropriately, V(0,1) ``up-slash'' cycles are intrinsically more efficient than the V(1,0) ``down-slash'' cycles (Section \ref{sec:multilevel}).  This observation seems to be new for multilevel CD methods; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}.  This preference for up-smoothing is, apparently, special to CD methods and does not arise in corresponding unconstrained subspace decomposition \cite{Xu1992} approaches.
+\item In the multilevel and nonlinear case, we make the algorithms more practical by addressing efficient storage of intermediate quantities.  In particular we show results from a full approximation storage (FAS; \cite{Brandt1977}) version of the multilevel CD algorithm.
+\end{enumerate}
+
+As an additional difference from the presentation in \cite{Tai2003}, but an essentially formal one, we observe that the iterates from CD methods are always admissible, and thus the residual functional need only be defined on the admissible subset.  Methods like CD, for which all iterates are admissible, have an advantage because they allow direct solutions of certain VI problems, such as the fluid-layer dynamics problems in \cite{Bueler2021conservation,JouvetBueler2012}, for which non-admissible methods such as semi-smooth methods \cite{BensonMunson2006} may require unnatural modifications of the residual form.
+
+In one example we consider a case where the residual functional is nonlocal, that is, where it is not a partial differential operator at all.  Instead its values instead arise from the solution of Stokes problems for a layer of fluid on a substrate which forms the obstacle \cite{SayagWorster2013}, so the corresponding FE operator discretization is not sparse.  In this case we cannot prove coercivity but we can demonstrate near-optimal complexity in practice.  % HOPE
 
 
 \section{Coercive variational inequalities and constraint decomposition} \label{sec:vi}
 
 Suppose $\cV$ is a real, reflexive Banach space with norm $\|v\|$ for $v\in\cV$ and topological dual space $\cV'$.  Denote the dual pairing of $\phi \in \cV'$ and $v$ by $\ip{\phi}{v} = \phi(v)$.  Note that $\|\phi\|_{\cV'} = \sup_{\|v\|=1} |\ip{\phi}{v}|$ defines the norm on $\cV'$, which is also a Banach space.
 
-Let $\cK \subset \cV$ be a nonempty closed and convex subset of $\cV$, the \emph{constraint set}.  For continuous $f:\cK \to \cV'$ we consider the following \emph{variational inequality} (VI) for $u\in \cK$:
+Let $\cK \subset \cV$ be a nonempty closed and convex subset of $\cV$, the \emph{constraint set}; elements of $\cK$ are said to be \emph{admissible}.  For a continuous \emph{residual functional} $f:\cK \to \cV'$ and \emph{source} $g\in \cV'$ we consider the following \emph{variational inequality} (VI) for $u\in \cK$:
 \begin{equation}
-\ip{f(u)}{v-u} \ge 0 \qquad \text{for all } v\in \cK. \label{eq:vi}
+\ip{f(u)}{v-u} \ge g(v-u) \qquad \text{for all } v\in \cK. \label{eq:vi}
 \end{equation}
-Informally, if we conceptualize the dual pairing as an inner product then \eqref{eq:vi} says that the angle between $f(u)$ and any arbitrary vector $v-u$ pointing from $u$ into $\cK$ is at most $90^\circ$, that is, $f(u)$ points straight into $\cK$ if $u$ solves \eqref{eq:vi}.  Furthermore, if $u$ is in the interior of $\cK$ then \eqref{eq:vi} implies $f(u)=0$, so VI \eqref{eq:vi} generalizes such an equation (system of equations).
+Because $f$ is a general, nonlinear map the use of a right-hand source function is not strictly needed---by redefining $f$ we may take $g=0$---but its inclusion will be helpful in describing algorithms in Section \ref{sec:multilevel}.
+
+Informally, if we conceptualize the dual pairing as an inner product, and if $g=0$, then \eqref{eq:vi} says that the angle between $f(u)$ and any arbitrary vector $v-u$ pointing from $u$ into $\cK$ is at most $90^\circ$, that is, $f(u)$ points directly into $\cK$ if $u$ solves \eqref{eq:vi}.  Furthermore, if $u$ is in the interior of $\cK$ then \eqref{eq:vi} implies $f(u)=g$; this VI generalizes the concept of a nonlinear system of equations $f(u)=g$ over $\cV$ to the constrained case where $\cK \subsetneq \cV$.
 
 The following definitions are standard \cite{KinderlehrerStampacchia1980}.
 
@@ -151,25 +167,21 @@ The following definitions are standard \cite{KinderlehrerStampacchia1980}.
 \end{equation}
 \end{definition}
 
-It is well-known that if $f:\cK \to \cV'$ is continuous, monotone, and coercive then VI \eqref{eq:vi} has a solution \cite[Corollary III.1.8]{KinderlehrerStampacchia1980}, and also that the solution is unique if $f$ is strictly monotone.  As is standard in the calculus of variations \cite{Evans2010}, coercivity permits a (weak) compactness argument even for unbounded sets $\cK$.  The condition of continuity can be weakened to continuity on finite-dimensional subspaces \cite{KinderlehrerStampacchia1980}, but the stronger condition will apply in our examples.
+It is well-known that if $f:\cK \to \cV'$ is continuous, monotone, and coercive then VI \eqref{eq:vi} has a solution \cite[Corollary III.1.8]{KinderlehrerStampacchia1980}, and also that the solution is unique if $f$ is strictly monotone.  The condition of continuity can be weakened to only apply on finite-dimensional subspaces \cite{KinderlehrerStampacchia1980}, but the stronger condition will apply in our examples.  As in the calculus of variations \cite{Evans2010}, coercivity permits a weak compactness argument for unbounded sets $\cK$.
 
-When $f$ is monotone, VI \eqref{eq:vi} generalizes the problem of minimizing convex functions.  Suppose $F:\cV \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cV \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, if $F$ is convex and $\cK$ is closed and convex then \eqref{eq:vi} holds for $f=F'$ if and only if
+When $f$ is monotone, VI \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  In fact, suppose $F:\cV \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cV \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}, and if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ and $g=0$ if and only if
 \begin{equation}
 u = \operatorname{arg-min}_{v\in\cK} F(v) \label{eq:minimization}
 \end{equation}
-\cite[Proposition II.2.1]{EkelandTemam1976}.  Note that reference \cite{Tai2003} addresses problem \eqref{eq:minimization}.
+\cite[Proposition II.2.1]{EkelandTemam1976}.  Note that Tai \cite{Tai2003} addresses optimization problem \eqref{eq:minimization}.
 
 However, not all VIs correspond to optimization.  For example, consider the following steady advection-diffusion problem over $H_0^1(\Omega)$.  (We denote Sobolev spaces by $W^{k,p}(\Omega)$ if $k\ge 0$ and $p\ge 1$ \cite{Evans2010}, and $W^{k,2}=H^k$ in particular.)
 
-\begin{example}  \label{ex:advectiondiffusion}  Suppose $\Omega \subset \RR^d$ is bounded and open with polygonal boundary.  Let $\cV = H_0^1(\Omega)$ and consider $\cK = \{v\ge 0\} \subset \cV$.  For $g\in L^2(\Omega)$, $\bX \in L^\infty(\Omega)^d$, and $u$ in $\cK$ let
+\begin{example}  \label{ex:advectiondiffusion}  Suppose $\Omega \subset \RR^d$ is bounded and open with polygonal boundary.  Let $\cV = H_0^1(\Omega)$ and consider $\cK = \{v\ge 0\} \subset \cV$.  For $\bX \in L^\infty(\Omega)^d$ such that $\Div \bX=0$, and $u$ in $\cK$ let
 \begin{equation}
-\ip{f(u)}{v} = \int_\Omega \grad u \cdot \grad v\,dx - (\bX \cdot \grad u) v - gv\,dx. \label{eq:nongradientexample}
+\ip{f(u)}{v} = \int_\Omega \grad u \cdot \grad v\,dx - (\bX \cdot \grad u) v\,dx. \label{eq:nongradientexample}
 \end{equation}
-FIXME OR DO I WANT
-\begin{equation}
-\ip{f(u)}{v} = \int_\Omega \grad u \cdot \grad v\,dx - u (\bX \cdot \grad v) - gv\,dx. \label{eq:ALTnongradientexample}
-\end{equation}
-FIXME POINT OUT THAT IS STEADY ADVECTION-DIFFUSION VI; IF $\bX=0$ THEN IT IS OPTIMIZATION BUT OTHERWISE NOT; ALWAYS CONTINUOUS; IF $\bX$ IS SMALL THEN $2$-coercive; It is easy to see that $|\ip{f(u)}{v}| \le (c \|u\|_{\cV} + \|g\|_{\cV'}) \|v\|_{\cV}$, thus that $f:\cK \to \cV'$ is continuous.
+FIXME any $g\in\cV'$; POINT OUT THAT IS STEADY ADVECTION-DIFFUSION VI; MAKE ARGUMENT FOLLOWING \cite{Elmanetal2014}; see also \cite{Kirby2010}; IF $\bX=0$ THEN IT IS OPTIMIZATION BUT OTHERWISE NOT; $2$-coercive if outflow on Neumann; It is easy to see that $|\ip{f(u)}{v}| \le c \|u\|_{\cV} \|v\|_{\cV}$, thus that $f:\cK \to \cV'$ is continuous.
 \end{example}
 
 Other examples of VI problems which are not of optimization type are found in ice sheet models \cite{Calvoetal2002,JouvetBueler2012} and other geophysical fluids problems \cite{Bueler2021conservation}.
