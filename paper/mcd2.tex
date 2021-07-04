@@ -103,6 +103,7 @@ urlcolor=black    % ...
 \newcommand{\rr}{{\text{r}}}
 
 \newcommand{\supp}{\operatorname{supp}}
+\newcommand{\Span}{\operatorname{span}}
 
 \DeclareFloatingEnvironment[name=Pseudocode]{pcode}
 
@@ -145,15 +146,15 @@ In one example we consider a case where the residual functional is nonlocal, tha
 
 \section{Coercive variational inequalities and constraint decomposition} \label{sec:vi}
 
-Suppose $\cV$ is a real, reflexive Banach space with norm $\|v\|$ for $v\in\cV$ and topological dual space $\cV'$.  Denote the dual pairing of $\phi \in \cV'$ and $v$ by $\ip{\phi}{v} = \phi(v)$.  Note that $\|\phi\|_{\cV'} = \sup_{\|v\|=1} |\ip{\phi}{v}|$ defines the norm on $\cV'$, which is also a Banach space.
+Suppose $\cV$ is a real, reflexive Banach space with norm $\|v\|$ for $v\in\cV$ and topological dual space $\cV'$.  Denote the dual pairing of $\phi \in \cV'$ and $v\in\cV$ by $\ip{\phi}{v} = \phi(v)$.  Note that $\|\phi\|_{\cV'} = \sup_{\|v\|=1} |\ip{\phi}{v}|$ defines the norm on $\cV'$, which is also a Banach space.
 
 Let $\cK \subset \cV$ be a nonempty closed and convex subset of $\cV$, the \emph{constraint set}; elements of $\cK$ are said to be \emph{admissible}.  For a continuous \emph{residual functional} $f:\cK \to \cV'$ and \emph{source} $g\in \cV'$ we consider the following \emph{variational inequality} (VI) for $u\in \cK$:
 \begin{equation}
-\ip{f(u)}{v-u} \ge g(v-u) \qquad \text{for all } v\in \cK. \label{eq:vi}
+\ip{f(u)}{v-u} \ge \ip{g}{v-u} \qquad \text{for all } v\in \cK. \label{eq:vi}
 \end{equation}
-Because $f$ is a general, nonlinear map the use of a right-hand source function is not strictly needed---by redefining $f$ we may take $g=0$---but its inclusion will be helpful in describing algorithms in Section \ref{sec:multilevel}.
+Because $f$ is a general, and generally nonlinear, map the inclusion of $g$ is not strictly needed---by redefining $f$ we may take $g=0$---but its inclusion will be helpful in describing algorithms in Section \ref{sec:multilevel}.
 
-Informally, if we conceptualize the dual pairing as an inner product, and if $g=0$, then \eqref{eq:vi} says that the angle between $f(u)$ and any arbitrary vector $v-u$ pointing from $u$ into $\cK$ is at most $90^\circ$, that is, $f(u)$ points directly into $\cK$ if $u$ solves \eqref{eq:vi}.  Furthermore, if $u$ is in the interior of $\cK$ then \eqref{eq:vi} implies $f(u)=g$; this VI generalizes the concept of a nonlinear system of equations $f(u)=g$ over $\cV$ to the constrained case where $\cK \subsetneq \cV$.
+VI \eqref{eq:vi} generalizes the nonlinear system of equations $f(u)=g$ over a vector space $\cV$ to the constrained case where $\cK \subsetneq \cV$ is a convex subset.  Informally, if we conceptualize the dual pairing as an inner product, then \eqref{eq:vi} says that the angle between $f(u)-g$ and any arbitrary vector $v-u$ pointing from $u$ into $\cK$ is at most $90^\circ$.  That is, \eqref{eq:vi} says that $f(u)-g$ points directly into $\cK$ if $u\in\partial\cK$, while if $u$ is in the interior of $\cK$ then \eqref{eq:vi} implies $f(u)=g$.
 
 The following definitions are standard \cite{KinderlehrerStampacchia1980}.
 
@@ -167,7 +168,7 @@ The following definitions are standard \cite{KinderlehrerStampacchia1980}.
 \end{equation}
 \end{definition}
 
-It is well-known that if $f:\cK \to \cV'$ is continuous, monotone, and coercive then VI \eqref{eq:vi} has a solution \cite[Corollary III.1.8]{KinderlehrerStampacchia1980}, and also that the solution is unique if $f$ is strictly monotone.  The condition of continuity can be weakened to only apply on finite-dimensional subspaces \cite{KinderlehrerStampacchia1980}, but the stronger condition will apply in our examples.  As in the calculus of variations \cite{Evans2010}, coercivity permits a weak compactness argument for unbounded sets $\cK$.
+It is well-known that if $f:\cK \to \cV'$ is continuous, monotone, and coercive then VI \eqref{eq:vi} has a solution \cite[Corollary III.1.8]{KinderlehrerStampacchia1980}, and also that the solution is unique if $f$ is strictly monotone.  The condition of continuity can be weakened to only apply on finite-dimensional subspaces \cite{KinderlehrerStampacchia1980}, but the stronger condition will apply in our examples.  As in the calculus of variations \cite{Evans2010}, coercivity permits a compactness argument even for unbounded sets $\cK$; recall that the bounded, closed subsets of a reflexive Banach space are weakly compact.
 
 When $f$ is monotone, VI \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  In fact, suppose $F:\cV \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cV \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}, and if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ and $g=0$ if and only if
 \begin{equation}
@@ -202,23 +203,23 @@ It is easy to see that if $f$ is $p$-coercive then it is monotone, strictly mono
 
 Our multilevel algorithms (next section) are based on both subspace and constraint decompositions, as follows.  Suppose there are $m<\infty$ subspaces $\cV_i \subset \cV$ so that
 \begin{equation}
-\cV = \sum_{i=1}^m \cV_i \label{eq:subspacedecomp}
+\cV = \sum_{i=0}^{m-1} \cV_i \label{eq:subspacedecomp}
 \end{equation}
 holds in the sense that if $w \in \cV$ then there exist $w_i \in \cV_i$ so that $w = \sum_i w_i$ \cite{Xu1992}.  Suppose further that $\cK_i \subset \cV$ are nonempty, closed, and convex subsets such that
 \begin{equation}
-\cK_i \subset \cV_i \qquad \text{and} \qquad \cK = \sum_{i=1}^m \cK_i. \label{eq:constraintdecomp}
+\cK_i \subset \cV_i \qquad \text{and} \qquad \cK = \sum_{i=0}^{m-1} \cK_i. \label{eq:constraintdecomp}
 \end{equation}
 The constraint decomposition \cite{Tai2003} sum in \eqref{eq:constraintdecomp} is required to hold in two senses: \emph{(i)}~if $w \in \cK$ then there exist $w_i \in \cK_i$ so that $w = \sum_i w_i$, and \emph{(ii)}~if $z_i \in \cK_i$ for each $i$ then $\sum_i z_i \in \cK$.  (The latter sense is automatic in \eqref{eq:subspacedecomp} because $\cV_i$ are subspaces.)  Note that neither decomposition is unique (in general), and that $\cK_i \not\subset \cK$ in many applications.
 
-Following \cite{Tai2003}, for each $\cK_i$ we also assume a (generally) nonlinear restriction operator $R_i : \cK \to \cK_i$ such that
+Following \cite{Tai2003}, for each $\cK_i$ we also assume a (generally) nonlinear restriction operator $R_i : \cK \to \cK_i$ such that % SHOULD WE HAVE  R_i:\cV \to \cK_i?
 \begin{equation}
-v = \sum_{i=1}^m R_i v \qquad \text{if } v \in \cK.  \label{eq:constraintrestrictionsum}
+v = \sum_{i=0}^{m-1} R_i v \qquad \text{if } v \in \cK.  \label{eq:constraintrestrictionsum}
 \end{equation}
 An \emph{constraint decomposition} of the constraint set $\cK$ is a choice of $\cV_i,\cK_i,R_i$ satisfying the above hypotheses.
 
 In the next section we will introduce FE spaces and describe practical algorithms, but, as noted in the Introduction, constraint decompositions may be defined at the level of the continuum problem.  The following examples illustrate constraint decompositions of \emph{obstacle problems} \cite{GraeserKornhuber2009}; Example \ref{ex:domaindecomposition} is an overlapping domain decomposition and \ref{ex:frequencydecomposition} is a nonoverlapping frequency decomposition.  The latter example can be compared to the multilevel FE decomposition in the next section.
 
-\begin{example}  \label{ex:domaindecomposition}  Consider a bounded domain $\Omega \subset \RR^d$ with polygonal boundary, let $\cV = H_0^k(\Omega)$, $k\ge 1$, and suppose the obstacle $\psi \in H^k(\Omega)$ satisfies $\psi|_{\partial \Omega} \le 0$.  Let $\cK = \{v \ge \psi\} \subset \cV$.  Suppose further that $\{\phi_i\}_{i=1}^m$ is a smooth partition of unity on $\Omega$, i.e.~so that $0 \le \phi_i\le 1$ and $\sum_i \phi_i = 1$, and let $\Omega_i = \supp \phi_i$ (open support).  Let $\cV_i = \{w \in \cV:w|_{\Omega \setminus \Omega_i} =0 \}$, $\cK_i = \{v \in V: v \ge \phi_i \psi\}$, and $R_i(v) = \max\{v,\phi_i \psi\}$.  Then \eqref{eq:subspacedecomp}, \eqref{eq:constraintdecomp}, and \eqref{eq:constraintrestrictionsum} all hold.
+\begin{example}  \label{ex:domaindecomposition}  Consider a bounded domain $\Omega \subset \RR^d$ with polygonal boundary, let $\cV = H_0^k(\Omega)$, $k\ge 1$, and suppose the obstacle $\psi \in H^k(\Omega)$ satisfies $\psi|_{\partial \Omega} \le 0$.  Let $\cK = \{v \ge \psi\} \subset \cV$.  Suppose further that $\{\phi_i\}_{i=0}^{m-1}$ is a smooth partition of unity on $\Omega$, i.e.~so that $0 \le \phi_i\le 1$ and $\sum_i \phi_i = 1$, and let $\Omega_i = \supp \phi_i$ (open support).  Let $\cV_i = \{w \in \cV:w|_{\Omega \setminus \Omega_i} =0 \}$, $\cK_i = \{v \in V: v \ge \phi_i \psi\}$, and $R_i(v) = \max\{v,\phi_i \psi\}$.  Then \eqref{eq:subspacedecomp}, \eqref{eq:constraintdecomp}, and \eqref{eq:constraintrestrictionsum} all hold.
 \end{example}
 
 \begin{example}  \label{ex:frequencydecomposition}  For simplicity suppose $\Omega = (0,a)^d \subset \RR^d$ for $a>0$, a cube, and let $\cV = H_{\text{per}}^k(\Omega)$, $k\ge 1$, be the periodic functions.  Suppose $\psi \in H^k(\Omega)$ and let $\cK = \{v \ge \psi\} \subset \cV$.  Without getting into any detailed notation of frequency representation, but noting that the frequencies are discrete, suppose $\cV_i \subset \cV$ are $m<\infty$ subspaces from an (nonoverlapping) partition by frequency, thus satisfying \eqref{eq:subspacedecomp}.  Suppose $P_i:\cV \to \cV_i$ are the corresponding orthogonal projections, satisfying $I = \sum_i P_i$.  Let $\cK_i = \{v \ge P_i \psi\} \subset \cV$ and $R_i(v) = \max\{v,P_i \psi\}$.  Then \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} hold.
@@ -226,13 +227,35 @@ In the next section we will introduce FE spaces and describe practical algorithm
 
 In Example \ref{ex:domaindecomposition}, note that $\cK_i \not\subset \cK$ in many cases, for example if $\psi$ is positive over portions of $\Omega$ where the decomposition into overlapping subdomains $\Omega_i$ is nontrivial.  A similar comment applies in Example \ref{ex:frequencydecomposition}.
 
+\begin{pcode}[ht]
+\begin{pseudo*}
+\pr{cd-parallel}(f:\cK \to \cV', g\in \cV', \{\cK_i\}, \{R_i:\cK \to \cK_i\}, 0<\alpha\le 1, u\in\cK)\text{:} \\+
+    for $i \in \{0,\dots,m-1\}$: \qquad \qquad \ct{parallel for} \\+
+        $\hat w_i\in \cK_i$: \quad $\ip{f(u - R_i u + \hat w_i)}{v_i-\hat w_i} \ge g(v_i-\hat w_i) \quad \forall v_i\in \cK_i$ \\-
+    return $w=(1-\alpha) u + \alpha \sum_i \hat w_i$
+\end{pseudo*}
+\caption{The basic parallel CD algorithm updates an iterate $u$ by solving VIs over each constraint set $\cK_i$ in any order, giving $w\in \cK$.}
+\label{pc:cdparallel}
+\end{pcode}
 
-FIXME state the basic ``sequential constraint decomposition'' and ``parallel constraint decomposition'' algorithms
+\begin{pcode}[ht]
+\begin{pseudo*}
+\pr{cd-sequential}(f:\cK \to \cV', g\in \cV', \{\cK_i\}, \{R_i:\cK \to \cK_i\}, 0<\alpha\le 1, u\in\cK)\text{:} \\+
+    for $i = 0,\dots,m-1$: \qquad \qquad \ct{in order} \\+
+        $\hat w_i\in \cK_i$: \quad $\displaystyle \ip{f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j u\Big)}{v_i-\hat w_i} \ge g(v_i-\hat w_i) \quad \forall v_i\in \cK_i$ \\
+        $w_i = (1-\alpha) R_i u + \alpha \hat w_i$ \\-
+    return $w= \sum_i w_i = (1-\alpha) u + \alpha \sum_i \hat w_i$
+\end{pseudo*}
+\caption{Each VI incorporates the previous solutions in this basic sequential CD algorithm; compare Pseudocode \ref{pc:cdparallel}.}
+\label{pc:cdsequential}
+\end{pcode}
 
-In practice the space $\cV$ will be a finite-dimensional finite element (FE) space because we will solve VI \eqref{eq:vi} over a mesh.  We FIXME triangulation etc. Though our 
+FIXME
 
-\begin{example}  FIXME $\cV_i$ are 1d spaces on a single level; $\psi,\cK,\cK_i$ for obstacle problem; note $\cK_i \not\subset \cK$ when $\psi>0$
+\begin{example}  FIXME if $\cV_i=\Span\{\phi_i\}$ for $\phi_i\in\cV$ are 1d spaces and if $\cK = \{v \ge \psi\} \subset \cV$ (obstacle problem), and if $R_i : \cK \to \cK_i$ for obstacle problem; note $\cK_i \not\subset \cK$ when $\psi>0$
 \end{example}
+
+In practice the space $\cV$ will be a finite element (FE) space because we will solve VI \eqref{eq:vi} over a mesh, and thus $\cV$ and each $\cV_i$ will be finite-dimensional.
 
 
 \section{Multilevel constraint decomposition algorithms} \label{sec:multilevel}
