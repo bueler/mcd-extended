@@ -129,7 +129,7 @@ urlcolor=black    % ...
 
 The goal of this paper is to generalize the constraint decomposition (CD) method of X.-C.~Tai \cite{Tai2003}.  We extend this solution method to nonlinear variational inequality (VI) problems for which it has not been previously considered, we address important finite element (FE) implementation details, and we demonstrate the resulting performance.
 
-The convergence of the CD method for several types of decompositions was proven in \cite{Tai2003} in the case of coercive VIs which arise from minimization of a convex functional over a convex set.  In its multilevel form the CD method has been shown to have optimal complexity for elliptic, linear obstacle problems \cite[subsection 5.4]{Tai2003}; see also Theorem 4.6 and Algorithm 4.7 in \cite{GraeserKornhuber2009}.  However, especially for the classical obstacle problem, i.e.~for a Laplacian functional, certain other methods are known to improve performance relative to the multilevel CD method \cite{GraeserKornhuber2009}.  On the other hand, these improved multilevel methods either track the active set or modify the nodal basis functions, and in this sense they are discrete algorithms.  By contrast the CD methods apply at the level of the continuum problem (see below), so the method is more fundamental than the truncated monotone multigrid method \cite{GraeserKornhuber2009,Kornhuber1994}, for example, in that sense.
+The convergence of the CD method for several types of decompositions was proven in \cite{Tai2003} in the case of coercive VIs which arise from minimization of a convex functional over a convex set.  In its multilevel form the CD method has been shown to have optimal complexity for elliptic, linear obstacle problems \cite[subsection 5.4]{Tai2003}; see also Theorem 4.6 and Algorithm 4.7 in \cite{GraeserKornhuber2009}.
 
 We extend the original algorithms and theory presented in \cite{Tai2003} in three particular directions:
 \renewcommand{\labelenumi}{\emph{(\roman{enumi})}}
@@ -141,7 +141,9 @@ We extend the original algorithms and theory presented in \cite{Tai2003} in thre
 
 As an additional difference from the presentation in \cite{Tai2003}, but an essentially formal one, we observe that the iterates from CD methods are always admissible, and thus the residual functional need only be defined on the admissible subset.  Methods like CD, for which all iterates are admissible, have an advantage because they allow direct solutions of certain VI problems, such as the fluid-layer dynamics problems in \cite{Bueler2021conservation,JouvetBueler2012}, for which non-admissible methods such as semi-smooth methods \cite{BensonMunson2006} may require unnatural modifications of the residual form.
 
-In one example we consider a case where the residual functional is nonlocal, that is, where it is not a partial differential operator at all (Section \ref{sec:resultsnonlocal}).  Instead its values instead arise from the solution of Stokes problems for a layer of fluid on a substrate which forms the obstacle \cite{SayagWorster2013}, so the corresponding FE operator discretization is not sparse.  In this case we cannot prove coercivity but we can demonstrate near-optimal complexity in practice.  % HOPE
+Especially for the classical obstacle problem, i.e.~for a Laplacian functional, certain other methods are known to improve performance relative to the multilevel CD method \cite{GraeserKornhuber2009}.  These improved multilevel methods either track the active set or modify the nodal basis functions, and in this sense they are discrete algorithms.  By contrast the CD methods apply at the level of the continuum problem (see below); CD methods are more fundamental than the truncated monotone multigrid method \cite{GraeserKornhuber2009,Kornhuber1994}, for example, in that sense.
+
+In one example at the end of this paper (Section \ref{sec:resultsnonlocal}) we consider a nonlocal residual functional, that is, one which is not a partial differential operator.  One evaluation of this functional requires the solution of a Stokes problem for a layer of fluid \nocite{SayagWorster2013} on a substrate (which forms the obstacle), so the corresponding FE operator discretization is not sparse.  In this case we cannot prove coercivity but we nonetheless succeed in demonstrating near-optimal complexity in practice.  % HOPE
 
 
 \section{Coercive variational inequalities and constraint decomposition} \label{sec:vi}
@@ -239,33 +241,41 @@ In the Section \ref{sec:multilevel} we will introduce discretizations and descri
 
 In Example \ref{ex:domaindecomposition}, note that $\cK_i \not\subset \cK$ in many cases, for example if $\psi$ is positive over portions of $\Omega$ where the decomposition into overlapping subdomains $\Omega_i$ is nontrivial.  A similar comment applies in Example \ref{ex:frequencydecomposition}.
 
-We now state the basic CD algorithms as iterations which solve VI problems over each set $\cK_i$.  (By contrast, the algorithms in \cite{Tai2003} involve iterative optimization over the $\cK_i$.)  There is a parallel (additive) form and a successive (multiplicative) form; these generalize the Jacobi and Gauss-Seidel iterations \cite{Greenbaum1997}, respectively.  Each algorithm is stated as a function which computes a new iterate $w\in\cK$ from a previous iterate $y \in \cK$, the result being an improved approximation of the solution $u\in \cK$ of VI problem \eqref{eq:vi}.
+We now state the basic CD algorithms as iterations which solve VI problems over each set $\cK_i$.  (By contrast, the algorithms in \cite{Tai2003} involve iterative optimization over the $\cK_i$.)  There is a parallel (additive) form and a successive (multiplicative) form; these generalize the Jacobi and Gauss-Seidel iterations \cite{Greenbaum1997}, respectively.  Each algorithm computes a new iterate $w\in\cK$, an improved approximation of the solution $u\in \cK$ of VI problem \eqref{eq:vi} relative to the previous iterate $y \in \cK$.  A damping parameter $0<\alpha\le 1$ is included.
 
 \begin{pseudo*}
 \pr{cd-parallel}(\{\cK_i\}, \{R_i:\cK \to \cK_i\}, 0<\alpha\le 1, y\in\cK)\text{:} \\+
-    for $i \in \{0,\dots,m-1\}$: \qquad \qquad \ct{parallel for} \\+
-        $\hat w_i\in \cK_i$: \quad $\ip{f(y - R_i y + \hat w_i)}{v_i-\hat w_i} \ge g(v_i-\hat w_i) \quad \forall v_i\in \cK_i$ \\-
+    for $i \in \{0,\dots,m-1\}$: \qquad \qquad \ct{parallel} \\+
+        $\hat w_i\in \cK_i$: \quad $\boxed{\ip{f(y - R_i y + \hat w_i)}{v_i-\hat w_i} \ge g(v_i-\hat w_i)} \quad \forall v_i\in \cK_i$ \\-
     return $w=(1-\alpha) y + \alpha \sum_i \hat w_i$
 \end{pseudo*}
 
 \begin{pseudo*}
 \pr{cd-successive}(\{\cK_i\}, \{R_i:\cK \to \cK_i\}, 0<\alpha\le 1, y\in\cK)\text{:} \\+
     for $i = 0,\dots,m-1$: \qquad \qquad \ct{in order} \\+
-        $\hat w_i\in \cK_i$: \quad $\displaystyle \ip{f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j y\Big)}{v_i-\hat w_i} \ge g(v_i-\hat w_i) \quad \forall v_i\in \cK_i$ \\
+        $\hat w_i\in \cK_i$: \quad $\displaystyle \boxed{\ip{f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j y\Big)}{v_i-\hat w_i} \ge g(v_i-\hat w_i)} \quad \forall v_i\in \cK_i$ \\
         $w_i = (1-\alpha) R_i y + \alpha \hat w_i$ \\-
     return $w = (1-\alpha) y + \alpha \sum_i \hat w_i$
 \end{pseudo*}
 
-Note that we assume a damping parameter $0<\alpha\le 1$.  The convergence results in the next section require substantial damping in the parallel algorithm, i.e.~$\alpha \le 1/m$, but the successive version can be shown to converge without damping ($\alpha=1$).  In Section \ref{sec:resultslocal} we demonstrate practical convergence for a larger range of $\alpha$ than suggested by the theory.  % HOPE
+Let $e_i = \hat w_i - R_i y \in \cV_i$ be the $i$th-subspace change (in either algorithm), and note we may then write $w = y + \alpha \sum_i e_i$ when needed.  Also note for \pr{cd-parallel} that $y - R_i y + \hat w_i = y+e_i$.
 
-Observe that the expression $v_i - \hat w_i$ for $v_i,\hat w_i \in \cK_i$ appears in each algorithm, but, on the other hand, the reader may confirm that the argument to the residual functional $f$ is always an element of $\cK$.  To clarify this situation, note that by \eqref{eq:constraintrestrictionsum} one may write $v_i - \hat w_i$ as a difference of admissible vectors (i.e.~from $\cK$), namely
+The reader may confirm that, inside each boxed VI, the argument of $f$ is an element of $\cK$.  On the other hand, the expression $v_i - \hat w_i$ appears.  To clarify this situation, note that by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may write $v_i - \hat w_i$ as a difference of admissible vectors (i.e.~from $\cK$), namely
 \begin{align*}
-[y - R_i y + v_i] - [y - R_i y + \hat w_i] = \left[\sum_{j\ne i} R_j y + v_i\right] - \left[\sum_{j\ne i} R_j y + \hat w_i\right] &= v_i - \hat w_i, \label{eq:admissibledifference} \\
+[y - R_i y + v_i] - [y - R_i y + \hat w_i] &= v_i - \hat w_i, \label{eq:admissibledifference} \\
 \left[\sum_{j<i} w_j + v_i + \sum_{j>i} R_j y\right] - \left[\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j y\right] &= v_i - \hat w_i,  \notag
 \end{align*}
-for the two versions, respectively.  In other words, these algorithms require the approximate solution of VI \eqref{eq:vi} by looking among perturbations from the sets $\cK_i$.
+for the two versions, respectively.  In other words, these algorithms require the solution of VI \eqref{eq:vi} over (parallel or successive) perturbations from the sets $\cK_i$.
 
-FIXME key conceptual difference between the nonlinear and linear case; rewrite VI in \pr{cd-parallel} in the linear case; non-basic algorithm needed for $O(m)$ residual evaluation complexity in the nonlinear case (Section \ref{sec:multilevel})
+The convergence results in the next section require substantial damping in the parallel algorithm, i.e.~$\alpha \le 1/m$, but the successive version can be shown to converge without damping ($\alpha=1$).  In Section \ref{sec:resultslocal} we demonstrate practical convergence for a larger range of $\alpha$ than suggested by the theory.  % HOPE
+
+In Section \ref{sec:multilevel} we will implement these basic algorithms for multilevel CDs.  However, this implementation requires additional concepts in the case that $f$ is either: \emph{(i)} defined only on $\cK$, \emph{(ii)} nonlinear, or \emph{(iii)} nonlocal.  (In fact we will extend the above methods by applying the full approximation storage idea of Brandt \cite{Brandt1977}; see Section \ref{sec:multilevel}.)  The issue seems not to have been addressed by references which apply CD algorithms only to the classical obstacle problem \cite[in particular]{GraeserKornhuber2009,Tai2003}.
+
+To explain our concern, suppose $f:\cV \to \cV'$ is linear and local (in a sense which is explained momentarily).  Only consider \pr{cd-parallel}, for simplicity, and suppose for concreteness that $\cV = H_0^1(\Omega)$ (for some domain $\Omega \subset \RR^d$).  Note that for $z_i \in \cV_i$ we have $\ip{f(y - R_i y + \hat w_i)}{z_i} = \ip{f(y)}{z_i} + \ip{f(\hat w_i - R_i y)}{z_i}$, so the VI over $\cK_i$ can be written as
+\begin{equation}
+\ip{f(\hat w_i - R_i y)}{v_i-\hat w_i} \ge \tilde g(v_i-\hat w_i)  \qquad\qquad \text{\emph{($f$ linear)}} \label{eq:linearlocalcdparallel}
+\end{equation}
+for all $v_i\in \cK_i$, where $\tilde g(z) = g(z) - \ip{f(y)}{z}$.  Note $e_i = \hat w_i - R_i y \in \cV_i$ but generally $e_i \notin \cK$, so \eqref{eq:linearlocalcdparallel} only make sense if $f$ is defined over the whole vector space.  Now each VI problem in \pr{cd-parallel} can then be solved using a stored residual $\ip{f(y)}{\cdot}$ which is put in a fixed source term.  Furthermore, by $f$ being ``local'' we mean that if a basis $\{\phi_i\}$ of $\cV_i$ can be constructed with each support small in $\Omega$, then $\ip{f(\phi_i)}{z}$ can be computed by an integral over the support of $\phi_i$.  Then the solution of each VI problem \label{eq:linearlocalcdparallel} can be computed by local means over the union of the supports of the basis.  Thus the resulting solver for the everywhere-defined, linear, and local $f$ has implementation efficiencies that are unavailable otherwise.  In conclusion, additional ideas, like those in the algorithms in Section \ref{sec:multilevel}, are needed for practical application of CD methods to problems which are not close to the classical obstacle problem.
 
 
 \section{Convergence of the basic algorithm} \label{sec:convergence}
