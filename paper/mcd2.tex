@@ -41,6 +41,7 @@ urlcolor=black    % ...
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{assumptions}[theorem]{Assumptions}
 
 \newtheoremstyle{dstyle}% name
   {5pt}% space above
@@ -297,7 +298,26 @@ A solver which would work for Example \ref{ex:fnice} has implementation efficien
 
 \section{Convergence of the basic algorithm} \label{sec:convergence}
 
-FIXME
+To prove the convergence of the basic algorithm we make two assumptions regarding the CD and the residual functional, as follows.
+
+\begin{assumptions}  \emph{Lipschitz restrictions}: There exists $C_1>0$ so that
+\begin{equation}
+\left(\sum_{i=0}^{m-1} \|R_i u - R_i v\|^2\right)^{1/2} \le C_1 \|u-v\| \label{as:lipschitzrestrictions}
+\end{equation}
+for all $u,v\in\cK$.  \emph{Totally Lipschitz residual}: There exists $C_2>0$ so that
+\begin{equation}
+FIXME \label{as:totallylipschitzresidual}
+\end{equation}
+for all 
+\end{assumptions}
+
+Though the assumptions are technical in certain senses, the reader should note some essential features:
+\begin{itemize}
+\item The assumptions are identical to inequalities (7), (8) in \cite{Tai2003} where they are used them to prove the convergence of the optimization version of the basic CD algorithm.  See also their unconstrained versions, inequalities (13), (14) in \cite{TaiXu2002}.
+\item Assumption \eqref{as:lipschitzrestrictions} addresses only the constraint decomposition while, essentially, \eqref{as:totallylipschitzresidual} addresses only a subspace decomposition property of the residual functional.  For example, if $f$ is defined by a PDE weak form, as in the classical obstacle problem, then \eqref{as:totallylipschitzresidual} is verified over the subpaces $\cV_i$, and the subsets $\cK_i$ are not relevant.
+\item Tai \cite{Tai2003} gives values of the constants $C_1$ in \eqref{as:lipschitzrestrictions} for obstacle problem constraint decompositions using $P_1$ FE spaces over a shape-regular and quasi-uniform triangulation.  In particular, constants $C_1$ are know for domain decompositions (with or without an additional coarse mesh) and standard multilevel heirarchies.
+% ASSUMING $f$ IS LIPSCHITZ WILL MAKE THE EXISTENCE OF C_2 CLEAR; SEE (14) IN \cite{TaiXu2002}
+\end{itemize}
 
 
 \section{Finite elements and multilevel constraint decomposition} \label{sec:multilevel}
