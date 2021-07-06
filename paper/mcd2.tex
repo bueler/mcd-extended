@@ -109,7 +109,7 @@ urlcolor=black    % ...
 
 
 \begin{document}
-\title[On MCD methods for nonlinear and nonlocal VIs]{On multilevel constraint decomposition methods \\ for nonlinear and nonlocal variational inequalities}
+\title[On multilevel constraint decomposition methods]{On multilevel constraint decomposition methods \\ for nonlinear and nonlocal variational inequalities}
 
 \author{Ed Bueler}
 
@@ -219,7 +219,7 @@ for $\eps>0$.  Finally, suppose a nonnegativity constraint $\cK = \{v\ge 0\} \su
 Examples \ref{ex:advectiondiffusion} and \ref{ex:porousgeneralization} are VI problems which do not arise from optimization.  Further examples are in ice sheet models \cite{Calvoetal2002,JouvetBueler2012} and other geophysical fluids \cite{Bueler2021conservation}.  Numerical solver performance for Examples \ref{ex:advectiondiffusion}--\ref{ex:plaplacian} will be considered in section \ref{sec:resultslocal}.  % HOPE
 
 
-\section{Constraint decomposition; the basic algorithms} \label{sec:cd}
+\section{Constraint decomposition, the basic algorithm} \label{sec:cd}
 
 The multilevel algorithms in Section \ref{sec:multilevel} are based on the more general notion of a solution by constraint decomposition, as follows.  Suppose there are $m<\infty$ subspaces $\cV_i \subset \cV$ so that
 \begin{equation}
@@ -249,41 +249,50 @@ In the Section \ref{sec:multilevel} we will introduce discretizations and descri
 
 In Example \ref{ex:domaindecomposition}, note that $\cK_i \not\subset \cK$ in many cases, for example if $\psi$ is positive over portions of $\Omega$ where the decomposition into overlapping subdomains $\Omega_i$ is nontrivial.  A similar comment applies in Example \ref{ex:frequencydecomposition}.
 
-We now state the basic CD algorithms as iterations which solve VI problems over each set $\cK_i$.  (By contrast, the algorithms in \cite{Tai2003} solve optimization problems over the $\cK_i$.)  There is a parallel (additive) form and a successive (multiplicative) form; these generalize the Jacobi and Gauss-Seidel iterations \cite{Greenbaum1997}, respectively.  Each algorithm computes a new iterate $w\in\cK$, an improved approximation of the solution $u\in \cK$ of VI problem \eqref{eq:vi} relative to the previous iterate $y \in \cK$.  A damping parameter $0<\alpha\le 1$ is included.
+We now state the basic CD algorithm as an iteration which solves VI problems over each set $\cK_i$.  (By contrast, algorithms in \cite{Tai2003} solve \emph{optimization} problems.)  There are parallel (additive) and successive (multiplicative) versions; these generalize the Jacobi and Gauss-Seidel iterations \cite{Greenbaum1997}, respectively.  Each starts from a current iterate $u \in \cK$ and computes a new iterate $w\in\cK$, an improved approximation of the solution $u^* \in \cK$ of VI problem \eqref{eq:vi}, according to a damping parameter $0<\alpha\le 1$.  If \pr{parallel} $=$ \text{\textbf{true}} then the \text{\textbf{for}} loop can be computed in any order.
 
 \begin{pseudo*}
-\pr{cd-parallel}(\{\cK_i\}, \{R_i:\cK \to \cK_i\}, 0<\alpha\le 1, y\in\cK)\text{:} \\+
-    for $i \in \{0,\dots,m-1\}$: \qquad \qquad \ct{parallel} \\+
-        $\hat w_i\in \cK_i$: \quad $\boxed{\ip{f(y - R_i y + \hat w_i)}{v_i-\hat w_i} \ge g(v_i-\hat w_i)} \quad \forall v_i\in \cK_i$ \\-
-    return $w=(1-\alpha) y + \alpha \sum_i \hat w_i$
+\pr{cd}(0<\alpha\le 1, u\in\cK)\text{:} \\+
+    if \pr{parallel}: \\+
+        for $i \in \{0,\dots,m-1\}$: \\+
+            $\hat w_i\in \cK_i$: \\+
+                 $\boxed{\ip{f(u - R_i u + \hat w_i)}{v_i-\hat w_i} \ge g(v_i-\hat w_i)} \quad \forall v_i\in \cK_i$ \\---
+    else: \\+
+        for $i = 0,\dots,m-1$: \\+
+            $\hat w_i\in \cK_i$: \\+
+                $\displaystyle \boxed{\ip{f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j u\Big)}{v_i-\hat w_i} \ge g(v_i-\hat w_i)} \quad \forall v_i\in \cK_i$ \\-
+            $w_i = (1-\alpha) R_i u + \alpha \hat w_i$ \\--
+    $\hat w = \sum_i \hat w_i$ \\
+    return $w=(1-\alpha) u + \alpha \hat w$
 \end{pseudo*}
-
-\begin{pseudo*}
-\pr{cd-successive}(\{\cK_i\}, \{R_i:\cK \to \cK_i\}, 0<\alpha\le 1, y\in\cK)\text{:} \\+
-    for $i = 0,\dots,m-1$: \qquad \qquad \ct{in order} \\+
-        $\hat w_i\in \cK_i$: \quad $\displaystyle \boxed{\ip{f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j y\Big)}{v_i-\hat w_i} \ge g(v_i-\hat w_i)} \quad \forall v_i\in \cK_i$ \\
-        $w_i = (1-\alpha) R_i y + \alpha \hat w_i$ \\-
-    return $w = (1-\alpha) y + \alpha \sum_i \hat w_i$
-\end{pseudo*}
-
-Let $e_i = \hat w_i - R_i y \in \cV_i$ be the $i$th-subspace change (in either algorithm), and note we may then write $w = y + \alpha \sum_i e_i$ when needed.  Also note for \pr{cd-parallel} that $y - R_i y + \hat w_i = y+e_i$.
 
 The reader may confirm that, inside each boxed VI, the argument of $f$ is an element of $\cK$.  On the other hand, the expression $v_i - \hat w_i$ appears.  To clarify this situation, note that by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may write $v_i - \hat w_i$ as a difference of admissible vectors (i.e.~from $\cK$), namely
 \begin{align*}
-[y - R_i y + v_i] - [y - R_i y + \hat w_i] &= v_i - \hat w_i, \label{eq:admissibledifference} \\
-\left[\sum_{j<i} w_j + v_i + \sum_{j>i} R_j y\right] - \left[\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j y\right] &= v_i - \hat w_i,  \notag
+[u - R_i u + v_i] - [u - R_i u + \hat w_i] &= v_i - \hat w_i, \label{eq:admissibledifference} \\
+\left[\sum_{j<i} w_j + v_i + \sum_{j>i} R_j u\right] - \left[\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j u\right] &= v_i - \hat w_i,  \notag
 \end{align*}
-for the two versions, respectively.  In other words, these algorithms require the solution of VI \eqref{eq:vi} over (parallel or successive) perturbations from the sets $\cK_i$.
-
-The convergence results in the next section require substantial damping in the parallel algorithm, i.e.~$\alpha \le 1/m$, but the successive version can be shown to converge without damping ($\alpha=1$).  In Section \ref{sec:resultslocal} we demonstrate practical convergence for a larger range of $\alpha$ than suggested by the theory.  % HOPE
-
-In Section \ref{sec:multilevel} we will implement these basic algorithms for multilevel CDs.  However, this implementation requires additional concepts in the case that $f$ is either: \emph{(i)} defined only on $\cK$, \emph{(ii)} nonlinear, or \emph{(iii)} nonlocal.  (In fact we will extend the above methods by applying the full approximation storage idea of Brandt \cite{Brandt1977}; see Section \ref{sec:multilevel}.)  The issue seems not to have been addressed by references which apply CD algorithms only to the classical obstacle problem \cite[in particular]{GraeserKornhuber2009,Tai2003}.
-
-To explain our concern, suppose $f:\cV \to \cV'$ is linear and local (in a sense which is explained momentarily).  Only consider \pr{cd-parallel}, for simplicity, and suppose for concreteness that $\cV = H_0^1(\Omega)$ (for some domain $\Omega \subset \RR^d$).  Note that for $z_i \in \cV_i$ we have $\ip{f(y - R_i y + \hat w_i)}{z_i} = \ip{f(y)}{z_i} + \ip{f(\hat w_i - R_i y)}{z_i}$, so the VI over $\cK_i$ can be written as
+for the two versions, respectively.  In other words, we solve VI \eqref{eq:vi} over (parallel or successive) perturbations from the sets $\cK_i$.  In fact, if
 \begin{equation}
-\ip{f(\hat w_i - R_i y)}{v_i-\hat w_i} \ge \tilde g(v_i-\hat w_i)  \qquad\qquad \text{\emph{($f$ linear)}} \label{eq:linearlocalcdparallel}
+e_i = \hat w_i - R_i u \in \cV_i \label{eq:ithupdate}
 \end{equation}
-for all $v_i\in \cK_i$, where $\tilde g(z) = g(z) - \ip{f(y)}{z}$.  Note $e_i = \hat w_i - R_i y \in \cV_i$ but generally $e_i \notin \cK$, so \eqref{eq:linearlocalcdparallel} only make sense if $f$ is defined over the whole vector space.  Now each VI problem in \pr{cd-parallel} can then be solved using a stored residual $\ip{f(y)}{\cdot}$ which is put in a fixed source term.  Furthermore, by $f$ being ``local'' we mean that if a basis $\{\phi_i\}$ of $\cV_i$ can be constructed with each support small in $\Omega$, then $\ip{f(\phi_i)}{z}$ can be computed by an integral over the support of $\phi_i$.  Then the solution of each VI problem \label{eq:linearlocalcdparallel} can be computed by local means over the union of the supports of the basis.  Thus the resulting solver for the everywhere-defined, linear, and local $f$ has implementation efficiencies that are unavailable otherwise.  In conclusion, additional ideas, like those in the algorithms in Section \ref{sec:multilevel}, are needed for practical application of CD methods to problems which are not close to the classical obstacle problem.
+is the update in $\cK_i$ then we may then write $w = u + \alpha \sum_i e_i$.  In particular, note that $u - R_i u + \hat w_i = u + e_i$; the \pr{parallel} version computes the updates $e_i$ independently.
+
+The convergence results in the next section require substantial damping in the parallel algorithm, i.e.~$\alpha \le 1/m$, as in \cite{Tai2003} as well, but the successive version can be shown to converge without damping ($\alpha=1$).  In Section \ref{sec:resultslocal} we demonstrate practical convergence for a larger range of $\alpha$ than suggested by the theory.  % HOPE
+
+In Section \ref{sec:multilevel} we will convert the basic algorithm into a multilevel approach for an obstacle problem by choosing appropriate $\cK_i$ based on a FE triangulation.  However, in order that the algorithm has a practical and efficient implementation, we will require additional concepts when $f$ has any of the following properties: \emph{(i)} $f$ is defined only on $\cK$, \emph{(ii)} $f$ is nonlinear, or \emph{(iii)} $f$ is nonlocal.  The issue of practical implementation for such $f$ seems not to have been addressed by references which apply CD algorithms only to the classical obstacle problem \cite[in particular]{GraeserKornhuber2009,Tai2003}.  Consider the following example.
+
+\begin{example}  \label{ex:fnice} Suppose $f:\cV \to \cV'$ is linear and defined on all of $\cV$.  Furthermore suppose $f$ is local in the sense that a basis $\{\phi_i\}$ of $\cV_i$ exists with each support small in $\Omega$, and that $\ip{f(\phi_i)}{z}$ can be computed by an integral over the support of $\phi_i$.  (When $\cV$ is an FE space then this is the usual case for evaluating PDE weak forms over a basis of hat functions; see Section \ref{sec:multilevel}.)  Considering only the parallel algorithm, for simplicity, the VI over $\cK_i$ can be written as
+\begin{equation}
+\ip{f(\hat w_i - R_i u)}{v_i-\hat w_i} \ge \tilde g(v_i-\hat w_i) \label{eq:linearlocalvi}
+\end{equation}
+for all $v_i\in \cK_i$, where
+\begin{equation}
+\tilde g(z) = g(z) - \ip{f(u)}{z}. \label{eq:linearlocalrhs}
+\end{equation}
+Noting $e_i = \hat w_i - R_i u \in \cV_i \notin \cK$, in general, VI \eqref{eq:linearlocalvi} only makes sense because $f$ is defined over $\cV_i$.  Thus each subset problem \eqref{eq:linearlocalvi} can be solved using a stored residual $\ip{f(y)}{\cdot}$ in an updated source term.  In other words, because $f$ has all these nice properties, the solution of each VI problem can be computed by local, thus inexpensive, means.
+\end{example}
+
+A solver which would work for Example \ref{ex:fnice} has implementation efficiencies that are unavailable in general.  Additional ideas, like those in Section \ref{sec:multilevel}, are needed for practical application of CD methods to problems which are not close to the classical obstacle problem.  In particular, we will extend the basic algorithm to nonlinear $f:\cK\to \cV'$ by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}, and in Section \ref{sec:resultsnonlocal} we will apply the algorithm in a case where residual evaluation is substantially less simple than evaluation of a PDE weak form.
 
 
 \section{Convergence of the basic algorithm} \label{sec:convergence}
