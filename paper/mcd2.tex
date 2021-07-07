@@ -300,7 +300,7 @@ A solver which would work for Example \ref{ex:fnice} has implementation efficien
 
 To prove the convergence of the basic algorithm we make two assumptions regarding the CD and the residual functional, as follows.
 
-\begin{assumptions}  \emph{Lipschitz restrictions}: There exists $C_1>0$ so that
+\begin{assumptions}  \emph{Lipschitz restrictions}: There exists a constant $C_1>0$ so that
 \begin{equation}
 \left(\sum_{i=0}^{m-1} \|R_i u - R_i v\|^2\right)^{1/2} \le C_1 \|u-v\| \label{as:lipschitzrestrictions}
 \end{equation}
@@ -308,8 +308,9 @@ for all $u,v\in\cK$.  \emph{Totally Lipschitz residual}: There exists $C_2>0$ so
 \begin{equation}
 FIXME \label{as:totallylipschitzresidual}
 \end{equation}
-for all 
+for all FIXME
 \end{assumptions}
+Note that the constants $C_1,C_2$ generally depend on $m$.  % IF PROOF BELOW SUCCEEDS, SO ALGORITHM IS NORM DECREASING, THEN MAY BE ABLE TO ARGUE THAT IT IS O.K. FOR CONSTANTS TO DEPEND ON $u,v,w_{ij}$ etc. AS LONG AS THEY ARE UNIFORMLY BOUNDED ON CERTAIN BOUNDED SETS
 
 Though the assumptions are technical in certain senses, the reader should note some essential features:
 \begin{itemize}
