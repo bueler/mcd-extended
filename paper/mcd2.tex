@@ -200,28 +200,50 @@ It is easy to see that if $f$ is $p$-coercive then it is monotone, strictly mono
 \begin{theorem}  \label{thm:viwellposed}  If $f:\cK \to \cV'$ is continuous and $p$-coercive (for $p>1$) then there exists a unique $u\in \cK$ solving VI \eqref{eq:vi}.
 \end{theorem}
 
-When $f$ is monotone, VI \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  In fact, suppose $F:\cV \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cV \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}, and if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ and $g=0$ if and only if
+When $f$ is monotone, VI \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  In fact, suppose $F:\cK \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cK \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, Proposition II.2.1 in the same reference shows that if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ (and $g=0$) if and only if
 \begin{equation}
-u^* = \operatorname{arg-min}_{v\in\cK} F(v) \label{eq:minimization}
+u^* = \operatorname{arg-min}_{v\in\cK} F(v). \label{eq:minimization}
 \end{equation}
-\cite[Proposition II.2.1]{EkelandTemam1976}.
 
-Before giving examples, note that Sobolev spaces are denoted $W^{k,p}(\Omega)$ \cite{Evans2010}, with $W^{k,2}=H^k$ in particular.
+From now on $\Omega \subset \RR^d$ denotes a bounded, open set with smooth or piecewise-smooth (e.g.~polygonal) boundary.  Note that Sobolev spaces \cite{Evans2010} are denoted here by $W^{k,p}(\Omega)$, with Hilbert-space cases denoted $W^{k,2}=H^k$.
 
-\begin{example}  \label{ex:plaplacian}  FIXME
+Many numerical solvers for VIs, including the CD methods of Tai \cite{Tai2003}, address optimization problem \eqref{eq:minimization} under the hypothesis that $F'$ is coercive.  The following example includes the classical obstacle problem \cite{GraeserKornhuber2009} and the obstacle problem for the $p$-Laplacian \cite{ChoeLewis1991}.
+
+\begin{example}  \label{ex:plaplacian}  Suppose $a\in L^\infty(\Omega)$ such that $a(x)\ge a_0$ a.e.~for some constant $a_0>0$, and $p\ge 2$.  For $u,v \in \cV = W^{1,p}_0(\Omega)$ define $f:\cV \to \cV'$ by
 \begin{equation}
-\ip{f(u)}{v} = \int_\Omega |\grad u|^{p-2} \grad u \cdot \grad v\,dx \label{eq:plaplacian}
+\ip{f(u)}{v} = \int_\Omega a(x) |\grad u|^{p-2} \grad u \cdot \grad v\,dx. \label{eq:plaplacian}
 \end{equation}
+Now, if $x,y\in\RR^d$ then $(|x|^{p-2} x - |y|^{p-2} y)\cdot (x-y) \ge 2^{2-p} |x-y|^p$ \cite[see Appendix A and references therein]{Bueler2021conservation}.  It follows from the Poincar\'e inequality that
+    $$\ip{f(u) - f(v)}{u-v} \ge 2^{2-p} a_0 \|\grad u - \grad v\|_p^p \ge 2^{2-p} a_0 C \|u-v\|^p$$
+for some $C>0$, and thus $f$ is $p$-coercive.  (The same $f$ is coercive if $1<p<2$ but the proof is somewhat different \cite[Theorem 4.4]{Bueler2021conservation}.)  Also, for $g\in\cV'$ define
+    $$F(u) = \int_\Omega \frac{a(x)}{p} |\grad u|^p\,dx - g(u).$$
+Then $F'(u) = f(u) - g$, $F$ is a convex functional (since $f$ is coercive), and, for any closed and convex $\cK\subset \cV$, VI problem \eqref{eq:vi} for $f$ and $g$ is equivalent to optimization problem \eqref{eq:minimization} for $F$.
 \end{example}
 
-Some numerical solvers for VIs, including the CD methods of Tai \cite{Tai2003}, address optimization problem \eqref{eq:minimization}.  However, not all VIs correspond to optimization, and we give two such examples next.
+However, not all VIs correspond to optimization.  We give two such examples next, a linear advection-diffusion problem and then a nonlinear porous-medium-type problem, both of which are important in applications.  Each example is preceded by a lemma.
 
-\begin{example}  \label{ex:advectiondiffusion}  Consider a steady advection-diffusion problem over a bounded domain $\Omega \subset \RR^d$, with polygonal boundary, and suppose the boundary is partitioned $\partial\Omega = \partial_D\Omega \cup \partial_N\Omega$ with $\partial_D\Omega$ of positive measure.  Let $\cV = H_0^1(\Omega)$ be the space of functions with value zero on $\partial_D\Omega$; for simplicity suppose zero Dirichlet and Neumann data.  Consider a velocity field $\bX \in L^\infty(\Omega)^d$ such that $\Div \bX=0$, and define the functional
+\begin{lemma}  \label{lem:advectionskew}  \cite{Elmanetal2014}\,  Suppose $\bX :\Omega \to \RR^d$ is a smooth and bounded vector field on $\Omega$ with zero divergence ($\Div \bX=0$).  For $u,v \in H^1(\Omega)$ let $s(u,v) = \int_\Omega (\bX \cdot \grad u) v\,dx$.  Then $s(v,v) = \frac{1}{2} \int_{\partial \Omega} v^2 \bX\cdot \bn\,dx$ where $\bn$ is the outward normal on $\partial \Omega$.
+\end{lemma}
+
+\begin{proof}
+Integration by parts gives $s(u,v) = - s(v,u) + \int_{\partial \Omega} uv \bX\cdot \bn\,dx$, so the result follows.
+\end{proof}
+
+\begin{example}  \label{ex:advectiondiffusion}  Suppose $\partial\Omega$ is partitioned into Dirichlet and Neumann portions, i.e.~$\partial\Omega = \partial_D\Omega \cup \partial_N\Omega$, with $\partial_D\Omega$ of positive measure.  Let $\cV = H_0^1(\Omega)$ be the space of functions with value zero on $\partial_D\Omega$.  (For simplicity we consider zero boundary data.)  Choose a smooth and bounded velocity field $\bX$ on $\Omega$ such that $\Div \bX=0$, but additionally assume outward flow on the Neumann boundary, i.e.~$\bX \cdot \bn \ge 0$ at points of $\partial_N\Omega$.  For $u,v \in \cV = H_0^1(\Omega)$ and $\eps>0$ define
 \begin{equation}
-\ip{f(u)}{v} = \int_\Omega \eps \grad u \cdot \grad v - (\bX \cdot \grad u) v\,dx \label{eq:advectiondiffusion}
+\ip{f(u)}{v} = \int_\Omega \eps \grad u \cdot \grad v - (\bX \cdot \grad u) v\,dx. \label{eq:advectiondiffusion}
 \end{equation}
-for $\eps>0$.  Finally, suppose a nonnegativity constraint $\cK = \{v\ge 0\} \subset \cV$ on the solution \cite[for example]{ChangNakshatrala2017}, and consider VI \eqref{eq:vi} for any $g\in\cV'$.  It is easy to see that $|\ip{f(u)}{v}| \le (\eps + \|\bX\|_\infty) \|u\|_{\cV} \|v\|_{\cV}$, thus that $f:\cK \to \cV'$ is continuous.  FIXME  MAKE ARGUMENT FOLLOWING \cite{Elmanetal2014}; see also \cite{Kirby2010}; IF $\bX=0$ THEN IT IS OPTIMIZATION BUT OTHERWISE NOT; $2$-coercive if outflow on Neumann
+Consider VI \eqref{eq:vi} for any closed and convex $\cK \subset \cV$ and any $g\in\cV'$.  It is easy to see that $|\ip{f(u)}{v}| \le (\eps + \|\bX\|_\infty) \|u\| \|v\|$, thus that $f:\cK \to \cV'$ is continuous.  On the other hand, by Lemma \ref{lem:advectionskew}, which says that $s(u,v)$ is skew-symmetric up to a nonnegative addition, and by the outward flow assumption and the Poincar\'e inequality,
+\begin{align*}
+\ip{f(u)-f(v)}{u-v} &= \eps \int_\Omega |\grad u - \grad v|^2\,dx + s(u-v,u-v) \\
+                    &= \eps \int_\Omega |\grad u - \grad v|^2\,dx + \frac{1}{2} \int_{\partial_N\Omega} (u-v)^2 \bX\cdot\bn \ge \eps C \|u-v\|^2.
+\end{align*}
+Thus $f$ is 2-coercive, and so VI problem \eqref{eq:vi} is well-posed for any closed and convex $\cK \subset \cV$ and $g\in \cV'$.
+
+IF $\bX=0$ THEN IT IS OPTIMIZATION BUT OTHERWISE NOT
 \end{example}
+
+In the above example we have assumed zero boundary data for simplicity.  Reference \cite{ChangNakshatrala2017} considers the above problem subject to a nonnegativity constraint ($\cK = \{v\ge 0\}$).
 
 \begin{example}  \label{ex:porousgeneralization}  FIXME
 \begin{equation}
