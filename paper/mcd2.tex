@@ -110,7 +110,7 @@ urlcolor=black    % ...
 
 
 \begin{document}
-\title[On multilevel constraint decomposition methods]{On multilevel constraint decomposition methods \\ for nonlinear and nonlocal variational inequalities}
+\title[On multilevel constraint decomposition methods]{On multilevel constraint decomposition methods \\ for nonlinear variational inequalities}
 
 \author{Ed Bueler}
 
@@ -135,17 +135,17 @@ The convergence of the CD method for several types of decompositions was proven 
 We extend the original algorithms, theory, and examples presented in \cite{Tai2003} in four particular directions:
 \renewcommand{\labelenumi}{\emph{(\roman{enumi})}}
 \begin{enumerate}
-\item We do not assume that the continuum VI problem arises from optimization of a scalar objective, an assumption in \cite{Tai2003}.  Nonetheless we can prove convergence at the same rate (Section \ref{sec:convergence}); % HOPE
-examples are explored in Sections \ref{sec:vi}, \ref{sec:resultslocal}, and \ref{sec:resultsnonlocal}.
-\item We observe that the iterates from these CD methods are always admissible, and thus the residual functional need only be defined on the admissible subset; Sections \ref{sec:resultslocal} and \ref{sec:resultsnonlocal} include examples.  Admissible-iterate methods allow direct solutions of certain VI problems, such as fluid-layer dynamics problems (Section \ref{sec:resultsnonlocal}; see also \cite{Bueler2021conservation,JouvetBueler2012}) for which non-admissible methods, such as semi-smooth methods \cite{BensonMunson2006}, may require unnatural modifications of the residual form.
-\item In the multilevel case we make the observation that, if implemented appropriately, V(0,$\nu$) ``up-slash'' cycles are intrinsically more efficient than the V($\nu$,0) ``down-slash'' cycles (Section \ref{sec:multilevel}).  This observation seems to be new for multilevel CD methods; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}.  Strong preference for up-smoothing is, apparently, special to multilevel CD methods and does not arise in corresponding unconstrained (e.g.~\cite{Xu1992}) problems.
-\item In the multilevel and nonlinear case, we make the algorithms practical by addressing efficient storage of intermediate quantities.  In particular we show results from a full approximation storage (FAS; \cite{Brandt1977}) version of the multilevel CD algorithm (Section \ref{sec:resultslocal}), avoiding global (Newton) linearization; compare \cite{GraeserKornhuber2009}.
+\item In contrast to \cite{Tai2003}, we do not assume that the continuum VI problem arises from optimization of a scalar objective.  Nonetheless we can prove convergence at the same rate (Section \ref{sec:convergence}); % HOPE
+examples are explored in Sections \ref{sec:vi} and \ref{sec:results}.
+\item We observe that the iterates from the CD method are always admissible, and thus the residual functional need only be defined on the admissible subset; Section \ref{sec:results} includes an example.  Admissible-iterate methods allow direct solutions of certain VI problems, such as fluid-layer dynamics problems \cite{Bueler2021conservation,JouvetBueler2012} for which non-admissible methods, such as semi-smooth methods \cite{BensonMunson2006}, may require unnatural modifications of the residual form.
+\item In the multilevel case we make the observation that, if implemented appropriately, V(0,$\nu$) ``up-slash'' cycles are intrinsically more efficient than the V($\nu$,0) ``down-slash'' cycles (Section \ref{sec:multilevel}).  This observation seems to be new for multilevel CD methods; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}.  Strong preference for up-smoothing is, apparently, special to multilevel CD methods and does not arise in corresponding unconstrained problems.
+\item In the multilevel and nonlinear case, we make the CD algorithm practical by addressing efficient storage of intermediate quantities.  In particular, in Section \ref{sec:results} we show results from a full approximation storage (FAS; see \cite{Brandt1977}) implementation.  Thereby we avoid global (Newton) linearization when solving nonlinear VI problems; compare \cite{GraeserKornhuber2009}.
 \end{enumerate}
 
-Especially for the classical obstacle problem, i.e.~for a Laplacian functional, certain other methods are known to improve performance relative to the multilevel CD method \cite{GraeserKornhuber2009}.  These improved multilevel methods either track the active set or modify the nodal basis functions, and in this sense they are discrete algorithms.  By contrast the CD methods apply at the level of the continuum problem (see below); CD methods are more fundamental than the truncated monotone multigrid method \cite{Kornhuber1994}, for example, in that sense, and we can demonstrate comparable rates of convergence (Section \ref{sec:resultslocal}). % HOPE
-Furthermore, truncated monotone approaches for nonlinear problems have, so far, applied a global linearization strategy \cite{GraeserKornhuber2009}, while we apply FAS (Section \ref{sec:multilevel}).  In any case, acceleration of our nonlinear multilevel CD methods by such active-set and/or basis-level manipulations is a topic for further research.
+Especially for the classical obstacle problem, i.e.~for a Laplacian functional, certain other methods are known to improve performance relative to the multilevel CD method \cite{GraeserKornhuber2009}.  These improved multilevel methods either track the active set or modify the nodal basis functions, and in this sense they are discrete algorithms.  By contrast the CD method applies at the level of the continuum problem (see below); it is more fundamental than the truncated monotone multigrid method \cite{Kornhuber1994}, for example, in that sense, and we can demonstrate comparable rates of convergence (Section \ref{sec:results}). % HOPE
+Furthermore, truncated monotone approaches for nonlinear problems have, so far, applied a global linearization strategy \cite{GraeserKornhuber2009}, while we apply FAS (Section \ref{sec:multilevel}).  In any case, acceleration of our nonlinear multilevel CD method by such active-set and/or basis-level manipulations is a topic for further research.
 
-In one example at the end of this paper (Section \ref{sec:resultsnonlocal}) we consider a nonlocal residual functional, that is, one which is not a partial differential operator.  Each evaluation of this functional requires the solution of a Stokes problem for a layer of fluid \nocite{SayagWorster2013} on a substrate (which forms the obstacle), and thus the corresponding FE operator discretization is also not sparse.  In this case we cannot prove coercivity but we nonetheless succeed in demonstrating near-optimal complexity of the Section \ref{sec:multilevel} multilevel CD algorithm in practice.  % HOPE
+% A BRIDGE TOO FAR:  In one example at the end of this paper (Section \ref{sec:resultsnonlocal}) we consider a nonlocal residual functional, that is, one which is not a partial differential operator.  Each evaluation of this functional requires the solution of a Stokes problem for a layer of fluid \nocite{SayagWorster2013} on a substrate (which forms the obstacle), and thus the corresponding FE operator discretization is also not sparse.  In this case we cannot prove coercivity but we nonetheless succeed in demonstrating near-optimal complexity of the Section \ref{sec:multilevel} multilevel CD algorithm in practice.
 
 
 \section{Coercive variational inequalities} \label{sec:vi}
@@ -174,7 +174,7 @@ The following definitions are standard \cite{KinderlehrerStampacchia1980}.
 
 It is well-known that if $f:\cK \to \cV'$ is continuous, monotone, and coercive then VI \eqref{eq:vi} has a solution \cite[Corollary III.1.8]{KinderlehrerStampacchia1980}, and also that the solution $u^* \in \cK$ is unique if $f$ is strictly monotone.  The condition of continuity can be weakened to only apply on finite-dimensional subspaces \cite{KinderlehrerStampacchia1980}, but the stronger condition will apply in our examples.  As in the calculus of variations \cite{Evans2010}, coercivity permits a compactness argument even for unbounded sets $\cK$; recall that the bounded, closed subsets of a reflexive Banach space are weakly compact.
 
-The VIs solved in this paper satisfy a stronger form of coercivity than \eqref{eq:coercive}.\footnote{An exception is the problem in Section \ref{sec:resultsnonlocal}; there $f$ is not known to be monotone or coercive.}
+The VIs solved in this paper satisfy a stronger form of coercivity than \eqref{eq:coercive}.
 
 \begin{definition}  Let $p>1$.  The map $f:\cK \to \cV'$ is \emph{$p$-coercive} if there exists $\kappa>0$ such that
 \begin{equation}
@@ -217,7 +217,7 @@ for $\eps>0$.  Finally, suppose a nonnegativity constraint $\cK = \{v\ge 0\} \su
 \end{equation}
 \end{example}
 
-Examples \ref{ex:advectiondiffusion} and \ref{ex:porousgeneralization} are VI problems which do not arise from optimization.  Further examples are in ice sheet models \cite{Calvoetal2002,JouvetBueler2012} and other geophysical fluids \cite{Bueler2021conservation}.  Numerical solver performance for Examples \ref{ex:advectiondiffusion}--\ref{ex:plaplacian} will be considered in section \ref{sec:resultslocal}.  % HOPE
+Examples \ref{ex:advectiondiffusion} and \ref{ex:porousgeneralization} are VI problems which do not arise from optimization.  Further examples are in ice sheet models \cite{Calvoetal2002,JouvetBueler2012} and other geophysical fluids \cite{Bueler2021conservation}.  Numerical solver performance for Examples \ref{ex:advectiondiffusion}--\ref{ex:plaplacian} will be considered in section \ref{sec:results}.  % HOPE
 
 
 \section{Constraint decomposition, the basic algorithm} \label{sec:cd}
@@ -278,22 +278,18 @@ e_i = \hat w_i - R_i u \in \cV_i \label{eq:ithupdate}
 \end{equation}
 is the update in $\cK_i$ then we may then write $w = u + \alpha \sum_i e_i$.  In particular, note that $u - R_i u + \hat w_i = u + e_i$; the \pr{parallel} version computes the updates $e_i$ independently.
 
-The convergence results in the next section require substantial damping in the parallel algorithm, i.e.~$\alpha \le 1/m$, as in \cite{Tai2003} as well, but the successive version can be shown to converge without damping ($\alpha=1$).  In Section \ref{sec:resultslocal} we demonstrate practical convergence for a larger range of $\alpha$ than suggested by the theory.  % HOPE
+The convergence results in the next section require substantial damping in the parallel algorithm, i.e.~$\alpha \le 1/m$, as in \cite{Tai2003} as well, but the successive version can be shown to converge without damping ($\alpha=1$).  In Section \ref{sec:results} we demonstrate practical convergence for a larger range of $\alpha$ than suggested by the theory.  % HOPE
 
-In Section \ref{sec:multilevel} we will convert the basic algorithm into a multilevel approach for an obstacle problem by choosing appropriate $\cK_i$ based on a FE triangulation.  However, in order that the algorithm has a practical and efficient implementation, we will require additional concepts when $f$ has any of the following properties: \emph{(i)} $f$ is defined only on $\cK$, \emph{(ii)} $f$ is nonlinear, or \emph{(iii)} $f$ is nonlocal.  The issue of practical implementation for such $f$ seems not to have been addressed by references which apply CD algorithms only to the classical obstacle problem \cite[in particular]{GraeserKornhuber2009,Tai2003}.  Consider the following example.
+In Section \ref{sec:multilevel} we will convert the basic algorithm into a multilevel approach for an obstacle problem by choosing appropriate $\cK_i$ based on a FE triangulation.  However, in order that the algorithm has a practical and efficient implementation, we will require additional concepts when $f$ has any of the following properties: \emph{(i)} $f$ is defined only on $\cK$, or \emph{(ii)} $f$ is nonlinear, or \emph{(iii)} $f$ is non-local.  The issue of practical implementation for such $f$ seems not to have been addressed by references which apply CD algorithms only to the classical obstacle problem \cite[in particular]{GraeserKornhuber2009,Tai2003}.  Consider the following example.
 
 \begin{example}  \label{ex:fnice} Suppose $f:\cV \to \cV'$ is linear and defined on all of $\cV$.  Furthermore suppose $f$ is local in the sense that a basis $\{\phi_i\}$ of $\cV_i$ exists with each support small in $\Omega$, and that $\ip{f(\phi_i)}{z}$ can be computed by an integral over the support of $\phi_i$.  (When $\cV$ is an FE space then this is the usual case for evaluating PDE weak forms over a basis of hat functions; see Section \ref{sec:multilevel}.)  Considering only the parallel algorithm, for simplicity, the VI over $\cK_i$ can be written as
 \begin{equation}
 \ip{f(\hat w_i - R_i u)}{v_i-\hat w_i} \ge \tilde g(v_i-\hat w_i) \label{eq:linearlocalvi}
 \end{equation}
-for all $v_i\in \cK_i$, where
-\begin{equation}
-\tilde g(z) = g(z) - \ip{f(u)}{z}. \label{eq:linearlocalrhs}
-\end{equation}
-Noting $e_i = \hat w_i - R_i u \in \cV_i \notin \cK$, in general, VI \eqref{eq:linearlocalvi} only makes sense because $f$ is defined over $\cV_i$.  Thus each subset problem \eqref{eq:linearlocalvi} can be solved using a stored residual $\ip{f(y)}{\cdot}$ in an updated source term.  In other words, because $f$ has all these nice properties, the solution of each VI problem can be computed by local, thus inexpensive, means.
+for all $v_i\in \cK_i$, where $\tilde g(z) = g(z) - \ip{f(u)}{z}$.  Noting $e_i = \hat w_i - R_i u \in \cV_i \notin \cK$, in general, VI \eqref{eq:linearlocalvi} only makes sense because $f$ is defined over $\cV_i$.  Thus each subset problem \eqref{eq:linearlocalvi} can be solved using a stored residual $\ip{f(y)}{\cdot}$ (in the updated source term) and incrementally by computations over the basis supports.  In other words, because $f$ has all these nice properties, the solution of each VI problem can be computed by inexpensive means.
 \end{example}
 
-A solver which would work for Example \ref{ex:fnice} has implementation efficiencies that are unavailable in general.  Additional ideas, like those in Section \ref{sec:multilevel}, are needed for practical application of CD methods to problems which are not close to the classical obstacle problem.  In particular, we will extend the basic algorithm to nonlinear $f:\cK\to \cV'$ by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}, and in Section \ref{sec:resultsnonlocal} we will apply the algorithm in a case where residual evaluation is substantially less simple than evaluation of a PDE weak form.
+A solver which would work for Example \ref{ex:fnice} has implementation efficiencies that are unavailable in general.  Additional ideas, like those in Section \ref{sec:multilevel}, are needed for practical application of CD methods to problems which are not close to the classical obstacle problem.  In particular, we will extend the basic algorithm to nonlinear $f:\cK\to \cV'$ by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}.  However, extending the algorithm to non-local residual functionals is a topic for future research.
 
 
 \section{Convergence of the basic algorithm} \label{sec:convergence}
@@ -333,14 +329,13 @@ FIXME triangulation
 FIXME state essentially Algorithm 4.7 \cite{GraeserKornhuber2009} but with $\text{V}(\nu_1,\nu_2)$ cycles which works for linear; observe that up-smoothing is more efficient; state the FAS version which has $O(m)$ residual evaluation complexity on each level
 
 
-\section{Results for local variational inequalities} \label{sec:resultslocal}
+\section{Results for local variational inequalities} \label{sec:results}
 
 FIXME
 
 
-\section{Results for a nonlocal variational inequality} \label{sec:resultsnonlocal}
+% A BRIDGE TOO FAR:  \section{Results for a nonlocal variational inequality} \label{sec:resultsnonlocal}
 
-FIXME
 
 
 \small
