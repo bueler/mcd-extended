@@ -220,7 +220,7 @@ for some $C>0$, and thus $f$ is $p$-coercive.  (The same $f$ is coercive if $1<p
 Then $F'(u) = f(u) - g$, $F$ is a convex functional (since $f$ is coercive), and, for any closed and convex $\cK\subset \cV$, VI problem \eqref{eq:vi} for $f$ and $g$ is equivalent to optimization problem \eqref{eq:minimization} for $F$.
 \end{example}
 
-However, not all VIs correspond to optimization.  We give two such examples next, a linear advection-diffusion problem and then a nonlinear porous-medium-type problem, both of which are important in applications.  Each example is preceded by a lemma.
+However, not all VIs correspond to optimization.  We give two such examples next, first a linear advection-diffusion problem and then a nonlinear porous-medium-type problem.  Each of these examples, which are important in applications, is preceded by a lemma.
 
 \begin{lemma}  \label{lem:advectionskew}  \cite{Elmanetal2014}\,  Suppose $\bX :\Omega \to \RR^d$ is a smooth and bounded vector field on $\Omega$ with zero divergence ($\Div \bX=0$).  For $u,v \in H^1(\Omega)$ let $s(u,v) = \int_\Omega (\bX \cdot \grad u) v\,dx$.  Then $s(v,v) = \frac{1}{2} \int_{\partial \Omega} v^2 \bX\cdot \bn\,dx$ where $\bn$ is the outward normal on $\partial \Omega$.
 \end{lemma}
@@ -239,13 +239,13 @@ Consider VI \eqref{eq:vi} for any closed and convex $\cK \subset \cV$ and any $g
                     &= \eps \int_\Omega |\grad u - \grad v|^2\,dx + \frac{1}{2} \int_{\partial_N\Omega} (u-v)^2 \bX\cdot\bn \ge \eps C \|u-v\|^2.
 \end{align*}
 Thus $f$ is 2-coercive, and so VI problem \eqref{eq:vi} is well-posed for any closed and convex $\cK \subset \cV$ and $g\in \cV'$.
-
-IF $\bX=0$ THEN IT IS OPTIMIZATION BUT OTHERWISE NOT
 \end{example}
 
-In the above example we have assumed zero boundary data for simplicity.  Reference \cite{ChangNakshatrala2017} considers the above problem subject to a nonnegativity constraint ($\cK = \{v\ge 0\}$).
+However, if $\bX \ne 0$ then \eqref{eq:vi} for the functional \eqref{eq:advectiondiffusion} is not a (constrained) minimization problem.  Indeed, the Jacobian of $f$ is the bilinear form $J_f(u,v) = \int_\Omega \eps \grad u \cdot \grad v\,dx - s(u,v)$.  For nonzero advection this is not symmetric, thus it cannot be the Hessian of an objective $F$.  (For $u,v$ which are zero on all of $\partial \Omega$, $J_f(u,v) - J_f(v,u) = -2 s(u,v)$, and we may then construct $u,v$ so this result is nonzero anywhere $\bX$ is nonzero.)
 
-\begin{example}  \label{ex:porousgeneralization}  FIXME
+References \cite{Bueler2021conservation,ChangNakshatrala2017} consider such advection-diffusion VI problems over $\cK = \{v\ge 0\}$.
+
+\begin{example}  \label{ex:porousgeneralization}  FIXME. I THINK THIS IS NOT GOING TO WORK.  COERCIVITY IS SUPER FRAGILE W.R.T. THIS CHANGE?
 \begin{equation}
 \ip{f(u)}{v} = \int_\Omega \phi(u) \grad u \cdot \grad v\,dx \label{eq:porousgeneralization}
 \end{equation}
