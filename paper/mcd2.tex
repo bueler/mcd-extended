@@ -166,7 +166,7 @@ Furthermore, truncated monotone approaches for nonlinear problems have, so far, 
 
 Suppose $\cV$ is a real, reflexive Banach space with norm $\|\cdot\|$ and topological dual space $\cV'$.  Denote the dual pairing of $\phi \in \cV'$ and $v\in\cV$ by $\ip{\phi}{v} = \phi(v)$, and note that $\|\phi\|_{\cV'} = \sup_{\|v\|=1} |\ip{\phi}{v}|$ defines a Banach space norm on $\cV'$.
 
-Let $\cK \subset \cV$ be a nonempty closed and convex subset, the \emph{constraint set}; elements of $\cK$ are said to be \emph{admissible}.  For a continuous \emph{residual functional} $f:\cK \to \cV'$ and \emph{source} $g\in \cV'$ we consider the following \emph{variational inequality} (VI) for the (exact) solution $u^*\in \cK$:
+Let $\cK \subset \cV$ be a nonempty closed and convex subset, the \emph{constraint set}; elements of $\cK$ are said to be \emph{admissible}.  For a continuous, but generally nonlinear, operator $f:\cK \to \cV'$ and \emph{source} $g\in \cV'$ we consider the following \emph{variational inequality} (VI) for the (exact) solution $u^*\in \cK$:
 \begin{equation}
 \ip{f(u^*)}{v-u^*} \ge \ip{g}{v-u^*} \qquad \text{for all } v\in \cK. \label{eq:vi}
 \end{equation}
@@ -274,6 +274,12 @@ v = \sum_{i=0}^{m-1} R_i v \qquad \text{if } v \in \cK.  \label{eq:constraintres
 \end{equation}
 A \emph{constraint decomposition} (CD) of $\cK$ is a choice of $\cV_i,\cK_i,R_i$ satisfying \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum}.
 
+\begin{figure}
+\includegraphics[width=0.55\textwidth]{genfigs/cartoon.pdf}
+\caption{A constraint decomposition (CD) in a one-sided obstacle problem with $\mathcal{K}=\{v\ge \psi\}$ looks something like this.}
+\label{fig:cartoon}
+\end{figure}
+
 In the Section \ref{sec:multilevel} we will introduce discretizations and describe practical algorithms, but the CDs in this section can apply at the level of the continuum problem.  The following two examples illustrate this for obstacle problems \cite{GraeserKornhuber2009}.   Example \ref{ex:domaindecomposition} is an overlapping domain decomposition and Example \ref{ex:frequencydecomposition} is a nonoverlapping frequency decomposition.  (The multilevel FE CD in Section \ref{sec:multilevel} approximately implements a frequency decomposition.)
 
 \begin{example}  \label{ex:domaindecomposition}  Consider a bounded domain $\Omega \subset \RR^d$, let $\cV = W_0^{k,p}(\Omega)$ for $k\ge 0$ and $p\ge 1$, and suppose the obstacle $\psi \in W^{k,p}(\Omega)$ satisfies $\psi|_{\partial \Omega} \le 0$.  Let $\cK = \{v \ge \psi\} \subset \cV$.  Suppose further that $\{\phi_i\}_{i=0}^{m-1}$ is a smooth partition of unity on $\Omega$, i.e.~so that $0 \le \phi_i\le 1$ and $\sum_i \phi_i = 1$, and let $\Omega_i$ be the support of $\phi_i$.  Let $\cV_i = \{w \in \cV:w|_{\Omega \setminus \Omega_i} =0 \}$, $\cK_i = \{v \in \cV_i: v \ge \phi_i \psi\}$, and $R_i(v) = \phi_i v$.  Then \eqref{eq:subspacedecomp}, \eqref{eq:constraintdecomp}, and \eqref{eq:constraintrestrictionsum} all hold.
@@ -303,7 +309,7 @@ We now state the basic CD algorithm as an iteration which solves VI problems ove
     $\hat w = \sum_i \hat w_i$ \\
     return $w=(1-\alpha) u + \alpha \hat w$
 \end{pseudo*}
-\caption{The basic constraint decomposition (CD) algorithm.}
+\caption{The basic constraint decomposition (CD) algorithm for VI problem \eqref{eq:vi}.}
 \label{alg:basiccd}
 \end{pseudofloat}
 
