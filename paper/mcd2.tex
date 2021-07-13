@@ -7,13 +7,13 @@
 \usepackage{longtable}
 \usepackage{booktabs}
 
-\usepackage[within=section]{newfloat}
-
 \usepackage{tikz}
 \usetikzlibrary{decorations.pathreplacing}
 
 \usepackage[kw]{pseudo}
 \pseudoset{left-margin=15mm,topsep=5mm,idfont=\texttt}
+
+\usepackage{float}
 
 % hyperref should be the last package we load
 \usepackage[pdftex,
@@ -118,8 +118,6 @@ urlcolor=black    % ...
 \newcommand{\supp}{\operatorname{supp}}
 \newcommand{\Span}{\operatorname{span}}
 
-\DeclareFloatingEnvironment[name=Pseudocode]{pcode}
-
 
 \begin{document}
 \title[On multilevel constraint decomposition methods]{On multilevel constraint decomposition methods \\ for nonlinear variational inequalities}
@@ -137,6 +135,10 @@ urlcolor=black    % ...
 
 \thispagestyle{empty}
 %\bigskip
+
+\newfloat{pseudofloat}{t}{xyz}[section]
+\floatname{pseudofloat}{Algorithm}
+
 
 \section{Introduction} \label{sec:intro}
 
@@ -284,8 +286,9 @@ In the Section \ref{sec:multilevel} we will introduce discretizations and descri
 
 In Example \ref{ex:domaindecomposition}, note that $\cK_i \not\subset \cK$ in many cases, for example if $\psi$ is positive over portions of $\Omega$ where the decomposition into overlapping subdomains $\Omega_i$ is nontrivial.  A similar comment applies in Example \ref{ex:frequencydecomposition}.
 
-We now state the basic CD algorithm as an iteration which solves VI problems over each set $\cK_i$.  (By contrast, algorithms in \cite{Tai2003} solve \emph{optimization} problems.)  There are parallel (additive) and successive (multiplicative) versions; these generalize the Jacobi and Gauss-Seidel iterations \cite{Greenbaum1997}, respectively.  Each starts from a current iterate $u \in \cK$ and computes a new iterate $w\in\cK$, an improved approximation of the solution $u^* \in \cK$ of VI problem \eqref{eq:vi}, according to a damping parameter $0<\alpha\le 1$.  If \pr{parallel} $=$ \text{\textbf{true}} then the \text{\textbf{for}} loop can be computed in any order.
+We now state the basic CD algorithm as an iteration which solves VI problems over each set $\cK_i$ (Algorithm \ref{alg:basiccd}).  (By contrast, algorithms in \cite{Tai2003} solve \emph{optimization} problems.)  There are parallel (additive) and successive (multiplicative) versions; these generalize the Jacobi and Gauss-Seidel iterations \cite{Greenbaum1997}, respectively.  Each starts from a current iterate $u \in \cK$ and computes a new iterate $w\in\cK$, an improved approximation of the solution $u^* \in \cK$ of VI problem \eqref{eq:vi}, according to a damping parameter $0<\alpha\le 1$.  If \pr{parallel} $=$ \text{\textbf{true}} then the \text{\textbf{for}} loop can be computed in any order.
 
+\begin{pseudofloat}
 \begin{pseudo*}
 \pr{cd}(0<\alpha\le 1, u\in\cK)\text{:} \\+
     if \pr{parallel}: \\+
@@ -300,6 +303,9 @@ We now state the basic CD algorithm as an iteration which solves VI problems ove
     $\hat w = \sum_i \hat w_i$ \\
     return $w=(1-\alpha) u + \alpha \hat w$
 \end{pseudo*}
+\caption{The basic constraint decomposition (CD) algorithm.}
+\label{alg:basiccd}
+\end{pseudofloat}
 
 The reader may confirm that, inside each boxed VI, the argument of $f$ is an element of $\cK$.  On the other hand, the expression $v_i - \hat w_i$ appears.  To clarify this situation, note that by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may write $v_i - \hat w_i$ as a difference of admissible vectors (i.e.~from $\cK$), namely
 \begin{align*}
