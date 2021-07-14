@@ -206,15 +206,28 @@ It is easy to see that if $f$ is $p$-coercive then it is monotone, strictly mono
 \begin{theorem}  \label{thm:viwellposed}  If $f:\cK \to \cV'$ is continuous and $p$-coercive (for $p>1$) then there exists a unique $u\in \cK$ solving VI \eqref{eq:vi}.
 \end{theorem}
 
+The following easy, but important, lemma follows directly from $p$-coercivity.  Along the way we define a new quantity $E(v,u^*)$ which is bounded below by a function of the norm error in $v$.  We will use this quantity in the proofs in Section \ref{sec:convergence}.
+
+\begin{lemma} \label{lem:normlike}  Suppose $f:\mathcal{K} \to \mathcal{V}'$ is $p$-coercive and $u^* \in \mathcal{K}$ solves \eqref{eq:vi}.  For $v \in \mathcal{K}$,
+\begin{equation}
+  E(v,u^*) = \ip{f(v)}{v-u^*} - g(v-u^*) \ge \kappa \|v-u^*\|^p.  \label{eq:normlike}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+\begin{align*}
+E(v,u^*) &= \ip{f(v)}{v-u^*} - \ip{f(u^*)}{v-u^*} + \ip{f(u^*)}{v-u^*} - g(v-u^*) \\
+   &\ge \kappa \|v-u^*\|^p + 0.  \qedhere
+\end{align*}
+\end{proof}
+
 When $f$ is monotone, VI \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  In fact, suppose $F:\cK \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cK \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ and $g=0$ if and only if
 \begin{equation}
 u^* = \operatorname{arg-min}_{v\in\cK} F(v) \label{eq:minimization}
 \end{equation}
 \cite[Proposition II.2.1]{EkelandTemam1976}.
 
-From now on $\Omega \subset \RR^d$ denotes a bounded, open set with smooth or piecewise-smooth (e.g.~polygonal) boundary.  Note that Sobolev spaces \cite{Evans2010} are denoted here by $W^{k,p}(\Omega)$, for $k$ an integer and $1\le p \le \infty$, with $W^{k,2}=H^k$ a Hilbert space.
-
-The CD methods of Tai \cite{Tai2003} address optimization problem \eqref{eq:minimization} under the hypothesis that $F'$ is coercive.  The following example includes the classical obstacle problem for the linear Laplacian \cite{GraeserKornhuber2009} and the obstacle problem for the $p$-Laplacian \cite{ChoeLewis1991}.
+The CD methods of Tai \cite{Tai2003} address optimization problem \eqref{eq:minimization} under the hypothesis that $F'$ is coercive.  The following example includes the classical obstacle problem for the linear Laplacian \cite{GraeserKornhuber2009} and the obstacle problem for the $p$-Laplacian \cite{ChoeLewis1991}.  Note that from now on $\Omega \subset \RR^d$ denotes a bounded, open set with smooth or piecewise-smooth (e.g.~polygonal) boundary.  Also, Sobolev spaces \cite{Evans2010} are denoted here by $W^{k,p}(\Omega)$, for $k$ an integer and $1\le p \le \infty$, with $W^{k,2}=H^k$ a Hilbert space.
 
 \begin{example}  \label{ex:plaplacian}  Suppose $a\in L^\infty(\Omega)$ such that $a(x)\ge a_0$ a.e.~for some constant $a_0>0$, and $p\ge 2$.  For $u,v \in \cV = W^{1,p}_0(\Omega)$ define $f:\cV \to \cV'$ by
 \begin{equation}
@@ -295,9 +308,9 @@ In the Section \ref{sec:multilevel} we will introduce discretizations and descri
 
 In Example \ref{ex:domaindecomposition}, note that $\cK_i \not\subset \cK$ in many cases, for example if $\psi$ is positive over portions of $\Omega$ where the decomposition into overlapping subdomains $\Omega_i$ is nontrivial.  A similar comment applies in Example \ref{ex:frequencydecomposition}.
 
-We now state the basic CD algorithm as an iteration which solves VI problems over each set $\cK_i$ (Algorithm \ref{alg:basiccd}).  (By contrast, algorithms in \cite{Tai2003} solve \emph{optimization} problems.)  There are parallel (additive) and successive (multiplicative) versions; these generalize the Jacobi and Gauss-Seidel iterations \cite{Greenbaum1997}, respectively.  Each starts from a current iterate $u \in \cK$ and computes a new iterate $w\in\cK$, an improved approximation of the solution $u^* \in \cK$ of VI problem \eqref{eq:vi}, according to a damping parameter $0<\alpha\le 1$.  If \pr{parallel} $=$ \text{\textbf{true}} then the \text{\textbf{for}} loop can be computed in any order.
+We now state the basic CD algorithm as an iteration which solves VI problems over each set $\cK_i$ (Algorithm \ref{alg:basiccd}).  (By contrast, algorithms in \cite{Tai2003} solve \emph{optimization} problems.)  There are parallel (additive) and successive (multiplicative) versions; these generalize the Jacobi and Gauss-Seidel iterations \cite{Greenbaum1997}, respectively.  Each starts from a current iterate $u \in \cK$ and computes a new iterate $w\in\cK$, an improved approximation of the solution $u^* \in \cK$ of VI problem \eqref{eq:vi}, according to a damping parameter $0<\alpha\le 1$.  For the parallel version the \text{\textbf{for}} loop can be computed in any order.
 
-\begin{pseudofloat}
+\begin{pseudofloat}[H]
 \begin{pseudo*}
 \pr{cd}(0<\alpha\le 1, u\in\cK)\text{:} \\+
     if \pr{parallel}: \\+
@@ -321,11 +334,14 @@ The reader may confirm that, inside each boxed VI, the argument of $f$ is an ele
 [u - R_i u + v_i] - [u - R_i u + \hat w_i] &= v_i - \hat w_i, \label{eq:admissibledifference} \\
 \left[\sum_{j<i} w_j + v_i + \sum_{j>i} R_j u\right] - \left[\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j u\right] &= v_i - \hat w_i,  \notag
 \end{align*}
-for the two versions, respectively.  In other words, we solve VI \eqref{eq:vi} over (parallel or successive) perturbations from the sets $\cK_i$.  In fact, if
+for the two versions, respectively.  In other words, we solve VI \eqref{eq:vi} over (parallel or successive) perturbations from the sets $\cK_i$.  In fact, if we define
 \begin{equation}
 e_i = \hat w_i - R_i u \in \cV_i \label{eq:ithupdate}
 \end{equation}
-is the update in $\cK_i$ then we may then write $w = u + \alpha \sum_i e_i$.  In particular, note that $u - R_i u + \hat w_i = u + e_i$; the \pr{parallel} version computes the updates $e_i$ independently.
+as the update in $\cK_i$ then we may then write $w = u + \alpha \sum_i e_i$.  In particular, note that $u - R_i u + \hat w_i = u + e_i$; the parallel version computes the updates $e_i$ independently.  Also note that for one iteration of the parallel version of the basic CD algorithm, from \eqref{eq:constraintrestrictionsum} and \eqref{eq:ithupdate} observe that
+\begin{equation}
+\hat w = u + \sum_{i=0}^{m-1} e_i = u^* + \sum_{i=0}^{m-1} \hat w_i - R_i u^*.  \label{eq:ithupdatefacts}
+\end{equation}
 
 The convergence results in the next section require substantial damping in the parallel algorithm, i.e.~$\alpha \le 1/m$, as in \cite{Tai2003} as well, but the successive version can be shown to converge without damping ($\alpha=1$).  In Section \ref{sec:results} we demonstrate practical convergence for a larger range of $\alpha$ than suggested by the theory.  % HOPE
 
@@ -345,13 +361,13 @@ A solver which would work for Example \ref{ex:fnice} has implementation efficien
 
 To prove the convergence of the basic algorithm we make two assumptions as follows.
 
-\begin{assumptions*}  \emph{Lipschitz restrictions}: There exists a constant $C_1>0$ so that
+\begin{assumptions*}  \emph{Totally Lipschitz restrictions}: There exists a constant $C_1>0$ so that
 \begin{equation}
 \left(\sum_{i=0}^{m-1} \|R_i u - R_i v\|^2\right)^{1/2} \le C_1 \|u-v\| \label{as:lipschitzrestrictions}
 \end{equation}
 for all $u,v\in\cK$.  \emph{Totally Lipschitz residual}: There exists $C_2>0$ so that
 \begin{equation}
-\sum_{i=0}^{m-1} \sum_{j=0}^{m-1} \left|\ip{f(w_{ij} + v_i) - f(w_{ij})}{y_i}\right| \le C_2 \left(\sum_{i=0}^{m-1} \|v_i\|^2\right)^{1/2} \left(\sum_{i=0}^{m-1} \|y_i\|^2\right)^{1/2} \label{as:totallylipschitzresidual}
+\sum_{i=0}^{m-1} \sum_{j=0}^{m-1} \left|\ip{f(w_{ij} + v_i) - f(w_{ij})}{y_i}\right| \le C_2 \left(\sum_{i=0}^{m-1} \|v_i\|^2\right)^{1/2} \left(\sum_{i=0}^{m-1} \|y_i\|^2\right)^{1/2} \label{as:lipschitzresidual}
 \end{equation}
 for all $w_{ij} \in \cK$ and $v_i,y_i \in \cV_i$ such that $w_{ij} + v_i \in \cK$ (for all $i,j$).  Note that the constants $C_1,C_2$ generally depend on $m$.
 \end{assumptions*}
@@ -365,7 +381,20 @@ Though the assumptions are technical in certain senses, the reader should note s
 % ASSUMING $f$ IS LIPSCHITZ WILL MAKE THE EXISTENCE OF C_2 CLEAR; SEE (14) IN \cite{TaiXu2002}
 \end{itemize}
 
-FIXME
+From the assumptions and the above definitions we have the following core lemma from which a convergence proof for the parallel algorithm is built.
+
+\begin{lemma} \label{lem:core}  Suppose $u^* \in \mathcal{K}$ solves \eqref{eq:vi}.  Suppose the constraint decomposition $\mathcal{V}_i,\mathcal{K}_i,R_i$ satisfies \eqref{as:lipschitzrestrictions}, and suppose $f$ satisfies \eqref{as:lipschitzresidual} as well.  Suppose $\hat w$ is computed in the parallel version of Algorithm \ref{alg:basiccd}.  Then
+\begin{equation}
+   \ip{f(\hat w)}{\hat w - u^*} \le C_2 \sum_{i=0}^{m-1} \|e_i\|^2 + C_1 C_2 \left(\sum_{i=0}^{m-1} \|e_i\|^2\right)^{1/2} \|u-u^*\|. \label{eq:core}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+FIXME: (25) in \cite{Tai2003}
+\end{proof}
+
+Note that the coercivity of $f$ is not actually used in proving Lemma \ref{lem:core}.
+
 
 \section{Finite elements and multilevel constraint decomposition} \label{sec:multilevel}
 
