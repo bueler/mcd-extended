@@ -167,7 +167,7 @@ Truncated monotone approaches for nonlinear problems have, so far, applied a glo
 
 \section{Coercive variational inequalities} \label{sec:vi}
 
-Suppose $\cV$ is a real, reflexive Banach space with norm $\|\cdot\|$ and topological dual space $\cV'$.  Denote the dual pairing of $\phi \in \cV'$ and $v\in\cV$ by $\ip{\phi}{v} = \phi(v)$, and note that $\|\phi\|_{\cV'} = \sup_{\|v\|=1} |\ip{\phi}{v}|$ defines a Banach space norm on $\cV'$.
+Suppose $\cV$ is a real, reflexive Banach space with norm $\|\cdot\|$ and topological dual space $\cV'$.  Denote the dual pairing of $\phi \in \cV'$ and $v\in\cV$ by $\ip{\phi}{v} = \phi(v)$, and note that $\|\phi\|_{\cV'} = \sup_{\|v\|=1} |\ip{\phi}{v}|$ defines a (Banach space) norm on $\cV'$.
 
 Let $\cK \subset \cV$ be a nonempty closed and convex subset, the \emph{constraint set}; elements of $\cK$ are said to be \emph{admissible}.  For a continuous, but generally nonlinear, operator $f:\cK \to \cV'$ and \emph{source} $g\in \cV'$ we consider the following \emph{variational inequality} (VI) for the (exact) solution $u^*\in \cK$:
 \begin{equation}
@@ -175,7 +175,7 @@ Let $\cK \subset \cV$ be a nonempty closed and convex subset, the \emph{constrai
 \end{equation}
 Because $f$ is a (generally) nonlinear map, $g$ is not strictly needed, but its presence is helpful to the algorithms of Section \ref{sec:multilevel}.  (By redefining $f$ we may take $g=0$.)
 
-VI \eqref{eq:vi} generalizes the nonlinear system of equations $f(u^*)=g$ from a vector space $\cV$ to the constrained case (over $\cK$).  Informally, if we conceptualize the dual pairing as an inner product, then \eqref{eq:vi} says that the angle between $f(u^*)-g$ and any arbitrary vector $v-u$ pointing from $u$ into $\cK$ is at most $90^\circ$.  That is, \eqref{eq:vi} says that $f(u^*)-g$ points directly into $\cK$ if $u^* \in\partial\cK$, while if $u^* \in \cK^\circ$ (interior) then \eqref{eq:vi} implies $f(u^*)=g$.
+VI \eqref{eq:vi} generalizes the nonlinear system of equations $f(u^*)=g$ from a vector space $\cV$ to the constrained case (over $\cK$).  Informally, if we conceptualize the dual pairing as an inner product then \eqref{eq:vi} says that the angle between $f(u^*)-g$ and any arbitrary vector $v-u$ pointing from $u$ into $\cK$ is at most $90^\circ$.  That is, \eqref{eq:vi} says that $f(u^*)-g$ points directly into $\cK$ if $u^* \in\partial\cK$.  Furthermore, if $u^* \in \cK^\circ$ (interior) then \eqref{eq:vi} implies $f(u^*)=g$.
 
 The following definitions are standard \cite{KinderlehrerStampacchia1980}.
 
@@ -187,11 +187,12 @@ The following definitions are standard \cite{KinderlehrerStampacchia1980}.
 \begin{equation}
 \frac{\ip{f(u)-f(w)}{u-w}}{\|u-w\|} \to +\infty \qquad \text{as } \|u\|\to +\infty. \label{eq:coercive}
 \end{equation}
+We say VI \eqref{eq:vi} is (\emph{strictly}) \emph{monotone} if $f$ is (strictly) monotone, and likewise for \emph{coercive}.
 \end{definition}
 
-It is well-known that if $f:\cK \to \cV'$ is continuous, monotone, and coercive then VI \eqref{eq:vi} has a solution \cite[Corollary III.1.8]{KinderlehrerStampacchia1980}, and also that the solution $u^* \in \cK$ is unique if $f$ is strictly monotone.  The condition of continuity can be weakened to only apply on finite-dimensional subspaces \cite{KinderlehrerStampacchia1980}, but the stronger condition will apply in our examples.  As in the calculus of variations \cite{Evans2010}, coercivity permits a compactness argument even for unbounded sets $\cK$; recall that the bounded, closed subsets of a reflexive Banach space are weakly compact.
+It is well-known that if $f:\cK \to \cV'$ is continuous, monotone, and coercive then VI \eqref{eq:vi} has a solution \cite[Corollary III.1.8]{KinderlehrerStampacchia1980}, and also that the solution $u^* \in \cK$ is unique when $f$ is strictly monotone.  As in the calculus of variations \cite{Evans2010}, coercivity permits a compactness argument for unbounded sets $\cK$; recall that the bounded, closed subsets of a reflexive Banach space are weakly compact.  Note that the condition of continuity can be weakened to only apply on finite-dimensional subspaces \cite{KinderlehrerStampacchia1980}, but the stronger condition will apply in our examples.
 
-The VIs solved in this paper satisfy a stronger form of coercivity than \eqref{eq:coercive}.
+The coercive VIs solved in this paper satisfy a stronger inequality than \eqref{eq:coercive}.
 
 \begin{definition}  Let $p>1$.  The map $f:\cK \to \cV'$ is \emph{$p$-coercive} if there exists $\kappa>0$ such that
 \begin{equation}
@@ -200,63 +201,62 @@ The VIs solved in this paper satisfy a stronger form of coercivity than \eqref{e
 (Note \cite{Tai2003} uses ``coercive'' for $2$-coercive.)
 \end{definition}
 
-It is easy to see that if $f$ is $p$-coercive then it is monotone, strictly monotone, and coercive, and thus the following result, which states that the $p$-coercive VI problems considered in this paper are well-posed, holds.
+It is easy to see that if $f$ is $p$-coercive then it is monotone, strictly monotone, and coercive, and thus the following result holds.  It states that the $p$-coercive VI problems considered in this paper are well-posed.
 
 \begin{theorem}  \label{thm:viwellposed}  If $f:\cK \to \cV'$ is continuous and $p$-coercive (for $p>1$) then there exists a unique $u\in \cK$ solving VI \eqref{eq:vi}.
 \end{theorem}
 
-When $f$ is monotone, VI \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  In fact, suppose $F:\cK \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cK \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, Proposition II.2.1 in the same reference shows that if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ (and $g=0$) if and only if
+When $f$ is monotone, VI \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  In fact, suppose $F:\cK \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cK \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ and $g=0$ if and only if
 \begin{equation}
-u^* = \operatorname{arg-min}_{v\in\cK} F(v). \label{eq:minimization}
+u^* = \operatorname{arg-min}_{v\in\cK} F(v) \label{eq:minimization}
 \end{equation}
+\cite[Proposition II.2.1]{EkelandTemam1976}.
 
-From now on $\Omega \subset \RR^d$ denotes a bounded, open set with smooth or piecewise-smooth (e.g.~polygonal) boundary.  Note that Sobolev spaces \cite{Evans2010} are denoted here by $W^{k,p}(\Omega)$, with Hilbert-space cases denoted $W^{k,2}=H^k$.
+From now on $\Omega \subset \RR^d$ denotes a bounded, open set with smooth or piecewise-smooth (e.g.~polygonal) boundary.  Note that Sobolev spaces \cite{Evans2010} are denoted here by $W^{k,p}(\Omega)$, for $k$ an integer and $1\le p \le \infty$, with $W^{k,2}=H^k$ a Hilbert space.
 
-Many numerical solvers for VIs, including the CD methods of Tai \cite{Tai2003}, address optimization problem \eqref{eq:minimization} under the hypothesis that $F'$ is coercive.  The following example includes the classical obstacle problem \cite{GraeserKornhuber2009} and the obstacle problem for the $p$-Laplacian \cite{ChoeLewis1991}.
+The CD methods of Tai \cite{Tai2003} address optimization problem \eqref{eq:minimization} under the hypothesis that $F'$ is coercive.  The following example includes the classical obstacle problem for the linear Laplacian \cite{GraeserKornhuber2009} and the obstacle problem for the $p$-Laplacian \cite{ChoeLewis1991}.
 
 \begin{example}  \label{ex:plaplacian}  Suppose $a\in L^\infty(\Omega)$ such that $a(x)\ge a_0$ a.e.~for some constant $a_0>0$, and $p\ge 2$.  For $u,v \in \cV = W^{1,p}_0(\Omega)$ define $f:\cV \to \cV'$ by
 \begin{equation}
 \ip{f(u)}{v} = \int_\Omega a(x) |\grad u|^{p-2} \grad u \cdot \grad v\,dx. \label{eq:plaplacian}
 \end{equation}
-Now, if $x,y\in\RR^d$ then $(|x|^{p-2} x - |y|^{p-2} y)\cdot (x-y) \ge 2^{2-p} |x-y|^p$ \cite[see Appendix A and references therein]{Bueler2021conservation}.  It follows from the Poincar\'e inequality that
+Now, if $x,y\in\RR^d$ then $(|x|^{p-2} x - |y|^{p-2} y)\cdot (x-y) \ge 2^{2-p} |x-y|^p$ \cite[see Appendix A and references therein]{Bueler2021conservation}.  Thus it follows from the Poincar\'e inequality that
     $$\ip{f(u) - f(v)}{u-v} \ge 2^{2-p} a_0 \|\grad u - \grad v\|_p^p \ge 2^{2-p} a_0 C \|u-v\|^p$$
-for some $C>0$, and thus $f$ is $p$-coercive.  (The same $f$ is coercive if $1<p<2$ but the proof is somewhat different \cite[Theorem 4.4]{Bueler2021conservation}.)  Also, for $g\in\cV'$ define
+for some $C>0$, and thus $f$ is $p$-coercive.  (The map in \eqref{eq:plaplacian} is coercive if $1<p<2$ but the proof is somewhat different \cite[Theorem 4.4]{Bueler2021conservation}; in Section \ref{sec:results} we need only the $p\ge 2$ case.)  For $g\in\cV'$ define
     $$F(u) = \int_\Omega \frac{a(x)}{p} |\grad u|^p\,dx - g(u).$$
-Then $F'(u) = f(u) - g$, $F$ is a convex functional (since $f$ is coercive), and, for any closed and convex $\cK\subset \cV$, VI problem \eqref{eq:vi} for $f$ and $g$ is equivalent to optimization problem \eqref{eq:minimization} for $F$.
+Then $F'(u) = f(u) - g$, $F$ is a convex functional (since $f$ is coercive), and, for any closed and convex $\cK\subset \cV$, VI problem \eqref{eq:vi} for is equivalent to optimization problem \eqref{eq:minimization}.
 \end{example}
 
-However, not all VIs correspond to optimization.  We give two such examples next, first a linear advection-diffusion problem and then a nonlinear porous-medium-type problem.  Each of these examples, which are important in applications, is preceded by a lemma.
+However, not all VIs arise from optimization problems.  We give two such examples next, first a linear advection-diffusion problem, one which is coercive, and then a nonlinear porous-medium-type problem, which is not.  Each of these examples is important in applications.  The first is preceded by a lemma.
 
-\begin{lemma}  \label{lem:advectionskew}  \cite{Elmanetal2014}\,  Suppose $\bX :\Omega \to \RR^d$ is a smooth and bounded vector field on $\Omega$ with zero divergence ($\Div \bX=0$).  For $u,v \in H^1(\Omega)$ let $s(u,v) = \int_\Omega (\bX \cdot \grad u) v\,dx$.  Then $s(v,v) = \frac{1}{2} \int_{\partial \Omega} v^2 \bX\cdot \bn\,dx$ where $\bn$ is the outward normal on $\partial \Omega$.
+\begin{lemma}  \label{lem:advectionskew}  \cite{Elmanetal2014}\,  Suppose $\bX :\Omega \to \RR^d$ is a smooth and bounded vector field on $\Omega$ with zero divergence ($\Div \bX=0$).  For $u,v \in H^1(\Omega)$ let $b(u,v) = \int_\Omega (\bX \cdot \grad u) v\,dx$.  Then $b(u,u) = \frac{1}{2} \int_{\partial \Omega} u^2 \bX\cdot \bn\,dx$ where $\bn$ is the outward normal on $\partial \Omega$.
 \end{lemma}
 
 \begin{proof}
-Integration by parts gives $s(u,v) = - s(v,u) + \int_{\partial \Omega} uv \bX\cdot \bn\,dx$, so the result follows.
+Integration by parts gives $b(u,v) = - b(v,u) + \int_{\partial \Omega} uv \bX\cdot \bn\,dx$, so the result follows.
 \end{proof}
 
-\begin{example}  \label{ex:advectiondiffusion}  Suppose $\partial\Omega$ is partitioned into Dirichlet and Neumann portions, i.e.~$\partial\Omega = \partial_D\Omega \cup \partial_N\Omega$, with $\partial_D\Omega$ of positive measure.  Let $\cV = H_0^1(\Omega)$ be the space of functions with value zero on $\partial_D\Omega$.  (For simplicity we consider zero boundary data.)  Choose a smooth and bounded velocity field $\bX$ on $\Omega$ such that $\Div \bX=0$, but additionally assume outward flow on the Neumann boundary, i.e.~$\bX \cdot \bn \ge 0$ at points of $\partial_N\Omega$.  For $u,v \in \cV = H_0^1(\Omega)$ and $\eps>0$ define
+\begin{example}  \label{ex:advectiondiffusion}  Suppose $\partial\Omega$ is partitioned into Dirichlet and Neumann portions, i.e.~$\partial\Omega = \partial_D\Omega \cup \partial_N\Omega$, with $\partial_D\Omega$ of positive measure.  Let $\cV = H_0^1(\Omega)$ be the space of functions with value zero on $\partial_D\Omega$.  (For simplicity we consider zero boundary data.)  Consider a smooth and bounded velocity field $\bX$ on $\Omega$ such that $\Div \bX=0$, but additionally assume that the flow is outward on the Neumann boundary, i.e.~$\bX \cdot \bn \ge 0$ at points of $\partial_N\Omega$.  For $u,v \in \cV = H_0^1(\Omega)$ and $\eps>0$ define
 \begin{equation}
 \ip{f(u)}{v} = \int_\Omega \eps \grad u \cdot \grad v - (\bX \cdot \grad u) v\,dx. \label{eq:advectiondiffusion}
 \end{equation}
-Consider VI \eqref{eq:vi} for any closed and convex $\cK \subset \cV$ and any $g\in\cV'$.  It is easy to see that $|\ip{f(u)}{v}| \le (\eps + \|\bX\|_\infty) \|u\| \|v\|$, thus that $f:\cK \to \cV'$ is continuous.  On the other hand, by Lemma \ref{lem:advectionskew}, which says that $s(u,v)$ is skew-symmetric up to a nonnegative addition, and by the outward flow assumption and the Poincar\'e inequality,
+Consider VI \eqref{eq:vi} for any closed and convex $\cK \subset \cV$ and any $g\in\cV'$.  It is easy to see that $|\ip{f(u)}{v}| \le (\eps + \|\bX\|_\infty) \|u\| \|v\|$, thus that $f:\cK \to \cV'$ is continuous (and Lipschitz).  On the other hand, Lemma \ref{lem:advectionskew} says that $s(u,v)$ is skew-symmetric up to a nonnegative term.  However, by the outward flow assumption and the Poincar\'e inequality,
 \begin{align*}
-\ip{f(u)-f(v)}{u-v} &= \eps \int_\Omega |\grad u - \grad v|^2\,dx + s(u-v,u-v) \\
+\ip{f(u)-f(v)}{u-v} &= \eps \int_\Omega |\grad u - \grad v|^2\,dx + b(u-v,u-v) \\
                     &= \eps \int_\Omega |\grad u - \grad v|^2\,dx + \frac{1}{2} \int_{\partial_N\Omega} (u-v)^2 \bX\cdot\bn \ge \eps C \|u-v\|^2.
 \end{align*}
 Thus $f$ is 2-coercive, and so VI problem \eqref{eq:vi} is well-posed for any closed and convex $\cK \subset \cV$ and $g\in \cV'$.
 \end{example}
 
-However, if $\bX \ne 0$ then \eqref{eq:vi} for the functional \eqref{eq:advectiondiffusion} is not a (constrained) minimization problem.  Indeed, the Jacobian of $f$ is the bilinear form $J_f(u,v) = \int_\Omega \eps \grad u \cdot \grad v\,dx - s(u,v)$.  For nonzero advection this is not symmetric, thus it cannot be the Hessian of an objective $F$.  (For $u,v$ which are zero on all of $\partial \Omega$, $J_f(u,v) - J_f(v,u) = -2 s(u,v)$, and we may then construct $u,v$ so this result is nonzero anywhere $\bX$ is nonzero.)
+If $\bX \ne 0$ then VI \eqref{eq:vi} for $f$ in \eqref{eq:advectiondiffusion} is not a (constrained) minimization problem.  Indeed, the Jacobian of $f$, namely the bilinear form $J_f(u,v) = \int_\Omega \eps \grad u \cdot \grad v\,dx - b(u,v)$, is not symmetric in that case  (For $u,v$ which are zero on all of $\partial \Omega$, $J_f(u,v) - J_f(v,u) = -2 b(u,v)$, and we may then construct $u,v$ so this result is nonzero anywhere $\bX$ is nonzero.)  Thus $f$ in \eqref{eq:advectiondiffusion} cannot be the Hessian of a scalar objective $F$.  References \cite{Bueler2021conservation,ChangNakshatrala2017} consider such advection-diffusion VI problems over $\cK = \{v\ge 0\}$.
 
-References \cite{Bueler2021conservation,ChangNakshatrala2017} consider such advection-diffusion VI problems over $\cK = \{v\ge 0\}$.
-
-\begin{example}  \label{ex:porous}  FIXME. I THINK THIS IS NOT GOING TO WORK.  COERCIVITY IS SUPER FRAGILE W.R.T. THIS CHANGE?
+\begin{example}  \label{ex:porous}  FIXME
 \begin{equation}
 \ip{f(u)}{v} = \int_\Omega \phi(u) \grad u \cdot \grad v\,dx \label{eq:porous}
 \end{equation}
 \end{example}
 
-Examples \ref{ex:advectiondiffusion} and \ref{ex:porous} are VI problems which do not arise from optimization.  Further examples are in ice sheet models \cite{Calvoetal2002,JouvetBueler2012} and other geophysical fluids \cite{Bueler2021conservation}.  Numerical solver performance for Examples \ref{ex:advectiondiffusion}--\ref{ex:plaplacian} will be considered in section \ref{sec:results}.  % HOPE
+Numerical solver performance for Examples \ref{ex:plaplacian}, \ref{ex:advectiondiffusion}, and \ref{ex:porous} will be considered in Section \ref{sec:results}.  Further examples of nonlinear VI problems appear in ice sheet models \cite{Calvoetal2002,JouvetBueler2012} and other geophysical fluids \cite{Bueler2021conservation}.
 
 
 \section{Constraint decomposition, the basic algorithm} \label{sec:cd}
@@ -277,9 +277,9 @@ v = \sum_{i=0}^{m-1} R_i v \qquad \text{if } v \in \cK.  \label{eq:constraintres
 \end{equation}
 A \emph{constraint decomposition} (CD) of $\cK$ is a choice of $\cV_i,\cK_i,R_i$ satisfying \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum}.
 
-\begin{figure}
+\begin{figure}[h]
 \includegraphics[width=0.55\textwidth]{genfigs/cartoon.pdf}
-\caption{A constraint decomposition (CD) in a one-sided obstacle problem with $\mathcal{K}=\{v\ge \psi\}$ looks something like this.}
+\caption{A constraint decomposition (CD) in a one-sided obstacle problem ($\mathcal{K}=\{v\ge \psi\}$) might like this if $\mathcal{V}$ were 2-dimensional.}
 \label{fig:cartoon}
 \end{figure}
 

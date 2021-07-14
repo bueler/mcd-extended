@@ -18,7 +18,7 @@ def makeaxes(xmin, xmax, ymin, ymax):
     plt.plot(zero, y, 'k', lw = 1.0)
 
 plt.figure(figsize=(8, 6))
-makeaxes(-0.25, 1.25, -0.1, 0.85)
+makeaxes(-0.25, 1.2, -0.1, 0.8)
 plt.text(-0.05, -0.07, r'$0$', fontsize=fsize)
 
 psi1 = 0.2
