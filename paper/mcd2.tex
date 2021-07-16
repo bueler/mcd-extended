@@ -206,28 +206,13 @@ It is easy to see that if $f$ is $p$-coercive then it is monotone, strictly mono
 \begin{theorem}  \label{thm:viwellposed}  If $f:\cK \to \cV'$ is continuous and $p$-coercive (for $p>1$) then there exists a unique $u\in \cK$ solving VI \eqref{eq:vi}.
 \end{theorem}
 
-The following easy, but important, lemma follows directly from $p$-coercivity.  Along the way we define a new quantity $E(v,u^*)$ which is bounded below by a function of the norm error in $v$.  We will use this quantity in the proofs in Section \ref{sec:convergence}.
-
-\begin{lemma} \label{lem:normlike}  Suppose $f:\mathcal{K} \to \mathcal{V}'$ is $p$-coercive and $u^* \in \mathcal{K}$ solves \eqref{eq:vi}.  For $v \in \mathcal{K}$,
+When $f$ is monotone VI \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  Suppose $F:\cK \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cK \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, \cite[Proposition II.2.1]{EkelandTemam1976} shows that if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ and $g=0$ if and only if
 \begin{equation}
-  E(v,u^*) = \ip{f(v)}{v-u^*} - g(v-u^*) \ge \kappa \|v-u^*\|^p.  \label{eq:normlike}
+u^* = \operatorname{arg-min}_{v\in\cK} F(v). \label{eq:minimization}
 \end{equation}
-\end{lemma}
+The CD methods of Tai \cite{Tai2003} address problem \eqref{eq:minimization} under the hypothesis that $F'$ is coercive.
 
-\begin{proof}
-\begin{align*}
-E(v,u^*) &= \ip{f(v)}{v-u^*} - \ip{f(u^*)}{v-u^*} + \ip{f(u^*)}{v-u^*} - g(v-u^*) \\
-   &\ge \kappa \|v-u^*\|^p + 0.  \qedhere
-\end{align*}
-\end{proof}
-
-When $f$ is monotone, VI \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  In fact, suppose $F:\cK \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cK \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ and $g=0$ if and only if
-\begin{equation}
-u^* = \operatorname{arg-min}_{v\in\cK} F(v) \label{eq:minimization}
-\end{equation}
-\cite[Proposition II.2.1]{EkelandTemam1976}.
-
-The CD methods of Tai \cite{Tai2003} address optimization problem \eqref{eq:minimization} under the hypothesis that $F'$ is coercive.  The following example includes the classical obstacle problem for the linear Laplacian \cite{GraeserKornhuber2009} and the obstacle problem for the $p$-Laplacian \cite{ChoeLewis1991}.  Note that from now on $\Omega \subset \RR^d$ denotes a bounded, open set with smooth or piecewise-smooth (e.g.~polygonal) boundary.  Also, Sobolev spaces \cite{Evans2010} are denoted here by $W^{k,p}(\Omega)$, for $k$ an integer and $1\le p \le \infty$, with $W^{k,2}=H^k$ a Hilbert space.
+The following example includes the classical obstacle problem for the linear Laplacian \cite{GraeserKornhuber2009} and the obstacle problem for the $p$-Laplacian \cite{ChoeLewis1991}.  Note that from now on $\Omega \subset \RR^d$ denotes a bounded, open set with smooth or piecewise-smooth (e.g.~polygonal) boundary.  Also, Sobolev spaces \cite{Evans2010} are denoted by $W^{k,p}(\Omega)$, for integer $k$ and $1\le p \le \infty$, with $W^{k,2}$ denoted by $H^k$.
 
 \begin{example}  \label{ex:plaplacian}  Suppose $a\in L^\infty(\Omega)$ such that $a(x)\ge a_0$ a.e.~for some constant $a_0>0$, and $p\ge 2$.  For $u,v \in \cV = W^{1,p}_0(\Omega)$ define $f:\cV \to \cV'$ by
 \begin{equation}
@@ -235,12 +220,12 @@ The CD methods of Tai \cite{Tai2003} address optimization problem \eqref{eq:mini
 \end{equation}
 Now, if $x,y\in\RR^d$ then $(|x|^{p-2} x - |y|^{p-2} y)\cdot (x-y) \ge 2^{2-p} |x-y|^p$ \cite[see Appendix A and references therein]{Bueler2021conservation}.  Thus it follows from the Poincar\'e inequality that
     $$\ip{f(u) - f(v)}{u-v} \ge 2^{2-p} a_0 \|\grad u - \grad v\|_p^p \ge 2^{2-p} a_0 C \|u-v\|^p$$
-for some $C>0$, and thus $f$ is $p$-coercive.  (The map in \eqref{eq:plaplacian} is coercive if $1<p<2$ but the proof is somewhat different \cite[Theorem 4.4]{Bueler2021conservation}; in Section \ref{sec:results} we need only the $p\ge 2$ case.)  For $g\in\cV'$ define
+for some $C>0$, and thus $f$ is $p$-coercive.  (The map in \eqref{eq:plaplacian} is coercive if $1<p<2$, but the proof is somewhat different \cite[Theorem 4.4]{Bueler2021conservation}, and in Section \ref{sec:results} we need only the $p\ge 2$ case.)  For $g\in\cV'$ define
     $$F(u) = \int_\Omega \frac{a(x)}{p} |\grad u|^p\,dx - g(u).$$
 Then $F'(u) = f(u) - g$, $F$ is a convex functional (since $f$ is coercive), and, for any closed and convex $\cK\subset \cV$, VI problem \eqref{eq:vi} for is equivalent to optimization problem \eqref{eq:minimization}.
 \end{example}
 
-However, not all VIs arise from optimization problems.  We give two such examples next, first a linear advection-diffusion problem, one which is coercive, and then a nonlinear porous-medium-type problem, which is not.  Each of these examples is important in applications.  The first is preceded by a lemma.
+However, not all VI problems arise from optimization.  We give two such examples next, first a coercive and linear advection-diffusion problem, and then a nonlinear porous-medium-type problem.  Each of these examples is important in applications.  The first is preceded by a lemma.
 
 \begin{lemma}  \label{lem:advectionskew}  \cite{Elmanetal2014}\,  Suppose $\bX :\Omega \to \RR^d$ is a smooth and bounded vector field on $\Omega$ with zero divergence ($\Div \bX=0$).  For $u,v \in H^1(\Omega)$ let $b(u,v) = \int_\Omega (\bX \cdot \grad u) v\,dx$.  Then $b(u,u) = \frac{1}{2} \int_{\partial \Omega} u^2 \bX\cdot \bn\,dx$ where $\bn$ is the outward normal on $\partial \Omega$.
 \end{lemma}
@@ -261,7 +246,7 @@ Consider VI \eqref{eq:vi} for any closed and convex $\cK \subset \cV$ and any $g
 Thus $f$ is 2-coercive, and so VI problem \eqref{eq:vi} is well-posed for any closed and convex $\cK \subset \cV$ and $g\in \cV'$.
 \end{example}
 
-If $\bX \ne 0$ then VI \eqref{eq:vi} for $f$ in \eqref{eq:advectiondiffusion} is not a (constrained) minimization problem.  Indeed, the Jacobian of $f$, namely the bilinear form $J_f(u,v) = \int_\Omega \eps \grad u \cdot \grad v\,dx - b(u,v)$, is not symmetric in that case  (For $u,v$ which are zero on all of $\partial \Omega$, $J_f(u,v) - J_f(v,u) = -2 b(u,v)$, and we may then construct $u,v$ so this result is nonzero anywhere $\bX$ is nonzero.)  Thus $f$ in \eqref{eq:advectiondiffusion} cannot be the Hessian of a scalar objective $F$.  References \cite{Bueler2021conservation,ChangNakshatrala2017} consider such advection-diffusion VI problems over $\cK = \{v\ge 0\}$.
+If $\bX \ne 0$ then VI \eqref{eq:vi} for $f$ in \eqref{eq:advectiondiffusion} is not a (constrained) minimization problem.  Indeed, the Jacobian of $f$, namely the bilinear form $J_f(u,v) = \int_\Omega \eps \grad u \cdot \grad v\,dx - b(u,v)$, is not symmetric in that case.\footnote{Assume $\bX \ne 0$ is continuous for simplicity.  For $u,v$ which are zero on $\partial \Omega$, $J_f(u,v) - J_f(v,u) = -2 b(u,v)$.  There exist $u,v$ so $b(u,v)$ is nonzero; construct $u,v$ locally near some point where $\bX$ is nonzero.}  Thus $f$ in \eqref{eq:advectiondiffusion} cannot be the Hessian of a scalar objective $F$.  References \cite{Bueler2021conservation,ChangNakshatrala2017} consider such advection-diffusion VI problems over $\cK = \{v\ge 0\}$.
 
 \begin{example}  \label{ex:porous}  FIXME
 \begin{equation}
@@ -274,7 +259,7 @@ Numerical solver performance for Examples \ref{ex:plaplacian}, \ref{ex:advection
 
 \section{Constraint decomposition, the basic algorithm} \label{sec:cd}
 
-Suppose there are $m<\infty$ subspaces $\cV_i \subset \cV$ so that the sum
+Suppose there are $m<\infty$ closed subspaces $\cV_i \subset \cV$ so that the sum
 \begin{equation}
 \cV = \sum_{i=0}^{m-1} \cV_i \label{eq:subspacedecomp}
 \end{equation}
@@ -282,22 +267,28 @@ holds in the sense that if $w \in \cV$ then there exist $w_i \in \cV_i$ so that 
 \begin{equation}
 \cK = \sum_{i=0}^{m-1} \cK_i. \label{eq:constraintdecomp}
 \end{equation}
-The sum in \eqref{eq:constraintdecomp} is required to hold in two senses: \emph{(i)}~if $w \in \cK$ then there exist $w_i \in \cK_i$ so that $w = \sum_i w_i$, and \emph{(ii)}~if $z_i \in \cK_i$ for each $i$ then $\sum_i z_i \in \cK$.  (The latter sense for \eqref{eq:subspacedecomp} is automatic because the $\cV_i$ are subspaces.)  Note that neither decomposition \eqref{eq:subspacedecomp} or \eqref{eq:constraintdecomp} is required to be unique in any sense.  Also, $\cK_i \not\subset \cK$ in many applications; see the cartoon in Figure \ref{fig:cartoon}.  Finally, for each $\cK_i$ we assume that there are bounded, (generally) nonlinear restriction operators $R_i : \cK \to \cK_i$ such that
+The sum in \eqref{eq:constraintdecomp} is required to hold in two senses: \emph{(i)}~if $w \in \cK$ then there exist $w_i \in \cK_i$ so that $w = \sum_i w_i$, and \emph{(ii)}~if $z_i \in \cK_i$ for each $i$ then $\sum_i z_i \in \cK$.\footnote{Sense \emph{(ii)} for \eqref{eq:subspacedecomp} is automatic because the $\cV_i$ are subspaces.}
+
+Note that neither decomposition \eqref{eq:subspacedecomp} or \eqref{eq:constraintdecomp} is required to be unique.  Also, $\cK_i \not\subset \cK$ in many applications; see the cartoon in Figure \ref{fig:cartoon}.
+
+Finally, for each $\cK_i$ we assume that there are bounded, (generally) nonlinear restriction operators $R_i : \cK \to \cK_i$ such that if $v \in \cK$ then
 \begin{equation}
-v = \sum_{i=0}^{m-1} R_i v \qquad \text{if } v \in \cK.  \label{eq:constraintrestrictionsum}
+v = \sum_{i=0}^{m-1} R_i v.  \label{eq:constraintrestrictionsum}
 \end{equation}
 A \emph{constraint decomposition} (CD) of $\cK$ is a choice of $\cV_i,\cK_i,R_i$ satisfying \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum} \cite{Tai2003}.
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \includegraphics[width=0.55\textwidth]{genfigs/cartoon.pdf}
 \caption{A constraint decomposition (CD) in a one-sided obstacle problem ($\mathcal{K}=\{v\ge \psi\}$) might look like this if $\mathcal{V}$ were 2-dimensional.}
 \label{fig:cartoon}
 \end{figure}
 
-In Section \ref{sec:multilevel} we will introduce discretizations and describe practical algorithms, but the fundamental CD concept applies even at the level of the continuum problem.  The following two examples illustrate this for obstacle problems \cite{GraeserKornhuber2009}, the first being an overlapping domain decomposition and the second a disjoint frequency decomposition.  The multilevel FE CD in Section \ref{sec:multilevel} approximates such an exact frequency decomposition.
+In Section \ref{sec:multilevel} we will introduce discretizations and describe practical algorithms, but the fundamental CD concept applies even at the level of the continuum problem.  The following two examples illustrate this for obstacle problems \cite{GraeserKornhuber2009}.  First we consider an overlapping domain decomposition.
 
 \begin{example}  \label{ex:domaindecomposition}  Consider a bounded domain $\Omega \subset \RR^d$, let $\cV = W_0^{k,p}(\Omega)$ for $k\ge 0$ and $p\ge 1$, and suppose the obstacle $\psi \in W^{k,p}(\Omega)$ satisfies $\psi|_{\partial \Omega} \le 0$.  Let $\cK = \{v \ge \psi\} \subset \cV$.  Suppose further that $\{\phi_i\}_{i=0}^{m-1}$ is a smooth partition of unity on $\Omega$, satisfying $0 \le \phi_i\le 1$ and $\sum_i \phi_i = 1$, and let $\Omega_i$ be the support of $\phi_i$.  Let $\cV_i = \{w \in \cV:w|_{\Omega \setminus \Omega_i} =0 \}$, $\cK_i = \{v \in \cV_i: v \ge \phi_i \psi\}$, and $R_i(v) = \phi_i v$.  Then \eqref{eq:subspacedecomp}, \eqref{eq:constraintdecomp}, and \eqref{eq:constraintrestrictionsum} all hold.
 \end{example}
+
+Our second example is a disjoint frequency decomposition.  A multilevel FE CD, e.g.~the one proposed in Section \ref{sec:multilevel}, approximates such a frequency decomposition.
 
 \begin{example}  \label{ex:frequencydecomposition}  For simplicity suppose $\Omega = (0,a)^d \subset \RR^d$ is a cube, and let $\cV = H_{\text{per}}^k(\Omega)$, $k\ge 0$, be the periodic functions.  Suppose $\psi \in H_{\text{per}}^k(\Omega)$ and let $\cK = \{v \ge \psi\} \subset \cV$.  Without using any detailed notation for Fourier representation, but noting that the frequencies are discrete, suppose $\{\cV_i\}$ are $m<\infty$ subspaces of $\cV$ defined by an (nonoverlapping) partition by frequency, thus satisfying \eqref{eq:subspacedecomp} as an orthogonal decomposition.  Suppose $P_i:\cV \to \cV_i$ are the corresponding orthogonal projections, satisfying $I = \sum_i P_i$.  Let $\cK_i = \{v \ge P_i \psi\} \subset \cV_i$ and $R_i = P_i$.  Then \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} also hold.
 \end{example}
@@ -325,87 +316,122 @@ Algorithm \ref{alg:basiccd} below states the basic CD algorithm as an iteration 
 \label{alg:basiccd}
 \end{pseudofloat}
 
-The reader may confirm that, inside each boxed VI in Algorithm \ref{alg:basiccd}, the argument of $f$ is an element of $\cK$.  While the $\cK_i$ difference $v_i - \hat w_i$ appears, note that by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may write it as a difference of admissible vectors (i.e.~from $\cK$), namely
+The reader may confirm that, inside each boxed VI in Algorithm \ref{alg:basiccd}, the argument of $f$ is an element of $\cK$.  While the difference $v_i - \hat w_i \in \cV_i$ appears, note that by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may write it as a difference of admissible vectors (i.e.~from $\cK$), namely
 \begin{align*}
 [u - R_i u + v_i] - [u - R_i u + \hat w_i] &= v_i - \hat w_i, \label{eq:admissibledifference} \\
 \left[\sum_{j<i} w_j + v_i + \sum_{j>i} R_j u\right] - \left[\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j u\right] &= v_i - \hat w_i,  \notag
 \end{align*}
-for the two versions, respectively.  In other words, we solve VI \eqref{eq:vi} over (parallel or successive) perturbations from the sets $\cK_i$.
+for the two versions, respectively.
 
-In fact, if we define
+In other words, we solve VI \eqref{eq:vi} over perturbations from the sets $\cK_i$.  Define
 \begin{equation}
 e_i = \hat w_i - R_i u \in \cV_i \label{eq:ithupdate}
 \end{equation}
-as the $i$th update from a pass through a \textbf{for} loop in Algorithm \ref{alg:basiccd} then $\hat w = u + \sum_{i} e_i$ and $w = u + \alpha \sum_i e_i$.  Easy identities $u - R_i u + \hat w_i = u + e_i$ and $\hat w = u^* + \sum_i \hat w_i - R_i u^*$ will also be used.
+as the $i$th update from a pass through either \textbf{for} loop in Algorithm \ref{alg:basiccd}.  Then $\hat w = u + \sum_{i} e_i$ and $w = u + \alpha \sum_i e_i$.  Easy identities $u - R_i u + \hat w_i = u + e_i$ and $\hat w = u^* + \sum_i \hat w_i - R_i u^*$ also hold.  We will use these identities in Section \ref{sec:convergence}.
 
-The convergence results in the next section require substantial damping when applying the parallel algorithm, i.e.~$\alpha \le 1/m$ \cite{Tai2003}, but the successive version can be shown to converge without damping ($\alpha=1$).  In Section \ref{sec:results} we demonstrate practical convergence for a larger range of $\alpha$ than suggested by the theory.  % HOPE
+The convergence results in Section \ref{sec:convergence} require substantial damping when applying the parallel algorithm, i.e.~$\alpha \le 1/m$, the same as in \cite{Tai2003}, but the successive version can be shown to converge without damping ($\alpha=1$).  In Section \ref{sec:results} we demonstrate practical convergence for a larger range of $\alpha$ than suggested by the theory.  % HOPE
 
-In order for Algorithm \ref{alg:basiccd} to have a practical and efficient FE implementation (Section \ref{sec:multilevel}), we need additional notions when $f$ has any of the following properties: \emph{(i)} $f$ is defined only on $\cK$, or \emph{(ii)} $f$ is nonlinear, or \emph{(iii)} $f$ is non-local.  The issue of practical implementation for any such $f$ seems not to have been addressed in the CD literature; in particular  \cite{GraeserKornhuber2009,Tai2003} only apply the method to the classical obstacle problem.  The following example explains the simplifications available in that easier case.
+In order for Algorithm \ref{alg:basiccd} to have a practical and efficient FE implementation (Section \ref{sec:multilevel}), we need additional notions when $f$ has any of the following properties: \emph{(i)} $f$ is defined only on $\cK$, or \emph{(ii)} $f$ is nonlinear, or \emph{(iii)} $f$ is non-local.  The issue of practical implementation for any such $f$ seems not to have been addressed in the CD literature, which is why we call Algorithm \ref{alg:basiccd} the ``basic'' algorithm.  In particular  \cite{GraeserKornhuber2009,Tai2003} only apply the CD method to the classical obstacle problem.  The following example explains the simplifications available in that easy case.
 
-\begin{example}  \label{ex:fnice} Suppose $f:\cV \to \cV'$ is linear and defined on all of $\cV$.  Furthermore suppose $f$ is local in the sense that a basis $\{\phi_i\}$ of $\cV_i$ exists with each support small in $\Omega$ in the sense that $\ip{f(\phi_i)}{z}$ can be computed by an integral over the support of $\phi_i$.  (When $\cV$ is an FE space then this is the usual case for evaluating PDE weak forms over a basis of hat functions---see Section \ref{sec:multilevel}---but integral operators do not generally have this property.)  Considering only the parallel algorithm for simplicity, the VI over $\cK_i$ in Algorithm \ref{alg:basiccd} can be written as
+\begin{example}  \label{ex:fnice} Suppose $f:\cV \to \cV'$ is linear and defined on all of $\cV$.  Furthermore suppose $f$ is local in the sense that a basis $\{\phi_i\}$ of $\cV_i$ exists, with each support small in $\Omega$, such that $\ip{f(\phi_i)}{z}$ can be computed by an integral over the support of $\phi_i$.  (When $\cV$ is an FE space then this is the usual case for evaluating PDE weak forms over a basis of hat functions; see Section \ref{sec:multilevel}.  Constrast integral operators where $\ip{f(\phi_i)}{z}$ requires an integral over $\Omega$ even if the support of $\phi_i$ is small.)  Considering only the parallel version of Algorithm \ref{alg:basiccd} for simplicity, the boxed VI over $\cK_i$ can be written as
 \begin{equation}
-\ip{f(\hat w_i - R_i u)}{v_i-\hat w_i} \ge \tilde g(v_i-\hat w_i) \label{eq:linearlocalvi}
+\ip{f(e_i)}{v_i-\hat w_i} \ge \tilde g(v_i-\hat w_i) \label{eq:linearlocalvi}
 \end{equation}
-where $\tilde g(z) = g(z) - \ip{f(u)}{z}$.  Noting $e_i = \hat w_i - R_i u \in \cV_i \notin \cK$, in general, VI \eqref{eq:linearlocalvi} only makes sense because $f$ is defined over $\cV_i$.  In this case each subset problem \eqref{eq:linearlocalvi} can be solved using a stored residual $\ip{f(u)}{\cdot}$ included into the updated source term.  The VI \eqref{eq:vi} is then approximately solved in any incremental manner, by computations over the basis supports, by one application of \pr{cditeration}.
+where $\tilde g(z) = g(z) - \ip{f(u)}{z}$.  Noting $e_i = \hat w_i - R_i u \in \cV_i \notin \cK$, in general, VIs \eqref{eq:linearlocalvi} will only make sense because $f$ is defined over $\cV$.  Each problem \eqref{eq:linearlocalvi} can be solved using a stored residual $\ip{f(u)}{\cdot}$ (already included into the source term).  The VI \eqref{eq:vi} is then approximately solved in any incremental and efficient manner, by computations over the basis supports, during one application of \pr{cditeration}.
 \end{example}
 
-In other words, because $f$ has all these nice properties, the decomposed VI problems in Example \ref{ex:fnice} can be computed by inexpensive means.  Note that the solution method for VI \eqref{eq:linearlocalvi} is not the concern here; we are observing that the data of problem \eqref{eq:linearlocalvi} is small in practice.
+In other words, when $f$ has all the nice properties proposed in Example \ref{ex:fnice} then the decomposed VI problems can be computed from inexpensive data.  Note that the actual solution method for VI \eqref{eq:linearlocalvi} is not the concern here; we are observing that the data of problem \eqref{eq:linearlocalvi}, and the cost of residual evaluation, is small in practice.  A solver which would work for Example \ref{ex:fnice} can thus have implementation efficiencies which are unavailable in general.
 
-A solver which would work for Example \ref{ex:fnice} can thus have implementation efficiencies which are unavailable in general.  Additional ideas, like those in Section \ref{sec:multilevel}, are therefore needed for practical application of CD methods to more difficult problems.  In particular, we will extend the basic algorithm to nonlinear $f$ by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}, in which case the decomposed problems only evaluate $f$ over (admissible) elements of $\mathcal{K}$.  However, extending the algorithm to non-local residual functionals is a topic for future research.
+Additional ideas, like those in Section \ref{sec:multilevel}, are needed for practical application of CD methods to more difficult problems.  In particular, we will extend the basic Algorithm \ref{alg:basiccd} to nonlinear $f$ by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}, in which case the decomposed problems only evaluate $f$ over (admissible) elements of $\mathcal{K}$, and we propose restrictions which allow inexpensive approximations of the decomposed problems.  However, extending the algorithm to non-local residual functionals is a topic for future research.
 
 
 \section{Convergence of the basic algorithm} \label{sec:convergence}
 
-To prove the convergence of the basic algorithm we make two assumptions, as follows, which are inequalities (7) and (8) in \cite{Tai2003}.  These inequalities might be described as ``totally Lipschitz'' requirements for the maps $R_i$ and $f$, respectively, over the constraint decomposition.
+We now seek a proof of the convergence of Algorithm \ref{alg:basiccd}.  This will be possible if we restrict to $2$-coercive operators and make certain assumptions as in \cite{Tai2003}.  First we define a new quantity related to VI problem \eqref{eq:vi}.
+
+\begin{definition} Suppose $f:\cK \to \cV'$ and $g \in \cV'$.  For $u,v \in \cK$ let
+\begin{equation}
+  E(v,u) = \ip{f(v)}{v-u} - g(v-u).  \label{eq:normlikedefn}
+\end{equation}
+\end{definition}
+
+If $u^*$ solves \eqref{eq:vi} then $E(v,u^*)$ is somewhat like an ``merit function,'' something used in the context of solving nonlinear equations \cite{NocedalWright2006} to replace an objective (scalar) functional.  (Note that $E(v,u^*)$ is \emph{not} a residual for \eqref{eq:vi}.)  The next lemma, which follows directly from $p$-coercivity, shows $E(v,u^*)$ is bounded below.
+
+\begin{lemma} \label{lem:normlike}  Suppose $f:\mathcal{K} \to \mathcal{V}'$ is $p$-coercive and $u^* \in \mathcal{K}$ solves \eqref{eq:vi}.  For $v \in \mathcal{K}$,
+\begin{equation}
+  E(v,u^*) \ge \kappa \|v-u^*\|^p.  \label{eq:normlikebound}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+\begin{align*}
+E(v,u^*) &= \ip{f(v)}{v-u^*} - \ip{f(u^*)}{v-u^*} + \ip{f(u^*)}{v-u^*} - g(v-u^*) \\
+   &\ge \kappa \|v-u^*\|^p + 0.  \qedhere
+\end{align*}
+\end{proof}
+
+Next we make two assumptions which are essentially the same as (7) and (8) in \cite{Tai2003}.
 
 \begin{assumptions*}  There exists a constant $C_1>0$ so that
 \begin{equation}
 \left(\sum_{i=0}^{m-1} \|R_i u - R_i v\|^2\right)^{1/2} \le C_1 \|u-v\| \label{as:lipschitzrestrictions}
 \end{equation}
-for all $u,v\in\cK$.  Furthermore, there exists $C_2>0$ so that
+for all $u,v\in\cK$.  Furthermore, there exists $C_2>0$ so that for all $v_i \in \cV_i$ and $y_j \in \cV_j$,
 \begin{equation}
-\sum_{i=0}^{m-1} \sum_{j=0}^{m-1} \left|\ip{f(w_{ij} + v_i) - f(w_{ij})}{y_i}\right| \le C_2 \left(\sum_{i=0}^{m-1} \|v_i\|^2\right)^{1/2} \left(\sum_{i=0}^{m-1} \|y_i\|^2\right)^{1/2} \label{as:lipschitzresidual}
+\sum_{i=0}^{m-1} \sum_{j=0}^{m-1} \left|\ip{f(w_{ij} + v_i) - f(w_{ij})}{y_j}\right| \le C_2 \left(\sum_{i=0}^{m-1} \|v_i\|^2\right)^{1/2} \left(\sum_{j=0}^{m-1} \|y_j\|^2\right)^{1/2} \label{as:lipschitzresidual}
 \end{equation}
-for all $w_{ij} \in \cK$ and $v_i,y_i \in \cV_i$ such that $w_{ij} + v_i \in \cK$ (for all $i,j$).
+for all $w_{ij} \in \cK$ such that $w_{ij} + v_i \in \cK$ for all $i$ and $j$.
 \end{assumptions*}
 
-These technical assumptions have some essential features:
+These inequalities might be described as ``totally Lipschitz'' requirements for the maps $R_i$ and $f$, respectively.  We make the following observations:
 \begin{itemize}
-\item Assumption \eqref{as:lipschitzrestrictions} addresses only the constraint decomposition, and not the map $f$.
-\item It is sometimes the case that \eqref{as:lipschitzresidual} addresses only a subspace decomposition property of the operator $f$, and not the CD sets $\cK_i$ or maps $R_i$.  For example, in the classical obstacle problem \eqref{as:lipschitzresidual} is verified over all $w_{ij} \in \cV$.
+\item Assumption \eqref{as:lipschitzrestrictions} addresses only the CD, and not the map $f$.
+\item It is sometimes the case that \eqref{as:lipschitzresidual} addresses only a subspace decomposition property of $f$ (and not the CD itself).  For example, in the classical obstacle problem one may verify \eqref{as:lipschitzresidual} over all $w_{ij} \in \cV$.
 \item The unconstrained versions of \eqref{as:lipschitzrestrictions} and \eqref{as:lipschitzresidual} are (13), (14) in \cite{TaiXu2002}, respectively.
-\item Tai \cite{Tai2003} gives values of the constants $C_1$ in \eqref{as:lipschitzrestrictions} for obstacle problem constraint decompositions using $P_1$ FE spaces over shape-regular and quasi-uniform triangulations, which is the only case we will demonstrate (Section \ref{sec:results}).  In particular, constants $C_1$ are know for overlapping domain decompositions (with or without an additional coarse mesh) and standard multilevel hierarchies.
-\item Constants $C_1,C_2$ generally depend on $m$.  However, as noted in \cite{Tai2003}, and regarding the convergence proof below, if repeated application of Algorithm \ref{alg:basiccd} is known to generate a bounded sequence of iterates in $\mathcal{K}$ then constants $C_1,C_2$ are actually permitted to depend on $u,v,w_{ij},v_i,y_i$ as well.
-% ASSUMING $f$ IS LIPSCHITZ WILL MAKE THE EXISTENCE OF C_2 CLEAR; SEE (14) IN \cite{TaiXu2002}
+\item If we assume $f$ itself is Lipschitz then the existence of $C_2$ is clear \cite{TaiXu2002}.  However, our bound for the convergence rate for Algorithm \ref{alg:basiccd} is improved when $C_1,C_2$ are made smaller.
+\item Tai \cite{Tai2003} gives values of the constants $C_1$ in \eqref{as:lipschitzrestrictions} for obstacle problem constraint decompositions using $P_1$ FE spaces over shape-regular and quasi-uniform triangulations.  In particular, constants $C_1$ are known for overlapping domain decompositions (with or without an additional coarse mesh) and standard multilevel hierarchies.  Thus the cases we will demonstrate in Section \ref{sec:results} are already covered.
+\item The constants $C_1,C_2$ generally depend on $m$.  However, regarding the convergence proof below, \cite{Tai2003} observes that if repeated application of Algorithm \ref{alg:basiccd} generates a bounded sequence of iterates in $\mathcal{K}$ then constants $C_1,C_2$ would be permitted to depend on $u,v,w_{ij},v_i,y_i$ as well.
 \end{itemize}
 
-From the assumptions and the above definitions we have the following core lemma for the parallel version.  Our proof follows \cite{Tai2003}.
+From the above definitions and assumptions we have the following estimate for the parallel version of Algorithm \ref{alg:basiccd}.  Our proof follows \cite{Tai2003}.
 
-\begin{lemma} \label{lem:core}  Suppose $u^* \in \mathcal{K}$ solves \eqref{eq:vi}.  Suppose $\mathcal{V}_i$, $\mathcal{K}_i$, $R_i$, and $f$ satisfy \eqref{as:lipschitzrestrictions} and \eqref{as:lipschitzresidual}.  Suppose $\hat w$ is computed from $u$ by the parallel version of Algorithm \ref{alg:basiccd}.  Recall $e_i = \hat w_i - R_i u$.  Then
+\begin{lemma} \label{lem:core}  Suppose $f$ is $2$-coercive and $u^* \in \mathcal{K}$ solves \eqref{eq:vi}.  Recall $E(v,u^*)$ is defined in \eqref{eq:normlikedefn}.  Suppose $\mathcal{V}_i$, $\mathcal{K}_i$, $R_i$, and $f$ satisfy \eqref{as:lipschitzrestrictions} and \eqref{as:lipschitzresidual}.  Suppose $\hat w$ is computed from $u$ by the parallel version of Algorithm \ref{alg:basiccd}, and recall $e_i = \hat w_i - R_i u$.  Then
 \begin{equation}
-   \ip{f(\hat w)}{\hat w - u^*} \le C_2 \sum_{i=0}^{m-1} \|e_i\|^2 + C_1 C_2 \left(\sum_{i=0}^{m-1} \|e_i\|^2\right)^{1/2} \|u-u^*\|. \label{eq:core}
+   E(\hat w,u^*) \le C_2 \sum_{i=0}^{m-1} \|e_i\|^2 + \kappa^{-1} C_1 C_2 \left(\sum_{i=0}^{m-1} \|e_i\|^2\right)^{1/2} E(u,u^*)^{1/2}. \label{eq:core}
 \end{equation}
 \end{lemma}
 
-\begin{proof}
-For $i\in \{0,1,\dots,m-1\}$ use increasing, but wrapped, indices to define the following sequence $\phi_{ij}=\phi_{i,j} \in \cK$:
-\begin{align*}
-\phi_{i,0} &= u + e_i, \\
-\phi_{i,1} &= u + e_i + e_{i+1}, \\
-  &\vdots \\
-\phi_{i,m-1} &= u + e_i + e_{i+1} + \dots + e_{m-1} + e_0 + \dots + e_{i-1}.
-\end{align*}
-(Each $\phi_{ij} \in \cK$ by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum}.)  Noting that the boxed VI in the parallel version of Algorithm \ref{alg:basiccd} can be written
-
-    FIXME
+\begin{proof}  Recalling that $\hat w = u^* + \sum_i \hat w_i - R_i u^*$, by the (parallel version) boxed VI in Algorithm \ref{alg:basiccd} with $v_i = R_i u^*$ we get
+\begin{align}
+E(\hat w,u^*) &= \sum_{i=0}^{m-1} \ip{f(\hat w)}{\hat w_i - R_i u^*} - g(\hat w_i - R_i u^*) \label{eq:startcore} \\
+    &\le \sum_{i=0}^{m-1} \ip{f(\hat w)}{\hat w_i - R_i u^*} + \ip{f(u + e_i)}{R_i u^* - \hat w_i} \notag \\
+    &= \sum_{i=0}^{m-1} \ip{f(\hat w) - f(u + e_i)}{\hat w_i - R_i u^*}. \notag
+\end{align}
+For $i\in \{0,1,\dots,m-1\}$ use wrapped indices to define elements $\phi_{i,j}$:
+\begin{align}
+\phi_{i,0} &= u + e_i, \label{eq:gridcore} \\
+\phi_{i,1} &= u + e_i + e_{i+1}, \notag \\
+  &\vdots \notag \\
+\phi_{i,m-1} &= u + e_i + e_{i+1} + \dots + e_{m-1} + e_0 + \dots + e_{i-1}, \notag
+\end{align}
+and $\phi_{i,j} \in \cK$ by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum}.  Note that $\phi_{i,m-1} = u + \sum_i e_i = \hat w$.  From \eqref{eq:startcore}, apply a telescoping sum using the elements in \eqref{eq:gridcore}:
+\begin{align}
+E(\hat w,u^*) &\le \sum_{i=0}^{m-1} \sum_{j=1}^{m-1} \ip{f(\phi_{i,j}) - f(\phi_{i,j-1})}{\hat w_i - R_i u^*} \label{eq:nextcore} \\
+  &\le \sum_{i=0}^{m-1} \sum_{j=0}^{m-1} \left|\ip{f(\phi_{i,j}) - f(\phi_{i,j-1})}{\hat w_i - R_i u^*}\right|. \notag
+\end{align}
+By an easy renumbering of the indices $i,j$ we may apply assumption \eqref{as:lipschitzresidual}, then the triangle inequality, and then assumption \eqref{as:lipschitzrestrictions}; we denote $\left(\sum_{i=0}^{m-1} \|e_i\|^2\right)^{1/2}$ by $Z$:
+\begin{align}
+E(\hat w,u^*) &\le C_2 Z \left(\sum_{i=0}^{m-1} \|\hat w_i - R_i u^*\|^2\right)^{1/2} = C_2 Z \left(\sum_{i=0}^{m-1} \|\hat w_i - R_i u + R_i u - R_i u^*\|^2\right)^{1/2} \label{eq:nextnextcore} \\
+  &\le C_2 Z \left(Z + \left(\sum_{i=0}^{m-1} \|R_i u - R_i u^*\|^2\right)^{1/2}\right) \le C_2 Z \left(Z + C_1 \|u-u^*\|\right). \notag
+\end{align}
+Finally apply \eqref{eq:normlikebound} to give \eqref{eq:core}.
 \end{proof}
 
-Note that the coercivity of $f$ is not used in proving Lemma \ref{lem:core}.
-
+FIXME NOW THE ENTIRE BATTLE IS TO GET A CONVEXITY RESULT $E(w,u) \ge C \sum_{j=0}^{m-1} \|e_j\|^2$ for some reasonable $C$
 
 \section{Finite elements and multilevel constraint decomposition} \label{sec:multilevel}
 
-Until now the algorithms can be interpreted as infinite-dimensional, e.g.~supposing constraint sets as defined in Examples \ref{ex:domaindecomposition} or \ref{ex:frequencydecomposition}.  However, in practice we will solve VI \eqref{eq:vi} over a mesh and the space $\cV$ will be a finite element (FE) space.  Thus $\cV$, and each subspace $\cV_i$, will be finite-dimensional.
+In practice we will solve VI \eqref{eq:vi} over a finite-dimensional space $\cV$ based on a choice of a mesh over $\Omega$ and a finite element (FE) space.
 
 FIXME triangulation
 
