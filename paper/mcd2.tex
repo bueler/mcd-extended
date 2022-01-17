@@ -142,25 +142,24 @@ urlcolor=black    % ...
 
 \section{Introduction} \label{sec:intro}
 
-The goal of this paper is to generalize the constraint decomposition (CD) method of X.-C.~Tai \cite{Tai2003}.  The convergence of this method, for several types of decompositions, was proven by Tai for coercive variational inequality (VI) problems which arise from minimization of a convex functional over a convex set.  In its multilevel form the method has been shown to have optimal complexity for elliptic, linear obstacle problems \cite[Subsection 5.4]{Tai2003}; see also \cite[Theorem 4.6 and Algorithm 4.7]{GraeserKornhuber2009}.
+The goal of this paper is to generalize the constraint decomposition (CD) method of X.-C.~Tai \cite{Tai2003} to nonlinear VI problems to which it has not been previously applied.  The convergence of this method, for several types of decompositions, was proven by Tai for coercive variational inequality (VI) problems which arise from minimization of a convex functional over a convex set.  In its multilevel form the method has been shown to have optimal complexity for elliptic, linear obstacle problems \cite[Subsection 5.4]{Tai2003}; see also \cite[Theorem 4.6 and Algorithm 4.7]{GraeserKornhuber2009}.  We construct a new proof of convergence which removes the assumption that the problem arises from (constrained) optimization.  Furthermore we address its finite element (FE) implementation in nonlinear cases, and we demonstrate the resulting performance.
 
-We extend the CD method to nonlinear VI problems for which it has not been previously considered, including a new proof of convergence which removes the assumption that the problem arises from (constrained) optimization.  Furthermore we address new finite element (FE) implementation concerns in nonlinear cases, and we demonstrate the resulting performance.  The original algorithms and theory presented in \cite{Tai2003} are extended in four particular directions:
+The algorithms and theory presented in \cite{Tai2003} are extended in four particular directions:
 \renewcommand{\labelenumi}{\emph{(\roman{enumi})}}
 \begin{enumerate}
-\item We do not assume that the continuum VI problem arises from optimization of a scalar objective.  Nonetheless we can prove convergence in norm at the same rate as the original method converges in energy (Section \ref{sec:convergence}); % HOPE
+\item We do not assume that the continuum VI problem arises from optimization of a scalar objective.  Nonetheless we can prove convergence in $H^1$ norm at the same rate as the original method converges in energy (Section \ref{sec:convergence}); % HOPE
 examples are explored in Sections \ref{sec:vi} and \ref{sec:results}.
 
-\item We make the observation that, if implemented appropriately, multilevel V(0,$\nu$) ``up-slash'' cycles are intrinsically more efficient than the V($\nu$,0) ``down-slash'' cycles (Section \ref{sec:multilevel}).  This observation seems to be new and should replace the default use of down-slash or even balanced (e.g.~V(1,1)) cycles; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}.  A strong preference for up-smoothing is, apparently, special to multilevel CD methods and does not arise in corresponding unconstrained problems.
+\item We make the observation that, if implemented appropriately, multilevel ``up-smoothing'' is intrinsically more efficient than ``down-smoothing'' (Section \ref{sec:multilevel}).  This observation seems to be new; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}.  A strong preference for up-smoothing is, apparently, special to multilevel CD methods and does not arise in corresponding unconstrained problems.
 
-\item In the nonlinear case, we make the multilevel CD algorithm more practical by addressing efficient storage of intermediate quantities.  In particular, in Section \ref{sec:results} we show results from a full approximation storage (FAS; see \cite{Brandt1977}) implementation which avoids global (Newton) linearization; compare \cite{GraeserKornhuber2009}.
+\item We make the multilevel CD algorithm more practical by addressing efficient storage of intermediate quantities.  In Section \ref{sec:results} we show results from a full approximation storage (FAS; see \cite{Brandt1977}) implementation for nonlinear operators, one which avoids global (Newton) linearization; compare \cite{GraeserKornhuber2009}.
 
-\item For problems of porous-media type the nonlinear operator $f$ is not coercive (Appendix A), so the existing convergence theory does not apply.  However, a full-cycle implementation of the multilevel CD method is demonstrated numerically.  The operator is approximated by a coercive operator, nonlinear in general, for the duration of the V-cycle, by ``freezing' the solution-dependent coefficient.  The resulting scheme is highly-effective for doubly-nonlinear diffusion operators (Section \ref{sec:results}).
+\item For problems of porous-media type the nonlinear operator $f$ is not coercive (Appendix A), so the convergence theory in \emph{(i)} does not apply.  However, a full-cycle implementation of the multilevel CD method is demonstrated numerically.  By ``freezing' the solution-dependent coefficient, the operator is approximated by a coercive operator, nonlinear in general, for the duration of the V-cycle.  The resulting scheme is highly-effective for doubly-nonlinear diffusion operators (Section \ref{sec:results}).
 \end{enumerate}
 
-Note that the iterates from the CD method are always admissible, and thus the operator need only be defined on the admissible subset; Section \ref{sec:results} includes an example.  Admissible-iterate methods should allow direct solutions of certain VI problems, such as fluid-layer dynamics problems \cite{Bueler2021conservation,JouvetBueler2012}, for which non-admissible methods, such as semi-smooth methods \cite{BensonMunson2006}, require unnatural modifications of the operator formula.  The full-cycle scheme in \emph{(iv)} above, which applies to non-coercive VIs, is helpful in these problems.
+The iterates from the CD method are always admissible, and thus the operator need only be defined for admissible states; Section \ref{sec:results} includes a nontrivial example.  Admissible-iterate methods should permit direct solutions of certain VI problems, such as fluid-layer dynamics problems \cite{Bueler2021conservation,JouvetBueler2012}, for which non-admissible methods, such as semi-smooth methods \cite{BensonMunson2006}, require unnatural modifications of the operator formula.  The full-cycle scheme in \emph{(iv)} above, which applies to non-coercive VIs, is also designed for these problems, which are characterized by the solution of an auxiliary PDE on a domain determined inside the VI residual evaluation.
 
-Especially for the classical obstacle problem with a Laplacian operator, certain other multilevel methods are known to improve performance relative to the multilevel CD method \cite{GraeserKornhuber2009}.  These improved methods either track the active set in the discretization or modify the nodal basis functions, and in this sense they are discrete algorithms.  By contrast the CD method applies at the level of the continuum problem (Sections \ref{sec:cd} and \ref{sec:convergence}), and thus it is a more fundamental method than the truncated monotone multigrid method \cite{Kornhuber1994}, for example, and in any case we can demonstrate comparable rates of convergence (Section \ref{sec:results}). % HOPE
-Truncated monotone approaches for nonlinear problems have, so far, applied a global linearization strategy \cite{GraeserKornhuber2009}, while we apply FAS (Section \ref{sec:multilevel}).  Acceleration of our nonlinear multilevel CD method via active-set and/or basis-level manipulations is a topic for further research.
+Especially for the classical obstacle problem with a Laplacian operator, certain multilevel techniques are known to improve performance relative to the multilevel CD method \cite{GraeserKornhuber2009}.  These improved methods either track the active set in the discretization or modify the nodal basis functions, and in this sense they are discrete algorithms.  By contrast the CD method applies at the level of the continuum problem (Sections \ref{sec:cd} and \ref{sec:convergence}), and thus it is a more fundamental method than the truncated monotone multigrid method \cite{Kornhuber1994}, for example.  In any case, acceleration of our nonlinear multilevel CD method via active-set and/or basis-level manipulations represents a potential extension of the method here, though as a topic for future research.
 
 % A BRIDGE TOO FAR:  In one example at the end of this paper (Section \ref{sec:resultsnonlocal}) we consider a nonlocal residual functional, that is, one which is not a partial differential operator.  Each evaluation of this functional requires the solution of a Stokes problem for a layer of fluid \nocite{SayagWorster2013} on a substrate (which forms the obstacle), and thus the corresponding FE operator discretization is also not sparse.  In this case we cannot prove coercivity but we nonetheless succeed in demonstrating near-optimal complexity of the Section \ref{sec:multilevel} multilevel CD algorithm in practice.
 
@@ -169,15 +168,13 @@ Truncated monotone approaches for nonlinear problems have, so far, applied a glo
 
 Suppose $\cV$ is a real, reflexive Banach space with norm $\|\cdot\|$ and topological dual space $\cV'$.  Denote the dual pairing of $\phi \in \cV'$ and $v\in\cV$ by $\ip{\phi}{v} = \phi(v)$, and note that $\|\phi\|_{\cV'} = \sup_{\|v\|=1} |\ip{\phi}{v}|$ defines a (Banach space) norm on $\cV'$.
 
-Let $\cK \subset \cV$ be a nonempty closed and convex subset, the \emph{constraint set}; elements of $\cK$ are said to be \emph{admissible}.  For a continuous, but generally nonlinear, operator $f:\cK \to \cV'$ and \emph{source} $g\in \cV'$ we consider the following \emph{variational inequality} (VI) for the (exact) solution $u^*\in \cK$:
+Let $\cK \subset \cV$ be a nonempty closed and convex subset, the \emph{constraint set}; elements of $\cK$ are said to be \emph{admissible}.  For a continuous, but generally nonlinear, operator $f:\cK \to \cV'$ and \emph{source} $g\in \cV'$ we consider the following \emph{variational inequality} (VI) for the (exact) solution $u^*\in \cK$, if it exists:
 \begin{equation}
 \ip{f(u^*)}{v-u^*} \ge \ip{g}{v-u^*} \qquad \text{for all } v\in \cK. \label{eq:vi}
 \end{equation}
-Because $f$ is a (generally) nonlinear map, $g$ is not strictly needed, but its presence is helpful to the algorithms of Section \ref{sec:multilevel}.  (By redefining $f$ we may take $g=0$.)
+Because $f$ is a (generally) nonlinear map, $g$ is not strictly needed when posing this VI, but its presence is helpful to the algorithms of Section \ref{sec:multilevel}.  (Note that by redefining $f$ we may take $g=0$.)
 
-VI \eqref{eq:vi} generalizes the nonlinear system of equations $f(u^*)=g$ from a vector space $\cV$ to the constrained case (over $\cK$).  Informally, if we conceptualize the dual pairing as an inner product then \eqref{eq:vi} says that the angle between $f(u^*)-g$ and any arbitrary vector $v-u$ pointing from $u$ into $\cK$ is at most $90^\circ$.  That is, \eqref{eq:vi} says that $f(u^*)-g$ points directly into $\cK$ if $u^* \in\partial\cK$.  Furthermore, if $u^* \in \cK^\circ$ (interior) then \eqref{eq:vi} implies $f(u^*)=g$.
-
-The following definitions are standard \cite{KinderlehrerStampacchia1980}.
+VI \eqref{eq:vi} generalizes the nonlinear system of equations $f(u^*)=g$ from a vector space $\cV$ to the constrained case (over $\cK$).  Informally, if we conceptualize the dual pairing as an inner product then \eqref{eq:vi} says that the angle between $f(u^*)-g$ and any arbitrary vector $v-u$ pointing from $u$ into $\cK$ is at most $90^\circ$.  That is, \eqref{eq:vi} says that $f(u^*)-g$ may not be zero but it points directly into $\cK$.  In particular, if $u^* \in \cK^\circ$ (interior) then \eqref{eq:vi} implies $f(u^*)=g$.  The following definitions are also standard \cite{KinderlehrerStampacchia1980}.
 
 \begin{definition} A map $f:\cK \to \cV'$ is \emph{monotone} if
 \begin{equation}
@@ -187,32 +184,32 @@ The following definitions are standard \cite{KinderlehrerStampacchia1980}.
 \begin{equation}
 \frac{\ip{f(u)-f(w)}{u-w}}{\|u-w\|} \to +\infty \qquad \text{as } \|u\|\to +\infty. \label{eq:coercive}
 \end{equation}
-We say VI \eqref{eq:vi} is (\emph{strictly}) \emph{monotone} if $f$ is (strictly) monotone, and likewise for \emph{coercive}.
-\end{definition}
+We say VI \eqref{eq:vi} is \emph{monotone} if $f$ is monotone, and likewise for strictly monotone and coercive. \end{definition}
 
-It is well-known that if $f:\cK \to \cV'$ is continuous, monotone, and coercive then VI \eqref{eq:vi} has a solution \cite[Corollary III.1.8]{KinderlehrerStampacchia1980}, and also that the solution $u^* \in \cK$ is unique when $f$ is strictly monotone.  As in the calculus of variations \cite{Evans2010}, coercivity permits a compactness argument for unbounded sets $\cK$; recall that the bounded, closed subsets of a reflexive Banach space are weakly compact.  Note that the condition of continuity can be weakened to only apply on finite-dimensional subspaces \cite{KinderlehrerStampacchia1980}, but the stronger condition will apply in our examples.
+It is well-known that if $f:\cK \to \cV'$ is continuous, monotone, and coercive then VI \eqref{eq:vi} has a solution \cite[Corollary III.1.8]{KinderlehrerStampacchia1980}, and also that the solution $u^* \in \cK$ is unique when $f$ is strictly monotone.  As in the calculus of variations \cite{Evans2010}, coercivity permits a compactness argument for unbounded sets $\cK$; recall that the bounded, closed subsets of a reflexive Banach space are weakly compact.  The condition of continuity can be weakened to only apply on finite-dimensional subspaces \cite{KinderlehrerStampacchia1980}, but the stronger condition will apply in our examples.
 
-The coercive VIs solved in this paper satisfy a stronger inequality than \eqref{eq:coercive}.
+The coercive VIs solved in this paper satisfy a stronger inequality than \eqref{eq:coercive}, and thus they are well-posed.
 
 \begin{definition}  Let $p>1$.  The map $f:\cK \to \cV'$ is \emph{$p$-coercive} if there exists $\kappa>0$ such that
 \begin{equation}
 \ip{f(u)-f(v)}{u-v} \ge \kappa \|u-v\|^p \qquad \text{for all } u,v \in \cK. \label{eq:pcoercive}
 \end{equation}
-(Note \cite{Tai2003} uses ``coercive'' for $2$-coercive.)
 \end{definition}
 
-It is easy to see that if $f$ is $p$-coercive then it is monotone, strictly monotone, and coercive, and thus the following result holds.  It states that the $p$-coercive VI problems considered in this paper are well-posed.
+Note \cite{Tai2003} uses ``coercive'' for $2$-coercive.  It is easy to see that if $f$ is $p$-coercive then it is monotone, strictly monotone, and coercive, and thus the following result holds.
 
 \begin{theorem}  \label{thm:viwellposed}  If $f:\cK \to \cV'$ is continuous and $p$-coercive (for $p>1$) then there exists a unique $u\in \cK$ solving VI \eqref{eq:vi}.
 \end{theorem}
 
-When $f$ is monotone VI \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  Suppose $F:\cK \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cK \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, \cite[Proposition II.2.1]{EkelandTemam1976} shows that if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ and $g=0$ if and only if
+When $f$ is monotone, VI \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  Suppose $F:\cK \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cK \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, Proposition II.2.1 in \cite{EkelandTemam1976} shows that if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ and $g=0$ if and only if
 \begin{equation}
 u^* = \operatorname{arg-min}_{v\in\cK} F(v). \label{eq:minimization}
 \end{equation}
 The CD methods of Tai \cite{Tai2003} address problem \eqref{eq:minimization} under the hypothesis that $F'$ is coercive.
 
-The following example includes the classical obstacle problem for the linear Laplacian \cite{GraeserKornhuber2009} and the obstacle problem for the $p$-Laplacian \cite{ChoeLewis1991}.  Note that from now on $\Omega \subset \RR^d$ denotes a bounded, open set with smooth or piecewise-smooth (e.g.~polygonal) boundary.  Also, Sobolev spaces \cite{Evans2010} are denoted by $W^{k,p}(\Omega)$, for integer $k$ and $1\le p \le \infty$, with $W^{k,2}$ denoted by $H^k$.
+From now on $\Omega \subset \RR^d$ denotes a bounded, open set with smooth or piecewise-smooth (e.g.~polygonal) boundary.  Also, Sobolev spaces \cite{Evans2010} are denoted by $W^{k,p}(\Omega)$, for integer $k$ and $1\le p \le \infty$, with $W^{k,2}$ denoted by $H^k$.
+
+The following example includes the classical obstacle problem for the linear Laplacian \cite{GraeserKornhuber2009} and the obstacle problem for the $p$-Laplacian \cite{ChoeLewis1991}. 
 
 \begin{example}  \label{ex:plaplacian}  Suppose $a\in L^\infty(\Omega)$ such that $a(x)\ge a_0$ a.e.~for some constant $a_0>0$, and $p\ge 2$.  For $u,v \in \cV = W^{1,p}_0(\Omega)$ define $f:\cV \to \cV'$ by
 \begin{equation}
@@ -220,7 +217,7 @@ The following example includes the classical obstacle problem for the linear Lap
 \end{equation}
 Now, if $x,y\in\RR^d$ then $(|x|^{p-2} x - |y|^{p-2} y)\cdot (x-y) \ge 2^{2-p} |x-y|^p$ \cite[see Appendix A and references therein]{Bueler2021conservation}.  Thus it follows from the Poincar\'e inequality that
     $$\ip{f(u) - f(v)}{u-v} \ge 2^{2-p} a_0 \|\grad u - \grad v\|_p^p \ge 2^{2-p} a_0 C \|u-v\|^p$$
-for some $C>0$, and thus $f$ is $p$-coercive.  (The map in \eqref{eq:plaplacian} is coercive if $1<p<2$, but the proof is somewhat different \cite[Theorem 4.4]{Bueler2021conservation}, and in Section \ref{sec:results} we need only the $p\ge 2$ case.)  For $g\in\cV'$ define
+for some $C>0$, and thus $f$ is $p$-coercive.  (The map in \eqref{eq:plaplacian} is coercive if $1<p<2$, but the proof is somewhat different \cite[Theorem 4.4]{Bueler2021conservation}.  In Section \ref{sec:results} we need only the $p\ge 2$ case.)  For $g\in\cV'$ define
     $$F(u) = \int_\Omega \frac{a(x)}{p} |\grad u|^p\,dx - g(u).$$
 Then $F'(u) = f(u) - g$, $F$ is a convex functional (since $f$ is coercive), and, for any closed and convex $\cK\subset \cV$, VI problem \eqref{eq:vi} for is equivalent to optimization problem \eqref{eq:minimization}.
 \end{example}
