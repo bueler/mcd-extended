@@ -446,51 +446,8 @@ FIXME
 % A BRIDGE TOO FAR:  \section{Results for a nonlocal variational inequality} \label{sec:resultsnonlocal}
 
 
-
-\small
 \bibliography{mcd2}
 \bibliographystyle{siam}
 
-\normalsize
-\appendix
-
-\section{Porous-medium problems are never monotone}
-
-Based on the examples in Section \ref{sec:vi}, the property of $p$-coercivity would seem to be a mild generalization of uniform ellipticity (including its quasi-linear meaning \cite[Section 8.3]{Evans2010}).  Indeed, weak-form operators with certain lower-order terms (Example \ref{ex:advectiondiffusion}) or degenerate quasi-linear type (Example \ref{ex:plaplacian}) can be monotone and coercive.  However, even the weaker property of monotonicity is ``fragile'' in a pointwise sense, as explained next, while ellipticity is more robust.  In particular, we show that no nontrivial porous-medium type functional is monotone, nor $p$-coercive.  We have not found any such explanation in the literature, but the observation of non-monotonicity in \cite{RocknerWang2008} is related.
-
-Consider the expression $(Ax - By)\cdot (x-y)$ where $A,B \in \RR^{d\times d}$ are symmetric matrices and $x,y\in \RR^d$.  This expression is the quadratic form for a certain symmetric block matrix.  In fact, regarding $x,y$ as column vectors, we observe that
-\begin{equation}
-(Ax - By)\cdot (x-y) = \begin{bmatrix} x^\top & y^\top \end{bmatrix} \begin{bmatrix}
-                        A & -\frac{1}{2}(A+B) \\
-                        -\frac{1}{2}(A+B) & B \end{bmatrix} \begin{bmatrix} x \\ y \end{bmatrix}. \label{eq:blockmatrix}
-\end{equation}
-Let $M_{A,B}$ denote the symmetric $2d \times 2d$ matrix in \eqref{eq:blockmatrix}.  Clearly the expression is only bounded below if $M_{A,B}$ is nonnegative definite.  Stated as the following Lemma, the important point here is that exact equality $A=B$ is required for nonnegativity of the expression; knowing $A$ is close to $B$ is not helpful.
-
-\begin{lemma}  Suppose $A,B \in \RR^{d\times d}$ are symmetric matrices which commute.  Then $(Ax - By)\cdot (x-y)\ge 0$ for all $x,y\in \RR^d$ if and only if $A=B$ is nonnegative definite. \end{lemma}
-
-\newcommand{\sbvec}[2]{\left[\begin{smallmatrix} #1 \\ #2 \end{smallmatrix}\right]}
-\newcommand{\sbmat}[4]{\left[\begin{smallmatrix} #1 & #2 \\ #3 & #4 \end{smallmatrix}\right]}
-
-\begin{proof}
-If $A=B$ is nonnegative definite then nonnegativity of the expression follows immediately.  Conversely, since $A$ is symmetric there exists an orthogonal basis $\{x_i\}$ of eigenvectors, with $Ax_i = \lambda_i x$.  By commutativity these are also eigenvectors of $B$, with $Bx_i = \mu_i x_i$.  Let $\big\{\sbvec{x_1}{x_1}$, $\sbvec{x_1}{-x_1}$, $\dots$, $\sbvec{x_d}{x_d}$, $\sbvec{x_d}{-x_d}\big\}$ be an ordered basis of $\RR^{2d}$.  It is easy to confirm that in this basis $M_{A,B}$ is block diagonal with $2\times 2$ diagonal blocks $\sbmat{0}{-\frac{1}{2}(\lambda_i+\mu_i)}{-\frac{1}{2}(\lambda_i+\mu_i)}{\lambda_i+\mu_i}$.  Thus the eigenvalues of $M_{A,B}$ come in pairs $\frac{1}{2}(\lambda_i + \mu_i) \pm \sqrt{\frac{1}{2}(\lambda_i^2 + \mu_i^2)}$ for $i=1,\dots,d$.  By the strict concavity of the square root, $\sqrt{\frac{1}{2}(\lambda_i^2 + \mu_i^2)} > \frac{1}{2}(|\lambda_i| + |\mu_i|)$ if $\lambda_i\ne \mu_i$.  Thus if any eigenvalues of $A$ differ from those of $B$, i.e.~$\lambda_i\ne \mu_i$ for any $i$, then there exists a negative eigenvalue of $M_{A,B}$.
-\end{proof}
-
-It is not clear if the hypotheses of symmetry and commutativity can be removed.  However, when the matrices are scalar multiples of the identity then the Lemma asserts that $(ax-by)\cdot(x-y) \ge 0$ for all $x,y\in\RR^d$ if and only if $a=b\ge 0$.  This scalar case suffices for the following result.
-
-\begin{theorem}
-Suppose $\phi:[0,\infty) \to (0,\infty)$ is continuous.  For $\Omega \subset \RR^d$ open and nonempty, $\cV = H_0^1(\Omega)$, and $g\in \cV'$, consider the following functional on $\cK = \{v\ge 0\} \subset \cV$:
-\begin{equation}
-\ip{f(u)}{v} = \int_\Omega \phi(u) \grad u\cdot \grad v\,dx - g(v).  \label{eq:porousagain}
-\end{equation}
-If $\phi$ is not constant then $f$ is not monotone.
-\end{theorem}
-
-\begin{proof}
-Suppose $\phi(\alpha)\ne \phi(\beta)$ for $\alpha > 0$ and $\beta \ge 0$.  (That is, suppose $\phi$ is not constant.)  For $x\in\Omega$, construct $u\in \cK$ smooth so that $u(x)=\alpha$ and $\xi = \grad u(x) \ne 0$.  Using the Lemma, choose $\eta \in \RR^d$ so that $(\phi(\alpha) \xi - \phi(\beta) \eta) \cdot (\xi - \eta) < 0$.  FIXME NOT SURE IF THIS IS GOING TO WORK
-\end{proof}
-
-The main idea is that even the slightest variation in the coefficient $\phi(u)$ violates monotonicity.  A strong and tight ellipticity hypothesis, e.g.~the existence of $c_0>0$ and $\eps>0$ so that $c_0 \le \phi(u) \le (1+\eps)c_0$, will not imply monotonicity.  Contrast the nontrivial coefficient dependence on $\grad u$ in the $p$-coercive $p$-Laplacian Example \ref{ex:plaplacian} (with $p>2)$.
-
-No nontrivial functional \eqref{eq:porousagain} is monotone, nor is it ever $p$-coercive for any $p>1$.
 \end{document}
 
