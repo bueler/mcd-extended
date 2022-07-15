@@ -220,36 +220,37 @@ Then $F'(v) = f(v) - g$, $F$ is a convex functional (since $f$ is coercive), and
 
 The map in \eqref{eq:plaplacian} is coercive if $1<p<2$, but the proof is somewhat different \cite[Theorem 4.4]{Bueler2021conservation}.  In Section \ref{sec:results} we need only the $p\ge 2$ case.
 
-Not all VI problems arise as in Example \ref{ex:plaplacian}, from optimization.  We give two such examples next, first a coercive and linear advection-diffusion problem, and then a nonlinear porous-medium-type problem.  Each of these examples is important in applications.  The first is preceded by a lemma.
+Not all VI problems arise as in Example \ref{ex:plaplacian}, from optimization.  We give two such examples next, first a coercive and linear advection-diffusion problem, and then a nonlinear porous-medium-type problem; each is important in applications.  The first is preceded by a lemma.
 
-\begin{lemma}  \label{lem:advectionskew}  \cite{Elmanetal2014}\,  Suppose $\bX :\Omega \to \RR^d$ is a smooth and bounded vector field on $\Omega$ with zero divergence ($\Div \bX=0$).  For $u,v \in H^1(\Omega)$ let $b(u,v) = \int_\Omega (\bX \cdot \grad u) v\,dx$.  Then $b(u,u) = \frac{1}{2} \int_{\partial \Omega} u^2 \bX\cdot \bn\,dx$ where $\bn$ is the outward normal on $\partial \Omega$.
+\begin{lemma}  \label{lem:advectionskew}  \cite{Elmanetal2014}\,  Suppose $\bX :\Omega \to \RR^d$ is a bounded and boundedly-differentiable vector field on $\Omega$ with zero divergence ($\Div \bX=0$).  For $u,v \in H^1(\Omega)$ let $b(u,v) = \int_\Omega (\bX \cdot \grad u) v\,dx$.  Then $b(u,u) = \frac{1}{2} \int_{\partial \Omega} u^2 \bX\cdot \bn\,dx$ where $\bn$ is the outward normal on $\partial \Omega$.
 \end{lemma}
 
 \begin{proof}
 Integration by parts gives $b(u,v) = - b(v,u) + \int_{\partial \Omega} uv \bX\cdot \bn\,dx$, so the result follows.
 \end{proof}
 
-\begin{example}  \label{ex:advectiondiffusion}  Suppose $\partial\Omega$ is partitioned into Dirichlet and Neumann portions, i.e.~$\partial\Omega = \partial_D\Omega \cup \partial_N\Omega$, with $\partial_D\Omega$ of positive measure.  Let $\cV = H_0^1(\Omega)$ be the space of functions with value zero on $\partial_D\Omega$.  (For simplicity we consider zero boundary data.)  Consider a smooth and bounded velocity field $\bX$ on $\Omega$ such that $\Div \bX=0$, but additionally assume that the flow is outward on the Neumann boundary, i.e.~$\bX \cdot \bn \ge 0$ at points of $\partial_N\Omega$.  For $u,v \in \cV = H_0^1(\Omega)$ and $\eps>0$ define
+\begin{example}  \label{ex:advectiondiffusion}  Suppose $\partial\Omega$ is partitioned into Dirichlet and Neumann portions, i.e.~$\partial\Omega = \partial_D\Omega \cup \partial_N\Omega$, with $\partial_D\Omega$ of positive measure.  Let $\cV = H_0^1(\Omega)$ be the space of functions which are zero along $\partial_D\Omega$.  Consider a divergence-free velocity field $\bX$ on $\Omega$ satisfying the conditions of Lemma \ref{lem:advectionskew}, but additionally assume that the flow is outward on the Neumann boundary, $\bX \cdot \bn \ge 0$ on $\partial_N\Omega$.  For $u,v \in \cV = H_0^1(\Omega)$ and $\eps>0$ define
 \begin{equation}
-\ip{f(u)}{v} = \int_\Omega \eps \grad u \cdot \grad v - (\bX \cdot \grad u) v\,dx. \label{eq:advectiondiffusion}
+\ip{f(u)}{v} = \eps \left(\grad u, \grad v\right)_{L^2(\Omega)} - b(u,v). \label{eq:advectiondiffusion}
 \end{equation}
-Consider VI \eqref{eq:vi} for any closed and convex $\cK \subset \cV$ and any $g\in\cV'$.  It is easy to see that $|\ip{f(u)}{v}| \le (\eps + \|\bX\|_\infty) \|u\| \|v\|$, thus that $f:\cK \to \cV'$ is continuous (and Lipschitz).  On the other hand, Lemma \ref{lem:advectionskew} says that $s(u,v)$ is skew-symmetric up to a nonnegative term.  However, by the outward flow assumption and the Poincar\'e inequality,
+Consider VI \eqref{eq:vi} for any closed and convex $\cK \subset \cV$ and $g\in\cV'$.  It is easy to see that $|\ip{f(u)}{v}| \le (\eps + \|\bX\|_\infty) \|u\| \|v\|$, thus that $f:\cK \to \cV'$ is continuous.  Lemma \ref{lem:advectionskew} says that the bilinear form $s(u,v)$ is skew-symmetric up to a nonnegative term.  By the outward flow assumption and the Poincar\'e inequality,
 \begin{align*}
 \ip{f(u)-f(v)}{u-v} &= \eps \int_\Omega |\grad u - \grad v|^2\,dx + b(u-v,u-v) \\
                     &= \eps \int_\Omega |\grad u - \grad v|^2\,dx + \frac{1}{2} \int_{\partial_N\Omega} (u-v)^2 \bX\cdot\bn \ge \eps C \|u-v\|^2.
 \end{align*}
-Thus $f$ is 2-coercive, and so VI problem \eqref{eq:vi} is well-posed for any closed and convex $\cK \subset \cV$ and $g\in \cV'$.
+Thus $f$ is 2-coercive, and so VI problem \eqref{eq:vi} is well-posed.
 \end{example}
 
-If $\bX \ne 0$ then VI \eqref{eq:vi} for $f$ in \eqref{eq:advectiondiffusion} is not a (constrained) minimization problem.  Indeed, the Jacobian of $f$, namely the bilinear form $J_f(u,v) = \int_\Omega \eps \grad u \cdot \grad v\,dx - b(u,v)$, is not symmetric in that case.\footnote{Assume $\bX \ne 0$ is continuous for simplicity.  For $u,v$ which are zero on $\partial \Omega$, $J_f(u,v) - J_f(v,u) = -2 b(u,v)$.  There exist $u,v$ so $b(u,v)$ is nonzero; construct $u,v$ locally near some point where $\bX$ is nonzero.}  Thus $f$ in \eqref{eq:advectiondiffusion} cannot be the Hessian of a scalar objective $F$.  References \cite{Bueler2021conservation,ChangNakshatrala2017} consider such advection-diffusion VI problems over $\cK = \{v\ge 0\}$.
+References \cite{Bueler2021conservation,ChangNakshatrala2017} consider advection-diffusion VI problems like Example \ref{ex:advectiondiffusion}, specifically over the set $\cK = \{v\ge 0\}$.  If $\bX \ne 0$ then VI \eqref{eq:vi} for $f$ in \eqref{eq:advectiondiffusion} does not correspond to a minimization problem.  Indeed, $\ip{f(u)}{v}$ is not symmetric in that case,\footnote{Assume $\bX \ne 0$ is continuous for simplicity.  For $u,v$ which are zero on $\partial \Omega$, note $\ip{f(u)}{v} - \ip{f(v)}{u} = -2 b(u,v)$.  By constructing $u,v$ locally near some point where $\bX$ is nonzero. one may show $b(u,v)\ne 0$.} so $f$ cannot be the gradient of a scalar objective.
 
-\begin{example}  \label{ex:porous}  FIXME
+\begin{example}  \label{ex:porous}  Suppose $\phi:[0,\infty) \to [\phi_0,\infty)$ is continuous for some constant $\phi_0>0$.  Then the following operator, of porous medium type, is not known to be monotone (or coercive) when $\phi$ is not constant:
 \begin{equation}
-\ip{f(u)}{v} = \int_\Omega \phi(u) \grad u \cdot \grad v\,dx \label{eq:porous}
+\ip{f(u)}{v} = \int_\Omega \phi(u) \grad u \cdot \grad v\,dx. \label{eq:porous}
 \end{equation}
+As with Example \ref{ex:advectiondiffusion}, this form does not have the symmetry necessary to be the gradient of a scalar objective.
 \end{example}
 
-Numerical solver performance for Examples \ref{ex:plaplacian}, \ref{ex:advectiondiffusion}, and \ref{ex:porous} will be considered in Section \ref{sec:results}.  Further examples of nonlinear VI problems appear in ice sheet models \cite{Calvoetal2002,JouvetBueler2012} and other geophysical fluids \cite{Bueler2021conservation}.
+Numerical solver performance for Examples \ref{ex:plaplacian}, \ref{ex:advectiondiffusion}, and \ref{ex:porous} will be considered in Section \ref{sec:results}.  Further examples of nonlinear VI problems appear in ice sheet models and other geophysical fluids \cite{Bueler2021conservation,Calvoetal2002,JouvetBueler2012}.
 
 
 \section{Constraint decomposition, the basic algorithm} \label{sec:cd}
@@ -258,29 +259,27 @@ Suppose there are $m<\infty$ closed subspaces $\cV_i \subset \cV$ so that the su
 \begin{equation}
 \cV = \sum_{i=0}^{m-1} \cV_i \label{eq:subspacedecomp}
 \end{equation}
-holds in the sense that if $w \in \cV$ then there exist $w_i \in \cV_i$ so that $w = \sum_i w_i$; this is called a \emph{subspace decomposition} \cite{Xu1992}.  Suppose further that $\cK_i \subset \cV_i$ are nonempty, closed, and convex subsets such that
+holds in the sense that if $w \in \cV$ then there exist $w_i \in \cV_i$ so that $w = \sum_i w_i$.  Equation \eqref{eq:subspacedecomp} is called a \emph{subspace decomposition} \cite{Xu1992}.  Suppose further that $\cK_i \subset \cV_i$ are nonempty, closed, and convex subsets such that
 \begin{equation}
 \cK = \sum_{i=0}^{m-1} \cK_i. \label{eq:constraintdecomp}
 \end{equation}
-The sum in \eqref{eq:constraintdecomp} is required to hold in two senses: \emph{(i)}~if $w \in \cK$ then there exist $w_i \in \cK_i$ so that $w = \sum_i w_i$, and \emph{(ii)}~if $z_i \in \cK_i$ for each $i$ then $\sum_i z_i \in \cK$.\footnote{Sense \emph{(ii)} for \eqref{eq:subspacedecomp} is automatic because the $\cV_i$ are subspaces.}
-
-Note that neither decomposition \eqref{eq:subspacedecomp} or \eqref{eq:constraintdecomp} is required to be unique.  Also, $\cK_i \not\subset \cK$ in many applications; see the cartoon in Figure \ref{fig:cartoon}.
-
-Finally, for each $\cK_i$ we assume that there are bounded, (generally) nonlinear restriction operators $R_i : \cK \to \cK_i$ such that if $v \in \cK$ then
-\begin{equation}
-v = \sum_{i=0}^{m-1} R_i v.  \label{eq:constraintrestrictionsum}
-\end{equation}
-A \emph{constraint decomposition} (CD) of $\cK$ is a choice of $\cV_i,\cK_i,R_i$ satisfying \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum} \cite{Tai2003}.
+The sum in \eqref{eq:constraintdecomp} is required to hold in two senses \cite{TaiTseng2002}: \emph{(i)}~if $w \in \cK$ then there exist $w_i \in \cK_i$ so that $w = \sum_i w_i$, and \emph{(ii)}~if $z_i \in \cK_i$ for each $i$ then $\sum_i z_i \in \cK$.  (Sense \emph{(ii)} is automatic for \eqref{eq:subspacedecomp} because the $\cV_i$ are subspaces.)  Note that neither decomposition \eqref{eq:subspacedecomp} or \eqref{eq:constraintdecomp} is required to be unique.  Also, $\cK_i \not\subset \cK$ in many applications; see the cartoon in Figure \ref{fig:cartoon}.
 
 \begin{figure}[ht]
 \includegraphics[width=0.55\textwidth]{genfigs/cartoon.pdf}
-\caption{A constraint decomposition (CD) in a one-sided obstacle problem ($\mathcal{K}=\{v\ge \psi\}$) might look like this if $\mathcal{V}$ were 2-dimensional.}
+\caption{Suppose $\mathcal{V}$ is the space of real functions on a two-point set $\Omega=\{x_1,x_2\}$.  A constraint decomposition (CD) for a one-sided obstacle problem with $\mathcal{K}=\{v\ge \psi\}$ looks like this.}
 \label{fig:cartoon}
 \end{figure}
 
-In Section \ref{sec:multilevel} we will introduce discretizations and describe practical algorithms, but the fundamental CD concept applies even at the level of the continuum problem.  The following two examples illustrate this for obstacle problems \cite{GraeserKornhuber2009}.  First we consider an overlapping domain decomposition.
+For each $\cK_i$ we will also assume that there are bounded, generally-nonlinear restriction operators $R_i : \cK \to \cK_i$ such that if $v \in \cK$ then
+\begin{equation}
+v = \sum_{i=0}^{m-1} R_i v;  \label{eq:constraintrestrictionsum}
+\end{equation}
+see Figure \ref{fig:cartoon}.  Clearly \eqref{eq:constraintrestrictionsum} implies sense \emph{(i)} for \eqref{eq:constraintdecomp}. A \emph{constraint decomposition} (CD) of $\cK$ is a choice of $\cV_i,\cK_i,R_i$ satisfying \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum} \cite{Tai2003}.
 
-\begin{example}  \label{ex:domaindecomposition}  Consider a bounded domain $\Omega \subset \RR^d$, let $\cV = W_0^{k,p}(\Omega)$ for $k\ge 0$ and $p\ge 1$, and suppose the obstacle $\psi \in W^{k,p}(\Omega)$ satisfies $\psi|_{\partial \Omega} \le 0$.  Let $\cK = \{v \ge \psi\} \subset \cV$.  Suppose further that $\{\phi_i\}_{i=0}^{m-1}$ is a smooth partition of unity on $\Omega$, satisfying $0 \le \phi_i\le 1$ and $\sum_i \phi_i = 1$, and let $\Omega_i$ be the support of $\phi_i$.  Let $\cV_i = \{w \in \cV:w|_{\Omega \setminus \Omega_i} =0 \}$, $\cK_i = \{v \in \cV_i: v \ge \phi_i \psi\}$, and $R_i(v) = \phi_i v$.  Then \eqref{eq:subspacedecomp}, \eqref{eq:constraintdecomp}, and \eqref{eq:constraintrestrictionsum} all hold.
+In Section \ref{sec:multilevel} we will introduce discretizations and practical algorithms, but we observe here that the CD concept applies at the level of the continuum problem.  The following two examples illustrate this for obstacle problems \cite{GraeserKornhuber2009}.
+
+\begin{example}  \label{ex:domaindecomposition}  Consider an overlapping domain decomposition as follows.  For a bounded domain $\Omega \subset \RR^d$, let $\cV = W_0^{k,p}(\Omega)$ for $k\ge 0$ and $p\ge 1$, and suppose the obstacle $\psi \in W^{k,p}(\Omega)$ satisfies $\psi|_{\partial \Omega} \le 0$.  Let $\cK = \{v \ge \psi\} \subset \cV$.  Suppose further that $\{\phi_i\}_{i=0}^{m-1}$ is a smooth partition of unity on $\Omega$, satisfying $0 \le \phi_i\le 1$ and $\sum_i \phi_i = 1$, and let $\Omega_i$ be the support of $\phi_i$.  Let $\cV_i = \{w \in \cV:w|_{\Omega \setminus \Omega_i} =0 \}$, $\cK_i = \{v \in \cV_i: v \ge \phi_i \psi\}$, and $R_i(v) = \phi_i v$.  Then \eqref{eq:subspacedecomp}, \eqref{eq:constraintdecomp}, and \eqref{eq:constraintrestrictionsum} all hold.
 \end{example}
 
 Our second example is a disjoint frequency decomposition.  A multilevel FE CD, e.g.~the one proposed in Section \ref{sec:multilevel}, approximates such a frequency decomposition.
