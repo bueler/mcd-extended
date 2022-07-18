@@ -296,7 +296,7 @@ Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below state the basi
 \pr{cd-add}(u\in\cK)\text{:} \\+
     for $i \in \{0,\dots,m-1\}$: \\+
         \rm{find} $\hat w_i\in \cK_i$ \rm{so that for all} $v_i\in \cK_i$ \rm{we have} \\+
-            $\boxed{{\large \strut} \ip{f(u - R_i u + \hat w_i)}{v_i-\hat w_i} \ge g(v_i-\hat w_i)}$ \\--
+            $\boxed{{\large \strut} \ip{f(u - R_i u + \hat w_i)}{v_i-\hat w_i} \ge \ip{g}{v_i-\hat w_i}}$ \\--
     $\hat w = \sum_i \hat w_i\in\cK$ \\
     return $w=(1-\alpha) u + \alpha \hat w\in\cK$
 \end{pseudo*}
@@ -313,7 +313,7 @@ The following multiplicative (successive) version orders the sets $\mathcal{K}_i
 \pr{cd-mult}(u\in\cK)\text{:} \\+
     for $i = 0,\dots,m-1$: \\+
         \rm{find} $\hat w_i\in \cK_i$ \rm{so that for all} $v_i\in \cK_i$ \rm{we have} \\+
-            $\displaystyle \boxed{\ip{f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j u\Big)}{v_i-\hat w_i} \ge g(v_i-\hat w_i)}$ \\-
+            $\displaystyle \boxed{\ip{f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j u\Big)}{v_i-\hat w_i} \ge \ip{g}{v_i-\hat w_i}}$ \\-
             $w_i = (1-\alpha) R_i u + \alpha \hat w_i\in\cK_i$ \\-
     $\hat w = \sum_i \hat w_i\in\cK$ \\
     return $w=(1-\alpha) u + \alpha \hat w\in\cK$
@@ -344,9 +344,9 @@ We refer to Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} as the \
 
 \begin{example}  \label{ex:fnice} Suppose $f:\cV \to \cV'$ is linear and defined on all of $\cV$.  Furthermore suppose $f$ is local in the sense that a basis $\{\phi_i\}$ of $\cV_i$ exists, with $\supp \phi_i$ compactly-contained in $\Omega$, such that for any $z\in\mathcal{V}$ the value $\ip{f(\phi_i)}{z}$ can be computed by an integral over the support of $\phi_i$.  Considering only additive Algorithm \ref{alg:basiccd-add} for simplicity, by linearity the boxed VI over $\cK_i$ can be written as
 \begin{equation}
-\ip{f(e_i)}{v_i-\hat w_i} \ge \tilde g(v_i-\hat w_i) \label{eq:linearlocalvi}
+\ip{f(e_i)}{v_i-\hat w_i} \ge \ip{\tilde g}{v_i-\hat w_i} \label{eq:linearlocalvi}
 \end{equation}
-where $\tilde g(z) = g(z) - \ip{f(u)}{z}$.  Note $e_i = \hat w_i - R_i u \in \cV_i \notin \cK$, in general, but VIs \eqref{eq:linearlocalvi} make sense because $f$ is defined over $\cV$.  Each problem \eqref{eq:linearlocalvi} can be solved using a stored residual $\ip{f(u)}{\cdot}$, namely as included here into the source term.  The VI \eqref{eq:vi} is then approximately solved in any incremental and efficient manner, by computations over the basis supports.
+where $\tilde g = g - f(u)$.  Note $e_i = \hat w_i - R_i u \in \cV_i \notin \cK$, in general, but VIs \eqref{eq:linearlocalvi} make sense because $f$ is defined over $\cV$.  Each problem \eqref{eq:linearlocalvi} can be solved using a stored residual $\ip{f(u)}{\cdot}$, namely as included here into the source term.  The VI \eqref{eq:vi} is then approximately solved in any incremental and efficient manner, by computations over the basis supports.
 \end{example}
 
 The assumption that $\ip{f(\phi_i)}{z}$ can be evaluated over the support of $\phi_i$ is satisfied when $f$ is a linear differential operator, $\cV$ is an FE space, and $\phi_i$ are hat functions; see Section \ref{sec:multilevel}.  Constrast non-local integral operators where $\ip{f(\phi_i)}{z}$ requires an integral over $\Omega$ even if $\phi_i$ is is a hat function with small support.
@@ -356,15 +356,16 @@ When $f$ has all the nice properties listed in Example \ref{ex:fnice} then a sol
 
 \section{Convergence of the basic algorithm} \label{sec:convergence}
 
-We now seek a proof of the convergence of Algorithm \ref{alg:basiccd}.  This will be possible if we restrict to $2$-coercive operators and make certain assumptions as in \cite{Tai2003}.  First we define a new quantity related to VI problem \eqref{eq:vi}.
+We now prove the convergence of additive CD Algorithm \ref{alg:basiccd-add}. % ASPIRATION
+This will be possible if we restrict to $2$-coercive operators, require $\alpha \le 1/m$, and make certain other assumptions as in \cite{Tai2003}.  However, our proof applies to VI problems which are not optimizations, and for which $f$ only applies to admissible elements, and thus extends the theory in \cite{Tai2003}.  First we define a new quantity related to VI problem \eqref{eq:vi}.
 
 \begin{definition} Suppose $f:\cK \to \cV'$ and $g \in \cV'$.  For $u,v \in \cK$ let
 \begin{equation}
-  E(v,u) = \ip{f(v)}{v-u} - g(v-u).  \label{eq:normlikedefn}
+  E(v,u) = \ip{f(v)}{v-u} - \ip{g}{v-u}.  \label{eq:normlikedefn}
 \end{equation}
 \end{definition}
 
-If $u^*$ solves \eqref{eq:vi} then $E(v,u^*)$ is somewhat like an ``merit function,'' something used in the context of solving nonlinear equations \cite{NocedalWright2006} to replace an objective (scalar) functional.  (Note that $E(v,u^*)$ is \emph{not} a residual for \eqref{eq:vi}.)  The next lemma, which follows directly from $p$-coercivity, shows $E(v,u^*)$ is bounded below.
+If $u^*$ solves \eqref{eq:vi} then $E(v,u^*)$ is somewhat like an ``merit function'' for an iterate $v$, as used in solving nonlinear equations \cite{NocedalWright2006}, replacing the scalar objective which is assumed in \cite{Tai2003}.  The next lemma shows $E(v,u^*)$ is bounded below by a norm.
 
 \begin{lemma} \label{lem:normlike}  Suppose $f:\mathcal{K} \to \mathcal{V}'$ is $p$-coercive and $u^* \in \mathcal{K}$ solves \eqref{eq:vi}.  For $v \in \mathcal{K}$,
 \begin{equation}
@@ -374,8 +375,8 @@ If $u^*$ solves \eqref{eq:vi} then $E(v,u^*)$ is somewhat like an ``merit functi
 
 \begin{proof}
 \begin{align*}
-E(v,u^*) &= \ip{f(v)}{v-u^*} - \ip{f(u^*)}{v-u^*} + \ip{f(u^*)}{v-u^*} - g(v-u^*) \\
-   &\ge \kappa \|v-u^*\|^p + 0.  \qedhere
+E(v,u^*) &= \ip{f(v)}{v-u^*} - \ip{f(u^*)}{v-u^*} + \ip{f(u^*)}{v-u^*} - \ip{g}{v-u^*} \\
+   &\ge \ip{f(v)-f(u^*)}{v-u^*} + 0 \ge \kappa \|v-u^*\|^p.  \qedhere
 \end{align*}
 \end{proof}
 
@@ -385,50 +386,56 @@ Next we make two assumptions which are essentially the same as (7) and (8) in \c
 \begin{equation}
 \left(\sum_{i=0}^{m-1} \|R_i u - R_i v\|^2\right)^{1/2} \le C_1 \|u-v\| \label{as:lipschitzrestrictions}
 \end{equation}
-for all $u,v\in\cK$.  Furthermore, there exists $C_2>0$ so that for all $v_i \in \cV_i$ and $y_j \in \cV_j$,
+for all $u,v\in\cK$.  Furthermore, there exists a constant $C_2>0$ so that for all $v_i \in \cV_i$ and $y_j \in \cV_j$, and all $w_{ij} \in \cK$ such that $w_{ij} + v_i \in \cK$, it holds that
 \begin{equation}
-\sum_{i=0}^{m-1} \sum_{j=0}^{m-1} \left|\ip{f(w_{ij} + v_i) - f(w_{ij})}{y_j}\right| \le C_2 \left(\sum_{i=0}^{m-1} \|v_i\|^2\right)^{1/2} \left(\sum_{j=0}^{m-1} \|y_j\|^2\right)^{1/2} \label{as:lipschitzresidual}
+\sum_{i=0}^{m-1} \sum_{j=0}^{m-1} \left|\ip{f(w_{ij} + v_i) - f(w_{ij})}{y_j}\right| \le C_2 \left(\sum_{i=0}^{m-1} \|v_i\|^2\right)^{1/2} \left(\sum_{j=0}^{m-1} \|y_j\|^2\right)^{1/2}. \label{as:lipschitzresidual}
 \end{equation}
-for all $w_{ij} \in \cK$ such that $w_{ij} + v_i \in \cK$ for all $i$ and $j$.
 \end{assumptions*}
 
 These inequalities might be described as ``totally Lipschitz'' requirements for the maps $R_i$ and $f$, respectively.  We make the following observations:
 \begin{itemize}
-\item Assumption \eqref{as:lipschitzrestrictions} addresses only the CD, and not the map $f$.
-\item It is sometimes the case that \eqref{as:lipschitzresidual} addresses only a subspace decomposition property of $f$ (and not the CD itself).  For example, in the classical obstacle problem one may verify \eqref{as:lipschitzresidual} over all $w_{ij} \in \cV$.
+\item Assumption \eqref{as:lipschitzrestrictions} addresses only the CD, and not the VI problem $f$.  Tai \cite{Tai2003} gives a value of $C_1$ for obstacle problem constraint decompositions using $P_1$ FE spaces over shape-regular and quasi-uniform triangulations.  In particular, $C_1$ is known for overlapping domain decompositions, with or without an additional coarse mesh, and standard multilevel hierarchies.  The cases we will demonstrate in Section \ref{sec:results} are covered.
+\item If $f$ is defined on all of $\mathcal{V}$ then one might be able to verify \eqref{as:lipschitzresidual} over a subspace decomposition, not the CD.  For example, in the classical obstacle problem one may verify \eqref{as:lipschitzresidual} over arbitrary $w_{ij} \in \cV$ \cite{Tai2003}.
+\item If we assume $f$ itself is Lipschitz then the existence of $C_2$ is clear \cite{TaiXu2002}.  However, our convergence rate bound is improved when $C_2$ is smaller, so the smallest $C_2$ for which \eqref{as:lipschitzresidual} holds is used.
+\item The constants $C_1,C_2$ generally depend on $m$.  Furthermore, regarding the convergence proof below, Tai \cite{Tai2003} observes that if the iterates from Algorithm \ref{alg:basiccd-add} are bounded in $\mathcal{K}$ then constants $C_1,C_2$ are permitted to depend continuously on $u,v,w_{ij},v_i,y_i$.
 \item The unconstrained versions of \eqref{as:lipschitzrestrictions} and \eqref{as:lipschitzresidual} are (13), (14) in \cite{TaiXu2002}, respectively.
-\item If we assume $f$ itself is Lipschitz then the existence of $C_2$ is clear \cite{TaiXu2002}.  However, our bound for the convergence rate for Algorithm \ref{alg:basiccd} is improved when $C_1,C_2$ are made smaller.
-\item Tai \cite{Tai2003} gives values of the constants $C_1$ in \eqref{as:lipschitzrestrictions} for obstacle problem constraint decompositions using $P_1$ FE spaces over shape-regular and quasi-uniform triangulations.  In particular, constants $C_1$ are known for overlapping domain decompositions (with or without an additional coarse mesh) and standard multilevel hierarchies.  Thus the cases we will demonstrate in Section \ref{sec:results} are already covered.
-\item The constants $C_1,C_2$ generally depend on $m$.  However, regarding the convergence proof below, \cite{Tai2003} observes that if repeated application of Algorithm \ref{alg:basiccd} generates a bounded sequence of iterates in $\mathcal{K}$ then constants $C_1,C_2$ would be permitted to depend on $u,v,w_{ij},v_i,y_i$ as well.
 \end{itemize}
 
-From the above definitions and assumptions we have the following estimate for the parallel version of Algorithm \ref{alg:basiccd}.  Our proof follows \cite{Tai2003}.
+From the above definitions and assumptions we have the following estimate for Algorithm \ref{alg:basiccd-add}.  Our proof follows \cite{Tai2003}.
 
-\begin{lemma} \label{lem:core}  Suppose $f$ is $2$-coercive and $u^* \in \mathcal{K}$ solves \eqref{eq:vi}.  Recall $E(v,u^*)$ is defined in \eqref{eq:normlikedefn}.  Suppose $\mathcal{V}_i$, $\mathcal{K}_i$, $R_i$, and $f$ satisfy \eqref{as:lipschitzrestrictions} and \eqref{as:lipschitzresidual}.  Suppose $\hat w$ is computed from $u$ by the parallel version of Algorithm \ref{alg:basiccd}, and recall $e_i = \hat w_i - R_i u$.  Then
+\begin{lemma} \label{lem:core}  Suppose $f$ is $2$-coercive and $u^* \in \mathcal{K}$ solves \eqref{eq:vi}.  Assume $\mathcal{V}_i$, $\mathcal{K}_i$, $R_i$ form a CD satisfying \eqref{as:lipschitzrestrictions}, and that \eqref{as:lipschitzresidual} is satisfied.  If $\hat w$ is computed from $u \in \mathcal{K}$ by Algorithm \ref{alg:basiccd-add} then
 \begin{equation}
    E(\hat w,u^*) \le C_2 \sum_{i=0}^{m-1} \|e_i\|^2 + \kappa^{-1} C_1 C_2 \left(\sum_{i=0}^{m-1} \|e_i\|^2\right)^{1/2} E(u,u^*)^{1/2}. \label{eq:core}
 \end{equation}
 \end{lemma}
 
-\begin{proof}  Recalling that $\hat w = u^* + \sum_i \hat w_i - R_i u^*$, by the (parallel version) boxed VI in Algorithm \ref{alg:basiccd} with $v_i = R_i u^*$ we get
+\begin{proof}  Recall that $\hat w = u^* + \sum_i \hat w_i - R_i u^*$.  Expand $E(\hat w,u^*)$ and substitute $v_i = R_i u^*$ into the boxed VI in Algorithm \ref{alg:basiccd-add} to find
 \begin{align}
-E(\hat w,u^*) &= \sum_{i=0}^{m-1} \ip{f(\hat w)}{\hat w_i - R_i u^*} - g(\hat w_i - R_i u^*) \label{eq:startcore} \\
+E(\hat w,u^*) &= \sum_{i=0}^{m-1} \ip{f(\hat w)}{\hat w_i - R_i u^*} - \ip{g}{\hat w_i - R_i u^*} \label{eq:startcore} \\
     &\le \sum_{i=0}^{m-1} \ip{f(\hat w)}{\hat w_i - R_i u^*} + \ip{f(u + e_i)}{R_i u^* - \hat w_i} \notag \\
     &= \sum_{i=0}^{m-1} \ip{f(\hat w) - f(u + e_i)}{\hat w_i - R_i u^*}. \notag
 \end{align}
-For $i\in \{0,1,\dots,m-1\}$ use wrapped indices to define elements $\phi_{i,j}$:
+
+For $i\in \{0,1,\dots,m-1\}$ we now use wrapped indices to define progressive states $\phi_{i,j}$:
 \begin{align}
 \phi_{i,0} &= u + e_i, \label{eq:gridcore} \\
 \phi_{i,1} &= u + e_i + e_{i+1}, \notag \\
   &\vdots \notag \\
-\phi_{i,m-1} &= u + e_i + e_{i+1} + \dots + e_{m-1} + e_0 + \dots + e_{i-1}, \notag
+\phi_{i,m-1} &= u + e_i + e_{i+1} + \dots + e_{m-1} + e_0 + \dots + e_{i-1}. \notag
 \end{align}
-and $\phi_{i,j} \in \cK$ by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum}.  Note that $\phi_{i,m-1} = u + \sum_i e_i = \hat w$.  From \eqref{eq:startcore}, apply a telescoping sum using the elements in \eqref{eq:gridcore}:
+Observe that $\phi_{i,j} \in \cK$ by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum}, and that $\phi_{i,m-1} = u + \sum_i e_i = \hat w$, thus that \eqref{eq:startcore} can be written
+\begin{equation}
+E(\hat w,u^*) = \sum_{i=0}^{m-1} \ip{f(\phi_{i,m-1}) - f(\phi_{i,0})}{\hat w_i - R_i u^*}. \label{eq:startcoreclean}
+\end{equation}
+From \eqref{eq:startcoreclean}, telescope into a sum over $j=1,\dots,m-1$, and then apply the triangle inequality:
 \begin{align}
 E(\hat w,u^*) &\le \sum_{i=0}^{m-1} \sum_{j=1}^{m-1} \ip{f(\phi_{i,j}) - f(\phi_{i,j-1})}{\hat w_i - R_i u^*} \label{eq:nextcore} \\
-  &\le \sum_{i=0}^{m-1} \sum_{j=0}^{m-1} \left|\ip{f(\phi_{i,j}) - f(\phi_{i,j-1})}{\hat w_i - R_i u^*}\right|. \notag
+  &\le \sum_{i=0}^{m-1} \sum_{j=1}^{m-1} \left|\ip{f(\phi_{i,j}) - f(\phi_{i,j-1})}{\hat w_i - R_i u^*}\right|. \notag
 \end{align}
-By an easy renumbering of the indices $i,j$ we may apply assumption \eqref{as:lipschitzresidual}, then the triangle inequality, and then assumption \eqref{as:lipschitzrestrictions}; we denote $\left(\sum_{i=0}^{m-1} \|e_i\|^2\right)^{1/2}$ by $Z$:
+
+Let $Z=\left(\sum_{i=0}^{m-1} \|e_i\|^2\right)^{1/2}$.  FIXME: MAKE THE RENUMBERING EXPLICIT
+
+renumbering the indices $i,j$ we may apply assumption \eqref{as:lipschitzresidual}, then the triangle inequality, and then assumption \eqref{as:lipschitzrestrictions}:
 \begin{align}
 E(\hat w,u^*) &\le C_2 Z \left(\sum_{i=0}^{m-1} \|\hat w_i - R_i u^*\|^2\right)^{1/2} = C_2 Z \left(\sum_{i=0}^{m-1} \|\hat w_i - R_i u + R_i u - R_i u^*\|^2\right)^{1/2} \label{eq:nextnextcore} \\
   &\le C_2 Z \left(Z + \left(\sum_{i=0}^{m-1} \|R_i u - R_i u^*\|^2\right)^{1/2}\right) \le C_2 Z \left(Z + C_1 \|u-u^*\|\right). \notag
