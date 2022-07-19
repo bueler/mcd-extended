@@ -21,3 +21,5 @@ mcd2.pdf: mcd2.tex mcd2.bib cropfigures
 
 clean:
 	@rm -f *~ *.out *.aux *.log *.blg *.snm *.toc *.nav *.vrb *.bbl *.synctex.gz
+	@rm -rf genfigs/*.pdf
+	@rm -rf genfigs/__pycache__/
