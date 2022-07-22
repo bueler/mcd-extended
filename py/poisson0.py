@@ -2,8 +2,9 @@
 
 from firedrake import *
 
+levels = 3
 cmesh = UnitSquareMesh(2, 2)  # as small as practical for nontriviality
-hierarchy = MeshHierarchy(cmesh, 1)  # just 2 levels, coarse and fine
+hierarchy = MeshHierarchy(cmesh, levels-1)
 mesh = hierarchy[-1]
 
 Vf = FunctionSpace(mesh, "CG", 1)
@@ -31,14 +32,17 @@ def error(u):
     return norm(assemble(u - expect))
 
 params = {"snes_type": "ksponly",
+          "snes_max_linear_solve_fail": 2, # don't error when KSP reports DIVERGED_ITS
           #"snes_view": None,
           "ksp_converged_reason": None,
           "ksp_monitor": None,
-          "ksp_type": "cg",
+          "ksp_type": "richardson",
+          "ksp_max_it": 2,
           "mg_levels_ksp_type": "richardson",
+          "mg_levels_ksp_max_it": 1,
           "mg_levels_pc_type": "sor",
           "pc_type": "mg"}
 u = run_solve(params)
-print('MG V-cycle + CG error', error(u))
-#u.rename("u")
-#File("solution.pvd").write(u)
+print('MG V-cycle (%d levels)  |error|=%.6f' % (levels, error(u)))
+u.rename("u")
+File("u-poisson0.pvd").write(u)
