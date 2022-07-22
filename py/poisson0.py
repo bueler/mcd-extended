@@ -31,11 +31,13 @@ def error(u):
     expect = Function(Vf).interpolate(exact)
     return norm(assemble(u - expect))
 
+print('initial                   |residual|=%.6f  |error|=%.6f' \
+      % (norm(assemble(-F)), error(u)))
 params = {"snes_type": "ksponly",
           "snes_max_linear_solve_fail": 2, # don't error when KSP reports DIVERGED_ITS
           #"snes_view": None,
           "ksp_converged_reason": None,
-          "ksp_monitor": None,
+          "ksp_monitor_true_residual": None,
           "ksp_type": "richardson",
           "ksp_max_it": 2,
           "mg_levels_ksp_type": "richardson",
@@ -43,6 +45,7 @@ params = {"snes_type": "ksponly",
           "mg_levels_pc_type": "sor",
           "pc_type": "mg"}
 u = run_solve(params)
-print('MG V-cycle (%d levels)  |error|=%.6f' % (levels, error(u)))
+print('MG 2 V-cycles (%d levels)  |residual|=%.6f  |error|=%.6f' \
+      % (levels, norm(assemble(-F)), error(u)))
 u.rename("u")
 File("u-poisson0.pvd").write(u)

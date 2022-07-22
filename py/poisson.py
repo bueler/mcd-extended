@@ -1,83 +1,109 @@
-"""solve poisson equation by 2-mesh FAS multigrid.
-problem is
-    F(u)[w] = ell[w]
-where
-    F(u)[w] = dot(grad(u), grad(w)) * dx
-    ell[w] = f * w * dx
-FAS equation is
-    Fc(uc)[wc] = ellc[wc]
+"""Solve poisson equation  - triangle u = f  by FAS multigrid.
+
+Poisson equation problem (weak form) is
+    F(u)[v] = ell[v]
+where v is a test function and
+    F(u)[v] = dot(grad(u), grad(v)) * dx
+    ell[v] = f * v * dx
+and boundary conditions are homogeneous Dirichlet.
+
+Solver is FAS V-cycles.  Going downward the V-cycle uses solve() for a
+down-smoother, then forms the FAS correction equation, then goes down a level.
+The coarsest problem is solved by LU.  Going upward the V-cycle prolongs and
+adds the computed correction and then uses solve() as an up-smoother.  The
+smoothers are a fixed number of SSOR iterations.
+
+The FAS correction equation is
+    Fc(uc)[vc] = ellc[vc]
 where Fc has same formula as F and
-    ellc[wc] = R'(ellf[.] - Ff(uf)[.])[wc] + Fc(R(uf))[wc]
-and R' is canonical restriction and R is injection
+    ellc[vc] = R'(resf)[vc] + Fc(R(uf))[vc]
+and
+    resf[v] = ellf[v] - Ff(uf)[v]
+and R' is canonical restriction and R is injection.
 """
 
 from firedrake import *
 
-# set up mesh hierarchy and fine-mesh data
+levels = 3
+vcycles = 2
+smootherparams = {"snes_type": "ksponly",
+                  "snes_max_linear_solve_fail": 2, # don't error when KSP reports DIVERGED_ITS
+                  #"ksp_converged_reason": None,
+                  "ksp_type": "richardson",
+                  "ksp_max_it": 1,
+                  "pc_type": "sor"}
+                  #"ksp_type": "preonly",
+                  #"pc_type": "lu"}
+coarseparams = {"snes_type": "ksponly",
+                #"ksp_converged_reason": None,
+                "ksp_type": "preonly",
+                "pc_type": "lu"}
+
+# set up mesh hierarchy, function spaces, and some functions on each level
 cmesh = UnitSquareMesh(2, 2)  # as small as practical for nontriviality
-hierarchy = MeshHierarchy(cmesh, 1)  # just 2 levels, coarse and fine
-mesh = hierarchy[-1]
-x, y = SpatialCoordinate(mesh)
+hierarchy = MeshHierarchy(cmesh, levels-1)
+VV = [FunctionSpace(hierarchy[i], "CG", 1) for i in range(levels)]
+u = [Function(VV[i]) for i in range(levels)] # values initialized to zero
+v = [TestFunction(VV[i]) for i in range(levels)]
+F = [dot(grad(u[i]), grad(v[i])) * dx for i in range(levels)]
+bcs = [DirichletBC(VV[i], zero(), (1, 2, 3, 4)) for i in range(levels)]
+Ru = [Function(VV[i]) for i in range(levels)]
+
+# blank lists for functions to be created on descent by FAS formulas
+ell = [None for i in range(levels)]
+res = ell.copy()
+
+# rhs and exact solution on fine level
+fine = levels-1
+x, y = SpatialCoordinate(hierarchy[fine])
 f = -0.5*pi*pi*(4*cos(pi*x) - 5*cos(pi*x*0.5) + 2)*sin(pi*y)
 exact = sin(pi*x)*tan(pi*x*0.25)*sin(pi*y)
-
-# fine-mesh problem can be described outside of V-cycles
-V1 = FunctionSpace(hierarchy[-1], "CG", 1)
-u1 = Function(V1)
-#print(norm(u1))  # it is zero vector
-w1 = TestFunction(V1)
-F1 = dot(grad(u1), grad(w1)) * dx
-ell1 = f * w1 * dx
-residual1 = ell1 - F1
-bcs1 = DirichletBC(V1, zero(), (1, 2, 3, 4))
-params1 = {"snes_type": "ksponly",
-           #"ksp_converged_reason": None,
-           "ksp_max_it": 1,
-           "ksp_type": "richardson",
-           "pc_type": "sor"}
-
 def error(u):
-    expect = Function(V1).interpolate(exact)
-    return norm(assemble(u - expect))
+    return norm(assemble(u - Function(VV[fine]).interpolate(exact)))
 
-print('initial       |residual|=%.6f  |error|=%.6f' \
-      % (norm(assemble(residual1)), error(u1)))
+# fine-mesh problem
+ell[fine] = f * v[fine] * dx
+res[fine] = ell[fine] - F[fine]
 
-vcycles = 2
+print('initial             |residual|=%.6f  |error|=%.6f' \
+      % (norm(assemble(res[fine])), error(u[fine])))
+
 for j in range(vcycles):
-    # fine-mesh smoother application
-    solve(residual1 == 0, u1, bcs=bcs1,
-          solver_parameters=params1)
-    print('fine smoother |residual|=%.6f  |error|=%.6f' \
-          % (norm(assemble(residual1)), error(u1)))
+    # down-smoothing and creation of FAS correction equation
+    for i in range(levels-1,0,-1):   # levels-1, ..., 1
+        # smoother application
+        solve(res[i] == 0, u[i], bcs=bcs[i],
+              solver_parameters=smootherparams)
+        # construct FAS correction problem with right-hand side
+        #     ell[i-1] = R'(res(u[i]))) + F[i-1](R(u[i]))
+        # where R' is canonical restriction and R is injection
+        Rres = Function(VV[i-1])
+        restrict(assemble(res[i]), Rres) # assemble() needed because
+                                         # res[i] is UFL form only
+        inject(u[i], Ru[i-1])
+        ell[i-1] = Rres * v[i-1] * dx + dot(grad(Ru[i-1]), grad(v[i-1])) * dx
+        res[i-1] = ell[i-1] - F[i-1]
+        inject(u[i], u[i-1])  # for initial value on next level
+                              # equivalent to setting initial error iterate to zero
+                              # but restrict() seems better?
 
-    # coarse-mesh FAS problem and direct solution
-    V0 = FunctionSpace(hierarchy[0], "CG", 1)
-    u0 = Function(V0)
-    w0 = TestFunction(V0)
-    F0 = dot(grad(u0), grad(w0)) * dx
-    # build FAS rhs:  ell = R'(residual1(u1)) + F0(R(u1))
-    # where R' is canonical restriction and R is injection
-    r0 = Function(V0)
-    restrict(assemble(residual1), r0)
-    Ru = Function(V0)
-    inject(u1, Ru)
-    ell0 = r0 * w0 * dx + dot(grad(Ru), grad(w0)) * dx
-    residual0 = ell0 - F0
-    bcs0 = DirichletBC(V0, zero(), (1, 2, 3, 4))
-    params0 = {"snes_type": "ksponly",
-               #"ksp_converged_reason": None,
-               "ksp_type": "preonly",
-               "pc_type": "lu"}
-    solve(residual0 == 0, u0, bcs=bcs0,
-          solver_parameters=params0)
-    print('  |coarse correction|=%.6f' % (norm(u0)))
+    # coarse-mesh problem and direct solution
+    solve(res[0] == 0, u[0], bcs=bcs[0],
+          solver_parameters=coarseparams)
+    print('%s|coarse cor|=%.6f' % ((levels-1)*'  ', norm(u[0])))
 
-    # prolong correction, add it, and do a smoother
-    Pc1 = Function(V1)
-    prolong(assemble(u0 - Ru), Pc1)
-    u1 += Pc1
-    solve(residual1 == 0, u1, bcs=bcs1,
-          solver_parameters=params1)
-    print('%d cycles      |residual|=%.6f  |error|=%.6f' \
-          % (j+1, norm(assemble(residual1)), error(u1)))
+    # prolongation and up-smoothing
+    for i in range(1,levels):   # 1, ..., levels-1
+        Pcor = Function(VV[i])
+        prolong(assemble(u[i-1] - Ru[i-1]), Pcor)  # assemble() needed because
+                                                   # subtraction is UFL
+        u[i] += Pcor
+        solve(res[i] == 0, u[i], bcs=bcs[i],
+              solver_parameters=smootherparams)
+
+    # report on result of cycle
+    print('vcycle %d (%d levels) |residual|=%.6f  |error|=%.6f' \
+          % (j+1, levels, norm(assemble(res[fine])), error(u[fine])))
+
+u[fine].rename("u")
+File("u-poisson.pvd").write(u[fine])
