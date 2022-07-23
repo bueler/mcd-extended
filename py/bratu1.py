@@ -36,9 +36,10 @@ vcycles = 1
 lam = 1.0
 smootherparams = {"snes_rtol": 1.0,  # always succeed after one newton step
                   #"snes_view": None,
-                  "snes_max_linear_solve_fail": 2, # don't error when KSP reports DIVERGED_ITS
+                  "snes_max_linear_solve_fail": 200, # don't error when KSP reports DIVERGED_ITS
                   #"snes_converged_reason": None,
                   #"ksp_converged_reason": None,
+                  #"ksp_monitor": None,
                   "ksp_type": "richardson",
                   "ksp_max_it": 1,
                   "pc_type": "sor",
@@ -146,8 +147,10 @@ for j in range(vcycles):
     print('vcycle %d (%d levels) |residual|=%.6f  |error|=%.6f' \
           % (j+1, levels, norm(assemble(res[fine])), error(u[fine])))
 
-#u[fine].rename("u")
-#File("u-bratu1.pvd").write(u[fine])
+u[fine].rename("u")
+uexact = Function(VV[fine]).interpolate(exact)
+uexact.rename("uexact")
+File("u-bratu1.pvd").write(u[fine],uexact)
 
 #print(u[fine].dat.data)
 #uexact = Function(VV[fine]).interpolate(exact)
