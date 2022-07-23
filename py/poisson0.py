@@ -2,7 +2,7 @@
 
 from firedrake import *
 
-levels = 3
+levels = 2
 cmesh = UnitSquareMesh(2, 2)  # as small as practical for nontriviality
 hierarchy = MeshHierarchy(cmesh, levels-1)
 mesh = hierarchy[-1]
@@ -39,7 +39,7 @@ params = {"snes_type": "ksponly",
           "ksp_converged_reason": None,
           "ksp_monitor_true_residual": None,
           "ksp_type": "richardson",
-          "ksp_max_it": 2,
+          "ksp_max_it": 1,
           "mg_levels_ksp_type": "richardson",
           "mg_levels_ksp_max_it": 1,
           "mg_levels_pc_type": "sor",

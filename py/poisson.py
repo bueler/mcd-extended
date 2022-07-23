@@ -24,8 +24,8 @@ and R' is canonical restriction and R is injection.
 
 from firedrake import *
 
-levels = 3
-vcycles = 2
+levels = 2
+vcycles = 1
 smootherparams = {"snes_type": "ksponly",
                   "snes_max_linear_solve_fail": 2, # don't error when KSP reports DIVERGED_ITS
                   #"ksp_converged_reason": None,
@@ -39,9 +39,12 @@ coarseparams = {"snes_type": "ksponly",
                 "ksp_type": "preonly",
                 "pc_type": "lu"}
 
-# set up mesh hierarchy, function spaces, and some functions on each level
+# set up mesh hierarchy
 cmesh = UnitSquareMesh(2, 2)  # as small as practical for nontriviality
+#FIXME try cmesh = UnitIntervalMesh(2) in new 1D code which tries to exactly reproduce fas-intro example
 hierarchy = MeshHierarchy(cmesh, levels-1)
+
+# set up function spaces and some functions on each level
 VV = [FunctionSpace(hierarchy[i], "CG", 1) for i in range(levels)]
 u = [Function(VV[i]) for i in range(levels)] # values initialized to zero
 v = [TestFunction(VV[i]) for i in range(levels)]
