@@ -95,7 +95,7 @@ def error(u):
 
 # fine-mesh problem
 ell[fine] = f * v[fine] * dx
-res[fine] = ell[fine] - F[fine]
+res[fine] = F[fine] - ell[fine]
 print('initial             |residual|=%.6f  |error|=%.6f' \
       % (norm(assemble(res[fine])), error(u[fine])))
 
@@ -128,7 +128,7 @@ for j in range(vcycles):
             print(Rres.dat.data)
 
         ell[i-1] = Rres * v[i-1] * dx + FRu[i-1]
-        res[i-1] = ell[i-1] - F[i-1]
+        res[i-1] = F[i-1] - ell[i-1]
         inject(u[i], u[i-1])  # for initial value on next level
                               # equivalent to setting initial error iterate to zero
                               # but restrict() seems better?
