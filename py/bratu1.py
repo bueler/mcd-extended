@@ -44,8 +44,8 @@ smootherparams = {"snes_rtol": 1.0,  # always succeed after one newton step
                   "ksp_max_it": 1,
                   "pc_type": "sor",
                   "pc_sor_forward": None}
-coarseparams = {"snes_type": "ksponly",
-                #"ksp_converged_reason": None,
+coarseparams = {"snes_converged_reason": None,
+                "ksp_converged_reason": None,
                 "ksp_type": "preonly",
                 "pc_type": "lu"}
 
