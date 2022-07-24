@@ -40,22 +40,25 @@ from firedrake import *
 levels = 2
 vcycles = 1
 lam = 1.0
-smootherparams = {"snes_rtol": 1.0,  # always succeed after one newton step
+smootherparams = {"snes_rtol": 0.1,  # reduce residual a bit
                   #"snes_view": None,
+                  #"snes_max_it": 2,  FIXME: does not work because Firedrake regards DIVERGED_MAX_IT as failure
                   "snes_max_linear_solve_fail": 200, # don't error when KSP reports DIVERGED_ITS
                   "snes_converged_reason": None,
                   "ksp_converged_reason": None,
                   #"ksp_monitor": None,
-                  "ksp_type": "richardson",
-                  "ksp_max_it": 1,
-                  "pc_type": "sor",
-                  "pc_sor_forward": None}
+                  "ksp_type": "cg",
+                  #"ksp_max_it": 10,
+                  "ksp_rtol": 0.01,
+                  #"pc_type": "ilu"}
+                  "pc_type": "sor"}
+                  #"pc_type": "lu"}
 downparams = smootherparams.copy()
 #downparams["pc_sor_forward"] = None
 upparams = smootherparams.copy()
 #upparams["pc_sor_backward"] = None
 coarseparams = {"snes_converged_reason": None,
-                "ksp_converged_reason": None,
+                #"ksp_converged_reason": None,
                 "ksp_type": "preonly",
                 "pc_type": "lu"}
 
