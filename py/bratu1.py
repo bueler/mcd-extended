@@ -50,6 +50,10 @@ smootherparams = {"snes_rtol": 1.0,  # always succeed after one newton step
                   "ksp_max_it": 1,
                   "pc_type": "sor",
                   "pc_sor_forward": None}
+downparams = smootherparams.copy()
+#downparams["pc_sor_forward"] = None
+upparams = smootherparams.copy()
+#upparams["pc_sor_backward"] = None
 coarseparams = {"snes_converged_reason": None,
                 "ksp_converged_reason": None,
                 "ksp_type": "preonly",
@@ -105,7 +109,7 @@ for j in range(vcycles):
     for i in range(levels-1,0,-1):   # levels-1, ..., 1
         # smoother application
         solve(res[i] == 0, u[i], bcs=bcs[i], options_prefix = 'down%d' % i,
-              solver_parameters=smootherparams)
+              solver_parameters=downparams)
         # construct FAS correction problem with right-hand side
         #     ell[i-1] = R'(res(u[i]))) + F[i-1](R(u[i]))
         # where R' is canonical restriction and R is injection
@@ -145,7 +149,7 @@ for j in range(vcycles):
                                                    # subtraction is UFL
         u[i] += Pcor
         solve(res[i] == 0, u[i], bcs=bcs[i], options_prefix = 'up%d' % i,
-              solver_parameters=smootherparams)
+              solver_parameters=upparams)
 
     # report on result of cycle
     print('vcycle %d (%d levels) |residual|=%.6f  |error|=%.6f' \
