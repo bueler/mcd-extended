@@ -43,8 +43,8 @@ lam = 1.0
 smootherparams = {"snes_rtol": 1.0,  # always succeed after one newton step
                   #"snes_view": None,
                   "snes_max_linear_solve_fail": 200, # don't error when KSP reports DIVERGED_ITS
-                  #"snes_converged_reason": None,
-                  #"ksp_converged_reason": None,
+                  "snes_converged_reason": None,
+                  "ksp_converged_reason": None,
                   #"ksp_monitor": None,
                   "ksp_type": "richardson",
                   "ksp_max_it": 1,
@@ -104,7 +104,7 @@ for j in range(vcycles):
     # down-smoothing and creation of FAS correction equation
     for i in range(levels-1,0,-1):   # levels-1, ..., 1
         # smoother application
-        solve(res[i] == 0, u[i], bcs=bcs[i],
+        solve(res[i] == 0, u[i], bcs=bcs[i], options_prefix = 'down%d' % i,
               solver_parameters=smootherparams)
         # construct FAS correction problem with right-hand side
         #     ell[i-1] = R'(res(u[i]))) + F[i-1](R(u[i]))
@@ -134,8 +134,8 @@ for j in range(vcycles):
                               # but restrict() seems better?
 
     # coarse-mesh problem and direct solution
-    solve(res[0] == 0, u[0], bcs=bcs[0],
-          solver_parameters=coarseparams)
+    solve(res[0] == 0, u[0], bcs=bcs[0], options_prefix = 'coarse',
+          solver_parameters=coarseparams, )
     print('%s|coarse cor|=%.6f' % ((levels-1)*'  ', norm(u[0])))
 
     # prolongation and up-smoothing
@@ -144,7 +144,7 @@ for j in range(vcycles):
         prolong(assemble(u[i-1] - Ru[i-1]), Pcor)  # assemble() needed because
                                                    # subtraction is UFL
         u[i] += Pcor
-        solve(res[i] == 0, u[i], bcs=bcs[i],
+        solve(res[i] == 0, u[i], bcs=bcs[i], options_prefix = 'up%d' % i,
               solver_parameters=smootherparams)
 
     # report on result of cycle
