@@ -1,6 +1,8 @@
 """Solve Bratu equation in 1D by FAS multigrid:
    -u'' - lambda e^u = f(x)
-with Dirichlet conditions u(0)=u(1)=0 and f(x) = 9 pi^2 sin(3 pi x) − lambda exp(sin(3 pi x)).  The exact solution of this problem is u(x) = sin(3 pi x).
+with Dirichlet conditions u(0)=u(1)=0 and
+   f(x) = 9 pi^2 sin(3 pi x) − lambda exp(sin(3 pi x)).
+The exact solution of this problem is u(x) = sin(3 pi x).
 
 The goal is to solve the same problem as in
     Bueler (2021) "The full approximation storage multigrid scheme:
@@ -15,10 +17,11 @@ where v is a test function and
     ell[v] = f * v * dx
 
 Solver is FAS V-cycles.  Going downward the V-cycle uses solve() for a
-down-smoother, then forms the FAS correction equation, then goes down a level.
+down-smoother, forms the FAS correction equation, and decrements the level.
 The coarsest problem is solved by LU.  Going upward the V-cycle prolongs and
 adds the computed correction and then uses solve() as an up-smoother.  The
-smoothers are a fixed number Newton iterations with a fixed number of GS sweeps.
+smoother is a fixed number of Newton iterations with a fixed number of GS sweeps.
+(FIXME: backward GS on up?)
 
 The FAS correction equation is
     Fc(uc)[vc] = ellc[vc]
@@ -26,7 +29,10 @@ where Fc has same formula as F and
     ellc[vc] = R'(resf)[vc] + Fc(R(uf))[vc]
 and
     resf[v] = ellf[v] - Ff(uf)[v]
-and R' is canonical restriction and R is injection.
+and R' is canonical restriction and R is injection.  After solution the fine
+level iterate is updated
+    u <- u + P(uc - R(uf))
+where P is prolongation.
 """
 
 from firedrake import *
@@ -53,7 +59,7 @@ coarseparams = {"snes_converged_reason": None,
 cmesh = UnitIntervalMesh(2)
 hierarchy = MeshHierarchy(cmesh, levels-1)
 
-# set up function spaces and some functions on each level
+# set up function spaces and problem on each level
 VV = [FunctionSpace(hierarchy[i], "CG", 1) for i in range(levels)]
 u = [Function(VV[i]) for i in range(levels)] # values initialized to zero
 v = [TestFunction(VV[i]) for i in range(levels)]
@@ -61,8 +67,7 @@ F = [( dot(grad(u[i]), grad(v[i])) - lam * exp(u[i]) * v[i] ) * dx \
      for i in range(levels)]
 bcs = [DirichletBC(VV[i], zero(), (1, 2)) for i in range(levels)]
 
-# we will need to compute a form for the restriction of u from the
-# next-finer level
+# need to compute the problem form for the restriction of u
 Ru = [Function(VV[i]) for i in range(levels)]
 FRu = [( dot(grad(Ru[i]), grad(v[i])) - lam * exp(Ru[i]) * v[i] ) * dx \
        for i in range(levels)]
@@ -73,7 +78,7 @@ res = ell.copy()
 
 # rhs and exact solution on fine level
 fine = levels-1
-xx = SpatialCoordinate(hierarchy[fine])
+xx = SpatialCoordinate(hierarchy[fine])  # with one output arg, returns list
 x = xx[0]
 f = 9.0 * pi*pi * sin(3.0*pi*x) - lam * exp(sin(3.0*pi*x))
 exact = sin(3.0*pi*x)
@@ -91,7 +96,6 @@ def error(u):
 # fine-mesh problem
 ell[fine] = f * v[fine] * dx
 res[fine] = ell[fine] - F[fine]
-
 print('initial             |residual|=%.6f  |error|=%.6f' \
       % (norm(assemble(res[fine])), error(u[fine])))
 
