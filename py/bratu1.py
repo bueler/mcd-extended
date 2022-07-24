@@ -19,9 +19,12 @@ where v is a test function and
 Solver is FAS V-cycles.  Going downward the V-cycle uses solve() for a
 down-smoother, forms the FAS correction equation, and decrements the level.
 The coarsest problem is solved by LU.  Going upward the V-cycle prolongs and
-adds the computed correction and then uses solve() as an up-smoother.  The
-smoother is a fixed number of Newton iterations with a fixed number of GS sweeps.
-(FIXME: backward GS on up?)
+adds the computed correction and then uses solve() as an up-smoother.
+
+The smoother is a single Newton iteration.  (Usually.  In fact we set
+-snes_rtol 0.1.  Note -snes_max_it is broken for composed solvers.)  Each
+Newton step linear system is, for now, solved with CG+SOR iteration with
+-ksp_rtol 0.01.
 
 The FAS correction equation is
     Fc(uc)[vc] = ellc[vc]
@@ -37,7 +40,7 @@ where P is prolongation.
 
 from firedrake import *
 
-levels = 2
+levels = 4
 vcycles = 1
 lam = 1.0
 smootherparams = {"snes_rtol": 0.1,  # reduce residual a bit
@@ -50,9 +53,8 @@ smootherparams = {"snes_rtol": 0.1,  # reduce residual a bit
                   "ksp_type": "cg",
                   #"ksp_max_it": 10,
                   "ksp_rtol": 0.01,
-                  #"pc_type": "ilu"}
+                  #"pc_type": "ilu"}  # same as LU because tridiagonal
                   "pc_type": "sor"}
-                  #"pc_type": "lu"}
 downparams = smootherparams.copy()
 #downparams["pc_sor_forward"] = None
 upparams = smootherparams.copy()
