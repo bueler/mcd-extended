@@ -31,7 +31,7 @@ The FAS correction equation is
 where Fc has same formula as F and
     ellc[vc] = R'(resf)[vc] + Fc(R(uf))[vc]
 and
-    resf[v] = ellf[v] - Ff(uf)[v]
+    resf[v] = Ff(uf)[v] - ellf[v]
 and R' is canonical restriction and R is injection.  After solution the fine
 level iterate is updated
     u <- u + P(uc - R(uf))
