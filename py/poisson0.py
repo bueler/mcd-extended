@@ -2,7 +2,8 @@
 
 from firedrake import *
 
-levels = 2
+levels = 4
+vcycles = 1
 cmesh = UnitSquareMesh(2, 2)  # as small as practical for nontriviality
 hierarchy = MeshHierarchy(cmesh, levels-1)
 mesh = hierarchy[-1]
@@ -36,16 +37,19 @@ print('initial                   |residual|=%.6f  |error|=%.6f' \
 params = {"snes_type": "ksponly",
           "snes_max_linear_solve_fail": 2, # don't error when KSP reports DIVERGED_ITS
           #"snes_view": None,
-          "ksp_converged_reason": None,
-          "ksp_monitor_true_residual": None,
-          "ksp_type": "richardson",
-          "ksp_max_it": 1,
-          "mg_levels_ksp_type": "richardson",
-          "mg_levels_ksp_max_it": 1,
-          "mg_levels_pc_type": "sor",
-          "pc_type": "mg"}
+          #"ksp_converged_reason": None,
+          #"ksp_monitor_true_residual": None,
+          "ksp_type": "richardson", # classical V-cycles
+          "ksp_max_it": vcycles,
+          "pc_type": "mg",
+          "mg_levels_ksp_type": "cg",
+          "mg_levels_ksp_max_it": 2,
+          "mg_levels_ksp_converged_reason": None,
+          "mg_levels_pc_type": "icc",
+          "mg_coarse_ksp_type": "preonly",
+          "mg_coarse_pc_type": "lu"}
 u = run_solve(params)
-print('MG 2 V-cycles (%d levels)  |residual|=%.6f  |error|=%.6f' \
-      % (levels, norm(assemble(-F)), error(u)))
+print('MG V-cycles (%d cycles, %d levels)  |residual|=%.6f  |error|=%.6f' \
+      % (vcycles, levels, norm(assemble(-F)), error(u)))
 u.rename("u")
 File("u-poisson0.pvd").write(u)
