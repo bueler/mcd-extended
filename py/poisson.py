@@ -28,15 +28,15 @@ where P is prolongation.
 
 from firedrake import *
 
-levels = 4
+levels = 2
 vcycles = 1
 smootherparams = {"snes_type": "ksponly",
                   "snes_max_linear_solve_fail": 2, # don't error when KSP reports DIVERGED_ITS
                   "ksp_converged_reason": None,
-                  "ksp_type": "cg",
+                  "ksp_type": "richardson",
                   #"ksp_rtol": 0.01,
-                  "ksp_max_it": 2,
-                  "pc_type": "icc"}
+                  "ksp_max_it": 1,
+                  "pc_type": "sor"}
                   #"ksp_type": "preonly",
                   #"pc_type": "lu"}
 downparams = smootherparams.copy()

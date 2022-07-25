@@ -2,7 +2,7 @@
 
 from firedrake import *
 
-levels = 4
+levels = 2
 vcycles = 1
 cmesh = UnitSquareMesh(2, 2)  # as small as practical for nontriviality
 hierarchy = MeshHierarchy(cmesh, levels-1)
@@ -14,11 +14,10 @@ v = TestFunction(Vf)
 
 x, y = SpatialCoordinate(mesh)
 f = -0.5*pi*pi*(4*cos(pi*x) - 5*cos(pi*x*0.5) + 2)*sin(pi*y)
+exact = sin(pi*x)*tan(pi*x*0.25)*sin(pi*y)
 
 F = dot(grad(u), grad(v)) * dx - f*v*dx
 bcs = DirichletBC(Vf, zero(), (1, 2, 3, 4))
-
-exact = sin(pi*x)*tan(pi*x*0.25)*sin(pi*y)
 
 Vc = FunctionSpace(cmesh, "CG", 1)
 
@@ -42,10 +41,10 @@ params = {"snes_type": "ksponly",
           "ksp_type": "richardson", # classical V-cycles
           "ksp_max_it": vcycles,
           "pc_type": "mg",
-          "mg_levels_ksp_type": "cg",
-          "mg_levels_ksp_max_it": 2,
+          "mg_levels_ksp_type": "richardson",
+          "mg_levels_ksp_max_it": 1,
           "mg_levels_ksp_converged_reason": None,
-          "mg_levels_pc_type": "icc",
+          "mg_levels_pc_type": "sor",
           "mg_coarse_ksp_type": "preonly",
           "mg_coarse_pc_type": "lu"}
 u = run_solve(params)
