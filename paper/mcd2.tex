@@ -7,6 +7,9 @@
 \usepackage{longtable}
 \usepackage{booktabs}
 
+\usepackage{tabto}
+\TabPositions{1.5cm}
+
 \usepackage{tikz}
 \usetikzlibrary{decorations.pathreplacing}
 
@@ -165,13 +168,15 @@ The iterates from a CD method are always admissible, and thus the operator need 
 
 \section{Coercive variational inequalities} \label{sec:vi}
 
-Suppose $\cV$ is a real, reflexive Banach space with norm $\|\cdot\|$ and topological dual space $\cV'$.  Denote the dual pairing of $\phi \in \cV'$ and $v\in\cV$ by $\ip{\phi}{v} = \phi(v)$, and note that $\|\phi\|_{\cV'} = \sup_{\|v\|=1} |\ip{\phi}{v}|$ defines a (Banach space) norm on $\cV'$.  Let $\cK \subset \cV$ be a nonempty closed and convex subset, the \emph{constraint set}; elements of $\cK$ are said to be \emph{admissible}.  For a continuous, but generally nonlinear, operator $f:\cK \to \cV'$ and \emph{source functional} $g\in \cV'$ we consider the following \emph{variational inequality} (VI) for the (exact) solution $u^*\in \cK$, if it exists:
-\begin{equation}
-\ip{f(u^*)}{v-u^*} \ge \ip{g}{v-u^*} \qquad \text{for all } v\in \cK. \label{eq:vi}
-\end{equation}
-Because $f$ is (generally) nonlinear, $g$ is not strictly needed for posing this VI,  but the presence of $g$ is helpful to algorithms in Section \ref{sec:multilevel}.  (By redefining $f$ we may take $g=0$.)
+Suppose $\cV$ is a real, reflexive Banach space with norm $\|\cdot\|$ and topological dual space $\cV'$.  Denote the dual pairing of $\phi \in \cV'$ and $v\in\cV$ by $\ip{\phi}{v} = \phi(v)$, and note that $\|\phi\|_{\cV'} = \sup_{\|v\|=1} |\ip{\phi}{v}|$ defines a (Banach space) norm on $\cV'$.  Let $\cK \subset \cV$ be a nonempty closed and convex subset, the \emph{constraint set}; elements of $\cK$ are said to be \emph{admissible}.
 
-VI \eqref{eq:vi} generalizes the nonlinear system of equations $f(u^*)=g$ to the constraint set $\cK$.  Informally, if we conceptualize the dual pairing as an inner product then \eqref{eq:vi} says that the angle between $f(u^*)-g$ and any arbitrary vector $v-u$ pointing from $u$ into $\cK$ is at most $90^\circ$.  That is, \eqref{eq:vi} says that $f(u^*)-g$ may not be zero but it points directly into $\cK$.  However, if $u^*$ is in the interior $\cK^\circ$ then \eqref{eq:vi} implies $f(u^*)=g$.
+For a continuous, but generally nonlinear, operator $f:\cK \to \cV'$ and a linear \emph{source functional} $\ell\in \cV'$ we consider the following \emph{variational inequality} (VI) for the (exact) solution $u^*\in \cK$, if it exists:
+\begin{equation}
+\ip{f(u^*)}{v-u^*} \ge \ip{\ell}{v-u^*} \qquad \text{for all } v\in \cK. \label{eq:vi}
+\end{equation}
+Because $f$ is (generally) nonlinear, the source term $\ell$ is not strictly needed for posing this VI,\footnote{By redefining $f$ we may take $\ell=0$.} but its presence is helpful to algorithms in Section \ref{sec:multilevel}.
+
+VI \eqref{eq:vi} generalizes the nonlinear system of equations $f(u^*)=\ell$ to the constraint set $\cK$.  Informally, if we conceptualize the dual pairing as an inner product then \eqref{eq:vi} says that the angle between $f(u^*)-\ell$ and any arbitrary vector $v-u$ pointing from $u$ into $\cK$ is at most $90^\circ$.  That is, \eqref{eq:vi} says that $f(u^*)-\ell$ may not be zero but it points directly into $\cK$.  However, if $u^*$ is in the interior $\cK^\circ$ then \eqref{eq:vi} implies $f(u^*)=\ell$.
 
 \begin{definition} The following definitions are standard \cite{KinderlehrerStampacchia1980}.  A map $f:\cK \to \cV'$ is \emph{monotone} if
 \begin{equation}
@@ -198,7 +203,7 @@ It is easy to see that if $f$ is $p$-coercive then it is monotone, strictly mono
 \begin{theorem}  \label{thm:viwellposed}  If $f:\cK \to \cV'$ is continuous and $p$-coercive then there exists a unique $u^*\in \cK$ solving VI \eqref{eq:vi}.
 \end{theorem}
 
-When $f$ is monotone, \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  In fact, suppose $F:\cK \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cK \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, Proposition II.2.1 in \cite{EkelandTemam1976} shows that if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ and $g=0$ if and only if
+When $f$ is monotone, \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  In fact, suppose $F:\cK \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cK \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, Proposition II.2.1 in \cite{EkelandTemam1976} shows that if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ and $\ell=0$ if and only if
 \begin{equation}
 u^* = \operatorname{arg-min}_{v\in\cK} F(v). \label{eq:minimization}
 \end{equation}
@@ -291,10 +296,10 @@ Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below state the basi
 
 \begin{pseudofloat}[H]
 \begin{pseudo*}
-\pr{cd-add}(u\in\cK)\text{:} \\+
+\pr{cd-add}(f,\ell,u,\cK,\cK_i,R_i)\text{:} \\+
     for $i \in \{0,\dots,m-1\}$: \\+
         \rm{find} $\hat w_i\in \cK_i$ \rm{so that for all} $v_i\in \cK_i$ \rm{we have} \\+
-            $\boxed{{\large \strut} \ip{f(u - R_i u + \hat w_i)}{v_i-\hat w_i} \ge \ip{g}{v_i-\hat w_i}}$ \\--
+            $\boxed{{\large \strut} \ip{f(u - R_i u + \hat w_i)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i}}$ \\--
     $\hat w = \sum_i \hat w_i\in\cK$ \\
     return $w=(1-\alpha) u + \alpha \hat w\in\cK$
 \end{pseudo*}
@@ -306,7 +311,7 @@ The \textbf{for} loop in Algorithm \ref{alg:basiccd-add}, the additive or parall
 
 \begin{pseudofloat}[H]
 \begin{pseudo*}
-\pr{cd-mult}(u\in\cK)\text{:} \\+
+\pr{cd-mult}(f,\ell,u,\cK,\cK_i,R_i)\text{:} \\+
     for $i = 0,\dots,m-1$: \\+
         \rm{find} $\hat w_i\in \cK_i$ \rm{so that for all} $v_i\in \cK_i$ \rm{we have} \\+
             $\displaystyle \boxed{\ip{f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j u\Big)}{v_i-\hat w_i} \ge \ip{g}{v_i-\hat w_i}}$ \\-
@@ -447,16 +452,16 @@ In practice we will approximately solve VI \eqref{eq:vi} for obstacle problems o
 
 FIXME coarse triangulation, refine to level $J$, canonical restriction $R$, canonical prolongation $P$, injection $\iR$, monotone restriction $\mR$
 
-Suppose our fine-level FE subspace is $\mathcal{V}^J \subset \mathcal{V}$, based on $J$ levels of mesh refinement as above.  Note that the functional $g$ in \eqref{eq:vi} is defined and continuous over $\mathcal{V}^J$, that is, $g\in (\mathcal{V}^J)'$.  If $\psi^J \in \mathcal{V}^J$ denotes the fine-level \emph{obstacle}, define
+Suppose our fine-level FE subspace is $\mathcal{V}^J \subset \mathcal{V}$, based on $J$ levels of mesh refinement as above.  Note that the functional $g$ in \eqref{eq:vi} is defined and continuous over $\mathcal{V}^J$, that is, $g\in (\mathcal{V}^J)'$.  If $\gamma^J \in \mathcal{V}^J$ denotes the fine-level \emph{obstacle} or \emph{constraint}, define
 \begin{equation}
-\mathcal{K}^J = \left\{v \in \mathcal{V}^J\,:\,v \ge \psi^J\right\}, \label{eq:fineconstraintset}
+\mathcal{K}^J = \left\{v \in \mathcal{V}^J\,:\,v \ge \gamma^J\right\}, \label{eq:fineconstraintset}
 \end{equation}
 the fine-level \emph{constraint set} of \emph{admissible} functions.  We now assume $f$ is defined over $\mathcal{K}^J$, i.e.~$f:\mathcal{K}^J \to (\mathcal{V}^J)'$, and that it is continuous and $p$-coercive in the sense that \eqref{eq:pcoercive} holds for all $u,v \in \mathcal{K}^J$.  We seek the fine-level FE solution $u^J \in \mathcal{K}^J$ of the finite-dimensional VI
 \begin{equation}
 \ip{f(u^J)}{v-u^J} \ge \ip{g}{v-u^J} \qquad \text{for all } v\in \cK^J. \label{eq:fe:vi}
 \end{equation}
 
-As a technical matter, VI \eqref{eq:fe:vi} is not necessarily conforming for \eqref{eq:vi} even though we assume $\mathcal{V}^J \subset \mathcal{V}$ at the vector space level.  Indeed, we do not specifically require $\mathcal{K}^J \subset \mathcal{K}$, and only the fine-level FE obstacle $\psi^J$ needs to be concretely defined here, while $\mathcal{K}$ remains abstract.  This situation applies in certain geophysical situations where the obstacle is given by meshed data, the continuum limit of which is unknown \cite{Bueler2016}.
+As a technical matter, VI \eqref{eq:fe:vi} is not necessarily conforming for \eqref{eq:vi} even though we assume $\mathcal{V}^J \subset \mathcal{V}$ at the vector space level.  Indeed, we do not specifically require $\mathcal{K}^J \subset \mathcal{K}$, and only the fine-level FE obstacle $\gamma^J$ needs to be concretely defined here, while $\mathcal{K}$ remains abstract.  This situation applies in certain geophysical situations where the obstacle is given by meshed data, the continuum limit of which is unknown \cite{Bueler2016}.
 
 The algorithm in the next section is designed to solve \eqref{eq:fe:vi}.
 
@@ -467,36 +472,69 @@ The starting point of a \emph{multilevel constraint decomposition} \cite{Graeser
 
 To make this precise, suppose $w^J \in \cK^J$ is an admissible fine-level iterate which approximates the solution $u^J$ in some sense.  From the iterate we define the \emph{defect constraint} \cite{GraeserKornhuber2009}
 \begin{equation}
-\chi^J = \psi^J - w^J,  \label{eq:fe:defectconstraintfcn}
+\chi^J = \gamma^J - w^J,  \label{eq:fe:defectconstraintfcn}
 \end{equation}
-a nonpositive function.  For $j=J$ down to $j=1$ apply monotone restriction $\mR$ to define
+a nonpositive function.  The idea of the defect constraint is that a perturbed iterate is admissible, e.g.~$w^J + z^J \ge \psi^J$, if and only if the perturbation $z^J$ exceeds the defect constraint, $z^J \ge \psi^j$.  Now for $j=J$ down to $j=1$ apply monotone restriction $\mR$ to define
 \begin{equation}
 \chi^{j-1} = \mR \chi^j, \label{eq:fe:chilevels}
 \end{equation}
-the \emph{level defect constraints}.  A four-level example is shown in Figure \ref{fig:chiphilevels}.  Denoting $\chi^{-1}=0$, for $j=0,\dots,J$ we also define the differences
+called the \emph{level defect constraints}.  A four-level example is shown in Figure \ref{fig:chiphilevels}.
+
+%REGENERATE using https://github.com/bueler/mg-glaciers:
+%$ cd mg-glaciers/py/
+%$ [modify decomposition() inside visualize.py to turn off axes and print \gamma for obstacle]
+%$ ./obstacle.py -J 5 -jcoarse 1 -random -randommodes 8 -diagnostics -o defect.pdf
+%fine level 5 (m=63): using 20 V(1,0) cycles -> 38.750 WU
+\begin{figure}
+\includegraphics[width=0.55\textwidth]{fixfigs/chiphilevels.pdf}
+\caption{Defect constraint $\chi^J = \gamma^J - w^J$ is decomposed using monotone restriction.}
+\label{fig:chiphilevels}
+\end{figure}
+
+Denoting $\chi^{-1}=0$, for $j=0,\dots,J$ we also define the differences
 \begin{equation}
 \phi^j = \chi^j - \chi^{j-1}. \label{eq:fe:philevels}
 \end{equation}
 Note $\phi^0=\chi^0$ and that a telescoping sum applies, namely $\sum_{j=0}^J \phi^j = \chi^J$.  Figure \ref{fig:chiphilevels} shows the functions $\phi^j$ as the gaps between the level defect constraints $\chi^j$.
 
-%REGENERATE using https://github.com/bueler/mg-glaciers:
-%$ cd mg-glaciers/py/
-%$ [modify decomposition() inside visualize.py to print \psi]
-%$ ./obstacle.py -J 5 -jcoarse 1 -random -randommodes 8 -diagnostics -o defect.pdf
-%fine level 5 (m=63): using 20 V(1,0) cycles -> 38.750 WU
-\begin{figure}
-\includegraphics[width=0.55\textwidth]{fixfigs/chiphilevels.pdf}
-\caption{Defect constraint $\chi^J = \psi^J - w^J$ is decomposed using monotone restriction.}
-\label{fig:chiphilevels}
-\end{figure}
-
-FIXME
-    $$\mathcal{D}^J = \{v\ge \chi^J\} \subset \mathcal{V}^J.$$
-(Recall that a perturbed iterate is admissible, $w^J + z^J \ge b^J$, if and only if the perturbation $z^J$ is in $\mathcal{D}^J$.)  Let $N^J$ be an FE approximation of the nonlinear operator $N_\eps$ in \eqref{eq:siaN}, but note that the detailed construction of $N^J$ occurs in the next subsection.  Let $\ell^J[v] = \ip{a}{v}$.  Our goal is to solve the fine-level FE version of VI \eqref{eq:siaVI} for an admissible perturbation $z^J$ in $\mathcal{D}^J$,
+For the downward part of the multigrid V-cycle we will use the $\phi^j$ as constraints, and for the upward part the $\chi^j$.  That is, we define constraint subsets
 \begin{equation}
-N^J(w^J+z^J)[v-z^J] \ge \ell^J[v-z^J] \label{eq:siaVIFEfinelevel}
+\mathcal{D}^j = \{v\ge \phi^j\}, \qquad \mathcal{U}^j = \{v\ge \chi^j\}. \label{eq:fe:constraintsets}
 \end{equation}
-for all $v$ in $\mathcal{D}^J$.  Here $s^J=w^J+z^J$ is the desired surface elevation result, so the argument $v - z^J = (w^J+v)-s^J$ is a difference of admissible surface elevations.
+For $j=0,\dots,J$ these are subsets of the FE spaces $\mathcal{V}^j$.  The upward sets are larger, and in fact the decomposition $\mathcal{U}^j = \sum_{i=0}^j \mathcal{D}^i$ applies for each $j$ in the same sense as \eqref{eq:constraintdecomp}.
+
+FIXME explain $g$ and $y $ and $z$ etc.; explain smoother semantics (in-place on final argument)
+
+\pseudoset{
+ctfont=\textsl,%
+ct-left=\qquad\qquad(,%
+ct-right=),%
+}
+
+\begin{pseudofloat}[H]
+\begin{pseudo*} \label{ps:nmcd-vcycle}
+\pr{nmcd-vcycle}(f,\ell,w^J,\gamma^J)\text{:} \\+
+    $\ell^J = \ell$ \ct{notational} \\
+    $\chi^J = w^J - \gamma^J$ \\
+    $g^J = w^J$ \ct{notational} \\
+    for $j=J$ downto $j=1$ \\+
+      $\chi^{j-1} = \mR \chi^j$ \\
+      $\phi^j = \chi^j - P\chi^{j-1}$ \\
+      $y^j = 0$ \\
+      $\text{\pr{smoother}}^{\text{\id{down}}}(f,\ell^j,\phi^j,g^j;y^j)$  \ct{smoothing in $\mathcal{D}^j$}\\
+      $g^{j-1} = \iR(g^j + y^j)$ \\
+      $\ell^{j-1} = f(g^{j-1}) - R \left(f(g^j+y^j) - \ell^j\right)$ \\-
+    $y^0 = 0$ \\
+    $\text{\pr{solver}}^{\text{\id{coarse}}}(f,\ell^0,\chi^0,g^0;y^0)$ \ct{solving in $\mathcal{D}^0=\mathcal{U}^0$} \\
+    $z^0 = y^0$ \\
+    for $j=1$ to $j=J$ \\+
+      $z^j = P z^{j-1} + y^{j}$ \\
+      $\text{\pr{smoother}}^{\text{\id{up}}}(f,\ell^j,\chi^j,g^j;z^j)$  \ct{smoothing in $\mathcal{U}^j$} \\-
+    return $w^J+z^J$
+\end{pseudo*}
+\caption{Nonlinear multilevel constraint decomposition V-cycle for VI problem \eqref{eq:fe:vi}.}
+\label{alg:nmcd}
+\end{pseudofloat}
 
 FIXME in Appendix we show how NMCD reduces to FAS if the obstacle is removed and to MCD if $f$ is assumed to be linear
 
@@ -515,9 +553,9 @@ FIXME show results for 2D Firedrake implementation of NMCD for $p$-Laplacian obs
 \bibliographystyle{siam}
 
 \appendix
-\section{Reductions of the nonlinear multilevel constraint decompostion algorithm}
+\section{Reductions of the NMCD algorithm}
 
-FIXME by removing obstacle reduce to ordinary FAS as in \cite{Bruneetal2015}
+FIXME by removing obstacle, reduce to ordinary FAS as in \cite{Bruneetal2015}
 
 FIXME by assuming $N$ is linear, reduce to Algorithm 4.7 in \cite{GraeserKornhuber2009} but with $\text{V}(\nu_1,\nu_2)$ cycles which works for linear
 
