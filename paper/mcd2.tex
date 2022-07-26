@@ -142,7 +142,7 @@ urlcolor=black    % ...
 
 \section{Introduction} \label{sec:intro}
 
-The goal of this paper is to extend the constraint decomposition (CD) method of X.-C.~Tai \cite{Tai2003} to nonlinear VI problems to which it has not been applied.  The convergence of this method, for several types of decompositions, was proven by Tai for coercive variational inequality (VI) problems which arise from minimization of a convex functional over a convex set.  In its multilevel form the method has been shown to have optimal complexity for elliptic, linear obstacle problems \cite[Subsection 5.4]{Tai2003}; see also \cite[Theorem 4.6 and Algorithm 4.7]{GraeserKornhuber2009}.
+The goal of this paper is to extend the constraint decomposition (CD) method of X.-C.~Tai \cite{Tai2003} to nonlinear variational inequality (VI) problems, such as obstacle problems, to which it has not been applied.  The convergence of this method, for several types of decompositions, was proven by Tai for coercive VI problems which arise from minimization of a convex functional over a convex set.  In its multilevel form the method has been shown to have optimal complexity for elliptic, linear obstacle problems \cite[Subsection 5.4]{Tai2003}; see also \cite[Theorem 4.6 and Algorithm 4.7]{GraeserKornhuber2009}.
 
 The theory presented in \cite{Tai2003} is extended in three particular directions:
 \renewcommand{\labelenumi}{\emph{(\roman{enumi})}}
@@ -441,26 +441,71 @@ Finally apply Lemma \ref{lem:normlike} to give \eqref{eq:core}.
 FIXME NOW THE ENTIRE BATTLE IS TO GET A CONVEXITY RESULT $E(w,u) \ge C \sum_{j=0}^{m-1} \|e_j\|^2$ for some reasonable $C$
 
 
-\section{Finite elements implementation} \label{sec:fe}
+\section{Multilevel finite elements} \label{sec:fe}
 
-In practice we will solve VI \eqref{eq:vi} over a finite-dimensional space $\cV$ based on a choice of a mesh over $\Omega$ and a finite element (FE) space.
+In practice we will approximately solve VI \eqref{eq:vi} for obstacle problems over a finite-dimensional space based on a mesh over $\Omega$ and a finite element (FE) space.
 
-FIXME triangulation
+FIXME coarse triangulation, refine to level $J$, canonical restriction $R$, canonical prolongation $P$, injection $\iR$, monotone restriction $\mR$
 
-\begin{example}  FIXME if $\cV_i=\Span\{\phi_i\}$ for $\phi_i\in\cV$ are 1d spaces and if $\cK = \{v \ge \psi\} \subset \cV$ (obstacle problem), and if $R_i : \cK \to \cK_i$ for obstacle problem; note $\cK_i \not\subset \cK$ when $\psi>0$
-\end{example}
+Suppose our fine-level FE subspace is $\mathcal{V}^J \subset \mathcal{V}$, based on $J$ levels of mesh refinement as above.  Note that the functional $g$ in \eqref{eq:vi} is defined and continuous over $\mathcal{V}^J$, that is, $g\in (\mathcal{V}^J)'$.  If $\psi^J \in \mathcal{V}^J$ denotes the fine-level \emph{obstacle}, define
+\begin{equation}
+\mathcal{K}^J = \left\{v \in \mathcal{V}^J\,:\,v \ge \psi^J\right\}, \label{eq:fineconstraintset}
+\end{equation}
+the fine-level \emph{constraint set} of \emph{admissible} functions.  We now assume $f$ is defined over $\mathcal{K}^J$, i.e.~$f:\mathcal{K}^J \to (\mathcal{V}^J)'$, and that it is continuous and $p$-coercive in the sense that \eqref{eq:pcoercive} holds for all $u,v \in \mathcal{K}^J$.  We seek the fine-level FE solution $u^J \in \mathcal{K}^J$ of the finite-dimensional VI
+\begin{equation}
+\ip{f(u^J)}{v-u^J} \ge \ip{g}{v-u^J} \qquad \text{for all } v\in \cK^J. \label{eq:fe:vi}
+\end{equation}
+
+As a technical matter, VI \eqref{eq:fe:vi} is not necessarily conforming for \eqref{eq:vi} even though we assume $\mathcal{V}^J \subset \mathcal{V}$ at the vector space level.  Indeed, we do not specifically require $\mathcal{K}^J \subset \mathcal{K}$, and only the fine-level FE obstacle $\psi^J$ needs to be concretely defined here, while $\mathcal{K}$ remains abstract.  This situation applies in certain geophysical situations where the obstacle is given by meshed data, the continuum limit of which is unknown \cite{Bueler2016}.
+
+The algorithm in the next section is designed to solve \eqref{eq:fe:vi}.
 
 
 \section{Nonlinear multilevel constraint decomposition} \label{sec:multilevel}
 
-FIXME state the FAS version which has $O(m)$ residual evaluation complexity on each level
+The starting point of a \emph{multilevel constraint decomposition} \cite{GraeserKornhuber2009,Tai2003} method is to create constraint subsets, the sets denoted $\cK_i$ in sections \ref{sec:vi} and \ref{sec:convergence}, based on monotone restrictions of the constraint.  In fact the algorithm in the current section is a multigrid V-cycle with two systems of constraint subsets, one for the downward part of the cycle and one for the upward part.
+
+To make this precise, suppose $w^J \in \cK^J$ is an admissible fine-level iterate which approximates the solution $u^J$ in some sense.  From the iterate we define the \emph{defect constraint} \cite{GraeserKornhuber2009}
+\begin{equation}
+\chi^J = \psi^J - w^J,  \label{eq:fe:defectconstraintfcn}
+\end{equation}
+a nonpositive function.  For $j=J$ down to $j=1$ apply monotone restriction $\mR$ to define
+\begin{equation}
+\chi^{j-1} = \mR \chi^j, \label{eq:fe:chilevels}
+\end{equation}
+the \emph{level defect constraints}.  A four-level example is shown in Figure \ref{fig:chiphilevels}.  Denoting $\chi^{-1}=0$, for $j=0,\dots,J$ we also define the differences
+\begin{equation}
+\phi^j = \chi^j - \chi^{j-1}. \label{eq:fe:philevels}
+\end{equation}
+Note $\phi^0=\chi^0$ and that a telescoping sum applies, namely $\sum_{j=0}^J \phi^j = \chi^J$.  Figure \ref{fig:chiphilevels} shows the functions $\phi^j$ as the gaps between the level defect constraints $\chi^j$.
+
+%REGENERATE using https://github.com/bueler/mg-glaciers:
+%$ cd mg-glaciers/py/
+%$ [modify decomposition() inside visualize.py to print \psi]
+%$ ./obstacle.py -J 5 -jcoarse 1 -random -randommodes 8 -diagnostics -o defect.pdf
+%fine level 5 (m=63): using 20 V(1,0) cycles -> 38.750 WU
+\begin{figure}
+\includegraphics[width=0.55\textwidth]{fixfigs/chiphilevels.pdf}
+\caption{Defect constraint $\chi^J = \psi^J - w^J$ is decomposed using monotone restriction.}
+\label{fig:chiphilevels}
+\end{figure}
+
+FIXME
+    $$\mathcal{D}^J = \{v\ge \chi^J\} \subset \mathcal{V}^J.$$
+(Recall that a perturbed iterate is admissible, $w^J + z^J \ge b^J$, if and only if the perturbation $z^J$ is in $\mathcal{D}^J$.)  Let $N^J$ be an FE approximation of the nonlinear operator $N_\eps$ in \eqref{eq:siaN}, but note that the detailed construction of $N^J$ occurs in the next subsection.  Let $\ell^J[v] = \ip{a}{v}$.  Our goal is to solve the fine-level FE version of VI \eqref{eq:siaVI} for an admissible perturbation $z^J$ in $\mathcal{D}^J$,
+\begin{equation}
+N^J(w^J+z^J)[v-z^J] \ge \ell^J[v-z^J] \label{eq:siaVIFEfinelevel}
+\end{equation}
+for all $v$ in $\mathcal{D}^J$.  Here $s^J=w^J+z^J$ is the desired surface elevation result, so the argument $v - z^J = (w^J+v)-s^J$ is a difference of admissible surface elevations.
+
+FIXME in Appendix we show how NMCD reduces to FAS if the obstacle is removed and to MCD if $f$ is assumed to be linear
 
 FIXME observe that up-smoothing is more efficient
 
 
 \section{Results for local variational inequalities} \label{sec:results}
 
-FIXME show results for 2D Firedrake implementation of NMCD for $p$-Laplacian obstacle problem (Example \ref{ex:plaplacian}), advection-diffusion obstacle problem (Example \ref{ex:advectiondiffusion}), and porous-media (Example \ref{ex:porous})
+FIXME show results for 2D Firedrake implementation of NMCD for $p$-Laplacian obstacle problem (Example \ref{ex:plaplacian}), advection-diffusion obstacle problem (Example \ref{ex:advectiondiffusion}), and porous-media obstacle problem (Example \ref{ex:porous})
 
 
 % A BRIDGE TOO FAR:  \section{Results for a nonlocal variational inequality} \label{sec:resultsnonlocal}
