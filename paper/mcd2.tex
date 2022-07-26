@@ -144,36 +144,34 @@ urlcolor=black    % ...
 
 The goal of this paper is to extend the constraint decomposition (CD) method of X.-C.~Tai \cite{Tai2003} to nonlinear VI problems to which it has not been applied.  The convergence of this method, for several types of decompositions, was proven by Tai for coercive variational inequality (VI) problems which arise from minimization of a convex functional over a convex set.  In its multilevel form the method has been shown to have optimal complexity for elliptic, linear obstacle problems \cite[Subsection 5.4]{Tai2003}; see also \cite[Theorem 4.6 and Algorithm 4.7]{GraeserKornhuber2009}.
 
-We construct a new proof of convergence which removes the assumption that the problem arises from optimization.  Furthermore we address finite element (FE) implementation in nonlinear cases, and we demonstrate the resulting performance.  In fact, the theory presented in \cite{Tai2003} is extended in four particular directions:
+The theory presented in \cite{Tai2003} is extended in three particular directions:
 \renewcommand{\labelenumi}{\emph{(\roman{enumi})}}
 \begin{enumerate}
-\item We do not assume that the continuum VI problem arises from optimization of a scalar objective; examples are explored in Sections \ref{sec:vi} and \ref{sec:results}.  We prove convergence in $H^1$ norm at the same rate as the original method converges in energy (Section \ref{sec:convergence}). % THIS IS THE HOPE
+\item We do not assume that the continuum VI problem arises from optimization of a scalar objective---examples are explored in Sections \ref{sec:vi} and \ref{sec:results}---but we prove convergence in $H^1$ norm at the same rate as the original method converges in energy (Section \ref{sec:convergence}). % THIS IS THE HOPE
 
-\item We make the observation that, if implemented appropriately, multilevel ``up-smoothing'' is intrinsically more efficient than ``down-smoothing'' (Section \ref{sec:multilevel}).  This observation seems to be new; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}.  A strong preference for up-smoothing is, apparently, special to multilevel CD methods and does not arise in corresponding unconstrained problems.
+\item We make finite element (FE) implementations of the multilevel CD algorithm more practical by addressing storage of intermediate quantities.  Specifically, in Section \ref{sec:results} we show results from a full approximation storage (FAS; see \cite{Brandt1977,Bruneetal2015}) implementation for nonlinear operators, one which avoids global (Newton) linearization; compare \cite{GraeserKornhuber2009}.
 
-\item We make the multilevel CD algorithm more practical by addressing storage of intermediate quantities.  In Section \ref{sec:results} we show results from a full approximation storage (FAS; see \cite{Brandt1977}) implementation for nonlinear operators, one which avoids global (Newton) linearization; compare \cite{GraeserKornhuber2009}.
-
-\item For problems of porous-media type the nonlinear operator $f$ is not known to be coercive, so the convergence theory in \emph{(i)} does not apply.  However, a full-cycle implementation of the multilevel CD method is demonstrated numerically.  By ``freezing' the solution-dependent coefficient, the operator is approximated by a coercive operator, nonlinear in general, for the duration of the V-cycle.  The resulting scheme is highly-effective for doubly-nonlinear diffusion operators (Section \ref{sec:results}).
+\item We observe that multilevel ``up-smoothing'' is intrinsically more efficient than ``down-smoothing'' (Section \ref{sec:multilevel}).  This observation seems to be new; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}.  A strong preference for up-smoothing is special to multilevel CD methods and does not arise in unconstrained problems.
 \end{enumerate}
 
-The iterates from a CD method are always admissible, and thus the operator need only be defined for admissible states; Section \ref{sec:results} includes a nontrivial example.  Admissible-iterate methods should permit direct solutions of certain VI problems, such as fluid-layer dynamics problems \cite{Bueler2021conservation,JouvetBueler2012}, for which non-admissible methods, such as semi-smooth methods \cite{BensonMunson2006}, at least require unnatural modifications of the operator formula.  The full-cycle scheme in \emph{(iv)} above is also designed for these problems, which are characterized by the solution of an auxiliary PDE on a domain determined inside the VI residual evaluation.
+For problems of porous-media type the nonlinear operator $f$ is not known to be coercive, so the convergence theory in \emph{(i)} does not apply.  However, a full-cycle implementation of the multilevel CD method is demonstrated numerically.  By ``freezing' the solution-dependent coefficient, the operator is approximated by a coercive operator, nonlinear in general, for the duration of the V-cycle.  The resulting scheme is highly-effective for doubly-nonlinear diffusion operators (Section \ref{sec:results}).
 
 For the classical obstacle problem with a Laplacian operator, certain multilevel techniques are known to improve performance relative to the multilevel CD method \cite{GraeserKornhuber2009}.  These improved methods either track the active set in the discretization or modify the nodal basis functions, and in this sense they are discrete algorithms.  By contrast the CD method applies at the level of the continuum problem (Sections \ref{sec:cd} and \ref{sec:convergence}); compare the truncated monotone multigrid method \cite{Kornhuber1994}, for example.  Acceleration of our nonlinear multilevel CD method via active-set and/or basis-level manipulations represents a potential extension of the method here, and is a topic for future research.
+
+The iterates from a CD method are always admissible, and thus the operator need only be defined for admissible states; Section \ref{sec:results} includes a nontrivial example.  Admissible-iterate methods should permit direct solutions of certain VI problems, such as fluid-layer dynamics problems \cite{Bueler2021conservation,JouvetBueler2012}, for which non-admissible methods, such as semi-smooth methods \cite{BensonMunson2006}, require unnatural modifications of the operator formula.  The full-cycle scheme in \emph{(ii)} above is also designed for these problems, which are characterized by the solution of an auxiliary PDE on a domain determined inside the VI residual evaluation.
 
 % A BRIDGE TOO FAR:  In one example at the end of this paper (Section \ref{sec:resultsnonlocal}) we consider a nonlocal residual functional, that is, one which is not a partial differential operator.  Each evaluation of this functional requires the solution of a Stokes problem for a layer of fluid \nocite{SayagWorster2013} on a substrate (which forms the obstacle), and thus the corresponding FE operator discretization is also not sparse.  In this case we cannot prove coercivity but we nonetheless succeed in demonstrating near-optimal complexity of the Section \ref{sec:multilevel} multilevel CD algorithm in practice.
 
 
 \section{Coercive variational inequalities} \label{sec:vi}
 
-Suppose $\cV$ is a real, reflexive Banach space with norm $\|\cdot\|$ and topological dual space $\cV'$.  Denote the dual pairing of $\phi \in \cV'$ and $v\in\cV$ by $\ip{\phi}{v} = \phi(v)$, and note that $\|\phi\|_{\cV'} = \sup_{\|v\|=1} |\ip{\phi}{v}|$ defines a (Banach space) norm on $\cV'$.
-
-Let $\cK \subset \cV$ be a nonempty closed and convex subset, the \emph{constraint set}; elements of $\cK$ are said to be \emph{admissible}.  For a continuous, but generally nonlinear, operator $f:\cK \to \cV'$ and \emph{source functional} $g\in \cV'$ we consider the following \emph{variational inequality} (VI) for the (exact) solution $u^*\in \cK$, if it exists:
+Suppose $\cV$ is a real, reflexive Banach space with norm $\|\cdot\|$ and topological dual space $\cV'$.  Denote the dual pairing of $\phi \in \cV'$ and $v\in\cV$ by $\ip{\phi}{v} = \phi(v)$, and note that $\|\phi\|_{\cV'} = \sup_{\|v\|=1} |\ip{\phi}{v}|$ defines a (Banach space) norm on $\cV'$.  Let $\cK \subset \cV$ be a nonempty closed and convex subset, the \emph{constraint set}; elements of $\cK$ are said to be \emph{admissible}.  For a continuous, but generally nonlinear, operator $f:\cK \to \cV'$ and \emph{source functional} $g\in \cV'$ we consider the following \emph{variational inequality} (VI) for the (exact) solution $u^*\in \cK$, if it exists:
 \begin{equation}
 \ip{f(u^*)}{v-u^*} \ge \ip{g}{v-u^*} \qquad \text{for all } v\in \cK. \label{eq:vi}
 \end{equation}
-Because $f$ is (generally) nonlinear, $g$ is not strictly needed for posing this VI, and by redefining $f$ we may take $g=0$, but the presence of $g$ is helpful to algorithms in Section \ref{sec:multilevel}.
+Because $f$ is (generally) nonlinear, $g$ is not strictly needed for posing this VI,  but the presence of $g$ is helpful to algorithms in Section \ref{sec:multilevel}.  (By redefining $f$ we may take $g=0$.)
 
-VI \eqref{eq:vi} generalizes the nonlinear system of equations $f(u^*)=g$ to the constraint set $\cK$.  Informally, if we conceptualize the dual pairing as an inner product then \eqref{eq:vi} says that the angle between $f(u^*)-g$ and any arbitrary vector $v-u$ pointing from $u$ into $\cK$ is at most $90^\circ$.  That is, \eqref{eq:vi} says that $f(u^*)-g$ may not be zero but it points directly into $\cK$.  In particular, if $u^*$ is in the interior $\cK^\circ$ then \eqref{eq:vi} implies $f(u^*)=g$.
+VI \eqref{eq:vi} generalizes the nonlinear system of equations $f(u^*)=g$ to the constraint set $\cK$.  Informally, if we conceptualize the dual pairing as an inner product then \eqref{eq:vi} says that the angle between $f(u^*)-g$ and any arbitrary vector $v-u$ pointing from $u$ into $\cK$ is at most $90^\circ$.  That is, \eqref{eq:vi} says that $f(u^*)-g$ may not be zero but it points directly into $\cK$.  However, if $u^*$ is in the interior $\cK^\circ$ then \eqref{eq:vi} implies $f(u^*)=g$.
 
 \begin{definition} The following definitions are standard \cite{KinderlehrerStampacchia1980}.  A map $f:\cK \to \cV'$ is \emph{monotone} if
 \begin{equation}
@@ -195,16 +193,16 @@ The coercive VIs solved in this paper satisfy a stronger inequality than \eqref{
 \end{equation}
 \end{definition}
 
-Note that Tai \cite{Tai2003} uses ``coercive'' for what we wil call $2$-coercive.  It is easy to see that if $f$ is $p$-coercive then it is monotone, strictly monotone, and coercive, and thus the following result holds.
+It is easy to see that if $f$ is $p$-coercive then it is monotone, strictly monotone, and coercive.  Note that Tai \cite{Tai2003} uses ``coercive'' for what we call $2$-coercive.  The following result holds.
 
 \begin{theorem}  \label{thm:viwellposed}  If $f:\cK \to \cV'$ is continuous and $p$-coercive then there exists a unique $u^*\in \cK$ solving VI \eqref{eq:vi}.
 \end{theorem}
 
-When $f$ is monotone, \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  Suppose $F:\cK \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cK \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, Proposition II.2.1 in \cite{EkelandTemam1976} shows that if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ and $g=0$ if and only if
+When $f$ is monotone, \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  In fact, suppose $F:\cK \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cK \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, Proposition II.2.1 in \cite{EkelandTemam1976} shows that if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ and $g=0$ if and only if
 \begin{equation}
 u^* = \operatorname{arg-min}_{v\in\cK} F(v). \label{eq:minimization}
 \end{equation}
-The CD methods of Tai \cite{Tai2003} address problem \eqref{eq:minimization} under the hypothesis that $F'$ is coercive.
+The CD methods of Tai \cite{Tai2003} address problem \eqref{eq:minimization} under the hypothesis that $F'$ is 2-coercive.
 
 From now on $\Omega \subset \RR^d$ denotes a bounded, open set with smooth or piecewise-smooth (e.g.~polygonal) boundary.  Sobolev spaces \cite{Evans2010} are denoted by $W^{k,p}(\Omega)$, for integer $k$ and $1\le p \le \infty$, with $W^{k,2}$ denoted $H^k$.  The following example includes the classical obstacle problem for the linear Laplacian \cite{GraeserKornhuber2009} and the $p$-Laplacian for $p\ge 2$ \cite{ChoeLewis1991}.
 
@@ -216,11 +214,11 @@ Now, if $x,y\in\RR^d$ then $(|x|^{p-2} x - |y|^{p-2} y)\cdot (x-y) \ge 2^{2-p} |
     $$\ip{f(u) - f(v)}{u-v} \ge 2^{2-p} a_0 \|\grad u - \grad v\|_p^p \ge 2^{2-p} a_0 C \|u-v\|^p$$
 for some $C>0$, and thus $f$ is $p$-coercive.  On the other hand, for $g\in\cV'$ define
     $$F(v) = \int_\Omega \frac{a(x)}{p} |\grad v|^p\,dx - \ip{g}{v}.$$
-Then $F'(v) = f(v) - g$, $F$ is a convex functional (since $f$ is coercive), and, for any closed and convex $\cK\subset \cV$, VI problem \eqref{eq:vi} for is equivalent to optimization problem \eqref{eq:minimization}.\end{example}
+Then $F'(v) = f(v) - g$ and $F$ is a convex functional (since $f$ is coercive).  For any closed and convex $\cK\subset \cV$, VI problem \eqref{eq:vi} for is equivalent to optimization problem \eqref{eq:minimization}.\end{example}
 
-The map in \eqref{eq:plaplacian} is coercive if $1<p<2$, but the proof is somewhat different \cite[Theorem 4.4]{Bueler2021conservation}.  In Section \ref{sec:results} we need only the $p\ge 2$ case.
+The map in \eqref{eq:plaplacian} is also coercive if $1<p<2$, but the proof is somewhat different \cite[Theorem 4.4]{Bueler2021conservation}.  In Section \ref{sec:results} we need only the $p\ge 2$ case.
 
-Not all VI problems arise as in Example \ref{ex:plaplacian}, from optimization.  We give two such examples next, first a coercive and linear advection-diffusion problem, and then a nonlinear porous-medium-type problem; each is important in applications.  The first is preceded by a lemma.
+However, not all VI problems arise from optimization.  We give two such examples next, first a coercive and linear advection-diffusion problem, and then a nonlinear porous-medium-type problem; each is important in applications.  The first is preceded by a lemma.
 
 \begin{lemma}  \label{lem:advectionskew}  \cite{Elmanetal2014}\,  Suppose $\bX :\Omega \to \RR^d$ is a bounded and boundedly-differentiable vector field on $\Omega$ with zero divergence ($\Div \bX=0$).  For $u,v \in H^1(\Omega)$ let $b(u,v) = \int_\Omega (\bX \cdot \grad u) v\,dx$.  Then $b(u,u) = \frac{1}{2} \int_{\partial \Omega} u^2 \bX\cdot \bn\,dx$ where $\bn$ is the outward normal on $\partial \Omega$.
 \end{lemma}
@@ -253,7 +251,7 @@ As with Example \ref{ex:advectiondiffusion}, this form does not have the symmetr
 Numerical solver performance for Examples \ref{ex:plaplacian}, \ref{ex:advectiondiffusion}, and \ref{ex:porous} will be considered in Section \ref{sec:results}.  Further examples of nonlinear VI problems appear in ice sheet models and other geophysical fluids \cite{Bueler2021conservation,Calvoetal2002,JouvetBueler2012}.
 
 
-\section{Constraint decomposition, the basic algorithm} \label{sec:cd}
+\section{Constraint decomposition method} \label{sec:cd}
 
 Suppose there are $m<\infty$ closed subspaces $\cV_i \subset \cV$ so that the sum
 \begin{equation}
@@ -289,7 +287,7 @@ Our second example is a disjoint frequency decomposition.  A multilevel FE CD, e
 
 Note that $\cK_i \not\subset \cK$ in many cases.  Specifically in Example \ref{ex:domaindecomposition}, if $\psi$ is positive over portions of $\Omega$ where the decomposition into overlapping subdomains $\Omega_i$ is nontrivial, then $\cK_i \not\subset \cK$, and similarly for Example \ref{ex:frequencydecomposition}.  The important inclusion is $\cK_i \subset \cV_i$.
 
-Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below state the basic CD method as iterations which improve a current iterate $u \in \cK$ by solving ``smaller'' VI problems over each subset $\cK_i$.  The output $w\in\cK$ should be closer to the solution $u^* \in \cK$ of \eqref{eq:vi}.
+Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below state the basic CD method as functions which improve a current iterate $u \in \cK$, by solving ``smaller'' VI problems over each subset $\cK_i$, so that the output $w\in\cK$ should be closer to the solution $u^* \in \cK$ of \eqref{eq:vi}.  While Algorithm \ref{alg:basiccd-add} generalizes a Jacobi iteration, Algorithm \ref{alg:basiccd-mult} generalizes Gauss-Seidel.
 
 \begin{pseudofloat}[H]
 \begin{pseudo*}
@@ -304,9 +302,7 @@ Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below state the basi
 \label{alg:basiccd-add}
 \end{pseudofloat}
 
-The \textbf{for} loop in Algorithm \ref{alg:basiccd-add}, the additive or parallel CD method, can be computed in any order.  Note that $u-R_iu+\hat w_i$ involves removing the part of $u$ which lies in $\mathcal{K}_i$ before adding-back the improved subset solution $\hat w_i$.
-
-The following multiplicative (successive) version orders the sets $\mathcal{K}_i$, and each subset solution updates the global iterate.  While Algorithm \ref{alg:basiccd-add} generalizes a Jacobi iteration, this one is like Gauss-Seidel.  The sum $\sum_{j>i} R_j u$ should be read as ``keep the parts of the current iterate which we have not yet improved.''
+The \textbf{for} loop in Algorithm \ref{alg:basiccd-add}, the additive or parallel CD method, can be computed in any order.  Note that $u-R_iu+\hat w_i$ involves removing the part of $u$ which lies in $\mathcal{K}_i$ before adding-back the improved subset solution $\hat w_i$.  By contrast, the following multiplicative (successive) Algorithm \ref{alg:basiccd-mult} orders the sets $\mathcal{K}_i$, and each subset solution updates the global iterate before proceeding to the next subset.  The sum $\sum_{j>i} R_j u$ should be read as ``keep the parts of the current iterate which we have not yet improved.''
 
 \begin{pseudofloat}[H]
 \begin{pseudo*}
@@ -322,23 +318,22 @@ The following multiplicative (successive) version orders the sets $\mathcal{K}_i
 \label{alg:basiccd-mult}
 \end{pseudofloat}
 
-Note the use of a damping parameter $0<\alpha\le 1$.  In Algorithm \ref{alg:basiccd-add} its role is obvious, as we keep part of the current iterate if $\alpha<1$, but in Algorithm \ref{alg:basiccd-mult} we only update the iterate ``so far'', namely $w_i$, using the same damping that will be applied in generating the final output $w$.
+Note the use of a damping parameter $0<\alpha\le 1$.  In Algorithm \ref{alg:basiccd-mult} we must update the in-progress iterate $w_i$ using the same damping that is applied to the final output $w$.
 
-In each boxed VI above the argument of $f$ is an element of $\cK$, as the reader should confirm.  Likewise, by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may write the test element $v_i - \hat w_i \in \cV_i$ as a difference of admissible vectors, from $\cK$, namely
+In each boxed VI above the argument of $f$ is an element of $\cK$, as the reader should confirm.  On the other hand, by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may also write the test vector $v_i - \hat w_i \in \cV_i$ as a difference of admissible vectors from $\cK$, namely, for the two Algorithms respectively:
 \begin{align*}
 [u - R_i u + v_i] - [u - R_i u + \hat w_i] &= v_i - \hat w_i, \label{eq:admissibledifference} \\
-\left[\sum_{j<i} w_j + v_i + \sum_{j>i} R_j u\right] - \left[\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j u\right] &= v_i - \hat w_i,  \notag
+\left[\sum_{j<i} w_j + v_i + \sum_{j>i} R_j u\right] - \left[\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j u\right] &= v_i - \hat w_i.  \notag
 \end{align*}
-for the two Algorithms respectively.
 
-Define
+Now define
 \begin{equation}
-e_i = \hat w_i - R_i u \in \cV_i \label{eq:ithupdate}
+e_i = \hat w_i - R_i u \in \cV_i, \label{eq:ithupdate}
 \end{equation}
-as the $i$th subset update in either Algorithm.  Then, as the reader may check, $\hat w = u + \sum_{i} e_i$ and $w = u + \alpha \sum_i e_i$.  The easy identity $\hat w = u^* + \sum_i \hat w_i - R_i u^*$ also holds.  We will use these identities in Section \ref{sec:convergence}.
+the $i$th subset increment in either Algorithm.  As the reader may check, $\hat w = u + \sum_{i} e_i$ and $w = u + \alpha \sum_i e_i$, and $\hat w = u^* + \sum_i \hat w_i - R_i u^*$ also holds.  We will use these identities in Section \ref{sec:convergence}.
 
 % FOLLOWING CONTAINS ASPIRATIONS
-The convergence results in Section \ref{sec:convergence} require substantial damping when applying additive Algorithm \ref{alg:basiccd-add}, namely we require $\alpha \le 1/m$ as does \cite{Tai2003}.  Algorithm \ref{alg:basiccd-mult} can be shown to converge without damping ($\alpha=1$).  In Section \ref{sec:results} we demonstrate practical convergence for larger ranges of $\alpha$ than suggested by the theory.
+The convergence results in Section \ref{sec:convergence} require substantial damping when applying additive Algorithm \ref{alg:basiccd-add}, namely we require $\alpha \le 1/m$ as in \cite{Tai2003}.  By constrast, Algorithm \ref{alg:basiccd-mult} can be shown to converge without damping ($\alpha\le 1$).  In Section \ref{sec:results} we demonstrate practical convergence for larger ranges of $\alpha$ than suggested by the theory.
 
 We refer to Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} as the \emph{basic CD method}.  To construct efficient FE implementations (Section \ref{sec:multilevel}) we will need additional notions.  While the above Algorithms are indeed meaningful even when $f$ is nonlinear, non-local, or defined only on $\cK$, practical implementation for such general problems seems not to have been addressed in the literature.  In particular, references \cite{GraeserKornhuber2009,Tai2003} only apply the CD method to the classical obstacle problem.  The following example explains the implementation-relevant simplifications available in that case.
 
@@ -346,12 +341,12 @@ We refer to Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} as the \
 \begin{equation}
 \ip{f(e_i)}{v_i-\hat w_i} \ge \ip{\tilde g}{v_i-\hat w_i} \label{eq:linearlocalvi}
 \end{equation}
-where $\tilde g = g - f(u)$.  Note $e_i = \hat w_i - R_i u \in \cV_i \notin \cK$, in general, but VIs \eqref{eq:linearlocalvi} make sense because $f$ is defined over $\cV$.  Each problem \eqref{eq:linearlocalvi} can be solved using a stored residual $\ip{f(u)}{\cdot}$, namely as included here into the source term.  The VI \eqref{eq:vi} is then approximately solved in any incremental and efficient manner, by computations over the basis supports.
+where $\tilde g = g - f(u)$.  Note $e_i = \hat w_i - R_i u \in \cV_i \notin \cK$, in general, but VIs \eqref{eq:linearlocalvi} make sense because $f$ is defined over $\cV$.  Each problem \eqref{eq:linearlocalvi} can be solved using a stored residual $\ip{f(u)}{\cdot}$, namely the quantity included here into the source term.  The VI \eqref{eq:vi} is then approximately solved in any incremental and efficient manner, by computations over the basis supports.
 \end{example}
 
-The assumption that $\ip{f(\phi_i)}{z}$ can be evaluated over the support of $\phi_i$ is satisfied when $f$ is a linear differential operator, $\cV$ is an FE space, and $\phi_i$ are hat functions; see Section \ref{sec:multilevel}.  Constrast non-local integral operators where $\ip{f(\phi_i)}{z}$ requires an integral over $\Omega$ even if $\phi_i$ is is a hat function with small support.
+The assumption that $\ip{f(\phi_i)}{z}$ can be evaluated over the support of $\phi_i$ is satisfied when $f$ is a differential operator, $\cV$ is an FE space, and $\phi_i$ are hat functions; see Section \ref{sec:multilevel}.  Constrast non-local integral operators where $\ip{f(\phi_i)}{z}$ requires an integral over $\Omega$ even if $\phi_i$ is a hat function with small support.
 
-When $f$ has all the nice properties listed in Example \ref{ex:fnice} then a solver can take advantage of implementation efficiencies which are unavailable in general.  The actual solution process for VI \eqref{eq:linearlocalvi} is not the concern here; we are observing that the data of problem \eqref{eq:linearlocalvi}, and the cost of residual evaluation, are smaller than in the general case.  For more difficult problems additional ideas, illustrated in Section \ref{sec:multilevel}, are needed for practical implementation.  We will extend the basic method to nonlinear $f$ by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}, and the decomposed problems will only evaluate $f$ over (admissible) elements of $\mathcal{K}$.  However, extending the algorithm to non-local functionals $f$ is a topic for future research.
+When $f$ has all the nice properties listed in Example \ref{ex:fnice} then a solver can take advantage of implementation efficiencies which are unavailable in general.  The actual solution process for VI \eqref{eq:linearlocalvi} is not the concern here; we are observing that the data of problem \eqref{eq:linearlocalvi}, and the cost of residual evaluation, are smaller than in the general case.  For more difficult problems additional ideas, illustrated in Section \ref{sec:multilevel}, are needed for practical implementation.  We will extend the basic method to nonlinear $f$ by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}.  However, extending the algorithm to non-local functionals $f$ is a topic for future research.
 
 
 \section{Convergence of the basic algorithm} \label{sec:convergence}
@@ -440,12 +435,13 @@ renumbering the indices $i,j$ we may apply assumption \eqref{as:lipschitzresidua
 E(\hat w,u^*) &\le C_2 Z \left(\sum_{i=0}^{m-1} \|\hat w_i - R_i u^*\|^2\right)^{1/2} = C_2 Z \left(\sum_{i=0}^{m-1} \|\hat w_i - R_i u + R_i u - R_i u^*\|^2\right)^{1/2} \label{eq:nextnextcore} \\
   &\le C_2 Z \left(Z + \left(\sum_{i=0}^{m-1} \|R_i u - R_i u^*\|^2\right)^{1/2}\right) \le C_2 Z \left(Z + C_1 \|u-u^*\|\right). \notag
 \end{align}
-Finally apply \eqref{eq:normlikebound} to give \eqref{eq:core}.
+Finally apply Lemma \ref{lem:normlike} to give \eqref{eq:core}.
 \end{proof}
 
 FIXME NOW THE ENTIRE BATTLE IS TO GET A CONVEXITY RESULT $E(w,u) \ge C \sum_{j=0}^{m-1} \|e_j\|^2$ for some reasonable $C$
 
-\section{Finite elements and multilevel constraint decomposition} \label{sec:multilevel}
+
+\section{Finite elements implementation} \label{sec:fe}
 
 In practice we will solve VI \eqref{eq:vi} over a finite-dimensional space $\cV$ based on a choice of a mesh over $\Omega$ and a finite element (FE) space.
 
@@ -454,12 +450,17 @@ FIXME triangulation
 \begin{example}  FIXME if $\cV_i=\Span\{\phi_i\}$ for $\phi_i\in\cV$ are 1d spaces and if $\cK = \{v \ge \psi\} \subset \cV$ (obstacle problem), and if $R_i : \cK \to \cK_i$ for obstacle problem; note $\cK_i \not\subset \cK$ when $\psi>0$
 \end{example}
 
-FIXME state essentially Algorithm 4.7 \cite{GraeserKornhuber2009} but with $\text{V}(\nu_1,\nu_2)$ cycles which works for linear; observe that up-smoothing is more efficient; state the FAS version which has $O(m)$ residual evaluation complexity on each level
+
+\section{Nonlinear multilevel constraint decomposition} \label{sec:multilevel}
+
+FIXME state the FAS version which has $O(m)$ residual evaluation complexity on each level
+
+FIXME observe that up-smoothing is more efficient
 
 
 \section{Results for local variational inequalities} \label{sec:results}
 
-FIXME
+FIXME show results for 2D Firedrake implementation of NMCD for $p$-Laplacian obstacle problem (Example \ref{ex:plaplacian}), advection-diffusion obstacle problem (Example \ref{ex:advectiondiffusion}), and porous-media (Example \ref{ex:porous})
 
 
 % A BRIDGE TOO FAR:  \section{Results for a nonlocal variational inequality} \label{sec:resultsnonlocal}
@@ -467,6 +468,13 @@ FIXME
 
 \bibliography{mcd2}
 \bibliographystyle{siam}
+
+\appendix
+\section{Reductions of the nonlinear multilevel constraint decompostion algorithm}
+
+FIXME by removing obstacle reduce to ordinary FAS as in \cite{Bruneetal2015}
+
+FIXME by assuming $N$ is linear, reduce to Algorithm 4.7 in \cite{GraeserKornhuber2009} but with $\text{V}(\nu_1,\nu_2)$ cycles which works for linear
 
 \end{document}
 
