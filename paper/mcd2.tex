@@ -450,7 +450,12 @@ FIXME NOW THE ENTIRE BATTLE IS TO GET A CONVEXITY RESULT $E(w,u) \ge C \sum_{j=0
 
 In practice we will approximately solve VI \eqref{eq:vi} for obstacle problems over a finite-dimensional space based on a mesh over $\Omega$ and a finite element (FE) space.
 
-FIXME coarse triangulation, refine to level $J$, canonical restriction $R$, canonical prolongation $P$, injection $\iR$, monotone restriction $\mR$
+FIXME coarse triangulation, refine to level $J$
+
+FIXME nesting
+\begin{equation}
+\mathcal{V}^0 \subset \mathcal{V}^1 \subset \dots \subset \mathcal{V}^J \subset \mathcal{V} \label{eq:fe:nestedspaces}
+\end{equation}
 
 Suppose our fine-level FE subspace is $\mathcal{V}^J \subset \mathcal{V}$, based on $J$ levels of mesh refinement as above.  Note that the functional $g$ in \eqref{eq:vi} is defined and continuous over $\mathcal{V}^J$, that is, $g\in (\mathcal{V}^J)'$.  If $\gamma^J \in \mathcal{V}^J$ denotes the fine-level \emph{obstacle} or \emph{constraint}, define
 \begin{equation}
@@ -463,22 +468,28 @@ the fine-level \emph{constraint set} of \emph{admissible} functions.  We now ass
 
 As a technical matter, VI \eqref{eq:fe:vi} is not necessarily conforming for \eqref{eq:vi} even though we assume $\mathcal{V}^J \subset \mathcal{V}$ at the vector space level.  Indeed, we do not specifically require $\mathcal{K}^J \subset \mathcal{K}$, and only the fine-level FE obstacle $\gamma^J$ needs to be concretely defined here, while $\mathcal{K}$ remains abstract.  This situation applies in certain geophysical situations where the obstacle is given by meshed data, the continuum limit of which is unknown \cite{Bueler2016}.
 
-The algorithm in the next section is designed to solve \eqref{eq:fe:vi}.
+The algorithm in the next section is designed to solve \eqref{eq:fe:vi}, but as it is multilevel it requires transfer operators between meshes.  In fact we require four operators, the first three of which are standard.
+
+FIXME canonical (dual) restriction $R$, canonical prolongation $P$, injection $\iR$, monotone restriction $\mR$
 
 
 \section{Nonlinear multilevel constraint decomposition} \label{sec:multilevel}
 
-The starting point of a \emph{multilevel constraint decomposition} \cite{GraeserKornhuber2009,Tai2003} method is to create constraint subsets, the sets denoted $\cK_i$ in sections \ref{sec:vi} and \ref{sec:convergence}, based on monotone restrictions of the constraint.  In fact the algorithm in the current section is a multigrid V-cycle with two systems of constraint subsets, one for the downward part of the cycle and one for the upward part.
+The starting point of a \emph{multilevel constraint decomposition} (MCD) \cite{GraeserKornhuber2009,Tai2003} method is to define constraint subsets, the sets generically denoted $\cK_i$ in sections \ref{sec:vi} and \ref{sec:convergence}, based on monotone restrictions of the constraint.  However, our algorithm is a multigrid V-cycle with two types of constraint subsets, for the downward and upward parts of the cycle.
 
-To make this precise, suppose $w^J \in \cK^J$ is an admissible fine-level iterate which approximates the solution $u^J$ in some sense.  From the iterate we define the \emph{defect constraint} \cite{GraeserKornhuber2009}
+To make this precise, suppose $w^J \in \cK^J$ is an admissible fine-level iterate which approximates the solution $u^J$ in some sense.  From this we define the \emph{defect constraint} \cite{GraeserKornhuber2009}
 \begin{equation}
 \chi^J = \gamma^J - w^J,  \label{eq:fe:defectconstraintfcn}
 \end{equation}
-a nonpositive function.  The idea of the defect constraint is that a perturbed iterate is admissible, e.g.~$w^J + z^J \ge \psi^J$, if and only if the perturbation $z^J$ exceeds the defect constraint, $z^J \ge \psi^j$.  Now for $j=J$ down to $j=1$ apply monotone restriction $\mR$ to define
+a nonpositive function.  The motivation of the defect constraint is that a corrected iterate is admissible, $w^J + z^J \ge \psi^J$, if and only if the perturbation $z^J$ exceeds the defect constraint, $z^J \ge \psi^j$.  Next, for $j=J$ down to $j=1$ apply monotone restriction $\mR$ to define
 \begin{equation}
 \chi^{j-1} = \mR \chi^j, \label{eq:fe:chilevels}
 \end{equation}
-called the \emph{level defect constraints}.  A four-level example is shown in Figure \ref{fig:chiphilevels}.
+the \emph{level defect constraints}.  A $J=4$ example is shown in Figure \ref{fig:chiphilevels}.  Denoting $\chi^{-1}=0$, for $j=0,\dots,J$ we also define the differences
+\begin{equation}
+\phi^j = \chi^j - \chi^{j-1}. \label{eq:fe:philevels}
+\end{equation}
+(The functions $\phi^j$ are the gaps between the $\chi^j$ in Figure \ref{fig:chiphilevels}.)  Note $\phi^0=\chi^0$, and that the telescoping sum $\sum_{j=0}^J \phi^j = \chi^J$ applies.
 
 %REGENERATE using https://github.com/bueler/mg-glaciers:
 %$ cd mg-glaciers/py/
@@ -491,19 +502,52 @@ called the \emph{level defect constraints}.  A four-level example is shown in Fi
 \label{fig:chiphilevels}
 \end{figure}
 
-Denoting $\chi^{-1}=0$, for $j=0,\dots,J$ we also define the differences
+For the downward part of the multigrid V-cycle we will use the $\phi^j$ as constraints, and for the upward part the $\chi^j$.  That is,
 \begin{equation}
-\phi^j = \chi^j - \chi^{j-1}. \label{eq:fe:philevels}
+\mathcal{D}^j = \{v\ge \phi^j\}, \qquad \mathcal{U}^j = \{v\ge \chi^j\} \label{eq:fe:constraintsets}
 \end{equation}
-Note $\phi^0=\chi^0$ and that a telescoping sum applies, namely $\sum_{j=0}^J \phi^j = \chi^J$.  Figure \ref{fig:chiphilevels} shows the functions $\phi^j$ as the gaps between the level defect constraints $\chi^j$.
+define \emph{downward} and \emph{upward constraint subsets} of the FE subspaces $\mathcal{V}^j$, respectively.  The upward sets are larger, and decompositions $\mathcal{U}^j = \sum_{i=0}^j \mathcal{D}^i$ apply in the same sense as \eqref{eq:constraintdecomp}.
 
-For the downward part of the multigrid V-cycle we will use the $\phi^j$ as constraints, and for the upward part the $\chi^j$.  That is, we define constraint subsets
+Returning to the heart of the MCD idea, our plan is to modify the admissible fine-level iterate $w^J\in \mathcal{K}^J$ by adding corrections from each coarser subspace $\mathcal{V}^j$.  By nesting \eqref{eq:fe:nestedspaces} these corrections do indeed live in the fine-level subspace $\mathcal{V}^J$, but the corrected iterate needs to be admissible too.  The accumulated corrections, over the whole multigrid V-cycle, must compute a new iterate in $\mathcal{K}^J$, so our corrections will come from the constraint subsets $\mathcal{D}^j$ and $\mathcal{U}^j$.
+
+In detail, suppose $y^{j+1} \in \mathcal{D}^{j+1}, \dots, y^J \in \mathcal{D}^J$ are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:nmcdvcycle}).  The corrected iterate at this stage is admissible ($w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$) because the sum of corrections is in the largest defect constraint set ($y^J + \dots + y^{j+1} \in \mathcal{U}^J = \{v\ge \chi^J\}$).
+
+\begin{figure}[h]
+\begin{center}
+\input{tikz/nmcdvcycle.tex}
+\end{center}
+\caption{Going down, the NMCD V-cycle computes corrections $y_j \in \mathcal{D}^j$.  The upward corrections $z_j$ can expand into larger constraint subsets $\mathcal{U}^j$.}
+\label{fig:nmcdvcycle}
+\end{figure}
+
+FIXME do I need $f^j$ to be defined?  yes?  even though $f(w^J+y^J + \dots + y^{j+1} +y^j)$ is the same as $f^j(w^J+y^J + \dots + y^{j+1} +y^j)$, the latter can use less storage?
+
+FIXME Now we compute the next-coarser correction $y^j \in \mathcal{D}^j$ by the downward VI at the $j$th level,
 \begin{equation}
-\mathcal{D}^j = \{v\ge \phi^j\}, \qquad \mathcal{U}^j = \{v\ge \chi^j\}. \label{eq:fe:constraintsets}
+\ip{f(w^J+y^J + \dots + y^{j+1} +y^j)}{v-y^j} \ge \ip{\ell^{j+1}}{v-y^j}, \label{eq:fe:levelvi}
 \end{equation}
-For $j=0,\dots,J$ these are subsets of the FE spaces $\mathcal{V}^j$.  The upward sets are larger, and in fact the decomposition $\mathcal{U}^j = \sum_{i=0}^j \mathcal{D}^i$ applies for each $j$ in the same sense as \eqref{eq:constraintdecomp}.
+for all $v \in \mathcal{D}^j$.  The source functional $\ell^j$ remains to be computed; see below.  Note that here and below we guarantee that the input to $f$ is admissible (in $\mathcal{K}^J$).
 
-FIXME explain $g$ and $y $ and $z$ etc.; explain smoother semantics (in-place on final argument)
+FIXME explain $g$; we define $g^j$ as the latest $j$th-level approximation to the solution $s$:
+\begin{equation}
+g^j = \begin{cases} w^J, & j=J \\
+                    \iR(g^{j+1} + y^{j+1}), & j < J.
+      \end{cases}  \label{eq:fe:defineg}
+\end{equation}
+That is, $g^j$ is our estimate of the solution on the $j$th level, before we add a correction which solves the $j$th-level VI.
+
+FIXME Subtract $N^{j+1}(w^J+z^{j+1})$ from both sides of \eqref{eq:fe:levelvi} gives
+\begin{align}
+&N^{j+1}(w^J+z^{j+1}+y)[v-y] \label{eq:siaVIFEprecoarsetwo} \\
+&\quad - N^{j+1}(w^J+z^{j+1})[v-y] \ge - \tilde F^{j+1}[v-y], \notag
+\end{align}
+where we define the resulting residual as
+\begin{equation}
+\tilde F^{j+1}[v] = N^{j+1}(w^J+z^{j+1})[v] - \ell^{j+1}[v].
+\end{equation}
+
+
+FIXME explain smoother semantics (in-place on final argument; reduces CP residual)
 
 \pseudoset{
 ctfont=\textsl,%
