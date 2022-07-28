@@ -448,11 +448,11 @@ FIXME NOW THE ENTIRE BATTLE IS TO GET A CONVEXITY RESULT $E(w,u) \ge C \sum_{j=0
 
 \section{Multilevel finite elements} \label{sec:fe}
 
-We will approximately solve VI \eqref{eq:vi} for certain nonlinear obstacle problems, over two-dimensional computational domains $\Omega \subset \RR^2$ and Banach space $\mathcal{V}=W_0^{1,p}(\Omega)$, using finite element (FE) spaces over triangular meshes (for concreteness).  The targeted mesh will be the finest level in a hierarchy constructed by refinement of a coarsest mesh.
+We will approximately solve VI \eqref{eq:vi} for certain nonlinear obstacle problems, over two-dimensional computational domains $\Omega \subset \RR^2$ and Banach space $\mathcal{V}=W_0^{1,p}(\Omega)$, using piecewise-linear finite element (FE) spaces over triangular meshes.  The targeted mesh will be the finest level in a hierarchy of meshes constructed by refinement of a coarsest mesh.
 
-The mesh hierarchy and FE spaces are constructed in a standard manner \cite{Elmanetal2014}.  Suppose $\Omega$ is polygonal and triangulated by $\mathcal{T}^0$, the \emph{coarsest mesh}, a finite set of non-overlapping triangles with union $\overline{\Omega}$ and characteristic size (cell diameter) $h_0>0$.  Starting with $j=1$, let $\mathcal{T}^j$ be the uniform refinement of $\mathcal{T}^{j-1}$ by edge bisection, thus each triangle becomes four similar triangles in $\mathcal{T}^j$ with characteristic size $h_j = 2^{-j} h_0$.  For $J\ge 0$, the \emph{depth} of the hierarchy, the final triangulation $\mathcal{T}^J$ is the \emph{finest mesh}.  (In the single-level $J=0$ case all multilevel efficiency will be lost.)  We define $m_j$ to be the number of interior nodes in $\mathcal{T}^j$, the number of \emph{degrees of freedom} in the $j$th level, and we denote $h=h_J=2^{-J} h_0$ and $m=m_J$ for the finest level.
+The mesh hierarchy and FE spaces are constructed in a standard manner \cite{Elmanetal2014}.  Suppose $\Omega$ is polygonal and triangulated by $\mathcal{T}^0$, the \emph{coarsest mesh}, a finite set of non-overlapping triangles with union $\overline{\Omega}$ and characteristic size (cell diameter) $h_0>0$.  Starting with $j=1$, let $\mathcal{T}^j$ be the uniform refinement of $\mathcal{T}^{j-1}$ by edge bisection, thus each triangle becomes four similar triangles in $\mathcal{T}^j$ with characteristic size $h_j = 2^{-j} h_0$.  Refinement proceeds to level $J\ge 0$, called the \emph{depth} of the hierarchy, giving $\mathcal{T}^J$ as the \emph{finest mesh}.  (In the single-level $J=0$ case all multilevel efficiency will be lost.)  Let $m_j$ be the number of interior nodes in $\mathcal{T}^j$, the \emph{degrees of freedom} at the $j$th level, and denote $h=h_J=2^{-J} h_0$ and $m=m_J$ for the finest level.
 
-Let $\mathcal{V}^j$ be the continuous, piecewise-polynomial FE space $P_k$, over $\mathcal{T}^j$, with zero boundary values, a subspace of $\mathcal{V}=W_0^{1,p}(\Omega)$ \cite{Elmanetal2014}.  Our choices imply the following nesting:
+Let $\mathcal{V}^j$ be the continuous, piecewise-polynomial FE space $P_1$,\footnote{The FE method herein apparently extends to $Q_1$ spaces over quadrilateral meshes \cite{Elmanetal2014}.  However, for $k>1$ the $P_k$ space seems not to be suitable because the monotone restriction operator, \eqref{eq:fe:monotonerestriction} below, depends on element-wise monotonicity.  That is, for $P_1$ or $Q_1$ if the nodal values of an FE function (non-strictly) increase then the FE function also increases.  As shown by Figure 1.7 of \cite{Elmanetal2014}, for example, such monotonicity is not true for $P_2$.} over $\mathcal{T}^j$, with zero boundary values.  Note $\mathcal{V}^j$ is a subspace of $\mathcal{V}=W_0^{1,p}(\Omega)$ for any $p\ge 1$ \cite{Elmanetal2014}.  Our choices imply the following nesting:
 \begin{equation}
 \mathcal{V}^0 \subset \mathcal{V}^1 \subset \dots \subset \mathcal{V}^J \subset \mathcal{V}.  \label{eq:fe:nestedspaces}
 \end{equation}
@@ -462,29 +462,17 @@ Suppose $\gamma^J \in \mathcal{V}^J$ denotes the \emph{obstacle} and define
 \end{equation}
 the finest-level \emph{constraint set} of \emph{admissible} FE functions.
 
-One may assume that $f$ in \eqref{eq:vi} is defined over $\mathcal{K}^J$, i.e.~$f:\mathcal{K}^J \to \mathcal{V}'$.  However, especially with nontrivial nonlinear functionals, we assume instead that the finest-level FE functional $f^J:\mathcal{K}^J \to (\mathcal{V}^J)'$ only approximates $f$ because of quadrature and other approximations.  We assume that $f^J$ is continuous and $p$-coercive on $\mathcal{K}^J$ in the sense that \eqref{eq:pcoercive} holds for all $u,v \in \mathcal{K}^J$.  The functional $\ell$ in \eqref{eq:vi} is defined and continuous over $\mathcal{V}^J$, that is, $\ell\in (\mathcal{V}^J)'$, but we allow the possibility of quadrature etc.~and therefore denote $\ell^J$ for the implemented source term.
+One might assume that $f$ in \eqref{eq:vi} is defined over $\mathcal{K}^J$, i.e.~$f:\mathcal{K}^J \to \mathcal{V}'$.  However, especially for nontrivial nonlinear functionals, the finest-level, discretized FE functional $f^J:\mathcal{K}^J \to (\mathcal{V}^J)'$ is likely to only approximate $f$ because of quadrature, or other implementation details.  The functional $\ell$ in \eqref{eq:vi} is defined and continuous over $\mathcal{V}^J$, thus $\ell\in (\mathcal{V}^J)'$, and we assume for simplicity that it can be computed exactly, but we denote $\ell^J \in (\mathcal{V}^J)'$ to indicate that it must be represented in the FE sense.
 
-With these understandings we seek the finest-level FE solution $u^J \in \mathcal{K}^J$ of the finite-dimensional, nonlinear VI
+With these understandings we seek the finest-level FE solution $u^J \in \mathcal{K}^J$ of this finite-dimensional, nonlinear VI
 \begin{equation}
 \ip{f^J(u^J)}{v-u^J} \ge \ip{\ell^J}{v-u^J} \qquad \text{for all } v\in \cK^J. \label{eq:fe:vi}
 \end{equation}
-While \eqref{eq:fe:vi} certainly approximates \eqref{eq:vi}, even ignoring quadrature it may not technically be conforming for \eqref{eq:vi}, despite the vector space inclusion $\mathcal{V}^J \subset \mathcal{V}$.  Indeed, we do not require $\mathcal{K}^J \subset \mathcal{K}$, and only the fine-level FE obstacle $\gamma^J$ needs to be concretely defined here, while $\mathcal{K}$ remains abstract.  This situation applies in certain geophysical situations where the obstacle is given by meshed data, the continuum limit of which is unknown \cite{Bueler2016}.
+As for \eqref{eq:vi}, if $f^J$ is continuous and $p$-coercive on $\mathcal{K}^J$, in the sense that \eqref{eq:pcoercive} holds for all $u,v \in \mathcal{K}^J$, or $f^J$ is continuous, coercive and strictly monotone, then \eqref{eq:fe:vi} is well-posed \cite{KinderlehrerStampacchia1980}.
 
-The multilevel algorithm in the next section, designed to solve \eqref{eq:fe:vi}, requires transfer operators between meshes.  In fact we require four such operators, the first three of which are standard, linear maps used for nonlinear multigrid methods \cite{Trottenbergetal2001}.
+While \eqref{eq:fe:vi} approximates \eqref{eq:vi}, even if quadrature and other implementation details are ignored it may not technically be conforming for \eqref{eq:vi}.  That is, despite the vector space inclusion $\mathcal{V}^J \subset \mathcal{V}$, we do not require $\mathcal{K}^J \subset \mathcal{K}$.  Only the fine-level FE obstacle $\gamma^J$ needs to be defined, while $\mathcal{K}$ remains abstract.  In fact, if a continuum obstacle exists at all then admissibility with respect to its FE interpolant $\gamma^J$ might not imply continuum admissiblity.  These caveats apply in geophysical situations where the obstacle is given by meshed elevation data, the continuum limit of which is undefined \cite{Bueler2016}.
 
-Canonical prolongation $P:\mathcal{V}^{j-1}\to\mathcal{V}^j$ simply acts as the identity on coarser-mesh functions in $\mathcal{V}^{j-1}$; it is the vector space injection $\mathcal{V}^{j-1} \hookrightarrow \mathcal{V}^j$.  Canonical (dual) restriction $R:(\mathcal{V}^j)'\to(\mathcal{V}^{j-1})'$ also acts as an identity in the sense that if $\sigma \in (\mathcal{V}^j)'$ then $(R\sigma)[z] = \sigma[z]$ for all $z \in \mathcal{V}^{j-1} \subset \mathcal{V}^j$.  While these canonical transfers imply no loss of information, in exact arithmetic, they do involve a change of FE representation.  The practical formula for canonical restriction is the ``full-weighting'' average \cite{Trottenbergetal2001}, the transpose of canonical prolongation.
-
-To define injection $\iR:\mathcal{V}^j\to\mathcal{V}^{j-1}$ we first denote by $x_q^j$, for $q=0,\dots,m_j-1$, the \emph{interior nodes} of the $j$th triangulation $\mathcal{T}^j$.  Observe that for any given values at the (interior) nodes of $\mathcal{T}^j$ there is a unique function in $\mathcal{V}^j$ with those values, and also observe that, by construction, the nodes of $\mathcal{T}^{j-1}$ are also nodes of $\mathcal{T}^j$.  Thus for $z\in\mathcal{V}^j$ we may define the injection $\iR z$ as the element of $\mathcal{V}^{j-1}$ which has the same nodal values as $z$ at the nodes of $\mathcal{T}^{j-1}$.
-
-Finally, monotone restriction $\mR:\mathcal{V}^j\to\mathcal{V}^{j-1}$ is a nonlinear map which replaces a function by the 
-\begin{equation}
-  \mR z = \sum_{p=1}^{m_{j-1}} \max \{z_q \,:\, \psi_p^{j-1}(x_q^j) > 0\}\, \psi_p^{j-1} \label{eq:fe:monotonerestriction}
-\end{equation}
-Recalling that functions in $\mathcal{V}^j$ have zero boundary values, note that $\mR z \ge z$ on $\Omega$ if $z\le 0$.
-
-FIXME I NEED TO BE CAREFUL WITH $P_k$ for $k>1$
-
-Table \ref{tab:transfers} will help the reader keep track of transfer operator notation.
+The multilevel algorithm in the next section, designed to solve \eqref{eq:fe:vi}, requires transfer operators between meshes.  We use four such operators, three of which are the standard and linear maps used for nonlinear multigrid methods \cite{Trottenbergetal2001}.  Table \ref{tab:transfers} will help the reader keep track.
 
 \begin{table}
 \begin{tabular}{lll}
@@ -500,24 +488,36 @@ monotone restriction          & $\mR:\mathcal{V}^j\to\mathcal{V}^{j-1}$ &
 \label{tab:transfers}
 \end{table}
 
+Canonical prolongation $P:\mathcal{V}^{j-1}\to\mathcal{V}^j$ acts as the identity on coarser-mesh functions in $\mathcal{V}^{j-1}$; it is the linear vector space injection $\mathcal{V}^{j-1} \hookrightarrow \mathcal{V}^j$.  Canonical (dual) restriction $R:(\mathcal{V}^j)'\to(\mathcal{V}^{j-1})'$ also acts as an identity in the sense that if $\sigma \in (\mathcal{V}^j)'$ then $(R\sigma)[z] = \sigma[z]$ for all $z \in \mathcal{V}^{j-1} \subset \mathcal{V}^j$.  While these canonical transfers do not lose information, they typically involve a change of FE representation.  For example, the practical formula for canonical restriction, derived by writing coarser-mesh hat functions in terms of finer-mesh ones, is a ``full-weighting'' average \cite{Trottenbergetal2001}.  It is the transpose of canonical prolongation.
+
+To define injection $\iR:\mathcal{V}^j\to\mathcal{V}^{j-1}$, observe that for any given values at the (interior) nodes of $\mathcal{T}^j$ there is a unique function in $\mathcal{V}^j$ with those values.  Also observe that, by our refinement construction, the nodes of $\mathcal{T}^{j-1}$ are also nodes of $\mathcal{T}^j$.  For $z\in\mathcal{V}^j$ we define the injection $\iR z$ as the element of $\mathcal{V}^{j-1}$ which has the same nodal values as $z$ at the nodes of $\mathcal{T}^{j-1}$.  Note that injection clearly preserves ordering, that is, if $w \le z$ then $\iR w \le \iR z$.
+
+Finally, monotone restriction $\mR:\mathcal{V}^j\to\mathcal{V}^{j-1}$ is a nonlinear map which maximizes nodal values over the supports of coarse-mesh hat functions.  To make the definition precise, first denote the \emph{interior nodes} of triangulation $\mathcal{T}^j$ by $x_q^j$ for $q=0,\dots,m_j-1$, and then the corresponding hat function \cite{Elmanetal2014} by $\psi_q^j$.  Monotone restriction of $z\in \mathcal{V}^j$ is
+\begin{equation}
+  \mR z = \sum_{p=1}^{m_{j-1}} \max \{z_q \,:\, \psi_p^{j-1}(x_q^j) > 0\}\, \psi_p^{j-1}. \label{eq:fe:monotonerestriction}
+\end{equation}
+Recalling that the piecewise-linear functions in $\mathcal{V}^j$ have zero boundary values, note that if $z\le 0$ then $0\ge \mR z \ge z$ on $\Omega$.
+
 
 \section{Nonlinear multilevel constraint decomposition} \label{sec:multilevel}
 
-The starting point of a \emph{multilevel constraint decomposition} (MCD) \cite{GraeserKornhuber2009,Tai2003} method is to define constraint subsets, the sets generically denoted $\cK_i$ in sections \ref{sec:vi} and \ref{sec:convergence}, based on monotone restrictions of the constraint, as defined momentarily.  Our algorithm is a multilevel V-cycle with two types of constraint subsets, distinct for the downward and upward parts of the cycle.
+The starting point of a \emph{multilevel constraint decomposition} (MCD) \cite{GraeserKornhuber2009,Tai2003} method is to define constraint subsets, the sets generically denoted $\cK_i$ in sections \ref{sec:vi} and \ref{sec:convergence}, based on monotone restrictions of the constraint.  In fact our algorithm is a multilevel V-cycle with two types of constraint subsets, distinctly for the downward and upward parts of the cycle.
 
 To make this precise, suppose $w^J \in \cK^J$ is an admissible fine-level iterate which approximates the solution $u^J$.  From this iterate we define the \emph{defect constraint} \cite{GraeserKornhuber2009}
 \begin{equation}
 \chi^J = \gamma^J - w^J,  \label{eq:fe:defectconstraintfcn}
 \end{equation}
-a nonpositive function.  The motivation of the defect constraint is that a corrected iterate is admissible, $w^J + z^J \ge \gamma^J$, if and only if the perturbation $z^J$ exceeds the defect constraint, $z^J \ge \chi^J$.  Next, for $j=J,J-1,\dots,1$ apply monotone restriction $\mR$, equation \eqref{eq:fe:monotonerestriction}, to define
+a nonpositive function.  The motivation of the defect constraint is that a corrected iterate is admissible, $w^J + z^J \ge \gamma^J$, if and only if the perturbation $z^J$ exceeds the defect constraint, $z^J \ge \chi^J$.  Next, for $j=J,J-1,\dots,1$ apply monotone restriction $\mR$ to define the \emph{level defect constraints}
 \begin{equation}
-\chi^{j-1} = \mR \chi^j, \label{eq:fe:chilevels}
+\chi^{j-1} = \mR \chi^j. \label{eq:fe:chilevels}
 \end{equation}
-the \emph{level defect constraints}.  A $J=4$ example is shown in Figure \ref{fig:chiphilevels}.  Denoting $\chi^{-1}=0$, for $j=0,\dots,J$ we also define the differences
+As observed after equation \eqref{eq:fe:monotonerestriction}, $0\ge \chi^{j-1} \ge \chi^j$.  A $J=4$ example is shown in Figure \ref{fig:chiphilevels}.
+
+For $j=0,\dots,J$ we also denote the differences between the level defect constraints by
 \begin{equation}
 \phi^j = \chi^j - \chi^{j-1}. \label{eq:fe:philevels}
 \end{equation}
-(The functions $\phi^j$ are the gaps between the $\chi^j$ in Figure \ref{fig:chiphilevels}.)  Note $\phi^0=\chi^0$, and that the telescoping sum $\sum_{j=0}^J \phi^j = \chi^J$ applies.
+(This uses the convenience definition $\chi^{-1}=0$.)  These are the gaps between the $\chi^j$ shown in Figure \ref{fig:chiphilevels}.  Note $\phi^0=\chi^0$, and that the telescoping sum $\sum_{j=0}^J \phi^j = \chi^J$ applies.
 
 %REGENERATE using https://github.com/bueler/mg-glaciers:
 %$ cd mg-glaciers/py/
@@ -530,15 +530,15 @@ the \emph{level defect constraints}.  A $J=4$ example is shown in Figure \ref{fi
 \label{fig:chiphilevels}
 \end{figure}
 
-For the downward part of the multigrid V-cycle we will use the $\phi^j$ as constraints, and for the upward part the $\chi^j$.  That is,
+For the downward part of the multigrid V-cycle we will use the $\phi^j$ as constraints, and for the upward part the $\chi^j$.  That is, let
 \begin{equation}
 \mathcal{D}^j = \{v\ge \phi^j\}, \qquad \mathcal{U}^j = \{v\ge \chi^j\} \label{eq:fe:constraintsets}
 \end{equation}
 define \emph{downward} and \emph{upward constraint subsets} of the FE subspaces $\mathcal{V}^j$, respectively.  The upward sets are larger, and decompositions $\mathcal{U}^j = \sum_{i=0}^j \mathcal{D}^i$ apply in the same sense as \eqref{eq:constraintdecomp}.
 
-Returning to the heart of the MCD idea, our plan is to modify the admissible fine-level iterate $w^J\in \mathcal{K}^J$ by adding corrections from each coarser subspace $\mathcal{V}^j$.  By nesting \eqref{eq:fe:nestedspaces} these corrections do indeed live in the fine-level subspace $\mathcal{V}^J$, but the corrected iterate needs to be admissible too.  The accumulated corrections, over the whole multigrid V-cycle, must compute a new iterate in $\mathcal{K}^J$, so our corrections will come from the constraint subsets $\mathcal{D}^j$ and $\mathcal{U}^j$.
+Returning to the heart of the MCD idea, our plan is to correct the admissible fine-level iterate $w^J\in \mathcal{K}^J$ by adding modifications from each coarser subspace $\mathcal{V}^j$.  By nesting \eqref{eq:fe:nestedspaces} these corrections live in the fine-level subspace $\mathcal{V}^J$, but the corrected iterate needs to be admissible as well.  The accumulated corrections, from the constraint subsets $\mathcal{D}^j$ and $\mathcal{U}^j$, over the whole multigrid V-cycle, compute a new iterate in $\mathcal{K}^J$.
 
-In detail, suppose $y^{j+1} \in \mathcal{D}^{j+1}, \dots, y^J \in \mathcal{D}^J$ are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:nmcdvcycle}).  The corrected iterate at this stage is admissible ($w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$) because the sum of corrections is in the largest defect constraint set ($y^J + \dots + y^{j+1} \in \mathcal{U}^J = \{v\ge \chi^J\}$).
+In detail, suppose $y^{j+1} \in \mathcal{D}^{j+1}, \dots, y^J \in \mathcal{D}^J$ are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:nmcdvcycle}).  The so-far corrected iterate is admissible, $w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$, because the sum of corrections is in the (finest) defect constraint set, namely $y^J + \dots + y^{j+1} \in \mathcal{U}^J = \{v\ge \chi^J\}$.
 
 \begin{figure}[h]
 \begin{center}
@@ -548,21 +548,21 @@ In detail, suppose $y^{j+1} \in \mathcal{D}^{j+1}, \dots, y^J \in \mathcal{D}^J$
 \label{fig:nmcdvcycle}
 \end{figure}
 
-FIXME do I need $f^j$ to be defined?  yes?  even though $f(w^J+y^J + \dots + y^{j+1} +y^j)$ is the same as $f^j(w^J+y^J + \dots + y^{j+1} +y^j)$, the latter can use less storage?
+Now, when computing the next-coarser correction we will need to use the coarser-mesh representation, and, as in nonlinear FAS multigrid schemes \cite{BrandtLivne2011,Bruneetal2015,Trottenbergetal2001}, we must coarsen the iterate as well as the residual and the correction.\footnote{Here we diverge from algorithms by Tai  \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009}.  If $f$ is linear, as in the implemented examples in those works, there is no need to coarsen the solution.  (In classical linear multigrid only the residual and the correction must be coarsened.)  We follow the FAS philosophy for nonlinear functionals.}  We do this using injection \cite[section 5.3]{Trottenbergetal2001}.  Define
+\begin{equation}
+g^j = \begin{cases} w^J, & j=J \\
+                    \iR(g^{j+1} + y^{j+1}), & j < J.
+      \end{cases}  \label{eq:fe:defineg}
+\end{equation}
+That is, $g^j$ is a $j$th-level mesh approximation to the solution $u^J$, before we add the correction which solves the coarsened VI problem at the $j$th level.\footnote{If we were to inject the finest-mesh obstacle downward to coarser meshes, i.e.~$\gamma^{j-1} = \iR \gamma^j$, then, because $\iR$ preserves inequalities and $y^j \in \mathcal{D}^j$  it would follow that $g^j \ge \gamma^j$.  In this sense $g^j$ is an admissible function on the $j$th-level mesh.  However, our use of the defect constraints $\chi^j$, following \cite{GraeserKornhuber2009}, avoids the need to generate these $\gamma^j$; their definition in this footnote can be ignored.}
+
+FIXME do I need $f^j$ to be defined?  yes.  Tai assumes $f(w^J+y^J + \dots + y^{j+1} +y^j)$ is defined, which is true, but $f^j(g^j)$ uses the $j$th level representation
 
 FIXME Now we compute the next-coarser correction $y^j \in \mathcal{D}^j$ by the downward VI at the $j$th level,
 \begin{equation}
 \ip{f(w^J+y^J + \dots + y^{j+1} +y^j)}{v-y^j} \ge \ip{\ell^{j+1}}{v-y^j}, \label{eq:fe:levelvi}
 \end{equation}
 for all $v \in \mathcal{D}^j$.  The source functional $\ell^j$ remains to be computed; see below.  Note that here and below we guarantee that the input to $f$ is admissible (in $\mathcal{K}^J$).
-
-FIXME explain $g$; we define $g^j$ as the latest $j$th-level approximation to the solution $s$:
-\begin{equation}
-g^j = \begin{cases} w^J, & j=J \\
-                    \iR(g^{j+1} + y^{j+1}), & j < J.
-      \end{cases}  \label{eq:fe:defineg}
-\end{equation}
-That is, $g^j$ is our estimate of the solution on the $j$th level, before we add a correction which solves the $j$th-level VI.
 
 FIXME Subtract $N^{j+1}(w^J+z^{j+1})$ from both sides of \eqref{eq:fe:levelvi} gives
 \begin{align}
@@ -585,26 +585,25 @@ ct-right=),%
 
 \begin{pseudofloat}[H]
 \begin{pseudo*} \label{ps:nmcd-vcycle}
-\pr{nmcd-vcycle}(f,\ell,w^J,\gamma^J)\text{:} \\+
-    $\ell^J = \ell$ \ct{notational} \\
+\pr{nmcd-vcycle}(\ell^J,w^J,\gamma^J)\text{:} \\+
     $\chi^J = w^J - \gamma^J$ \\
-    $g^J = w^J$ \ct{notational} \\
+    $g^J = w^J$ \ct{notational; no copy needed} \\
     for $j=J$ downto $j=1$ \\+
       $\chi^{j-1} = \mR \chi^j$ \\
       $\phi^j = \chi^j - P\chi^{j-1}$ \\
       $y^j = 0$ \\
-      $\text{\pr{smoother}}^{\text{\id{down}}}(f,\ell^j,\phi^j,g^j;y^j)$  \ct{smoothing in $\mathcal{D}^j$}\\
+      $\text{\pr{smoother}}^{\text{\id{down}}}(f^j,\ell^j,\phi^j,g^j;y^j)$  \ct{smoothing in $\mathcal{D}^j$}\\
       $g^{j-1} = \iR(g^j + y^j)$ \\
-      $\ell^{j-1} = f(g^{j-1}) - R \left(f(g^j+y^j) - \ell^j\right)$ \\-
+      $\ell^{j-1} = f^{j-1}(g^{j-1}) - R \left(f^j(g^j+y^j) - \ell^j\right)$ \\-
     $y^0 = 0$ \\
-    $\text{\pr{solver}}^{\text{\id{coarse}}}(f,\ell^0,\chi^0,g^0;y^0)$ \ct{solving in $\mathcal{D}^0=\mathcal{U}^0$} \\
+    $\text{\pr{solver}}^{\text{\id{coarse}}}(f^0,\ell^0,\chi^0,g^0;y^0)$ \ct{solving in $\mathcal{D}^0=\mathcal{U}^0$} \\
     $z^0 = y^0$ \\
     for $j=1$ to $j=J$ \\+
       $z^j = P z^{j-1} + y^{j}$ \\
-      $\text{\pr{smoother}}^{\text{\id{up}}}(f,\ell^j,\chi^j,g^j;z^j)$  \ct{smoothing in $\mathcal{U}^j$} \\-
+      $\text{\pr{smoother}}^{\text{\id{up}}}(f^j,\ell^j,\chi^j,g^j;z^j)$  \ct{smoothing in $\mathcal{U}^j$} \\-
     return $w^J+z^J$
 \end{pseudo*}
-\caption{Nonlinear multilevel constraint decomposition V-cycle for VI problem \eqref{eq:fe:vi}.}
+\caption{Nonlinear multilevel constraint decomposition V-cycle for the finest-level VI problem \eqref{eq:fe:vi}, using mesh-level discretizations $f^j$ of the original nonlinear $f$ in problem \eqref{eq:vi}.}
 \label{alg:nmcd}
 \end{pseudofloat}
 
