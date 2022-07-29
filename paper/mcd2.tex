@@ -14,7 +14,15 @@
 \usetikzlibrary{decorations.pathreplacing}
 
 \usepackage[kw]{pseudo}
-\pseudoset{left-margin=15mm,topsep=5mm,idfont=\texttt}
+\pseudoset{%
+left-margin=15mm,%
+topsep=5mm,%
+label=\footnotesize\arabic*,%
+idfont=\texttt,%
+ctfont=\textsl,%
+ct-left=\qquad\qquad(,%
+ct-right=),%
+}
 
 \usepackage{float}
 
@@ -314,7 +322,7 @@ The \textbf{for} loop in Algorithm \ref{alg:basiccd-add}, the additive or parall
 \pr{cd-mult}(f,\ell,u,\cK,\cK_i,R_i)\text{:} \\+
     for $i = 0,\dots,m-1$: \\+
         \rm{find} $\hat w_i\in \cK_i$ \rm{so that for all} $v_i\in \cK_i$ \rm{we have} \\+
-            $\displaystyle \boxed{\ip{f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j u\Big)}{v_i-\hat w_i} \ge \ip{g}{v_i-\hat w_i}}$ \\-
+            $\displaystyle \boxed{\ip{f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j u\Big)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i}}$ \\-
             $w_i = (1-\alpha) R_i u + \alpha \hat w_i\in\cK_i$ \\-
     $\hat w = \sum_i \hat w_i\in\cK$ \\
     return $w=(1-\alpha) u + \alpha \hat w\in\cK$
@@ -501,23 +509,23 @@ Recalling that the piecewise-linear functions in $\mathcal{V}^j$ have zero bound
 
 \section{Nonlinear multilevel constraint decomposition} \label{sec:multilevel}
 
-The starting point of a \emph{multilevel constraint decomposition} (MCD) \cite{GraeserKornhuber2009,Tai2003} method is to define constraint subsets, the sets generically denoted $\cK_i$ in sections \ref{sec:vi} and \ref{sec:convergence}, based on monotone restrictions of the constraint.  In fact our algorithm is a multilevel V-cycle with two types of constraint subsets, distinctly for the downward and upward parts of the cycle.
+The starting point of a \emph{multilevel constraint decomposition} (MCD) \cite{GraeserKornhuber2009,Tai2003} method is to define constraint subsets, the sets generically denoted $\cK_i$ in sections \ref{sec:vi} and \ref{sec:convergence}, based on monotone restrictions of a defect constraint (see below).  Our multilevel V-cycle algorithm will define two types of constraint subsets in this manner, distinctly for the downward and upward parts of the cycle.  We also diverge from the MCD algorithms by Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear \emph{full approximation scheme} (FAS) philosophy \cite{BrandtLivne2011}.  When $f$ is linear, as in the implemented examples in \cite{GraeserKornhuber2009,Tai2003}, there is no need to coarsen the solution itself, as in classical linear multigrid only the residual and correction are coarsened, but in the FAS approach here we coarsen the solution iterate using the injection restriction.
 
-To make this precise, suppose $w^J \in \cK^J$ is an admissible fine-level iterate which approximates the solution $u^J$.  From this iterate we define the \emph{defect constraint} \cite{GraeserKornhuber2009}
+To make this precise, suppose $w^J \in \cK^J$ is an admissible fine-level iterate which approximates the solution $u^J$ of VI \eqref{eq:fe:vi}.  From this iterate we define the \emph{defect constraint} \cite{GraeserKornhuber2009}
 \begin{equation}
 \chi^J = \gamma^J - w^J,  \label{eq:fe:defectconstraintfcn}
 \end{equation}
-a nonpositive function.  The motivation of the defect constraint is that a corrected iterate is admissible, $w^J + z^J \ge \gamma^J$, if and only if the perturbation $z^J$ exceeds the defect constraint, $z^J \ge \chi^J$.  Next, for $j=J,J-1,\dots,1$ apply monotone restriction $\mR$ to define the \emph{level defect constraints}
+a nonpositive function.  The motivation here is that a corrected iterate is admissible, $w^J + z^J \ge \gamma^J$, if and only if the perturbation $z^J$ exceeds the defect constraint, $z^J \ge \chi^J$.  Next, for $j=J,J-1,\dots,1$ we apply monotone restriction $\mR$ to define the \emph{level defect constraints}:
 \begin{equation}
 \chi^{j-1} = \mR \chi^j. \label{eq:fe:chilevels}
 \end{equation}
 As observed after equation \eqref{eq:fe:monotonerestriction}, $0\ge \chi^{j-1} \ge \chi^j$.  A $J=4$ example is shown in Figure \ref{fig:chiphilevels}.
 
-For $j=0,\dots,J$ we also denote the differences between the level defect constraints by
+We also denote the differences between the level defect constraints by
 \begin{equation}
 \phi^j = \chi^j - \chi^{j-1}. \label{eq:fe:philevels}
 \end{equation}
-(This uses the convenience definition $\chi^{-1}=0$.)  These are the gaps between the $\chi^j$ shown in Figure \ref{fig:chiphilevels}.  Note $\phi^0=\chi^0$, and that the telescoping sum $\sum_{j=0}^J \phi^j = \chi^J$ applies.
+(This uses the convenience definition $\chi^{-1}=0$, thus $\phi^0=\chi^0$ in particular.)  These are the gaps between the $\chi^j$ shown in Figure \ref{fig:chiphilevels}.  Note the telescoping sum $\sum_{j=0}^J \phi^j = \chi^J$ decomposition.
 
 %REGENERATE using https://github.com/bueler/mg-glaciers:
 %$ cd mg-glaciers/py/
@@ -532,13 +540,13 @@ For $j=0,\dots,J$ we also denote the differences between the level defect constr
 
 For the downward part of the multigrid V-cycle we will use the $\phi^j$ as constraints, and for the upward part the $\chi^j$.  That is, let
 \begin{equation}
-\mathcal{D}^j = \{v\ge \phi^j\}, \qquad \mathcal{U}^j = \{v\ge \chi^j\} \label{eq:fe:constraintsets}
+\mathcal{D}^j = \{v \in \mathcal{V}^j \,:\, v\ge \phi^j\}, \qquad \mathcal{U}^j = \{v \in \mathcal{V}^j \,:\, v\ge \chi^j\} \label{eq:fe:constraintsets}
 \end{equation}
-define \emph{downward} and \emph{upward constraint subsets} of the FE subspaces $\mathcal{V}^j$, respectively.  The upward sets are larger, and decompositions $\mathcal{U}^j = \sum_{i=0}^j \mathcal{D}^i$ apply in the same sense as \eqref{eq:constraintdecomp}.
+define \emph{downward} and \emph{upward constraint subsets} of the FE subspaces $\mathcal{V}^j$, respectively.  The upward sets are larger, $\mathcal{D}^j \subset \mathcal{U}^j$, and set decompositions $\mathcal{U}^j = \sum_{i=0}^j \mathcal{D}^i$ apply in the same sense as \eqref{eq:constraintdecomp}.
 
-Returning to the heart of the MCD idea, our plan is to correct the admissible fine-level iterate $w^J\in \mathcal{K}^J$ by adding modifications from each coarser subspace $\mathcal{V}^j$.  By nesting \eqref{eq:fe:nestedspaces} these corrections live in the fine-level subspace $\mathcal{V}^J$, but the corrected iterate needs to be admissible as well.  The accumulated corrections, from the constraint subsets $\mathcal{D}^j$ and $\mathcal{U}^j$, over the whole multigrid V-cycle, compute a new iterate in $\mathcal{K}^J$.
+Returning to the central MCD idea, we will correct the finest-level iterate $w^J\in \mathcal{K}^J$ by adding modifications from each coarser subspace $\mathcal{V}^j$.  By nesting \eqref{eq:fe:nestedspaces} these corrections live in the fine-level subspace $\mathcal{V}^J$, but the corrected iterate needs to be admissible as well.  The accumulated corrections, from the constraint subsets $\mathcal{D}^j$ and $\mathcal{U}^j$, over the whole multigrid V-cycle, compute a new iterate in $\mathcal{K}^J$.
 
-In detail, suppose $y^{j+1} \in \mathcal{D}^{j+1}, \dots, y^J \in \mathcal{D}^J$ are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:nmcdvcycle}).  The so-far corrected iterate is admissible, $w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$, because the sum of corrections is in the (finest) defect constraint set, namely $y^J + \dots + y^{j+1} \in \mathcal{U}^J = \{v\ge \chi^J\}$.
+In detail, suppose $y^{j+1} \in \mathcal{D}^{j+1}, \dots, y^J \in \mathcal{D}^J$ are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:nmcdvcycle}).  The so-far corrected iterate is admissible, namely $w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$, because the sum of corrections is in the (finest) defect constraint set, i.e.~$y^J + \dots + y^{j+1} \in \mathcal{U}^J = \{v\ge \chi^J\}$.
 
 \begin{figure}[h]
 \begin{center}
@@ -548,76 +556,108 @@ In detail, suppose $y^{j+1} \in \mathcal{D}^{j+1}, \dots, y^J \in \mathcal{D}^J$
 \label{fig:nmcdvcycle}
 \end{figure}
 
-Now, when computing the next-coarser correction we will need to use the coarser-mesh representation, and, as in nonlinear FAS multigrid schemes \cite{BrandtLivne2011,Bruneetal2015,Trottenbergetal2001}, we must coarsen the iterate as well as the residual and the correction.\footnote{Here we diverge from algorithms by Tai  \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009}.  If $f$ is linear, as in the implemented examples in those works, there is no need to coarsen the solution.  (In classical linear multigrid only the residual and the correction must be coarsened.)  We follow the FAS philosophy for nonlinear functionals.}  We do this using injection \cite[section 5.3]{Trottenbergetal2001}.  Define
+When computing the next-coarser correction one must use the coarser-mesh representation of the problem.  As in nonlinear FAS multigrid schemes \cite{BrandtLivne2011,Bruneetal2015,Trottenbergetal2001}, this requires that we coarsen the iterate as well as the residual and the correction, and here injection is used \cite[section 5.3]{Trottenbergetal2001}.  Define
 \begin{equation}
 g^j = \begin{cases} w^J, & j=J \\
                     \iR(g^{j+1} + y^{j+1}), & j < J.
       \end{cases}  \label{eq:fe:defineg}
 \end{equation}
-That is, $g^j$ is a $j$th-level mesh approximation to the solution $u^J$, before we add the correction which solves the coarsened VI problem at the $j$th level.\footnote{If we were to inject the finest-mesh obstacle downward to coarser meshes, i.e.~$\gamma^{j-1} = \iR \gamma^j$, then, because $\iR$ preserves inequalities and $y^j \in \mathcal{D}^j$  it would follow that $g^j \ge \gamma^j$.  In this sense $g^j$ is an admissible function on the $j$th-level mesh.  However, our use of the defect constraints $\chi^j$, following \cite{GraeserKornhuber2009}, avoids the need to generate these $\gamma^j$; their definition in this footnote can be ignored.}
+Function $g^j$ is the $j$th-level mesh approximation to the solution of \eqref{eq:fe:vi}, before smoothing and correction at that level.\footnote{If we were to inject the finest-mesh obstacle downward to coarser meshes, $\gamma^{j-1} = \iR \gamma^j$, then, because $\iR$ preserves inequalities and $y^j \in \mathcal{D}^j$, it would follow that $g^j \ge \gamma^j$.  In this sense $g^j$ is admissible on the $j$th-level mesh.  However, following \cite{GraeserKornhuber2009}, our use of defect constraints $\chi^j$ avoids the need to generate the $\gamma^j$.}
 
-FIXME do I need $f^j$ to be defined?  yes.  Tai assumes $f(w^J+y^J + \dots + y^{j+1} +y^j)$ is defined, which is true, but $f^j(g^j)$ uses the $j$th level representation
-
-FIXME Now we compute the next-coarser correction $y^j \in \mathcal{D}^j$ by the downward VI at the $j$th level,
+Down-smoothing makes progress toward solving the following VI for $y^j \in \mathcal{D}^j$:
 \begin{equation}
-\ip{f(w^J+y^J + \dots + y^{j+1} +y^j)}{v-y^j} \ge \ip{\ell^{j+1}}{v-y^j}, \label{eq:fe:levelvi}
+\ip{f^j(g^j + y^j)}{v-y^j} \ge \ip{\ell^j}{v-y^j} \qquad \text{for all } v\in \mathcal{D}^j. \label{eq:fe:downvi}
 \end{equation}
-for all $v \in \mathcal{D}^j$.  The source functional $\ell^j$ remains to be computed; see below.  Note that here and below we guarantee that the input to $f$ is admissible (in $\mathcal{K}^J$).
+Here $f^j$ is a discretization of $f$ in \eqref{eq:vi},\footnote{Again we diverge from the algorithm by Tai \cite{Tai2003}, who essentially assumes that ``$f(g^j + y^j)$'' is used here.  If $f$ is linear then efficient implementation via that formula is possible, but otherwise one must apply $f^j$.} using quadrature etc.~as addressed for $f^J$ in \eqref{eq:fe:vi}.
 
-FIXME Subtract $N^{j+1}(w^J+z^{j+1})$ from both sides of \eqref{eq:fe:levelvi} gives
+For $j<J$ the source function $\ell^j$ is determined by an FAS-type formula, as follows.  First note that the $j+1$ level version of \eqref{eq:fe:downvi} is not solved exactly by the correction $y^{j+1}$.  Fixing $y^{j+1} \in \mathcal{D}^{j+1}$, we would want to find a further correction $y$ so that $g^{j+1}+y^{j+1}+y$ is still admissible, and so that
+\begin{equation}
+\ip{f^{j+1}(g^{j+1}+y^{j+1}+y)}{v-y^{j+1}-y} \ge \ip{\ell^{j+1}}{v-y^{j+1}-y} \qquad \text{\emph{(notional)}} \label{eq:fe:downvinotional}
+\end{equation}
+held exactly.  However, in a multilevel method we actually compute this next correction $y$ on the next-coarser level $j$.  To do this we modify the notional finer-level VI \eqref{eq:fe:downvinotional} in five steps which mimic the standard argument for the FAS correction equations for PDEs \cite{BrandtLivne2011,Trottenbergetal2001}:
+\begin{enumerate}
+\item group $v-y^{j+1}$ as a coarser-level test function $v\in \mathcal{D}^j$,
+\item subtract the known $f^{j+1}(g^{j+1}+y^{j+1}) \in (\mathcal{V}^{j+1})'$ from both sides,
+\item replace the residual $\ell^{j+1}-f^{j+1}(g^{j+1}+y^{j+1})$ by its restriction,
+\item replace $g^{j+1}+y^{j+1}$ where it appears by its restriction,
+\item and replace $f^{j+1}$ by its coarser rediscretization $f^j$ where it appears on the left.
+\end{enumerate}
+Steps \emph{(iii)}--\emph{(v)} are justified, as usual, by the assumption that the residual and the correction should be smooth as a result of the progress made by the smoother on the $j+1$ level.  These steps now yield the precise $j$th-level VI problem, in cluttered form but the same as \eqref{eq:fe:downvi}:
 \begin{align}
-&N^{j+1}(w^J+z^{j+1}+y)[v-y] \label{eq:siaVIFEprecoarsetwo} \\
-&\quad - N^{j+1}(w^J+z^{j+1})[v-y] \ge - \tilde F^{j+1}[v-y], \notag
+&\ip{f^j\left(\iR(g^{j+1}+y^{j+1})+y^j\right)}{v-y^j} - \ip{f^j\left(\iR(g^{j+1}+y^{j+1})\right)}{v-y^j} \label{eq:fe:downvicluttered} \\
+&\qquad \ge \ip{R\left(\ell^{j+1}-f^{j+1}(g^{j+1}+y^{j+1})\right)}{v-y^j} \notag
 \end{align}
-where we define the resulting residual as
+
+Thus we define $\ell^j \in (\mathcal{V}^j)'$ in \eqref{eq:fe:downvi} by the following recursive definition, starting from $\ell^J$ already defined for the finest-level problem \eqref{eq:fe:vi}, and incorporating definition \eqref{eq:fe:defineg}:
 \begin{equation}
-\tilde F^{j+1}[v] = N^{j+1}(w^J+z^{j+1})[v] - \ell^{j+1}[v].
+\ell^j = f^j(g^j) + R\left(\ell^{j+1}-f^{j+1}(g^{j+1}+y^{j+1})\right). \label{eq:fe:levelsource}
 \end{equation}
+This is identical, even if the notation differs, to the standard FAS formula for a PDE source term, for example equation (8.5b) in \cite{BrandtLivne2011} or equation (5.3.14) in \cite{Trottenbergetal2001}.
 
+At each level in the downward part of the V-cycle (Figure \ref{fig:nmcdvcycle}) we apply a smoother, a partial solver of \eqref{eq:fe:downvi} which should rapidly reduce the high-frequencies in the error, to generate a correction $y^j \in \mathcal{D}^j$.  At the coarsest $j=0$ level we solve \eqref{eq:fe:downvi}, accurately if possible, yielding a correction $y^0$ in the coarsest defect constraint set $\mathcal{D}^0=\mathcal{U}^0 = \{v \ge \chi^0\}$.  Note that the coarsest-level solver may be the same as the other smoothers.
 
-FIXME explain smoother semantics (in-place on final argument; reduces CP residual)
-
-\pseudoset{
-ctfont=\textsl,%
-ct-left=\qquad\qquad(,%
-ct-right=),%
-}
+In the upward part of the V-cycle the smoother starts from an initial iterate $z_0^j$ which has accumulated the coarser-level corrections.  Define $z_0^0 = y^0$ and
+\begin{equation}
+z_0^j = P z_0^{j-1} + y^j  \label{eq:fe:upwardaccumulation}
+\end{equation}
+where $P$ is canonical prolongation; stated simply, $z_0^j = y^j + \dots + y^0$.  By the decompositions $\mathcal{U}^j = \sum_{i=0}^j \mathcal{D}^i$, noted earlier, $z_0^j \in \mathcal{U}^j$.  This initial $z_0^j$ is smoothed to generate a result $z^j \in \mathcal{U}^j$ which approximately solves the same VI as the downward version \eqref{eq:fe:downvi}, except now we can solver over a larger set:
+\begin{equation}
+\ip{f^j(g^j + z^j)}{v-z^j} \ge \ip{\ell^j}{v-z^j} \qquad \text{for all } v\in \mathcal{U}^j. \label{eq:fe:upvi}
+\end{equation}
+The reason we can solve over $\mathcal{U}^j$, unlike during the downward phase, is that there is no forthcoming coarser correction which could violate admissibility.
 
 \begin{pseudofloat}[H]
-\begin{pseudo*} \label{ps:nmcd-vcycle}
-\pr{nmcd-vcycle}(\ell^J,w^J,\gamma^J)\text{:} \\+
+\begin{pseudo} \label{ps:nmcd-vcycle}
+\pr{nmcd-vcycle}(\ell^J,\gamma^J,w^J)\text{:} \\+
     $\chi^J = w^J - \gamma^J$ \\
-    $g^J = w^J$ \ct{notational; no copy needed} \\
+    $g^J = w^J$ \\
     for $j=J$ downto $j=1$ \\+
       $\chi^{j-1} = \mR \chi^j$ \\
       $\phi^j = \chi^j - P\chi^{j-1}$ \\
       $y^j = 0$ \\
-      $\text{\pr{smoother}}^{\text{\id{down}}}(f^j,\ell^j,\phi^j,g^j;y^j)$  \ct{smoothing in $\mathcal{D}^j$}\\
+      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j,\phi^j,g^j;y^j)$  \ct{smoothing of \eqref{eq:fe:downvi} in $\mathcal{D}^j$}\\
       $g^{j-1} = \iR(g^j + y^j)$ \\
-      $\ell^{j-1} = f^{j-1}(g^{j-1}) - R \left(f^j(g^j+y^j) - \ell^j\right)$ \\-
+      $\ell^{j-1} = f^{j-1}(g^{j-1}) + R \left(\ell^j - f^j(g^j+y^j)\right)$ \\-
     $y^0 = 0$ \\
-    $\text{\pr{solver}}^{\text{\id{coarse}}}(f^0,\ell^0,\chi^0,g^0;y^0)$ \ct{solving in $\mathcal{D}^0=\mathcal{U}^0$} \\
+    $\text{\pr{solve}}(\ell^0,\chi^0,g^0;y^0)$ \ct{solving of \eqref{eq:fe:downvi} in $\mathcal{D}^0=\mathcal{U}^0$} \\
     $z^0 = y^0$ \\
     for $j=1$ to $j=J$ \\+
       $z^j = P z^{j-1} + y^{j}$ \\
-      $\text{\pr{smoother}}^{\text{\id{up}}}(f^j,\ell^j,\chi^j,g^j;z^j)$  \ct{smoothing in $\mathcal{U}^j$} \\-
+      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j,\chi^j,g^j;z^j)$  \ct{smoothing of \eqref{eq:fe:upvi} in $\mathcal{U}^j$} \\-
     return $w^J+z^J$
-\end{pseudo*}
+\end{pseudo}
 \caption{Nonlinear multilevel constraint decomposition V-cycle for the finest-level VI problem \eqref{eq:fe:vi}, using mesh-level discretizations $f^j$ of the original nonlinear $f$ in problem \eqref{eq:vi}.}
 \label{alg:nmcd}
 \end{pseudofloat}
 
+During one application of \pr{nmcd-vcycle}, storage must be allocated for $\chi^j$, $\phi^j$, $g^j$, $y^j$, and $\ell^j$ on each level.  However, in algorithm lines 13 and 15 no allocation is strictly required because the $y^j$ space can be reused for $z^j$ as the coarser corrections are prolonged and accumulated.  Strictly-speaking there another such optimization: in line 3 $g^J$ need not be a copy of $w^J$.  The total memory usage of \pr{nmcd-vcycle}, excluding storage usage in the smoothers/solver but adding storage for the original obstacle $\gamma^J$, is about $8 m^J$ real numbers\footnote{That is: $8\approx 5(4/3) + 1$.} under the standard estimate that a 2D, uniform-mesh V-cycle uses $4/3$ the memory of the finest level alone \cite[Section 2.4]{Trottenbergetal2001}, whereas a single-level method needs only $3 m^J$ for vectors $\ell^J,w^J,\gamma^J$ themselves.
+
+Regarding notation and semantics for the smoothers, note they may be iterated \id{down} and \id{up} times, respectively.  Both the smoothers and the coarsest-level solver are supposed to do in-place modifications of their final arguments, and of course they are in-exact solvers.  They must not modify their first three arguments.
+
+Furthermore, repeated application of \pr{nmcd-vcycle}, or of the smoothers and solver at the levels, will not reduce the classical residual $f^J(u^J) - \ell^J$ to zero everywhere.  Recall that a finite-dimensional VI problem is equivalent to a \emph{nonlinear complementarity problem} (NCP) \cite{FacchineiPang2003}.  For example, corresponding to \eqref{eq:fe:vi} one could write
+\begin{equation}
+u^J \ge \gamma^J, \qquad f^J(u^J) \ge \ell^J, \qquad (u^J - \gamma^J)\left(f^J(u^J) - \ell^J\right) = 0.  \label{eq:fe:ncp}
+\end{equation}
+Thus, at convergence we only expect $f^J(u^J) = \ell^J$ at those locations where the constraint is inactive, where $u^J > \gamma^J$.  Therefore, recalling that a $j$th-level hat function based at node $x_p^j$ is denoted $\psi_p^j$, for an iterate $w^j$ define the \emph{downward nodal residual} by
+\begin{equation}
+(\hat r_{\text{down}}^j(w))_p = \begin{cases} \ip{f^j(w^j)-\ell^j}{\psi_p^j}, & w^j_p > \phi^j_p, \\
+                                  \min\{\ip{f^j(w^j)-\ell^j}{\psi_p^j},0\}, & w^j_p = \phi^j_p, \end{cases} \label{eq:cpresidual}
+\end{equation}
+where $w^j_p,\phi^j_p$ denote the nodal values of $w^j,\phi^j$ as $x_p^j$, respectively.  The \emph{upward nodal residual} $\hat r_{\text{up}}(w)$ is similarly defined using $\chi^j$.
+
+The nodal residuals $\hat r_{\text{down}}(w^j),\hat r_{\text{up}}(w^j)$ are nonzero if there are nodes where the NCP \eqref{eq:fe:ncp} is violated, either because $f^j(w^j)-\ell^j$ remains nonzero, in a weak sense, on the inactive set or because the same quantity is negative on the active set.  If $w^j$ is admissible, for instance if $w^j = g^j+z^j$ for $z^j \in \mathcal{U}^j$, inside \pr{nmcd-vcycle}, and if $\|\hat r_{\text{up}}(w^j)\|$ is small in some appropriate norm then we regard the $j$th-level problem as being numerically solved.  This provides stopping criteria for application of \pr{solver} on the coarsest mesh, and for terminating cycles of \pr{nmcd-vcycle} when addressing the original VI \eqref{eq:fe:vi}.
+
 FIXME in Appendix we show how NMCD reduces to FAS if the obstacle is removed and to MCD if $f$ is assumed to be linear
 
-FIXME observe that up-smoothing is more efficient
+FIXME again observe that up-smoothing is more efficient
 
 
-\section{Results for local variational inequalities} \label{sec:results}
+\section{Results} \label{sec:results}
 
 FIXME show results for 2D Firedrake implementation of NMCD for $p$-Laplacian obstacle problem (Example \ref{ex:plaplacian}), advection-diffusion obstacle problem (Example \ref{ex:advectiondiffusion}), and porous-media obstacle problem (Example \ref{ex:porous})
 
 
-% A BRIDGE TOO FAR:  \section{Results for a nonlocal variational inequality} \label{sec:resultsnonlocal}
+% A BRIDGE TOO FAR:  \section{Results for a nonlocal variational inequality}
 
 
 \bibliography{mcd2}
