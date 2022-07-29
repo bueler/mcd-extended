@@ -509,7 +509,7 @@ Recalling that the piecewise-linear functions in $\mathcal{V}^j$ have zero bound
 
 \section{Nonlinear multilevel constraint decomposition} \label{sec:multilevel}
 
-The starting point of a \emph{multilevel constraint decomposition} (MCD) \cite{GraeserKornhuber2009,Tai2003} method is to define constraint subsets, the sets generically denoted $\cK_i$ in sections \ref{sec:vi} and \ref{sec:convergence}, based on monotone restrictions of a defect constraint (see below).  Our multilevel V-cycle algorithm will define two types of constraint subsets in this manner, distinctly for the downward and upward parts of the cycle.  We also diverge from the MCD algorithms by Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear \emph{full approximation scheme} (FAS) philosophy \cite{BrandtLivne2011}.  When $f$ is linear, as in the implemented examples in \cite{GraeserKornhuber2009,Tai2003}, there is no need to coarsen the solution itself, as in classical linear multigrid only the residual and correction are coarsened, but in the FAS approach here we coarsen the solution iterate using the injection restriction.
+The starting point of a \emph{multilevel constraint decomposition} (MCD) \cite{GraeserKornhuber2009,Tai2003} method is to define constraint subsets, the sets generically denoted $\cK_i$ in sections \ref{sec:vi} and \ref{sec:convergence}, based on monotone restrictions of a defect constraint (see below).  Our multilevel V-cycle algorithm will define two types of constraint subsets, distinct sets for the downward and upward parts of the cycle.  We also diverge from the MCD algorithms by Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear \emph{full approximation scheme} (FAS) philosophy \cite{BrandtLivne2011}.  When $f$ is linear, as in the implemented examples in \cite{GraeserKornhuber2009,Tai2003}, there is no need to coarsen the solution itself, but in the FAS approach here we coarsen the solution iterate using the injection restriction.  Note that in classical linear multigrid only the residual and correction are coarsened.
 
 To make this precise, suppose $w^J \in \cK^J$ is an admissible fine-level iterate which approximates the solution $u^J$ of VI \eqref{eq:fe:vi}.  From this iterate we define the \emph{defect constraint} \cite{GraeserKornhuber2009}
 \begin{equation}
@@ -552,7 +552,7 @@ In detail, suppose $y^{j+1} \in \mathcal{D}^{j+1}, \dots, y^J \in \mathcal{D}^J$
 \begin{center}
 \input{tikz/nmcdvcycle.tex}
 \end{center}
-\caption{Going down, the NMCD V-cycle computes corrections $y_j \in \mathcal{D}^j$.  The upward corrections $z_j$ can expand into larger constraint subsets $\mathcal{U}^j$.}
+\caption{An NMCD V-cycle computes downward corrections $y_j \in \mathcal{D}^j$, but the upward corrections $z_j$ expand into larger constraint subsets $\mathcal{U}^j$.}
 \label{fig:nmcdvcycle}
 \end{figure}
 
@@ -606,9 +606,11 @@ where $P$ is canonical prolongation; stated simply, $z_0^j = y^j + \dots + y^0$.
 \end{equation}
 The reason we can solve over $\mathcal{U}^j$, unlike during the downward phase, is that there is no forthcoming coarser correction which could violate admissibility.
 
+These ideas come together in Algorithm \ref{alg:nmcd}, an NMCD V-cycle.  This procedure acts in-place on the final argument $w^J$, but it leaves the other inputs $\ell^J,\gamma^J$ unchanged.
+
 \begin{pseudofloat}[H]
 \begin{pseudo} \label{ps:nmcd-vcycle}
-\pr{nmcd-vcycle}(\ell^J,\gamma^J,w^J)\text{:} \\+
+\pr{nmcd-vcycle}(\ell^J,\gamma^J;w^J)\text{:} \\+
     $\chi^J = w^J - \gamma^J$ \\
     $g^J = w^J$ \\
     for $j=J$ downto $j=1$ \\+
@@ -624,13 +626,13 @@ The reason we can solve over $\mathcal{U}^j$, unlike during the downward phase, 
     for $j=1$ to $j=J$ \\+
       $z^j = P z^{j-1} + y^{j}$ \\
       $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j,\chi^j,g^j;z^j)$  \ct{smoothing of \eqref{eq:fe:upvi} in $\mathcal{U}^j$} \\-
-    return $w^J+z^J$
+    $w^J \gets w^J+z^J$
 \end{pseudo}
-\caption{Nonlinear multilevel constraint decomposition V-cycle for the finest-level VI problem \eqref{eq:fe:vi}, using mesh-level discretizations $f^j$ of the original nonlinear $f$ in problem \eqref{eq:vi}.}
+\caption{Nonlinear multilevel constraint decomposition V-cycle for the finest-level VI problem \eqref{eq:fe:vi}, as an in-place method on $w^J$, using mesh-level discretizations $f^j$ of the original nonlinear $f$ in problem \eqref{eq:vi}.}
 \label{alg:nmcd}
 \end{pseudofloat}
 
-During one application of \pr{nmcd-vcycle}, storage must be allocated for $\chi^j$, $\phi^j$, $g^j$, $y^j$, and $\ell^j$ on each level.  However, in algorithm lines 13 and 15 no allocation is strictly required because the $y^j$ space can be reused for $z^j$ as the coarser corrections are prolonged and accumulated.  Strictly-speaking there another such optimization: in line 3 $g^J$ need not be a copy of $w^J$.  The total memory usage of \pr{nmcd-vcycle}, excluding storage usage in the smoothers/solver but adding storage for the original obstacle $\gamma^J$, is about $8 m^J$ real numbers\footnote{That is: $8\approx 5(4/3) + 1$.} under the standard estimate that a 2D, uniform-mesh V-cycle uses $4/3$ the memory of the finest level alone \cite[Section 2.4]{Trottenbergetal2001}, whereas a single-level method needs only $3 m^J$ for vectors $\ell^J,w^J,\gamma^J$ themselves.
+During one application of \pr{nmcd-vcycle}, storage must be allocated for $\chi^j$, $\phi^j$, $g^j$, $y^j$, and $\ell^j$ on each level.  However, line 3 is essentially notational in that the finest-level iterate $g^J$ is the same as $w^J$; no copy is needed.  Similarly, in algorithm lines 13 and 15 no allocation is required because the $y^j$ space can be reused for $z^j$ as the coarser corrections are prolonged and accumulated.  Therefore the total storage of \pr{nmcd-vcycle}, excluding any in the smoothers/solver, but including for the original obstacle $\gamma^J$, is about $8 m^J$ real numbers\footnote{That is: $8\approx 5(4/3) + 1$.} under the standard estimate that a 2D, uniform-mesh V-cycle uses $4/3$ the memory of the finest level alone \cite[Section 2.4]{Trottenbergetal2001}.  For comparison, a single-level method needs at least $3 m^J$ storage for the vectors $\ell^J,\gamma^J,w^J$.
 
 Regarding notation and semantics for the smoothers, note they may be iterated \id{down} and \id{up} times, respectively.  Both the smoothers and the coarsest-level solver are supposed to do in-place modifications of their final arguments, and of course they are in-exact solvers.  They must not modify their first three arguments.
 
