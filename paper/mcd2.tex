@@ -633,32 +633,50 @@ These ideas come together in Algorithm \ref{alg:nmcd}, an NMCD V-cycle.  This pr
 \label{alg:nmcd}
 \end{pseudofloat}
 
-During one application of \pr{nmcd-vcycle}, storage must be allocated for $\chi^j$, $\phi^j$, $g^j$, $y^j$, and $\ell^j$ on each level.  However, line 3 is essentially notational in that the finest-level iterate $g^J$ is the same as $w^J$; no copy is needed.  Similarly, in algorithm lines 13 and 15 no allocation is required because the $y^j$ space can be reused for $z^j$ as the coarser corrections are prolonged and accumulated.  Therefore the total storage of \pr{nmcd-vcycle}, excluding any in the smoothers/solver, but including for the original obstacle $\gamma^J$, is about $8 m^J$ real numbers\footnote{That is: $8\approx 5(4/3) + 1$.} under the standard estimate that a 2D, uniform-mesh V-cycle uses $4/3$ the memory of the finest level alone \cite[Section 2.4]{Trottenbergetal2001}.  For comparison, a single-level method needs at least $3 m^J$ storage for the vectors $\ell^J,\gamma^J,w^J$.
+During one application of \pr{nmcd-vcycle}, storage must be allocated for $\chi^j$, $\phi^j$, $g^j$, $y^j$, and $\ell^j$ on each level.  However, line 3 is essentially notational in that the finest-level iterate $g^J$ is the same as $w^J$; no copy is needed.  Similarly, in algorithm lines 13 and 15 no allocation is required because the $y^j$ space can be reused for $z^j$ as the coarser corrections are prolonged and accumulated.  Let $m^j$ be the number of interior nodes in the $j$th-level mesh.  The total storage of \pr{nmcd-vcycle}, excluding any in the smoothers/solver, but including for the original obstacle $\gamma^J$, is about $8 m^J$ real numbers\footnote{That is: $8\approx 5(4/3) + 1$.} under the standard estimate that a 2D, uniform-mesh V-cycle uses $4/3$ the memory of the finest level alone \cite[Section 2.4]{Trottenbergetal2001}.  For comparison, a single-level method needs at least $3 m^J$ storage for the vectors $\ell^J,\gamma^J,w^J$.
 
-Regarding notation and semantics for the smoothers, note they may be iterated \id{down} and \id{up} times, respectively.  Both the smoothers and the coarsest-level solver are supposed to do in-place modifications of their final arguments, and of course they are in-exact solvers.  They must not modify their first three arguments.
+\pr{nmcd-vcycle} assumes certain semantics for the smoothers and the coarsest-level solver; the latter might also be a smoother algorithm.  They do in-place modifications of their final arguments, and they do not modify their first three arguments.  The smoothers are in-exact solvers of VIs \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi}, respectively, and they are iterated \id{down} and \id{up} times.  Further smoother implementation details and choices are addressed in the next section.
 
-Furthermore, repeated application of \pr{nmcd-vcycle}, or of the smoothers and solver at the levels, will not reduce the classical residual $f^J(u^J) - \ell^J$ to zero everywhere.  Recall that a finite-dimensional VI problem is equivalent to a \emph{nonlinear complementarity problem} (NCP) \cite{FacchineiPang2003}.  For example, corresponding to \eqref{eq:fe:vi} one could write
+Repeated application of \pr{nmcd-vcycle} to solve VI \eqref{eq:fe:vi} will not reduce the finest-level residual $f^J(u^J) - \ell^J$ to zero everywhere.  However, recalling that a finite-dimensional VI is equivalent to a \emph{nonlinear complementarity problem} (NCP) \cite{FacchineiPang2003}, \eqref{eq:fe:vi} corresponds to the NCP
 \begin{equation}
 u^J \ge \gamma^J, \qquad f^J(u^J) \ge \ell^J, \qquad (u^J - \gamma^J)\left(f^J(u^J) - \ell^J\right) = 0.  \label{eq:fe:ncp}
 \end{equation}
-Thus, at convergence we only expect $f^J(u^J) = \ell^J$ at those locations where the constraint is inactive, where $u^J > \gamma^J$.  Therefore, recalling that a $j$th-level hat function based at node $x_p^j$ is denoted $\psi_p^j$, for an iterate $w^j$ define the \emph{downward nodal residual} by
+Thus, at convergence we only expect $f^J(u^J) = \ell^J$ at those locations where the constraint is inactive, namely where $u^J > \gamma^J$.  Therefore, recalling that the hat function at node $x_q^J$ is denoted $\psi_q^J$, for $w^J \in \mathcal{K}^J$ we define the following vector in $\RR^{m^J}$ as the finest-level \emph{nodal residual}:
 \begin{equation}
-(\hat r_{\text{down}}^j(w))_p = \begin{cases} \ip{f^j(w^j)-\ell^j}{\psi_p^j}, & w^j_p > \phi^j_p, \\
-                                  \min\{\ip{f^j(w^j)-\ell^j}{\psi_p^j},0\}, & w^j_p = \phi^j_p, \end{cases} \label{eq:cpresidual}
+\hat r(w^J)_q = \begin{cases} \ip{f^J(w^J)-\ell^J}{\psi_q^J}, & w^J(x_q^J) > \gamma^J(x_q^J), \\
+                                  \min\{\ip{f^J(w^J)-\ell^J}{\psi_q^J},0\}, & w^J(x_q^J) = \gamma^J(x_q^J). \end{cases} \label{eq:cpresidual}
 \end{equation}
-where $w^j_p,\phi^j_p$ denote the nodal values of $w^j,\phi^j$ as $x_p^j$, respectively.  The \emph{upward nodal residual} $\hat r_{\text{up}}(w)$ is similarly defined using $\chi^j$.
+(Formally, $\hat r:\mathcal{V}^J \to \RR^{m^J}$ is a nonlinear map.)  Observe that $\hat r(w^J)$ is nonzero if there are nodes where the NCP \eqref{eq:fe:ncp} is violated, either because $f^J(w^J)-\ell^J$ remains nonzero on the inactive set or because the same quantity is negative on the active set, and that nodal values of $f^J(w^J)-\ell^J$ are in evaluated in a weak sense, by application to a hat function.
 
-The nodal residuals $\hat r_{\text{down}}(w^j),\hat r_{\text{up}}(w^j)$ are nonzero if there are nodes where the NCP \eqref{eq:fe:ncp} is violated, either because $f^j(w^j)-\ell^j$ remains nonzero, in a weak sense, on the inactive set or because the same quantity is negative on the active set.  If $w^j$ is admissible, for instance if $w^j = g^j+z^j$ for $z^j \in \mathcal{U}^j$, inside \pr{nmcd-vcycle}, and if $\|\hat r_{\text{up}}(w^j)\|$ is small in some appropriate norm then we regard the $j$th-level problem as being numerically solved.  This provides stopping criteria for application of \pr{solver} on the coarsest mesh, and for terminating cycles of \pr{nmcd-vcycle} when addressing the original VI \eqref{eq:fe:vi}.
+A solver for \eqref{eq:fe:vi} using repeated applications of \pr{nmcd-vcycle} would start with an initial iterate $w^{J,0}$, do V-cycles, and stop once the finest-level nodal residual $\hat r(w^J)$ was sufficiently small.  For example, using tolerances \id{atol}$>0$ and \id{rtol}$>0$ the stopping criterion might be
+\begin{equation}
+\|\hat r(w^J)\| < \id{atol} \qquad \text{or} \qquad \frac{\|\hat r(w^J)\|}{\|\hat r(w^{J,0})\|} < \id{rtol},
+\end{equation}
+where $\|\cdot\|$ denotes a norm on $\RR^{m^J}$.  A step tolerance could also be used, measuring the difference between successive iterates.
 
 FIXME in Appendix we show how NMCD reduces to FAS if the obstacle is removed and to MCD if $f$ is assumed to be linear
 
-FIXME again observe that up-smoothing is more efficient
+
+
+\section{Smoother implementations} \label{sec:smoothers}
+
+FIXME
+
+Recall that a $j$th-level hat function based at node $x_p^j$ is denoted $\psi_p^j$, for an iterate $g^j$ and an admissible correction $y^j \in \mathcal{D}^j$ we define the \emph{downward nodal residual} as
+\begin{equation}
+(\hat r_{\text{down}}(y^j))_p = \begin{cases} \ip{f^j(g^j+y^j)-\ell^j}{\psi_p^j}, & y^j(x_p^j) > \phi^j(x_p^j), \\
+                                  \min\{\ip{f^j(g^j+y^j)-\ell^j}{\psi_p^j},0\}, & y^j(x_p^j) = \phi^j(x_p^j). \end{cases} \label{eq:cpresidual}
+\end{equation}
+The \emph{upward nodal residual} $\hat r_{\text{up}}(z^j)$ for $z^j \in \mathcal{U}^j$ is similarly defined using $\chi^j$.
+
+FIXME stopping criteria for smoother
 
 
 \section{Results} \label{sec:results}
 
 FIXME show results for 2D Firedrake implementation of NMCD for $p$-Laplacian obstacle problem (Example \ref{ex:plaplacian}), advection-diffusion obstacle problem (Example \ref{ex:advectiondiffusion}), and porous-media obstacle problem (Example \ref{ex:porous})
 
+FIXME observe that up-smoothing is more efficient
 
 % A BRIDGE TOO FAR:  \section{Results for a nonlocal variational inequality}
 
