@@ -595,17 +595,19 @@ Thus we define $\ell^j \in (\mathcal{V}^j)'$ in \eqref{eq:fe:downvi} by the foll
 \end{equation}
 This is identical, even if the notation differs, to the standard FAS formula for a PDE source term, for example equation (8.5b) in \cite{BrandtLivne2011} or equation (5.3.14) in \cite{Trottenbergetal2001}.
 
-At each level in the downward part of the V-cycle (Figure \ref{fig:nmcdvcycle}) we apply a smoother, a partial solver of \eqref{eq:fe:downvi} which should rapidly reduce the high-frequencies in the error, to generate a correction $y^j \in \mathcal{D}^j$.  At the coarsest $j=0$ level we solve \eqref{eq:fe:downvi}, accurately if possible, yielding a correction $y^0$ in the coarsest defect constraint set $\mathcal{D}^0=\mathcal{U}^0 = \{v \ge \chi^0\}$.  Note that the coarsest-level solver may be the same as the other smoothers.
+At each level in the downward part of the V-cycle (Figure \ref{fig:nmcdvcycle}) we apply a smoother, an iterative partial solver of \eqref{eq:fe:downvi} which rapidly reduces the high-frequencies in the error.  This smoother yields a correction $y^j \in \mathcal{D}^j$.  It is important that we can initialize this iteration using an admissible first guess.  However, by the monotone restriction construction the down-constraint is nonpositive, $\phi^j\le 0$ so $0\in \mathcal{D}^j$, and thus an initial value of $y^j=0$ is admissible.
 
-In the upward part of the V-cycle the smoother starts from an initial iterate $z_0^j$ which has accumulated the coarser-level corrections.  Define $z_0^0 = y^0$ and
+At the coarsest $j=0$ level we solve \eqref{eq:fe:downvi}, accurately if possible, yielding a correction $y^0$ in the coarsest defect constraint set $\mathcal{D}^0=\mathcal{U}^0 = \{v \ge \chi^0\}$.  Note that the coarsest-level solver may be the same as the other smoothers.
+
+In the upward part of the V-cycle the smoother starts from an initial iterate which has accumulated the coarser-level corrections.  Define $z^0 = y^0$ and
 \begin{equation}
-z_0^j = P z_0^{j-1} + y^j  \label{eq:fe:upwardaccumulation}
+z^j = P z^{j-1} + y^j  \label{eq:fe:upwardaccumulation}
 \end{equation}
-where $P$ is canonical prolongation; stated simply, $z_0^j = y^j + \dots + y^0$.  By the decompositions $\mathcal{U}^j = \sum_{i=0}^j \mathcal{D}^i$, noted earlier, $z_0^j \in \mathcal{U}^j$.  This initial $z_0^j$ is smoothed to generate a result $z^j \in \mathcal{U}^j$ which approximately solves the same VI as the downward version \eqref{eq:fe:downvi}, except now we can solver over a larger set:
+where $P$ is canonical prolongation; stated simply, $z^j = y^j + \dots + y^0$.  By the decompositions $\mathcal{U}^j = \sum_{i=0}^j \mathcal{D}^i$, noted earlier, $z^j \in \mathcal{U}^j$.  This initial $z^j$ is smoothed to generate a result, also denoted $z^j \in \mathcal{U}^j$.  This result approximately solves the same VI as the downward version \eqref{eq:fe:downvi}, except now over a larger constraint set:
 \begin{equation}
 \ip{f^j(g^j + z^j)}{v-z^j} \ge \ip{\ell^j}{v-z^j} \qquad \text{for all } v\in \mathcal{U}^j. \label{eq:fe:upvi}
 \end{equation}
-The reason we can solve over $\mathcal{U}^j$, unlike during the downward phase, is that there is no forthcoming coarser correction which could violate admissibility.
+The reason we can solve over $\mathcal{U}^j$ is that, unlike during the downward phase, there is no forthcoming coarser correction which could violate admissibility.
 
 These ideas come together in Algorithm \ref{alg:nmcd}, an NMCD V-cycle.  This procedure acts in-place on the final argument $w^J$, but it leaves the other inputs $\ell^J,\gamma^J$ unchanged.
 
@@ -629,7 +631,7 @@ These ideas come together in Algorithm \ref{alg:nmcd}, an NMCD V-cycle.  This pr
       $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j,\chi^j,g^j;z^j)$  \ct{smoothing of \eqref{eq:fe:upvi} in $\mathcal{U}^j$} \\-
     $w^J \gets w^J+z^J$
 \end{pseudo}
-\caption{Nonlinear multilevel constraint decomposition V-cycle for the finest-level VI problem \eqref{eq:fe:vi}, as an in-place method on $w^J$, using mesh-level discretizations $f^j$ of the original nonlinear $f$ in problem \eqref{eq:vi}.}
+\caption{Nonlinear multilevel constraint decomposition V-cycle for the finest-level VI problem \eqref{eq:fe:vi}, as an in-place method on $w^J$.  $f^j$ denotes a discretization of $f$ in problem \eqref{eq:vi}.}
 \label{alg:nmcd}
 \end{pseudofloat}
 
@@ -684,12 +686,43 @@ FIXME observe that up-smoothing is more efficient
 \bibliography{mcd2}
 \bibliographystyle{siam}
 
+
 \appendix
 \section{Reductions of the NMCD algorithm}
 
-FIXME by removing obstacle, reduce to ordinary FAS as in \cite{Bruneetal2015}
+\pr{nmcd-vcycle}, Algorithm \ref{alg:nmcd} in the main text, generalizes two multilevel algorithms, first the FAS multigrid V-cycle for nonlinear PDEs, which itself generalizes the standard linear multigrid V-cycle, and second the MCD V-cycle for linear variational inequalities.  This Appendix helps readers understand \pr{nmcd-vcycle} by identifying the assumptions which reduces it to these existing methods.
 
-FIXME by assuming $N$ is linear, reduce to Algorithm 4.7 in \cite{GraeserKornhuber2009} but with $\text{V}(\nu_1,\nu_2)$ cycles which works for linear
+To derive the FAS multigrid V-cycle we need to remove the inequality constraints from \pr{nmcd-vcycle}.  To do this, suppose that the finest-level obstacle $\gamma^J$ is very negative, with magnitude greater than $u^J$ or any prospective iterate $w^J$.  Problem \eqref{eq:fe:vi} is then unconstrained, so by replacing ``$v-u^J$'' with an arbitrary $v \in \mathcal{V}^J$ we have the finest-level, weak form problem
+\begin{equation}
+\ip{f^J(u^J)}{v} = \ip{\ell^J}{v} \qquad \text{for all } v\in \mathcal{V}^J \label{eq:app:fas:pde}
+\end{equation}
+corresponding to the strong-form PDE $f(u)=\ell$.  Now, \pr{nmcd-vcycle} would generate downward defect constraints by monotone restriction.  However, all that is required for the downward system is that $\chi^{j-1} \ge \chi^j$, so that $\phi^j = \chi^j - P \chi^{j-1} \le 0$.  In the unconstrained case we can assume, more simply, that the fine level defect constraint is a negative constant $\chi^J = -JZ$ for $Z>0$ such that $Z \gg \|u^J\|_\infty$.  Defining $\chi^j = - jZ$, and calculating $\phi^j = \chi^j - P \chi^{j-1} = - Z$, we see that both the downward VI \eqref{eq:fe:downvi} and the upward VI \eqref{eq:fe:upvi} can also be made unconstrained.  It then follows that lines 2, 5, and 6, can be removed from Algorithm \ref{alg:nmcd}, and further that the constraint arguments can be removed from the smoothers and the coarse-level solver.  Because the downward corrections $y^j$ are no longer separately constrained, we may simply refer to the corrected solution $w^j=g^j+y^j$.  The smoothers can be regarded as in-place modifications of $w^j$.  Also recognizing that the initial iterate for the coarse-level smoother is $w^{j-1}=\iR w^j$, the definition of the coarsened source functional can be rewritten
+\begin{equation}
+\ell^{j-1} = f^{j-1}\left(w^{j-1}\right) + R\left(\ell^j-f^j(w^j)\right). \label{eq:app:fas:levelsource}
+\end{equation}
+However, now we must be careful that going upward only the correction gets prolonged;compare Remark 5.3.9 in \cite{Trottenbergetal2001}.  We note that the coarse correction produces an updated $w^{j-1}$ (previously denoted $g^{j-1}+y^{j-1}$).  If $w^j$ denotes the result of down-smoothing, and if $z^j = y^j + P z^{j-1} = y^j + y^{j-1} + \dots + y^0$ is the sum of all prolonged corrections, we want to set $w^j = g^j + z^j = (g^j+y^j) + P(y^{j-1} + \dots + y^0)$ as the iterate going into the up-smoother.  For this we write $w^j \gets w^j + P(w^{j-1} - \iR w^j)$.  With these modifications we get pseudocode in Algorithm \ref{alg:fas}.
+
+\begin{pseudofloat}[H]
+\begin{pseudo} \label{ps:nmcd-vcycle}
+\pr{fas-vcycle}(\ell^J; w^J)\text{:} \\+
+    for $j=J$ downto $j=1$ \\+
+      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j;w^j)$ \\
+      $w^{j-1} = \iR w^j$ \\
+      $\ell^{j-1} = f^{j-1}(w^{j-1}) + R \left(\ell^j - f^j(w^j)\right)$ \\-
+    $\text{\pr{solve}}(\ell^0;w^0)$ \\
+    for $j=1$ to $j=J$ \\+
+      $w^j \gets w^j + P (w^{j-1} - \iR w^j)$ \\
+      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j;w^j)$ \\-
+\end{pseudo}
+\caption{An FAS V-cycle results from removing the inequality constraints from \pr{nmcd-vcycle}, and also grouping $w^j=g^j+y^j$ (downward) and $w^j=g^j+z^j$ (upward).}
+\label{alg:fas}
+\end{pseudofloat}
+
+a negative constant, $\gamma^J=-JZ$, where $Z>0$ is larger than the magnitude of $u^J$, or of any prospective iterate $w^J$, say $Z > \|w^J\|_\infty$.
+
+FIXME get Algorithm 14 \cite{Bruneetal2015}
+
+FIXME by assuming $f$ is linear, reduce to Algorithm 4.7 in \cite{GraeserKornhuber2009} but with $\text{V}(\nu_1,\nu_2)$ cycles
 
 \end{document}
 
