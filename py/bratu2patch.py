@@ -49,7 +49,7 @@ ngssweep = {
     "npc_snes_convergence_test": "skip",
     "npc_snes_linesearch_type": "basic",
     "npc_snes_linesearch_damping": 1.0,
-    "npc_patch_snes_patch_construct_python_type": "star",
+    "npc_patch_snes_patch_construct_type": "star",
     "npc_patch_snes_patch_partition_of_unity": True,
     "npc_patch_snes_patch_sub_mat_type": "seqaij",
     "npc_patch_snes_patch_local_type": "additive",
