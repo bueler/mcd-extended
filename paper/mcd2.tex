@@ -309,7 +309,7 @@ Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below state the basi
 \pr{cd-add}(f,\ell,u,\cK,\cK_i,R_i)\text{:} \\+
     for $i \in \{0,\dots,m-1\}$: \\+
         \rm{find} $\hat w_i\in \cK_i$ \rm{so that for all} $v_i\in \cK_i$ \rm{we have} \\+
-            $\boxed{{\large \strut} \ip{f(u - R_i u + \hat w_i)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i}}$ \\--
+            $\boxed{\ip{f(u - R_i u + \hat w_i)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i}}$ \\--
     $\hat w = \sum_i \hat w_i\in\cK$ \\
     return $w=(1-\alpha) u + \alpha \hat w\in\cK$
 \end{pseudo*}
@@ -669,7 +669,7 @@ FIXME
 Recall that a $j$th-level hat function based at node $x_p^j$ is denoted $\psi_p^j$, for an iterate $g^j$ and an admissible correction $y^j \in \mathcal{D}^j$ we define the \emph{downward nodal residual} as
 \begin{equation}
 (\hat r_{\text{down}}(y^j))_p = \begin{cases} \ip{f^j(g^j+y^j)-\ell^j}{\psi_p^j}, & y^j(x_p^j) > \phi^j(x_p^j), \\
-                                  \min\{\ip{f^j(g^j+y^j)-\ell^j}{\psi_p^j},0\}, & y^j(x_p^j) = \phi^j(x_p^j). \end{cases} \label{eq:cpresidual}
+                                  \min\{\ip{f^j(g^j+y^j)-\ell^j}{\psi_p^j},0\}, & y^j(x_p^j) = \phi^j(x_p^j). \end{cases} \label{eq:dncpresidual}
 \end{equation}
 The \emph{upward nodal residual} $\hat r_{\text{up}}(z^j)$ for $z^j \in \mathcal{U}^j$ is similarly defined using $\chi^j$.
 
@@ -705,7 +705,7 @@ corresponding to the strong-form PDE $f(u)=\ell$.  Now, \pr{nmcd-vcycle} would g
 However, now we must be careful that going upward only the correction gets prolonged;compare Remark 5.3.9 in \cite{Trottenbergetal2001}.  We note that the coarse correction produces an updated $w^{j-1}$ (previously denoted $g^{j-1}+y^{j-1}$).  If $w^j$ denotes the result of down-smoothing, and if $z^j = y^j + P z^{j-1} = y^j + y^{j-1} + \dots + y^0$ is the sum of all prolonged corrections, we want to set $w^j = g^j + z^j = (g^j+y^j) + P(y^{j-1} + \dots + y^0)$ as the iterate going into the up-smoother.  For this we write $w^j \gets w^j + P(w^{j-1} - \iR w^j)$.  With these modifications we get pseudocode in Algorithm \ref{alg:fas}.
 
 \begin{pseudofloat}[H]
-\begin{pseudo} \label{ps:nmcd-vcycle}
+\begin{pseudo} \label{ps:fas-vcycle}
 \pr{fas-vcycle}(\ell^J; w^J)\text{:} \\+
     for $j=J$ downto $j=1$ \\+
       $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j;w^j)$ \\
