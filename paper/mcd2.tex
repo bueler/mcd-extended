@@ -242,7 +242,7 @@ However, not all VI problems arise from optimization.  We give two such examples
 Integration by parts gives $b(u,v) = - b(v,u) + \int_{\partial \Omega} uv \bX\cdot \bn\,dx$, so the result follows.
 \end{proof}
 
-\begin{example}  \label{ex:advectiondiffusion}  Suppose $\partial\Omega$ is partitioned into Dirichlet and Neumann portions, i.e.~$\partial\Omega = \partial_D\Omega \cup \partial_N\Omega$, with $\partial_D\Omega$ of positive measure.  Let $\cV = H_0^1(\Omega)$ be the space of functions which are zero along $\partial_D\Omega$.  Consider a divergence-free velocity field $\bX$ on $\Omega$ satisfying the conditions of Lemma \ref{lem:advectionskew}, but additionally assume that the flow is outward on the Neumann boundary, $\bX \cdot \bn \ge 0$ on $\partial_N\Omega$.  For $u,v \in \cV = H_0^1(\Omega)$ and $\eps>0$ define
+\begin{example}  \label{ex:advectiondiffusion}  Suppose $\partial\Omega$ is partitioned into Dirichlet and Neumann portions, i.e.~$\partial\Omega = \partial_D\Omega \cup \partial_N\Omega$, with $\partial_D\Omega$ of positive measure.  Let $\cV = W_0^{1,2}(\Omega)$ be the space of functions which are zero along $\partial_D\Omega$.  Consider a divergence-free velocity field $\bX$ on $\Omega$ satisfying the conditions of Lemma \ref{lem:advectionskew}, but additionally assume that the flow is outward on the Neumann boundary, $\bX \cdot \bn \ge 0$ on $\partial_N\Omega$.  For $u,v \in \cV = W_0^{1,2}(\Omega)$ and $\eps>0$ define
 \begin{equation}
 \ip{f(u)}{v} = \eps \left(\grad u, \grad v\right)_{L^2(\Omega)} - b(u,v). \label{eq:advectiondiffusion}
 \end{equation}
@@ -263,10 +263,10 @@ References \cite{Bueler2021conservation,ChangNakshatrala2017} consider advection
 As with Example \ref{ex:advectiondiffusion}, this form does not have the symmetry necessary to be the gradient of a scalar objective.
 \end{example}
 
-Numerical solver performance for Examples \ref{ex:plaplacian}, \ref{ex:advectiondiffusion}, and \ref{ex:porous} will be considered in Section \ref{sec:results}.  Further examples of nonlinear VI problems appear in ice sheet models and other geophysical fluids \cite{Bueler2021conservation,Calvoetal2002,JouvetBueler2012}.
+Numerical solver performance for Examples \ref{ex:plaplacian}, \ref{ex:advectiondiffusion}, and \ref{ex:porous} will be considered in Section \ref{sec:results}.  Further examples of nonlinear VI problems appear in ice sheet models \cite{Calvoetal2002,JouvetBueler2012} and other geophysical fluids.  In the above Examples $f(u)$ may be defined over all of $\mathcal{V}$, but in some geophysical fluid problems the value of $f(u)$ is only defined for admissible $u\in \mathcal{K}$ because $u$ defines the fluid layer thickness \cite{Bueler2021conservation}.
 
 
-\section{Constraint decomposition method} \label{sec:cd}
+\section{Constraint decomposition} \label{sec:cd}
 
 Suppose there are $m<\infty$ closed subspaces $\cV_i \subset \cV$ so that the sum
 \begin{equation}
@@ -276,81 +276,84 @@ holds in the sense that if $w \in \cV$ then there exist $w_i \in \cV_i$ so that 
 \begin{equation}
 \cK = \sum_{i=0}^{m-1} \cK_i. \label{eq:constraintdecomp}
 \end{equation}
-The sum in \eqref{eq:constraintdecomp} is required to hold in two senses \cite{TaiTseng2002}: \emph{(i)}~if $w \in \cK$ then there exist $w_i \in \cK_i$ so that $w = \sum_i w_i$, and \emph{(ii)}~if $z_i \in \cK_i$ for each $i$ then $\sum_i z_i \in \cK$.  (Sense \emph{(ii)} is automatic for \eqref{eq:subspacedecomp} because the $\cV_i$ are subspaces.)  Note that neither decomposition \eqref{eq:subspacedecomp} or \eqref{eq:constraintdecomp} is required to be unique.  Also, $\cK_i \not\subset \cK$ in many applications; see the cartoon in Figure \ref{fig:cartoon}.
+The sum in \eqref{eq:constraintdecomp} is required to hold in two senses \cite{TaiTseng2002}: \emph{(i)}~if $w \in \cK$ then there exist $w_i \in \cK_i$ so that $w = \sum_i w_i$, and \emph{(ii)}~if $z_i \in \cK_i$ for each $i$ then $\sum_i z_i \in \cK$.  Note that sense \emph{(ii)} is automatic for \eqref{eq:subspacedecomp}, because the $\cV_i$ are subspaces, and that neither decomposition \eqref{eq:subspacedecomp} or \eqref{eq:constraintdecomp} is required to be unique.  Also, $\cK_i \not\subset \cK$ in many applications; see the cartoon in Figure \ref{fig:cartoon}.
 
 \begin{figure}[ht]
-\includegraphics[width=0.55\textwidth]{genfigs/cartoon.pdf}
-\caption{Suppose $\mathcal{V}$ is the space of real functions on a two-point set $\Omega=\{x_1,x_2\}$.  A constraint decomposition (CD) for a one-sided obstacle problem with $\mathcal{K}=\{v\ge \psi\}$ looks like this.}
+\includegraphics[width=0.6\textwidth]{genfigs/cartoon.pdf}
+\caption{Suppose $\mathcal{V}$ is the space of real functions on a two-point set $\Omega=\{x_1,x_2\}$.  A constraint decomposition (CD) for a one-sided obstacle problem with $\mathcal{K}=\{v\ge \psi\}$ might look like this.}
 \label{fig:cartoon}
 \end{figure}
 
-For each $\cK_i$ we will also assume that there are bounded, generally-nonlinear restriction operators $R_i : \cK \to \cK_i$ such that if $v \in \cK$ then
+For each $\cK_i$ we will also assume that there are bounded, generally-nonlinear \emph{restriction} operators $R_i : \cK \to \cK_i$ such that if $v \in \cK$ then
 \begin{equation}
 v = \sum_{i=0}^{m-1} R_i v;  \label{eq:constraintrestrictionsum}
 \end{equation}
 see Figure \ref{fig:cartoon}.  Clearly \eqref{eq:constraintrestrictionsum} implies sense \emph{(i)} for \eqref{eq:constraintdecomp}. A \emph{constraint decomposition} (CD) of $\cK$ is a choice of $\cV_i,\cK_i,R_i$ satisfying \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum} \cite{Tai2003}.
 
-In Section \ref{sec:multilevel} we will introduce discretizations and practical algorithms, but we observe here that the CD concept applies at the level of the continuum problem.  The following two examples illustrate this for obstacle problems \cite{GraeserKornhuber2009}.
+In Section \ref{sec:multilevel} we will introduce discretizations, and practical algorithms for finite-dimensional VI problems, but observe here that this CD concept applies at the level of the continuum problem.  The following two obstacle problem examples illustrate this.  The first is an overlapping domain decomposition.
 
-\begin{example}  \label{ex:domaindecomposition}  Consider an overlapping domain decomposition as follows.  For a bounded domain $\Omega \subset \RR^d$, let $\cV = W_0^{k,p}(\Omega)$ for $k\ge 0$ and $p\ge 1$, and suppose the obstacle $\psi \in W^{k,p}(\Omega)$ satisfies $\psi|_{\partial \Omega} \le 0$.  Let $\cK = \{v \ge \psi\} \subset \cV$.  Suppose further that $\{\phi_i\}_{i=0}^{m-1}$ is a smooth partition of unity on $\Omega$, satisfying $0 \le \phi_i\le 1$ and $\sum_i \phi_i = 1$, and let $\Omega_i$ be the support of $\phi_i$.  Let $\cV_i = \{w \in \cV:w|_{\Omega \setminus \Omega_i} =0 \}$, $\cK_i = \{v \in \cV_i: v \ge \phi_i \psi\}$, and $R_i(v) = \phi_i v$.  Then \eqref{eq:subspacedecomp}, \eqref{eq:constraintdecomp}, and \eqref{eq:constraintrestrictionsum} all hold.
+\begin{example}  \label{ex:domaindecomposition}  For a bounded domain $\Omega \subset \RR^d$, let $\cV = W_0^{k,p}(\Omega)$ for $k\ge 0$ and $p\ge 1$.  Suppose an obstacle $\psi \in W^{k,p}(\Omega)$ satisfies $\psi|_{\partial \Omega} \le 0$, and let $\cK = \{v \ge \psi\} \subset \cV$.  Suppose further that $\{\phi_i\}_{i=0}^{m-1}$ is a smooth partition of unity on $\Omega$, satisfying $0 \le \phi_i\le 1$ and $\sum_i \phi_i = 1$, and let $\Omega_i$ be the open support of $\phi_i$.  Let $\cV_i = \{w \in \cV:w|_{\Omega \setminus \Omega_i} =0 \}$, $\cK_i = \{v \in \cV_i: v \ge \phi_i \psi\}$, and $R_i(v) = \phi_i v$.  Then \eqref{eq:subspacedecomp}, \eqref{eq:constraintdecomp}, and \eqref{eq:constraintrestrictionsum} all hold.
 \end{example}
 
-Our second example is a disjoint frequency decomposition.  A multilevel FE CD, e.g.~the one proposed in Section \ref{sec:multilevel}, approximates such a frequency decomposition.
+Our second example is a disjoint frequency decomposition.  A multilevel CD, e.g.~the one proposed in Sections \ref{sec:fe} and \ref{sec:multilevel}, approximates such a frequency decomposition.
 
-\begin{example}  \label{ex:frequencydecomposition}  For simplicity suppose $\Omega = (0,a)^d \subset \RR^d$ is a cube, and let $\cV = H_{\text{per}}^k(\Omega)$, $k\ge 0$, be the periodic functions.  Suppose $\psi \in H_{\text{per}}^k(\Omega)$ and let $\cK = \{v \ge \psi\} \subset \cV$.  Without using any detailed notation for Fourier representation, but noting that the frequencies are discrete, suppose $\{\cV_i\}$ are $m<\infty$ subspaces of $\cV$ defined by an (nonoverlapping) partition by frequency, thus satisfying \eqref{eq:subspacedecomp} as an orthogonal decomposition.  Suppose $P_i:\cV \to \cV_i$ are the corresponding orthogonal projections, satisfying $I = \sum_i P_i$.  Let $\cK_i = \{v \ge P_i \psi\} \subset \cV_i$ and $R_i = P_i$.  Then \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} also hold.
+\begin{example}  \label{ex:frequencydecomposition}  For simplicity suppose $\Omega = (0,a)^d \subset \RR^d$ is a cube, and let $\cV = W_{\text{per}}^{p,k}(\Omega)$, for $p\ge 2$ and $k\ge 0$, be the periodic functions.  Suppose $\psi \in W_{\text{per}}^{p,k}(\Omega)$ and let $\cK = \{v \ge \psi\} \subset \cV$.  Without using any detailed notation for Fourier representation, but noting that the frequencies are discrete because $\Omega$ is compact, suppose $\{\cV_i\}$ are $m<\infty$ subspaces of $\cV$ defined by an (nonoverlapping) partition by frequency, thus satisfying \eqref{eq:subspacedecomp} as an orthogonal decomposition.  Suppose $P_i:\cV \to \cV_i$ are the corresponding orthogonal projections, satisfying $I = \sum_i P_i$.  Let $\cK_i = \{v \ge P_i \psi\} \subset \cV_i$ and $R_i = P_i$.  Then \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} also hold.
 \end{example}
 
-Note that $\cK_i \not\subset \cK$ in many cases.  Specifically in Example \ref{ex:domaindecomposition}, if $\psi$ is positive over portions of $\Omega$ where the decomposition into overlapping subdomains $\Omega_i$ is nontrivial, then $\cK_i \not\subset \cK$, and similarly for Example \ref{ex:frequencydecomposition}.  The important inclusion is $\cK_i \subset \cV_i$.
+Again note that $\cK_i \not\subset \cK$ in these cases.  Specifically in Example \ref{ex:domaindecomposition}, if $\psi$ is positive over portions of $\Omega$ where the decomposition into overlapping subdomains $\Omega_i$ is nontrivial, then $\cK_i \not\subset \cK$, and similarly for Example \ref{ex:frequencydecomposition}.  The important inclusion is $\cK_i \subset \cV_i$.
 
-Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below state the basic CD method as functions which improve a current iterate $u \in \cK$, by solving ``smaller'' VI problems over each subset $\cK_i$, so that the output $w\in\cK$ should be closer to the solution $u^* \in \cK$ of \eqref{eq:vi}.  While Algorithm \ref{alg:basiccd-add} generalizes a Jacobi iteration, Algorithm \ref{alg:basiccd-mult} generalizes Gauss-Seidel.
+
+\section{Iterations based on constraint decomposition} \label{sec:cditers}
+
+Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below record basic CD iterative methods as functions which improve a current iterate $u \in \cK$ by solving ``smaller'' VI problems over each subset $\cK_i$.   Their outputs $w\in\cK$ should be closer to the solution $u^* \in \cK$ of \eqref{eq:vi}.
 
 \begin{pseudofloat}[H]
 \begin{pseudo*}
-\pr{cd-add}(f,\ell,u,\cK,\cK_i,R_i)\text{:} \\+
-    for $i \in \{0,\dots,m-1\}$: \\+
-        \rm{find} $\hat w_i\in \cK_i$ \rm{so that for all} $v_i\in \cK_i$ \rm{we have} \\+
+\pr{cd-add}(u)\text{:} \\+
+    for all $i \in \{0,\dots,m-1\}$: \\+
+        \rm{find} $\hat w_i\in \cK_i$ \rm{so that for all} $v_i\in \cK_i$, \\+
             $\boxed{\ip{f(u - R_i u + \hat w_i)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i}}$ \\--
     $\hat w = \sum_i \hat w_i\in\cK$ \\
-    return $w=(1-\alpha) u + \alpha \hat w\in\cK$
+    return $w=(1-\alpha) u + \alpha \hat w$
 \end{pseudo*}
 \caption{Additive constraint decomposition for VI problem \eqref{eq:vi}.}
 \label{alg:basiccd-add}
 \end{pseudofloat}
 
-The \textbf{for} loop in Algorithm \ref{alg:basiccd-add}, the additive or parallel CD method, can be computed in any order.  Note that $u-R_iu+\hat w_i$ involves removing the part of $u$ which lies in $\mathcal{K}_i$ before adding-back the improved subset solution $\hat w_i$.  By contrast, the following multiplicative (successive) Algorithm \ref{alg:basiccd-mult} orders the sets $\mathcal{K}_i$, and each subset solution updates the global iterate before proceeding to the next subset.  The sum $\sum_{j>i} R_j u$ should be read as ``keep the parts of the current iterate which we have not yet improved.''
+In Algorithm \ref{alg:basiccd-add}, the additive or parallel CD method, the \textbf{for all} can be computed in any order.  Note that $u-R_iu+\hat w_i$ removes the part of $u$ which lies in $\mathcal{K}_i$ before adding-back the improved subset solution $\hat w_i$, also from $\mathcal{K}_i$.  By contrast, in the following multiplicative (successive) Algorithm \ref{alg:basiccd-mult} each subset solution updates the global iterate before proceeding to the next subset.  The sets $\mathcal{K}_i$ are addressed in a fixed order, and the sum $\sum_{j>i} R_j u$ should be read as ``keep those parts of the input $u$ which we have not yet improved.''
 
 \begin{pseudofloat}[H]
 \begin{pseudo*}
-\pr{cd-mult}(f,\ell,u,\cK,\cK_i,R_i)\text{:} \\+
+\pr{cd-mult}(u)\text{:} \\+
     for $i = 0,\dots,m-1$: \\+
-        \rm{find} $\hat w_i\in \cK_i$ \rm{so that for all} $v_i\in \cK_i$ \rm{we have} \\+
+        \rm{find} $\hat w_i\in \cK_i$ \rm{so that for all} $v_i\in \cK_i$, \\+
             $\displaystyle \boxed{\ip{f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j u\Big)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i}}$ \\-
             $w_i = (1-\alpha) R_i u + \alpha \hat w_i\in\cK_i$ \\-
     $\hat w = \sum_i \hat w_i\in\cK$ \\
-    return $w=(1-\alpha) u + \alpha \hat w\in\cK$
+    return $w=(1-\alpha) u + \alpha \hat w$
 \end{pseudo*}
 \caption{Multiplicative constraint decomposition for VI problem \eqref{eq:vi}.}
 \label{alg:basiccd-mult}
 \end{pseudofloat}
 
-Note the use of a damping parameter $0<\alpha\le 1$.  In Algorithm \ref{alg:basiccd-mult} we must update the in-progress iterate $w_i$ using the same damping that is applied to the final output $w$.
+While Algorithm \ref{alg:basiccd-add} generalizes a Jacobi iteration, Algorithm \ref{alg:basiccd-mult} generalizes Gauss-Seidel.  Note the use of a damping parameter $0<\alpha\le 1$ in both Algorithms.  In Algorithm \ref{alg:basiccd-mult} we must update the in-progress iterate $w_i$ using the same damping that is applied to the final output $w$.
 
-In each boxed VI above the argument of $f$ is an element of $\cK$, as the reader should confirm.  On the other hand, by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may also write the test vector $v_i - \hat w_i \in \cV_i$ as a difference of admissible vectors from $\cK$, namely, for the two Algorithms respectively:
+In each boxed VI the argument of $f$ is an element of $\cK$, as the reader should confirm.  On the other hand, by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may also write the test vector $v_i - \hat w_i \in \cV_i$ as a difference of admissible vectors from $\cK$.  For the two Algorithms respectively:
 \begin{align*}
 [u - R_i u + v_i] - [u - R_i u + \hat w_i] &= v_i - \hat w_i, \label{eq:admissibledifference} \\
 \left[\sum_{j<i} w_j + v_i + \sum_{j>i} R_j u\right] - \left[\sum_{j<i} w_j + \hat w_i + \sum_{j>i} R_j u\right] &= v_i - \hat w_i.  \notag
 \end{align*}
 
-Now define
+For either Algorithm we define
 \begin{equation}
 e_i = \hat w_i - R_i u \in \cV_i, \label{eq:ithupdate}
 \end{equation}
-the $i$th subset increment in either Algorithm.  As the reader may check, $\hat w = u + \sum_{i} e_i$ and $w = u + \alpha \sum_i e_i$, and $\hat w = u^* + \sum_i \hat w_i - R_i u^*$ also holds.  We will use these identities in Section \ref{sec:convergence}.
+the $i$th \emph{subset update}.  As the reader may check, $\hat w = u + \sum_{i} e_i$ and $w = u + \alpha \sum_i e_i$.  Note $\hat w = u^* + \sum_i \hat w_i - R_i u^*$ also holds.  We will use these identities in Section \ref{sec:convergence}.
 
 % FOLLOWING CONTAINS ASPIRATIONS
 The convergence results in Section \ref{sec:convergence} require substantial damping when applying additive Algorithm \ref{alg:basiccd-add}, namely we require $\alpha \le 1/m$ as in \cite{Tai2003}.  By constrast, Algorithm \ref{alg:basiccd-mult} can be shown to converge without damping ($\alpha\le 1$).  In Section \ref{sec:results} we demonstrate practical convergence for larger ranges of $\alpha$ than suggested by the theory.
 
-We refer to Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} as the \emph{basic CD method}.  To construct efficient FE implementations (Section \ref{sec:multilevel}) we will need additional notions.  While the above Algorithms are indeed meaningful even when $f$ is nonlinear, non-local, or defined only on $\cK$, practical implementation for such general problems seems not to have been addressed in the literature.  In particular, references \cite{GraeserKornhuber2009,Tai2003} only apply the CD method to the classical obstacle problem.  The following example explains the implementation-relevant simplifications available in that case.
+We refer to Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} as \emph{basic CD iterations}.  To construct efficient FE implementations (Section \ref{sec:multilevel}) we will need additional notions.  While the basic iterations are meaningful even when $f$ is nonlinear, non-local, or defined only on $\cK$, practical implementation for such general problems seems not to have been addressed in the literature.  In particular, references \cite{GraeserKornhuber2009,Tai2003} only apply the CD method to the classical obstacle problem for which $f$ is linear.  The following example explains the implementation-relevant simplifications available in that simpler case.
 
 \begin{example}  \label{ex:fnice} Suppose $f:\cV \to \cV'$ is linear and defined on all of $\cV$.  Furthermore suppose $f$ is local in the sense that a basis $\{\phi_i\}$ of $\cV_i$ exists, with $\supp \phi_i$ compactly-contained in $\Omega$, such that for any $z\in\mathcal{V}$ the value $\ip{f(\phi_i)}{z}$ can be computed by an integral over the support of $\phi_i$.  Considering only additive Algorithm \ref{alg:basiccd-add} for simplicity, by linearity the boxed VI over $\cK_i$ can be written as
 \begin{equation}
@@ -364,7 +367,7 @@ The assumption that $\ip{f(\phi_i)}{z}$ can be evaluated over the support of $\p
 When $f$ has all the nice properties listed in Example \ref{ex:fnice} then a solver can take advantage of implementation efficiencies which are unavailable in general.  The actual solution process for VI \eqref{eq:linearlocalvi} is not the concern here; we are observing that the data of problem \eqref{eq:linearlocalvi}, and the cost of residual evaluation, are smaller than in the general case.  For more difficult problems additional ideas, illustrated in Section \ref{sec:multilevel}, are needed for practical implementation.  We will extend the basic method to nonlinear $f$ by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}.  However, extending the algorithm to non-local functionals $f$ is a topic for future research.
 
 
-\section{Convergence of the basic algorithm} \label{sec:convergence}
+\section{Convergence of constraint decomposition iterations} \label{sec:convergence}
 
 We now prove the convergence of additive CD Algorithm \ref{alg:basiccd-add}. % ASPIRATION
 This will be possible if we restrict to $2$-coercive operators, require $\alpha \le 1/m$, and make certain other assumptions as in \cite{Tai2003}.  However, our proof applies to VI problems which are not optimizations, and for which $f$ only applies to admissible elements, and thus extends the theory in \cite{Tai2003}.  First we define a new quantity related to VI problem \eqref{eq:vi}.
