@@ -353,34 +353,36 @@ the $i$th \emph{subset update}.  As the reader may check, $\hat w = u + \sum_{i}
 % FOLLOWING CONTAINS ASPIRATIONS
 The convergence results in Section \ref{sec:convergence} require substantial damping when applying additive Algorithm \ref{alg:basiccd-add}, namely we require $\alpha \le 1/m$ as in \cite{Tai2003}.  By constrast, Algorithm \ref{alg:basiccd-mult} can be shown to converge without damping ($\alpha\le 1$).  In Section \ref{sec:results} we demonstrate practical convergence for larger ranges of $\alpha$ than suggested by the theory.
 
-We refer to Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} as \emph{basic CD iterations}.  To construct efficient FE implementations (Section \ref{sec:multilevel}) we will need additional notions.  While the basic iterations are meaningful even when $f$ is nonlinear, non-local, or defined only on $\cK$, practical implementation for such general problems seems not to have been addressed in the literature.  In particular, references \cite{GraeserKornhuber2009,Tai2003} only apply the CD method to the classical obstacle problem for which $f$ is linear.  The following example explains the implementation-relevant simplifications available in that simpler case.
+We refer to Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} as the \emph{basic CD iterations}.  These basic iterations are meaningful even when $f$ is nonlinear, non-local, or defined only on $\cK$.  However, practical and efficient FE implementation for such general problems seems not to have been addressed in the literature, and will need additional notions.  In particular, references \cite{GraeserKornhuber2009,Tai2003} only apply the CD method to the classical obstacle problem for which $f$ is linear, local, and defined for all inputs.  The following example exposes the implementation simplifications available in that case.
 
-\begin{example}  \label{ex:fnice} Suppose $f:\cV \to \cV'$ is linear and defined on all of $\cV$.  Furthermore suppose $f$ is local in the sense that a basis $\{\phi_i\}$ of $\cV_i$ exists, with $\supp \phi_i$ compactly-contained in $\Omega$, such that for any $z\in\mathcal{V}$ the value $\ip{f(\phi_i)}{z}$ can be computed by an integral over the support of $\phi_i$.  Considering only additive Algorithm \ref{alg:basiccd-add} for simplicity, by linearity the boxed VI over $\cK_i$ can be written as
+\begin{example}  \label{ex:fnice} Suppose $f:\cV \to \cV'$ is linear and defined on all of $\cV$.  Furthermore suppose $f$ is a differential operator, thus local in the sense that for any $z\in\mathcal{V}$ the value $\ip{f(\phi)}{z}$ can be computed by an integral only over the support of $\phi \in \mathcal{V}$.  Considering additive Algorithm \ref{alg:basiccd-add} for concreteness, by linearity the boxed VI can be written as
 \begin{equation}
-\ip{f(e_i)}{v_i-\hat w_i} \ge \ip{\tilde g}{v_i-\hat w_i} \label{eq:linearlocalvi}
+\ip{f(e_i)}{v_i-\hat w_i} \ge \ip{\tilde\ell}{v_i-\hat w_i} \label{eq:linearlocalvi}
 \end{equation}
-where $\tilde g = g - f(u)$.  Note $e_i = \hat w_i - R_i u \in \cV_i \notin \cK$, in general, but VIs \eqref{eq:linearlocalvi} make sense because $f$ is defined over $\cV$.  Each problem \eqref{eq:linearlocalvi} can be solved using a stored residual $\ip{f(u)}{\cdot}$, namely the quantity included here into the source term.  The VI \eqref{eq:vi} is then approximately solved in any incremental and efficient manner, by computations over the basis supports.
+where $\tilde\ell = \ell - f(u)$.  Note $e_i = \hat w_i - R_i u \in \cV_i$ is not generally admissible ($e_i \notin \cK$), but VIs \eqref{eq:linearlocalvi} make sense because $f$ is defined over $\cV$.  Each problem \eqref{eq:linearlocalvi} can be solved using a stored residual $f(u)$, here included into a source term.  If a hat function basis exists for $\cV_i$, namely of small-support functions, then by linearity of $f$ a solver for VI \eqref{eq:linearlocalvi} can be implemented using only integrals over the hat function supports.
 \end{example}
 
-The assumption that $\ip{f(\phi_i)}{z}$ can be evaluated over the support of $\phi_i$ is satisfied when $f$ is a differential operator, $\cV$ is an FE space, and $\phi_i$ are hat functions; see Section \ref{sec:multilevel}.  Constrast non-local integral operators where $\ip{f(\phi_i)}{z}$ requires an integral over $\Omega$ even if $\phi_i$ is a hat function with small support.
+When $f$ has all the nice properties listed in Example \ref{ex:fnice} then a solver can take advantage of implementation efficiencies which are unavailable in general.  The FE approximation of VI \eqref{eq:vi}---see Section \ref{sec:fe}---can be solved in any incremental and efficient manner following the techniques in \cite{GraeserKornhuber2009,Tai2003}, namely by computations over hat function supports.  The actual solution process for VI \eqref{eq:linearlocalvi} is not really the concern here; we are observing that the storage needed for problem \eqref{eq:linearlocalvi}, and the cost of residual evaluation, are smaller than in the general case.  For more difficult problems certain additional ideas, illustrated in Section \ref{sec:multilevel}, are needed for practical implementation.  Specifically, we will extend a multilevel CD iteration to a method for nonlinear functions $f:\cK\to\cV'$, i.e.~defined only on the constraint set $\cK$, by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}.
 
-When $f$ has all the nice properties listed in Example \ref{ex:fnice} then a solver can take advantage of implementation efficiencies which are unavailable in general.  The actual solution process for VI \eqref{eq:linearlocalvi} is not the concern here; we are observing that the data of problem \eqref{eq:linearlocalvi}, and the cost of residual evaluation, are smaller than in the general case.  For more difficult problems additional ideas, illustrated in Section \ref{sec:multilevel}, are needed for practical implementation.  We will extend the basic method to nonlinear $f$ by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}.  However, extending the algorithm to non-local functionals $f$ is a topic for future research.
+One may also contrast Example \ref{ex:fnice} with the case of a non-local integral operator $f$ \cite{Bueler2021conservation}, where $\ip{f(\phi)}{z}$ requires an integral over $\Omega$ even if $\phi$ is a function with small support such as a hat function.  Extension of the multilevel CD method to such non-local functionals $f$ is a topic for future research.
 
 
-\section{Convergence of constraint decomposition iterations} \label{sec:convergence}
+\section{Convergence of a constraint decomposition iteration} \label{sec:convergence}
 
-We now prove the convergence of additive CD Algorithm \ref{alg:basiccd-add}. % ASPIRATION
-This will be possible if we restrict to $2$-coercive operators, require $\alpha \le 1/m$, and make certain other assumptions as in \cite{Tai2003}.  However, our proof applies to VI problems which are not optimizations, and for which $f$ only applies to admissible elements, and thus extends the theory in \cite{Tai2003}.  First we define a new quantity related to VI problem \eqref{eq:vi}.
+We now prove the convergence of the basic additive CD iteration, Algorithm \ref{alg:basiccd-add}. % ASPIRATION
+A convergence proof becomes possible if we restrict to $2$-coercive operators, require substantial damping, and make certain other assumptions as in \cite{Tai2003}.  However, our proof applies to VI problems which are not optimizations, thus extending the theory in \cite{Tai2003}.
 
-\begin{definition} Suppose $f:\cK \to \cV'$ and $g \in \cV'$.  For $u,v \in \cK$ let
+First we define a new form related to VI problem \eqref{eq:vi}.
+
+\begin{definition} Suppose $f:\cK \to \cV'$ and $\ell \in \cV'$.  For $v,w \in \cK$ let
 \begin{equation}
-  E(v,u) = \ip{f(v)}{v-u} - \ip{g}{v-u}.  \label{eq:normlikedefn}
+  E(v,w) = \ip{f(v)-\ell}{v-w}.  \label{eq:normlikedefn}
 \end{equation}
 \end{definition}
 
-If $u^*$ solves \eqref{eq:vi} then $E(v,u^*)$ is somewhat like an ``merit function'' for an iterate $v$, as used in solving nonlinear equations \cite{NocedalWright2006}, replacing the scalar objective which is assumed in \cite{Tai2003}.  The next lemma shows $E(v,u^*)$ is bounded below by a norm.
+If $u^*$ solves \eqref{eq:vi} then $E(v,u^*)$ is a ``merit function'' for an iterate $v$, a concept used in solving nonlinear equations \cite{NocedalWright2006}, except that $u^*$ is not generally known so this meaning is only theoretical.  In any case, our use of $E(v,u^*)$ replaces the scalar objective ``$F(v)$'' used in \cite{Tai2003}.  The next lemma shows $E(v,u^*)$ is bounded below by a norm.
 
-\begin{lemma} \label{lem:normlike}  Suppose $f:\mathcal{K} \to \mathcal{V}'$ is $p$-coercive and $u^* \in \mathcal{K}$ solves \eqref{eq:vi}.  For $v \in \mathcal{K}$,
+\begin{lemma} \label{lem:normlike}  Suppose $f:\mathcal{K} \to \mathcal{V}'$ is $p$-coercive with constant $\kappa>0$, and $u^* \in \mathcal{K}$ solves \eqref{eq:vi}.  For  all $v \in \mathcal{K}$,
 \begin{equation}
   E(v,u^*) \ge \kappa \|v-u^*\|^p.  \label{eq:normlikebound}
 \end{equation}
@@ -388,45 +390,46 @@ If $u^*$ solves \eqref{eq:vi} then $E(v,u^*)$ is somewhat like an ``merit functi
 
 \begin{proof}
 \begin{align*}
-E(v,u^*) &= \ip{f(v)}{v-u^*} - \ip{f(u^*)}{v-u^*} + \ip{f(u^*)}{v-u^*} - \ip{g}{v-u^*} \\
+E(v,u^*) &= \ip{f(v)}{v-u^*} - \ip{f(u^*)}{v-u^*} + \ip{f(u^*)}{v-u^*} - \ip{\ell}{v-u^*} \\
    &\ge \ip{f(v)-f(u^*)}{v-u^*} + 0 \ge \kappa \|v-u^*\|^p.  \qedhere
 \end{align*}
 \end{proof}
 
-Next we make two assumptions which are essentially the same as (7) and (8) in \cite{Tai2003}.
+Next we make two assumptions which are essentially the same as (7) and (8) in \cite{Tai2003}.  These inequalities might be described as ``totally Lipschitz'' requirements, over the CD defined by \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum}, for the maps $R_i$ and $f$, respectively.
 
 \begin{assumptions*}  There exists a constant $C_1>0$ so that
 \begin{equation}
 \left(\sum_{i=0}^{m-1} \|R_i u - R_i v\|^2\right)^{1/2} \le C_1 \|u-v\| \label{as:lipschitzrestrictions}
 \end{equation}
-for all $u,v\in\cK$.  Furthermore, there exists a constant $C_2>0$ so that for all $v_i \in \cV_i$ and $y_j \in \cV_j$, and all $w_{ij} \in \cK$ such that $w_{ij} + v_i \in \cK$, it holds that
+for all $u,v\in\cK$.  There exists another constant $C_2>0$ so that for all $v_i \in \cV_i$ and $y_j \in \cV_j$, and all $w_{ij} \in \cK$ such that $w_{ij} + v_i \in \cK$, it holds that
 \begin{equation}
 \sum_{i=0}^{m-1} \sum_{j=0}^{m-1} \left|\ip{f(w_{ij} + v_i) - f(w_{ij})}{y_j}\right| \le C_2 \left(\sum_{i=0}^{m-1} \|v_i\|^2\right)^{1/2} \left(\sum_{j=0}^{m-1} \|y_j\|^2\right)^{1/2}. \label{as:lipschitzresidual}
 \end{equation}
 \end{assumptions*}
 
-These inequalities might be described as ``totally Lipschitz'' requirements for the maps $R_i$ and $f$, respectively.  We make the following observations:
+We make the following observations:
 \begin{itemize}
-\item Assumption \eqref{as:lipschitzrestrictions} addresses only the CD, and not the VI problem $f$.  Tai \cite{Tai2003} gives a value of $C_1$ for obstacle problem constraint decompositions using $P_1$ FE spaces over shape-regular and quasi-uniform triangulations.  In particular, $C_1$ is known for overlapping domain decompositions, with or without an additional coarse mesh, and standard multilevel hierarchies.  The cases we will demonstrate in Section \ref{sec:results} are covered.
-\item If $f$ is defined on all of $\mathcal{V}$ then one might be able to verify \eqref{as:lipschitzresidual} over a subspace decomposition, not the CD.  For example, in the classical obstacle problem one may verify \eqref{as:lipschitzresidual} over arbitrary $w_{ij} \in \cV$ \cite{Tai2003}.
-\item If we assume $f$ itself is Lipschitz then the existence of $C_2$ is clear \cite{TaiXu2002}.  However, our convergence rate bound is improved when $C_2$ is smaller, so the smallest $C_2$ for which \eqref{as:lipschitzresidual} holds is used.
-\item The constants $C_1,C_2$ generally depend on $m$.  Furthermore, regarding the convergence proof below, Tai \cite{Tai2003} observes that if the iterates from Algorithm \ref{alg:basiccd-add} are bounded in $\mathcal{K}$ then constants $C_1,C_2$ are permitted to depend continuously on $u,v,w_{ij},v_i,y_i$.
-\item The unconstrained versions of \eqref{as:lipschitzrestrictions} and \eqref{as:lipschitzresidual} are (13), (14) in \cite{TaiXu2002}, respectively.
+\item The constants $C_1,C_2$ generally depend on $m$, the number of sets in the CD.  In a multilevel CD method (Section \ref{sec:multilevel}) this number is logarithmic in the number of degrees of freedom (nodes) in the fine-level mesh.
+\item Regarding the convergence proof below, if the iterates from Algorithm \ref{alg:basiccd-add} are bounded in $\mathcal{K}$ then constants $C_1,C_2$ are permitted to depend continuously on $u,v,w_{ij},v_i,y_i$ \cite{Tai2003}.
+\item Bound \eqref{as:lipschitzrestrictions} addresses only the CD, and not the nonlinear operator $f$.  Tai \cite{Tai2003} gives a value of $C_1$ for certain obstacle problem CDs using $P_1$ FE spaces over shape-regular and quasi-uniform triangulations.  In particular, $C_1$ is known for the standard multilevel hierarchy, so the cases demonstrated in Section \ref{sec:results} are covered.
+\item If $f$ is defined on all of $\mathcal{V}$ then one may verify \eqref{as:lipschitzresidual} over a subspace, versus constraint, decomposition.  For example, \eqref{as:lipschitzresidual} is verified for the classical obstacle problem over arbitrary $w_{ij} \in \cV$.  (Unconstrained versions of \eqref{as:lipschitzrestrictions}, \eqref{as:lipschitzresidual} are (13), (14) in \cite{TaiXu2002}, respectively.)
+\item If $f$ is Lipschitz then the existence of $C_2$ is clear \cite{TaiXu2002}.  However, our convergence rate bound is improved by taking the smallest $C_2$ for which \eqref{as:lipschitzresidual} holds.
 \end{itemize}
 
-From the above definitions and assumptions we have the following estimate for Algorithm \ref{alg:basiccd-add}.  Our proof follows \cite{Tai2003}.
+From the above definitions and assumptions we have the following estimate for Algorithm \ref{alg:basiccd-add}.  Our proof roughly follows that of Theorem 1 in \cite{Tai2003}.
 
-\begin{lemma} \label{lem:core}  Suppose $f$ is $2$-coercive and $u^* \in \mathcal{K}$ solves \eqref{eq:vi}.  Assume $\mathcal{V}_i$, $\mathcal{K}_i$, $R_i$ form a CD satisfying \eqref{as:lipschitzrestrictions}, and that \eqref{as:lipschitzresidual} is satisfied.  If $\hat w$ is computed from $u \in \mathcal{K}$ by Algorithm \ref{alg:basiccd-add} then
+\begin{lemma} \label{lem:core}  Suppose $f$ is $2$-coercive with constant $\kappa>0$, and that $u^* \in \mathcal{K}$ solves \eqref{eq:vi}.  Assume $\mathcal{V}_i$, $\mathcal{K}_i$, $R_i$ form a CD satisfying \eqref{as:lipschitzrestrictions}, and that \eqref{as:lipschitzresidual} is satisfied.  If $\hat w$ is computed from $u \in \mathcal{K}$ by Algorithm \ref{alg:basiccd-add} then
 \begin{equation}
-   E(\hat w,u^*) \le C_2 \sum_{i=0}^{m-1} \|e_i\|^2 + \kappa^{-1} C_1 C_2 \left(\sum_{i=0}^{m-1} \|e_i\|^2\right)^{1/2} E(u,u^*)^{1/2}. \label{eq:core}
+   E(\hat w,u^*) \le C_2 \sum_{i=0}^{m-1} \|e_i\|^2 + \kappa^{-1} C_1 C_2 \left(\sum_{i=0}^{m-1} \|e_i\|^2\right)^{1/2} E(u,u^*)^{1/2} \label{eq:core}
 \end{equation}
+where again $e_i=\hat w_i - R_i u$ (equation \eqref{eq:ithupdate}).
 \end{lemma}
 
 \begin{proof}  Recall that $\hat w = u^* + \sum_i \hat w_i - R_i u^*$.  Expand $E(\hat w,u^*)$ and substitute $v_i = R_i u^*$ into the boxed VI in Algorithm \ref{alg:basiccd-add} to find
 \begin{align}
-E(\hat w,u^*) &= \sum_{i=0}^{m-1} \ip{f(\hat w)}{\hat w_i - R_i u^*} - \ip{g}{\hat w_i - R_i u^*} \label{eq:startcore} \\
+E(\hat w,u^*) &= \sum_{i=0}^{m-1} \ip{f(\hat w)}{\hat w_i - R_i u^*} - \ip{\ell}{\hat w_i - R_i u^*} \notag \\
     &\le \sum_{i=0}^{m-1} \ip{f(\hat w)}{\hat w_i - R_i u^*} + \ip{f(u + e_i)}{R_i u^* - \hat w_i} \notag \\
-    &= \sum_{i=0}^{m-1} \ip{f(\hat w) - f(u + e_i)}{\hat w_i - R_i u^*}. \notag
+    &= \sum_{i=0}^{m-1} \ip{f(\hat w) - f(u + e_i)}{\hat w_i - R_i u^*}. \label{eq:startcore}
 \end{align}
 
 For $i\in \{0,1,\dots,m-1\}$ we now use wrapped indices to define progressive states $\phi_{i,j}$:
@@ -446,7 +449,7 @@ E(\hat w,u^*) &\le \sum_{i=0}^{m-1} \sum_{j=1}^{m-1} \ip{f(\phi_{i,j}) - f(\phi_
   &\le \sum_{i=0}^{m-1} \sum_{j=1}^{m-1} \left|\ip{f(\phi_{i,j}) - f(\phi_{i,j-1})}{\hat w_i - R_i u^*}\right|. \notag
 \end{align}
 
-Let $Z=\left(\sum_{i=0}^{m-1} \|e_i\|^2\right)^{1/2}$.  FIXME: MAKE THE RENUMBERING EXPLICIT
+Let $Z=\left(\sum_{i=0}^{m-1} \|e_i\|^2\right)^{1/2}$.  FIXME: MAKE THE RENUMBERING EXPLICIT AND NOTE $v_0=0$ IN APPLYING \eqref{as:lipschitzresidual}
 
 renumbering the indices $i,j$ we may apply assumption \eqref{as:lipschitzresidual}, then the triangle inequality, and then assumption \eqref{as:lipschitzrestrictions}:
 \begin{align}
