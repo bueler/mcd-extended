@@ -41,7 +41,7 @@ plt.text(psi1 - 0.07, - 0.09, r'$\psi(x_1)$', fontsize=fsize)
 plt.text(0.7, - 0.09, r'$\mathcal{K}_1$', fontsize=fsize)
 plt.gca().annotate('', xy=(0.7, psi2 - 0.3), xytext=(0.7, psi2 - 0.05),
                    arrowprops=dict(arrowstyle='->, head_length=0.8, head_width=0.5'))
-plt.text(0.72, 0.15, r'$R_1$', fontsize=fsize)
+plt.text(0.72, 0.15, r'$\Pi_1$', fontsize=fsize)
 
 plt.text(-0.02, 0.89, r'$\mathcal{V}_2$', fontsize=fsize)
 plt.plot(0.0, psi2, 'k.', ms = 12.0)
@@ -50,7 +50,7 @@ plt.text(- 0.22, psi2 - 0.02, r'$\psi(x_2)$', fontsize=fsize)
 plt.text(- 0.12, 0.6, r'$\mathcal{K}_2$', fontsize=fsize)
 plt.gca().annotate('', xy=(psi1 - 0.15, 0.6), xytext=(psi1 - 0.05, 0.6),
                    arrowprops=dict(arrowstyle='->, head_length=0.8, head_width=0.5'))
-plt.text(0.07, 0.65, r'$R_2$', fontsize=fsize)
+plt.text(0.07, 0.65, r'$\Pi_2$', fontsize=fsize)
 
 plt.axis('tight')
 plt.axis('off')
