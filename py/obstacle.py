@@ -30,16 +30,18 @@ ngssweep = {
     "npc_snes_python_type": "firedrake.PatchSNES",
     "npc_snes_max_it": 1,
     "npc_snes_convergence_test": "skip",
+    #"npc_snes_converged_reason": None,
     "npc_snes_linesearch_type": "basic",
     "npc_snes_linesearch_damping": 1.0,
     "npc_patch_snes_patch_construct_type": "star",
-    "npc_patch_snes_patch_partition_of_unity": True,
+    "npc_patch_snes_patch_partition_of_unity": True,  # preferred value?
     "npc_patch_snes_patch_sub_mat_type": "seqaij",
     #"npc_patch_snes_patch_local_type": "additive",   # nonlinear Jacobi
     "npc_patch_snes_patch_local_type": "multiplicative",
     "npc_patch_snes_patch_symmetrise_sweep": False,
     "npc_patch_sub_snes_type": "newtonls",
     "npc_patch_sub_snes_linesearch_type": "basic",
+    #"npc_patch_sub_snes_converged_reason": None,  # no effect
     "npc_patch_sub_ksp_type": "preonly",
     "npc_patch_sub_pc_type": "lu",
 }
