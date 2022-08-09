@@ -1,16 +1,10 @@
 """ATTEMPT to solve the following obstacle problem.  The plan is to solve by
 single-level projected NGS using PatchSNES.  (I know this is inefficient, but
 it is to be the smoother in an FAS scheme.)  I am currently blocked by
-not knowing how to implement *projected* NGS.
-
-ISSUES:
-  * I seem to only know how to get nonlinear *Jacobi* sweeps; setting 
-      "npc_patch_snes_patch_local_type": "multiplicative"
-    to get nonlinear GS sweeps generates a seg fault.
-  * I don't know how to intervene in the patch-wise Newton step to change it
-    to project back up to the obstacle if it over shoots.  So for now the
-    solver ignores the obstacle psi, and therefore just solves a Dirichlet
-    problem (PDE).
+not knowing how to implement *projected* NGS.  That is, I don't know how to
+intervene in the patch-wise Newton step to change it to project back up to
+the obstacle if it over shoots.  So for now the solver ignores the obstacle
+psi, and therefore just solves a Dirichlet problem (PDE).
 
 Solve laplacian obstacle problem in 2D square Omega = (-2,2) x (-2,2):
   u >= psi           on Omega
@@ -41,8 +35,8 @@ ngssweep = {
     "npc_patch_snes_patch_construct_type": "star",
     "npc_patch_snes_patch_partition_of_unity": True,
     "npc_patch_snes_patch_sub_mat_type": "seqaij",
-    "npc_patch_snes_patch_local_type": "additive",   # this is nonlinear Jacobi?
-    #"npc_patch_snes_patch_local_type": "multiplicative",  # this would be NGS? seg faults!
+    #"npc_patch_snes_patch_local_type": "additive",   # nonlinear Jacobi
+    "npc_patch_snes_patch_local_type": "multiplicative",
     "npc_patch_snes_patch_symmetrise_sweep": False,
     "npc_patch_sub_snes_type": "newtonls",
     "npc_patch_sub_snes_linesearch_type": "basic",
