@@ -1,9 +1,10 @@
-"""Attempt to solve Bratu equation in 2D by single-level NGS using PatchSNES:
+"""Solve Bratu equation in 2D by single-level NGS using PatchSNES:
    -triangle u - lambda e^u = 0
 The exact solution of this problem is given by Liouville (1853); see
 Exercise 7.12 in Bueler (2021), "PETSc for Partial Differential Equations"
 and c/ch7/solns/bratu2D.c in https://github.com/bueler/p4pdes.
 Dirichlet conditions on unit square are taken from exact solution.
+Compare to a Newton solve using Jacobi-preconditioned CG.
 """
 
 from firedrake import *
@@ -12,28 +13,10 @@ newtoncg = {
     "snes_type": "newtonls",
     #"snes_view": None,
     "snes_converged_reason": None,
-    "snes_monitor": None,
+    #"snes_monitor": None,
     "ksp_type": "cg",
     "ksp_converged_reason": None,
     "pc_type": "jacobi",
-}
-
-npcnewtoncg = {
-    "mat_type": "matfree",
-    "snes_type": "nrichardson",
-    #"snes_view": None,
-    "snes_converged_reason": None,
-    "snes_monitor": None,
-    "snes_npc_side": "left",
-    "npc_snes_type": "newtonls",
-    "npc_snes_linesearch_type": "basic",
-    "npc_ksp_type": "cg",
-    "npc_ksp_converged_reason": None,
-    "npc_pc_type": "jacobi",
-    #"npc_pc_type": "python",
-    #"npc_pc_python_type": "firedrake.AssembledPC",
-    #"assembled_ksp_type": "preonly",
-    #"assembled_pc_type": "lu",
 }
 
 ngssweep = {
@@ -41,7 +24,7 @@ ngssweep = {
     "snes_type": "nrichardson",
     #"snes_view": None,
     "snes_converged_reason": None,
-    "snes_monitor": None,
+    #"snes_monitor": None,
     "snes_npc_side": "left",
     "npc_snes_type": "python",
     "npc_snes_python_type": "firedrake.PatchSNES",
@@ -62,7 +45,7 @@ ngssweep = {
     #"npc_patch_snes_patch_sub_snes_rtol": 1.0e-11,
 }
 
-mesh = UnitSquareMesh(4,4)
+mesh = UnitSquareMesh(8,8)
 
 V = FunctionSpace(mesh, "CG", 1)
 u = Function(V)
@@ -88,7 +71,6 @@ def error(u):
 
 print('initial  |error|=%.3e' % (error(u)))
 #solve(F == 0, u, bcs=bcs, options_prefix = 's', solver_parameters=newtoncg)
-#solve(F == 0, u, bcs=bcs, options_prefix = 's', solver_parameters=npcnewtoncg)
 solve(F == 0, u, bcs=bcs, options_prefix = 's', solver_parameters=ngssweep)
 print('final    |error|=%.3e' % (error(u)))
 

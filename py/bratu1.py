@@ -1,4 +1,5 @@
-"""Solve Bratu equation in 1D by FAS multigrid:
+"""Solve Bratu equation in 1D by FAS multigrid, using explicit
+calls to prolong, restrict, and inject:
    -u'' - lambda e^u = f(x)
 with Dirichlet conditions u(0)=u(1)=0 and
    f(x) = 9 pi^2 sin(3 pi x) − lambda exp(sin(3 pi x)).

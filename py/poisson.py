@@ -1,4 +1,7 @@
-"""Solve poisson equation  - triangle u = f  by FAS multigrid.
+"""Solve poisson equation  - triangle u = f  by FAS multigrid, using explicit
+calls to prolong, restrict, and inject.
+
+WARNING: LOOKS LIKE THIS DOES NOT WORK.  COMPARE RESULT TO poisson0.py
 
 Poisson equation problem (weak form) is
     F(u)[v] = ell[v]
