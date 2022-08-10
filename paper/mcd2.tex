@@ -168,7 +168,7 @@ Furthermore the multilevel CD algorithms in \cite{GraeserKornhuber2009} and \cit
 \item In Sections \ref{sec:multilevel} and \ref{sec:vcycle} we explain why, given the manner in which constraint sets are decomposed in the multilevel context \cite{GraeserKornhuber2009}, multilevel ``up-smoothing'' is more efficient than ``down-smoothing''.  This observation seems to be new; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}.  A strong preference for up-smoothing is special to multilevel CD methods and does not arise in unconstrained problems.
 \end{enumerate}
 
-The iterates from a CD method are always admissible, and thus the operator need only be defined for admissible states.  Admissible-iterate methods should permit direct solutions of certain VI problems, such as fluid-layer dynamics problems \cite{Bueler2021conservation,JouvetBueler2012}, for which non-admissible methods, including semi-smooth methods \cite{BensonMunson2006}, require unnatural modifications of the operator formula.  Our NMCD scheme is also designed for these problems, some of which require the solution of an auxiliary PDE on a domain determined inside the VI residual evaluation, as discussed in \cite{Bueler2021conservation}.
+The iterates from a CD method are always admissible, and thus the operator can be defined only for admissible states.  Admissible-iterate methods should permit direct solutions of certain VI problems, such as fluid-layer dynamics problems \cite{Bueler2021conservation,JouvetBueler2012}, for which non-admissible methods, including semi-smooth methods \cite{BensonMunson2006}, require unnatural modifications of the operator formula.  Our NMCD scheme is also designed for these problems, some of which require the solution of an auxiliary PDE on a domain determined inside the VI residual evaluation, as discussed in \cite{Bueler2021conservation}.
 
 One of our examples demonstrates the application of the NMCD method to a problem of porous-media type, to which the extended convergence theory, \emph{(i)} above, does not apply because the nonlinear operator is not known to be coercive.  By ``freezing' the solution-dependent coefficient, the operator is approximated by a coercive operator for the duration of the V-cycle.  The resulting scheme is highly-effective for doubly-nonlinear diffusion operators, another type of problem to which the extended theory does not apply (Section \ref{sec:results}).
 
@@ -267,7 +267,7 @@ As with Example \ref{ex:advectiondiffusion}, this form does not have the symmetr
 Numerical solver performance for Examples \ref{ex:plaplacian}, \ref{ex:advectiondiffusion}, and \ref{ex:porous} will be considered in Section \ref{sec:results}.  Further examples of nonlinear VI problems appear in ice sheet models \cite{Calvoetal2002,JouvetBueler2012} and other geophysical fluids.  In the above Examples $f(u)$ may be defined over all of $\mathcal{V}$, but in some geophysical fluid problems the value of $f(u)$ is only defined for admissible $u\in \mathcal{K}$ because $u$ defines the fluid layer thickness \cite{Bueler2021conservation}.
 
 
-\section{Constraint decomposition} \label{sec:cd}
+\section{Constraint decomposition (CD)} \label{sec:cd}
 
 Suppose there are $m<\infty$ closed subspaces $\cV_i \subset \cV$ so that the sum
 \begin{equation}
@@ -306,7 +306,7 @@ Our second example is a disjoint frequency decomposition.  A multilevel CD, e.g.
 Again note that $\cK_i \not\subset \cK$ in these cases.  Specifically in Example \ref{ex:domaindecomposition}, if $\psi$ is positive over portions of $\Omega$ where the decomposition into overlapping subdomains $\Omega_i$ is nontrivial, then $\cK_i \not\subset \cK$, and similarly for Example \ref{ex:frequencydecomposition}.  The important inclusion is $\cK_i \subset \cV_i$.
 
 
-\section{Basic constraint decomposition iterations} \label{sec:cditers}
+\section{Basic CD iterations} \label{sec:cditers}
 
 Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below record basic CD iterative methods as functions which improve a current iterate $u \in \cK$ by solving ``smaller'' VI problems over each subset $\cK_i$.   Their outputs $w\in\cK$ should be closer to the solution $u^* \in \cK$ of \eqref{eq:vi}.
 
@@ -319,7 +319,7 @@ Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below record basic C
     $\hat w = \sum_i \hat w_i\in\cK$ \\
     return $w=(1-\alpha) u + \alpha \hat w$
 \end{pseudo*}
-\caption{Additive constraint decomposition for VI problem \eqref{eq:vi}.}
+\caption{One additive CD iteration for VI problem \eqref{eq:vi}.}
 \label{alg:basiccd-add}
 \end{pseudofloat}
 
@@ -335,7 +335,7 @@ In Algorithm \ref{alg:basiccd-add}, the additive or parallel CD method, the \tex
     $\hat w = \sum_i \hat w_i\in\cK$ \\
     return $w=(1-\alpha) u + \alpha \hat w$
 \end{pseudo*}
-\caption{Multiplicative constraint decomposition for VI problem \eqref{eq:vi}.}
+\caption{One multiplicative CD iteration for VI problem \eqref{eq:vi}.}
 \label{alg:basiccd-mult}
 \end{pseudofloat}
 
@@ -370,7 +370,7 @@ When $f$ has all the nice properties listed in Example \ref{ex:fnice} then a sol
 One may also contrast Example \ref{ex:fnice} with the case of a non-local integral operator $f$ \cite{Bueler2021conservation}, where $\ip{f(\phi)}{z}$ requires an integral over $\Omega$ even if $\phi$ is a function with small support such as a hat function.  Extension of the multilevel CD method to such non-local functionals $f$ is a topic for future research.
 
 
-\section{Convergence of a constraint decomposition iteration} \label{sec:convergence}
+\section{Convergence of a basic CD iteration} \label{sec:convergence}
 
 We now prove the convergence of the basic additive CD iteration, Algorithm \ref{alg:basiccd-add}. % ASPIRATION
 A convergence proof becomes possible if we restrict to $2$-coercive operators, require substantial damping, and make certain other assumptions as in \cite{Tai2003}.  However, our proof applies to VI problems which are not optimizations, thus extending the theory in \cite{Tai2003}.
@@ -465,7 +465,7 @@ Finally apply Lemma \ref{lem:normlike} to give \eqref{eq:core}.
 FIXME NOW THE ENTIRE BATTLE IS TO GET A CONVEXITY RESULT $E(w,u) \ge C \sum_{j=0}^{m-1} \|e_j\|^2$ for some reasonable $C$
 
 
-\section{Multilevel finite element constraint decompositions} \label{sec:multilevel}
+\section{Multilevel finite element CDs} \label{sec:multilevel}
 
 We will approximately solve VI \eqref{eq:vi} for certain nonlinear obstacle problems, over two-dimensional computational domains $\Omega \subset \RR^2$ and the Banach space $\mathcal{V}=W_0^{1,p}(\Omega)$, using piecewise-linear finite element (FE) spaces over triangular meshes.  The targeted mesh will be the finest level in a hierarchy of meshes constructed by refinement of a coarsest mesh.
 
@@ -525,7 +525,7 @@ Finally, monotone restriction $\mR:\tilde{\mathcal{V}}^j\to\tilde{\mathcal{V}}^{
 Note that if $z\in\tilde{\mathcal{V}}^j$ then $z \le \mR z$.
 
 
-\section{The nonlinear multilevel constraint decomposition V-cycle} \label{sec:vcycle}
+\section{The nonlinear multilevel CD V-cycle} \label{sec:vcycle}
 
 The starting point of a \emph{multilevel constraint decomposition} (MCD) \cite{GraeserKornhuber2009,Tai2003} method is to define constraint subsets, the sets generically denoted $\cK_i$ in sections \ref{sec:vi} and \ref{sec:convergence}, based on monotone restrictions of a defect constraint (see below).  Our multilevel V-cycle algorithm will define two types of constraint subsets, distinct sets for the downward and upward parts of the cycle.  We also diverge from the MCD algorithms by Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear \emph{full approximation scheme} (FAS) philosophy \cite{BrandtLivne2011}.  When $f$ is linear, as in the implemented examples in \cite{GraeserKornhuber2009,Tai2003}, there is no need to coarsen the solution itself, but in the FAS approach here we coarsen the solution iterate using the injection restriction.  Note that in classical linear multigrid only the residual and correction are coarsened.
 
