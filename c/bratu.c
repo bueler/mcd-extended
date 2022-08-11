@@ -148,19 +148,24 @@ PetscErrorCode FormUExact(DMDALocalInfo *info, Vec u, BratuCtx* user) {
     return 0;
 }
 
-FIXME FROM HERE
+PetscReal IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
+                       const PetscReal ff[4], const PetscReal uu[4],
+                       PetscReal xi, PetscReal eta, BratuCtx *user) {
+  const gradRef    du    = deval(uu,xi,eta),
+                   dchiL = dchi(L,xi,eta);
+  return GradInnerProd(hx,hy,du,dchiL)
+         - user->lambda * PetscExpScalar(eval(uu,xi,eta)) * chi(L,xi,eta);
+}
 
 // compute F(u), the residual of the discretized PDE on the given grid
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
                                  PetscReal **FF, BratuCtx *user) {
+    const Quad1D    q = gausslegendre[user->quadpts-1];
+    const PetscReal hx = 1.0 / (PetscReal)(info->mx - 1),
+                    hy = 1.0 / (PetscReal)(info->my - 1);
     PetscInt   i, j;
-    PetscReal  hx, hy, darea, hxhy, hyhx, x, y;
+    PetscReal  x, y;
 
-    hx = 1.0 / (PetscReal)(info->mx - 1);
-    hy = 1.0 / (PetscReal)(info->my - 1);
-    darea = hx * hy;
-    hxhy = hx / hy;
-    hyhx = hy / hx;
     for (j = info->ys; j < info->ys + info->ym; j++) {
         y = j * hy;
         for (i = info->xs; i < info->xs + info->xm; i++) {
