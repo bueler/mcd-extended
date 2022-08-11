@@ -45,20 +45,20 @@ SNES Object: 2 MPI processes
               type: seqaij
               rows=6, cols=6
               package used to perform factorization: petsc
-              total: nonzeros=28, allocated nonzeros=28
+              total: nonzeros=20, allocated nonzeros=20
                 not using I-node routines
       linear system matrix = precond matrix:
       Mat Object: (sub_) 1 MPI process
         type: seqaij
         rows=6, cols=6
-        total: nonzeros=28, allocated nonzeros=28
+        total: nonzeros=20, allocated nonzeros=20
         total number of mallocs used during MatSetValues calls=0
           not using I-node routines
     linear system matrix = precond matrix:
     Mat Object: 2 MPI processes
       type: mpiaij
       rows=9, cols=9
-      total: nonzeros=49, allocated nonzeros=49
+      total: nonzeros=33, allocated nonzeros=33
       total number of mallocs used during MatSetValues calls=0
-flops = 6.044e+03,  residual calls = 34,  NGS calls = 0
+flops = 4.184e+03,  residual calls = 22,  NGS calls = 0
 done on 3 x 3 grid:   error |u-uexact|_inf = 4.104e-03

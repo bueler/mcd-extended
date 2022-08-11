@@ -1,6 +1,6 @@
 static char help[] =
-"Solve nonlinear Liouville-Bratu equation in 2D on a structured-grid.  Option prefix lb_.\n"
-"Solves\n"
+"Solve nonlinear Liouville-Bratu equation by finite differences\n"
+"in 2D on a structured-grid.  Option prefix lb_.  Solves\n"
 "  - nabla^2 u - lambda e^u = 0\n"
 "on the unit square [0,1]x[0,1] subject to zero Dirichlet boundary conditions.\n"
 "Critical value occurs about at lambda = 6.808.  Optional exact solution by\n"
@@ -73,7 +73,7 @@ int main(int argc,char **argv) {
                             "bratufd.c",bctx.lambda,&(bctx.lambda),NULL));
     PetscCall(PetscOptionsBool("-exact","use case of Liouville exact solution",
                             "bratufd.c",bctx.exact,&(bctx.exact),NULL));
-    PetscCall(PetscOptionsBool("-showcounts","at finish, print numbers of calls to call-back functions",
+    PetscCall(PetscOptionsBool("-showcounts","print counts for calls to call-back functions",
                             "bratufd.c",showcounts,&showcounts,NULL));
     PetscOptionsEnd();
     if (bctx.exact) {
@@ -84,7 +84,7 @@ int main(int argc,char **argv) {
     }
 
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
-                        DMDA_STENCIL_BOX,  // contrast with fish
+                        DMDA_STENCIL_STAR,
                         3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
     PetscCall(DMSetApplicationContext(da,&bctx));
     PetscCall(DMSetFromOptions(da));
