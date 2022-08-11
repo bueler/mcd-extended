@@ -472,7 +472,7 @@ FIXME NOW THE ENTIRE BATTLE IS TO GET A CONVEXITY RESULT $E(w,u) \ge C \sum_{j=0
 
 \section{Multilevel finite element CDs} \label{sec:multilevel}
 
-We will approximately solve VI \eqref{eq:vi} for certain nonlinear obstacle problems, over two-dimensional computational domains $\Omega \subset \RR^2$, and the Sobolev space $\mathcal{V}=W_0^{1,p}(\Omega)$, using piecewise-linear finite element (FE) spaces over triangular meshes.  The targeted mesh will be the finest level in a hierarchy of meshes constructed by refinement of a coarsest mesh.  In this Section we construct the corresponding multilevel CD.
+We will approximately solve VI \eqref{eq:vi} for certain nonlinear obstacle problems, over two-dimensional computational domains $\Omega \subset \RR^2$, and the Sobolev space $\mathcal{V}=W_0^{1,p}(\Omega)$, using piecewise-linear finite element (FE) spaces over triangular meshes.  The targeted mesh will be the finest level in a hierarchy of meshes constructed by refinement of a coarsest mesh.  In this Section we construct the corresponding multilevel CD.  Its constraint sets are designed to allow multigrid coarser-level corrections (next Section) in a manner which does not violate the inequality constraints, and which also does not introduce unnecessary high frequencies into the coarser-level problems.
 
 The mesh hierarchy and FE spaces are constructed in a standard manner \cite{Elmanetal2014}.  Suppose $\Omega$ is polygonal and triangulated by $\mathcal{T}^0$, the \emph{coarsest mesh}, a finite set of non-overlapping triangles with union $\overline{\Omega}$ and characteristic size (e.g.~maximum edge length) $h_0>0$.  Starting with $j=1$, let $\mathcal{T}^j$ be the uniform refinement of $\mathcal{T}^{j-1}$ by edge bisection, thus each $\mathcal{T}^{j-1}$ triangle becomes four similar triangles in $\mathcal{T}^j$ with characteristic size $h_j = 2^{-j} h_0$.  Refinement proceeds to level $J\ge 0$, the \emph{depth} of the hierarchy, giving $\mathcal{T}^J$ as the \emph{finest mesh}.  Let $m_j$ be the number of interior nodes in $\mathcal{T}^j$, the \emph{degrees of freedom} at the $j$th level, and denote $h=h_J=2^{-J} h_0$ and $m=m_J$ for the finest level.  Now let $\mathcal{V}^j$ be the continuous, piecewise-linear FE space $P_1$ \cite{Elmanetal2014} over $\mathcal{T}^j$ with zero boundary values, and observe the following nesting:
 \begin{equation}
@@ -493,7 +493,7 @@ Where $\underline{\gamma}^J=-\infty$ there will no lower constraint, and similar
 \begin{equation}
 \mathcal{K}^J = \left\{v \in \mathcal{V}^J\,:\,\underline{\gamma}^J \le v \le \overline{\gamma}^J\right\}, \label{eq:fineconstraintset}
 \end{equation}
-the finest-level \emph{constraint set} of \emph{admissible} FE functions, a closed and convex subset of $\mathcal{V}^J$.  As $\mathcal{V}^J$ functions never take values $\pm\infty$, inequality in \eqref{eq:fineconstraintset} is strict where $\underline{\gamma}^J, \overline{\gamma}^J = \pm \infty$.
+the finest-level \emph{constraint set} of \emph{admissible} FE functions, a nonempty, closed, and convex subset of $\mathcal{V}^J$.  As $\mathcal{V}^J$ functions never take values $\pm\infty$, inequality in \eqref{eq:fineconstraintset} is strict where $\underline{\gamma}^J, \overline{\gamma}^J = \pm \infty$.
 
 Let $f^J:\mathcal{K}^J \to (\mathcal{V}^J)'$ be a discretization of $f$ in \eqref{eq:vi}.  Noting that the functional $\ell$ in \eqref{eq:vi} is already defined and continuous over $\mathcal{V}^J$, we denote $\ell^J \in (\mathcal{V}^J)'$ for its FE representation.  We seek the finest-level FE solution $u^J \in \mathcal{K}^J$ of the finite-dimensional, nonlinear VI
 \begin{equation}
@@ -531,26 +531,21 @@ Finally, the monotone restrictions $\maxR,\minR$ are nonlinear maps which maximi
 \end{align}
 with the result in $\tilde{\mathcal{V}}^{j-1}$.  The usual ordering rules for the extended real line $\tilde\RR$ are applied.  Note that if $z\in\tilde{\mathcal{V}}^j$ then $\minR z \le z \le \maxR z$.
 
-
-\section{The nonlinear multilevel CD V-cycle} \label{sec:vcycle}
-
-The starting point of a \emph{multilevel constraint decomposition} (MCD) \cite{GraeserKornhuber2009,Tai2003} method is to define constraint subsets, the sets generically denoted $\cK_i$ in sections \ref{sec:vi} and \ref{sec:convergence}, based on monotone restrictions of a defect constraint (see below).  Our multilevel V-cycle algorithm will define two types of constraint subsets, distinct sets for the downward and upward parts of the cycle.  We also diverge from the MCD algorithms by Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear \emph{full approximation scheme} (FAS) philosophy \cite{BrandtLivne2011}.  When $f$ is linear, as in the implemented examples in \cite{GraeserKornhuber2009,Tai2003}, there is no need to coarsen the solution itself, but in the FAS approach here we coarsen the solution iterate using the injection restriction.  Note that in classical linear multigrid only the residual and correction are coarsened.
-
-To make this precise, suppose $w^J \in \cK^J$ is an admissible fine-level iterate which approximates the solution $u^J$ of VI \eqref{eq:fe:vi}.  From this iterate we define the \emph{defect constraint} \cite{GraeserKornhuber2009}
+To define the constraint subsets, the sets generically denoted $\cK_i$ in Sections \ref{sec:cd}--\ref{sec:convergence}, in the current multilevel FE context, suppose $w^J \in \cK^J$ is an admissible fine-level iterate which approximates the solution $u^J$ of VI \eqref{eq:fe:vi}.  From this iterate we define the finest-level \emph{lower and upper defect constraints} \cite{GraeserKornhuber2009}
 \begin{equation}
-\chi^J = \gamma^J - w^J,  \label{eq:fe:defectconstraintfcn}
+\underline{\chi}^J = \underline{\gamma}^J - w^J, \qquad \overline{\chi}^J = \overline{\gamma}^J - w^J, \label{eq:fe:defectconstraints}
 \end{equation}
-a nonpositive function in $\tilde{\mathcal{V}}^J$.  The motivation here is that a corrected iterate is admissible, $w^J + z^J \ge \gamma^J$, if and only if the perturbation $z^J$ exceeds the defect constraint, $z^J \ge \chi^J$.  Next, for $j=J,J-1,\dots,1$ we apply monotone restriction $\maxR$ to define the \emph{level defect constraints},
-\begin{equation}
-\chi^{j-1} = \maxR \chi^j. \label{eq:fe:chilevels}
-\end{equation}
-so that $\chi^j \le \chi^{j-1}$.  A $J=4$ example is shown in Figure \ref{fig:chiphilevels}.
+functions in $\tilde{\mathcal{V}}^J$ satisfying $\underline{\chi}^J \le 0 \le \overline{\chi}^J$.  The motivation here is that a corrected iterate is admissible, $\underline{\gamma}^J \le w^J + z^J \le \overline{\gamma}^J$, if and only if the perturbation $z^J$ is between the defect constraints, $\underline{\chi}^J \le z^J \le \overline{\chi}^J$.
 
-We also denote the differences between the level defect constraints by
+For $j=J,J-1,\dots,1$ we apply monotone restrictions to define the \emph{level defect constraints},
 \begin{equation}
-\phi^j = \chi^j - \chi^{j-1}, \label{eq:fe:philevels}
+\underline{\chi}^{j-1} = \maxR \underline{\chi}^j, \qquad \overline{\chi}^{j-1} = \minR \overline{\chi}^j. \label{eq:fe:chilevels}
 \end{equation}
-and these are nonpositive functions.  (Definition \eqref{eq:fe:philevels} uses $\chi^{-1}=0$.)  Functions $\phi^j$ are the gaps between the $\chi^j$ shown in Figure \ref{fig:chiphilevels}, with $\phi^0=\chi^0$ in particular.  Note the telescoping sum decomposition $\sum_{j=0}^J \phi^j = \chi^J$.
+Observe that
+\begin{equation}
+\underline{\chi}^{J} \le \dots \le \underline{\chi}^0 \le 0 \le \overline{\chi}^0 \le \dots \le \overline{\chi}^J. \label{eq:fe:chiordering}
+\end{equation}
+A $J=4$ example, with no upper obstacles ($\overline{\chi}^j=+\infty$), is shown in Figure \ref{fig:chiphilevels}.
 
 %REGENERATE using https://github.com/bueler/mg-glaciers:
 %$ cd mg-glaciers/py/
@@ -558,18 +553,48 @@ and these are nonpositive functions.  (Definition \eqref{eq:fe:philevels} uses $
 %$ ./obstacle.py -J 5 -jcoarse 1 -random -randommodes 8 -diagnostics -o defect.pdf
 %fine level 5 (m=63): using 20 V(1,0) cycles -> 38.750 WU
 \begin{figure}
-\includegraphics[width=0.55\textwidth]{fixfigs/chiphilevels.pdf}
-\caption{Defect constraint $\chi^J = \gamma^J - w^J$ is decomposed using monotone restriction.}
+\includegraphics[width=0.65\textwidth]{fixfigs/chiphilevels.pdf}
+\caption{The lower defect constraint $\underline{\chi}^J = \underline{\gamma}^J - w^J$ is decomposed using maximum restriction: $\underline{\chi}^{j-1} = \maxR \underline{\chi}^j$.}
 \label{fig:chiphilevels}
 \end{figure}
 
-For the downward part of the multigrid V-cycle we will use the $\phi^j$ as constraints, and for the upward part the $\chi^j$.  That is, let
+We also compute the differences between the level defect constraints:
 \begin{equation}
-\mathcal{D}^j = \{v \in \mathcal{V}^j \,:\, v\ge \phi^j\}, \qquad \mathcal{U}^j = \{v \in \mathcal{V}^j \,:\, v\ge \chi^j\} \label{eq:fe:constraintsets}
+\underline{\phi}^j = \underline{\chi}^j - \underline{\chi}^{j-1}, \qquad \overline{\phi}^j = \overline{\chi}^j - \overline{\chi}^{j-1},  \label{eq:fe:philevels}
 \end{equation}
-define \emph{downward} and \emph{upward constraint subsets} of the FE subspaces $\mathcal{V}^j$, respectively.  The upward sets are larger, $\mathcal{D}^j \subset \mathcal{U}^j$, and set decompositions $\mathcal{U}^j = \sum_{i=0}^j \mathcal{D}^i$ apply in the same sense as \eqref{eq:constraintdecomp}.
+using $\underline{\chi}^{-1}=\overline{\chi}^{-1}=0$.  Again these constraints bracket zero,
+\begin{equation}
+\underline{\phi}^j \le 0 \le \overline{\phi}^j,  \label{eq:fe:phibrackets}
+\end{equation}
+but these functions are not ordered as in \eqref{eq:fe:chiordering}, but telescoping sums hold for $j=0,1,\dots,J$:
+\begin{equation}
+\sum_{i=0}^j \underline{\phi}^i = \underline{\chi}^j, \qquad \sum_{i=0}^j \overline{\phi}^i = \overline{\chi}^j.  \label{eq:fe:telescoping}
+\end{equation}
 
-Returning to the central MCD idea, we will correct the finest-level iterate $w^J\in \mathcal{K}^J$ by adding modifications from each coarser subspace $\mathcal{V}^j$.  By nesting \eqref{eq:fe:nestedspaces} these corrections live in the fine-level subspace $\mathcal{V}^J$, but the corrected iterate needs to be admissible as well.  The accumulated corrections, from the constraint subsets $\mathcal{D}^j$ and $\mathcal{U}^j$, over the whole multigrid V-cycle, compute a new iterate in $\mathcal{K}^J$.
+A multilevel V-cycle is defined in the next Section.  For the downward direction we will use the differences $\underline{\phi}^j,\overline{\phi}^j$ as constraints, and for the upward part the defect constraints $\underline{\chi}^j,\overline{\chi}^j$.  That is,
+\begin{align}
+\mathcal{D}^j = \{v \in \mathcal{V}^j \,:\, \underline{\phi}^j \le v \le \overline{\phi}^j\}, \label{eq:fe:constraintsets} \\
+\mathcal{U}^j = \{v \in \mathcal{V}^j \,:\, \underline{\chi}^j \le v \le \overline{\chi}^j\}, \notag
+\end{align}
+are the \emph{downward} and \emph{upward constraint subsets} of the FE subspaces $\mathcal{V}^j$, respectively.  Observe that the upward sets are larger, $\mathcal{D}^j \subset \mathcal{U}^j$, and in fact by \eqref{eq:fe:telescoping} the set decompositions
+\begin{equation}
+\mathcal{U}^j = \sum_{i=0}^j \mathcal{D}^i \label{eq:fe:constraintdecomp}
+\end{equation}
+apply in the same sense as \eqref{eq:constraintdecomp}.  Also note that the finest-level upward constraint set is equivalent to the original constraint set $\mathcal{K}^J$; for all $z^J \in \mathcal{V}^J$,
+\begin{equation}
+z^J \in \mathcal{U}^J \quad \iff \quad w^J+z^J \in \mathcal{K}^J. \label{eq:fe:finestlevelequivalent}
+\end{equation}
+
+FIXME what are the CDs?  what are the decomposition operators?
+
+
+\section{The nonlinear multilevel CD V-cycle} \label{sec:vcycle}
+
+Our \emph{nonlinear multilevel constraint decomposition} (NMCD) V-cycle algorithm in this section will use the two types of constraint subsets in \eqref{eq:fe:constraintsets}, with distinct sets for the downward and upward parts of the cycle.  We also diverge from the multilevel CD algorithms by Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear \emph{full approximation scheme} (FAS) philosophy \cite{BrandtLivne2011}.  In the FAS approach here we must coarsen the solution iterate itself, using the injection restriction, in constrast to classical linear multigrid, wherein only the residual and correction are coarsened, and in constrast to the implemented examples in \cite{GraeserKornhuber2009,Tai2003} in which $f$ is linear.
+
+FIXME from here
+
+We will correct the finest-level iterate $w^J\in \mathcal{K}^J$ by adding modifications from each coarser subspace $\mathcal{V}^j$.  By nesting \eqref{eq:fe:nestedspaces} these corrections live in the fine-level subspace $\mathcal{V}^J$, but the corrected iterate needs to be admissible as well.  The accumulated corrections, from the constraint subsets $\mathcal{D}^j$ and $\mathcal{U}^j$, over the whole multigrid V-cycle, compute a new iterate in $\mathcal{K}^J$.
 
 In detail, suppose $y^{j+1} \in \mathcal{D}^{j+1}, \dots, y^J \in \mathcal{D}^J$ are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:nmcdvcycle}).  The so-far corrected iterate is admissible, namely $w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$, because the sum of corrections is in the (finest) defect constraint set, i.e.~$y^J + \dots + y^{j+1} \in \mathcal{U}^J = \{v\ge \chi^J\}$.
 
@@ -577,7 +602,7 @@ In detail, suppose $y^{j+1} \in \mathcal{D}^{j+1}, \dots, y^J \in \mathcal{D}^J$
 \begin{center}
 \input{tikz/nmcdvcycle.tex}
 \end{center}
-\caption{An NMCD V-cycle computes downward corrections $y_j \in \mathcal{D}^j$, but the upward corrections $z_j$ expand into larger constraint subsets $\mathcal{U}^j$.}
+\caption{An NMCD V-cycle computes downward corrections $y_j \in \mathcal{D}^j$, but the upward corrections $z_j$ may expand into larger constraint subsets $\mathcal{U}^j$.}
 \label{fig:nmcdvcycle}
 \end{figure}
 
@@ -633,7 +658,7 @@ where $P$ is canonical prolongation; stated simply, $z^j = y^j + \dots + y^0$.  
 \end{equation}
 The reason we can solve over $\mathcal{U}^j$ is that, unlike during the downward phase, there is no forthcoming coarser correction which could violate admissibility.
 
-These ideas come together in Algorithm \ref{alg:nmcd}, an NMCD V-cycle.  This procedure acts in-place on the final argument $w^J$, but it leaves the other inputs $\ell^J,\gamma^J$ unchanged.
+These ideas come together in Algorithm \ref{alg:nmcd}, an NMCD V-cycle.  This procedure acts in-place on the final argument $w^J$, but it leaves the other vector inputs $\ell^J,\gamma^J$ unchanged.
 
 \begin{pseudofloat}[H]
 \begin{pseudo} \label{ps:nmcd-vcycle}
@@ -712,7 +737,7 @@ FIXME observe that up-smoothing is more efficient
 
 
 \appendix
-\section{Reductions of the NMCD algorithm}
+\section{Reduction of NMCD to unconstrained FAS}
 
 \pr{nmcd-vcycle}, Algorithm \ref{alg:nmcd} in the main text, generalizes two multilevel algorithms, first the FAS multigrid V-cycle for nonlinear PDEs, which itself generalizes the standard linear multigrid V-cycle, and second the MCD V-cycle for linear variational inequalities.  This Appendix helps readers understand \pr{nmcd-vcycle} by identifying the assumptions which reduces it to these existing methods.
 
@@ -745,6 +770,9 @@ However, now we must be careful that going upward only the correction gets prolo
 a negative constant, $\gamma^J=-JZ$, where $Z>0$ is larger than the magnitude of $u^J$, or of any prospective iterate $w^J$, say $Z > \|w^J\|_\infty$.
 
 FIXME get Algorithm 14 \cite{Bruneetal2015}
+
+
+\section{Reduction of NMCD for linear operators}
 
 FIXME by assuming $f$ is linear, reduce to Algorithm 4.7 in \cite{GraeserKornhuber2009} but with $\text{V}(\nu_1,\nu_2)$ cycles
 
