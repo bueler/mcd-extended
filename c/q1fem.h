@@ -53,9 +53,12 @@ static PetscReal GradInnerProd(PetscReal hx, PetscReal hy,
     return cx * du.xi * dv.xi + cy * du.eta * dv.eta;
 }
 
+#if 0
+// unused in Bratu problem
 static PetscReal GradPow(PetscReal hx, PetscReal hy,
                          gradRef du, PetscReal P, PetscReal eps) {
     return PetscPowScalar(GradInnerProd(hx,hy,du,du) + eps*eps, P/2.0);
 }
+#endif
 
 #endif
