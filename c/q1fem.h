@@ -16,11 +16,13 @@
 static PetscReal xiL[4]  = { 1.0, -1.0, -1.0,  1.0},
                  etaL[4] = { 1.0,  1.0, -1.0, -1.0};
 
+// FLOPS: 6
 static PetscReal chi(PetscInt L, PetscReal xi, PetscReal eta) {
     return 0.25 * (1.0 + xiL[L] * xi) * (1.0 + etaL[L] * eta);
 }
 
 // evaluate v(xi,eta) on reference element using local node numbering
+// FLOPS: 7 + 4 * chi = 31
 static PetscReal eval(const PetscReal v[4], PetscReal xi, PetscReal eta) {
     return   v[0] * chi(0,xi,eta) + v[1] * chi(1,xi,eta)
            + v[2] * chi(2,xi,eta) + v[3] * chi(3,xi,eta);
@@ -47,6 +49,7 @@ static gradRef deval(const PetscReal v[4], PetscReal xi, PetscReal eta) {
     return sum;
 }
 
+// FLOPS: 9
 static PetscReal GradInnerProd(PetscReal hx, PetscReal hy,
                                gradRef du, gradRef dv) {
     const PetscReal cx = 4.0 / (hx * hx),  cy = 4.0 / (hy * hy);
