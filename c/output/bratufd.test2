@@ -3,7 +3,7 @@ SNES Object: 2 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=4
+  total number of linear solver iterations=3
   total number of function evaluations=4
   norm schedule ALWAYS
   Jacobian is built using colored finite differences on a DMDA
@@ -60,5 +60,5 @@ SNES Object: 2 MPI processes
       rows=9, cols=9
       total: nonzeros=33, allocated nonzeros=33
       total number of mallocs used during MatSetValues calls=0
-flops = 4.184e+03,  residual calls = 22,  NGS calls = 0
+flops = 3.936e+03,  residual calls = 22,  NGS calls = 0
 done on 3 x 3 grid:   error |u-uexact|_inf = 4.104e-03

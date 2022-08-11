@@ -8,20 +8,20 @@ static char help[] =
 
 /*
 incredible performance: FAS+NGS, matrix-free, full-cycles, NGS for coarse solve
-400 million unknowns in 32 seconds, full 10 digit accuracy
-uses all memory of my Thelio massive machine (uses over 90% of 128 Gb; note 20 cores out of 40)
-note only 350 flops per degree of freedom!
+400 million unknowns in 22 seconds, 10-digit accuracy
+uses 66% of 128 Gb memory of my Thelio massive machine; note 20 cores out of 40
+note only 352 flops per degree of freedom!
 
-$ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratufd -da_grid_x 6 -da_grid_y 6 -lb_exact -snes_rtol 1.0e-10 -snes_converged_reason -lb_showcounts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 2 -fas_coarse_snes_max_it 4 -da_refine 12
+$ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratufd -da_grid_x 5 -da_grid_y 5 -lb_exact -snes_rtol 1.0e-10 -snes_converged_reason -lb_showcounts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 2 -fas_coarse_snes_max_it 4 -da_refine 12
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
-flops = 1.467e+11,  residual calls = 416,  NGS calls = 208
-done on 20481 x 20481 grid:   error |u-uexact|_inf = 1.728e-10
-real 31.50
+flops = 9.448e+10,  residual calls = 416,  NGS calls = 208
+done on 16385 x 16385 grid:   error |u-uexact|_inf = 4.038e-10
+real 21.70
 */
 
 /* excellent evidence of convergence and optimality in Liouville exact solution case (use opt PETSc build):
 NEWTON+MG with FD Jacobian matrix is fast
-$ for LEV in 6 7 8 9 10; do timer ./bratufd -da_refine $LEV -lb_exact -snes_rtol 1.0e-10 -snes_converged_reason -lb_showcounts -snes_type newtonls -snes_fd_color -pc_type mg; done
+$ for LEV in 6 7 8 9 10; do timer ./bratufd -da_refine $LEV -lb_exact -snes_rtol 1.0e-10 -snes_converged_reason -lb_showcounts -snes_type newtonls -snes_fd_color -ksp_type cg -pc_type mg; done
 FAS+NGS matrix-free full cycles are much faster
 $ for LEV in 6 7 8 9 10; do timer ./bratufd -da_refine $LEV -lb_exact -snes_rtol 1.0e-10 -snes_converged_reason -lb_showcounts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 2 -fas_coarse_snes_max_it 4; done
 */
@@ -155,11 +155,18 @@ PetscErrorCode FormUExact(DMDALocalInfo *info, Vec u, BratuCtx* user) {
     return 0;
 }
 
+
+PetscBool NodeOnBdry(DMDALocalInfo *info, PetscInt i, PetscInt j) {
+    return (((i == 0) || (i == info->mx-1) || (j == 0) || (j == info->my-1)));
+}
+
+
 // compute F(u), the residual of the discretized PDE on the given grid
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
                                  PetscReal **FF, BratuCtx *user) {
     PetscInt   i, j;
-    PetscReal  hx, hy, darea, hxhy, hyhx, x, y;
+    const PetscInt nn = 0, ss = 1, ee = 2, ww = 3;
+    PetscReal  hx, hy, darea, hxhy, hyhx, uu[4];
 
     hx = 1.0 / (PetscReal)(info->mx - 1);
     hy = 1.0 / (PetscReal)(info->my - 1);
@@ -167,14 +174,16 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
     hxhy = hx / hy;
     hyhx = hy / hx;
     for (j = info->ys; j < info->ys + info->ym; j++) {
-        y = j * hy;
         for (i = info->xs; i < info->xs + info->xm; i++) {
             if (j==0 || i==0 || i==info->mx-1 || j==info->my-1) {
-                x = i * hx;
-                FF[j][i] = au[j][i] - user->g_bdry(x,y,user);
+                FF[j][i] = au[j][i] - user->g_bdry(i*hx,j*hy,user);
             } else {
-                FF[j][i] =   hyhx * (2.0 * au[j][i] - au[j][i-1] - au[j][i+1])
-                           + hxhy * (2.0 * au[j][i] - au[j-1][i] - au[j+1][i])
+                uu[nn] = NodeOnBdry(info,i,j+1) ? user->g_bdry(i*hx,(j+1)*hy,user) : au[j+1][i];
+                uu[ss] = NodeOnBdry(info,i,j-1) ? user->g_bdry(i*hx,(j-1)*hy,user) : au[j-1][i];
+                uu[ee] = NodeOnBdry(info,i+1,j) ? user->g_bdry((i+1)*hx,j*hy,user) : au[j][i+1];
+                uu[ww] = NodeOnBdry(info,i-1,j) ? user->g_bdry((i-1)*hx,j*hy,user) : au[j][i-1];
+                FF[j][i] =   hyhx * (2.0 * au[j][i] - uu[ww] - uu[ee])
+                           + hxhy * (2.0 * au[j][i] - uu[ss] - uu[nn])
                            - darea * user->lambda * PetscExpScalar(au[j][i]);
             }
         }
