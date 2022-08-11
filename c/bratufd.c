@@ -29,18 +29,18 @@ $ for LEV in 6 7 8 9 10; do timer ./bratufd -da_refine $LEV -lb_exact -snes_rtol
 #include <petsc.h>
 
 typedef struct {
-  // Dirichlet boundary condition g(x,y,z)
-  PetscReal (*g_bdry)(PetscReal x, PetscReal y, PetscReal z, void *ctx);
+  // Dirichlet boundary condition g(x,y)
+  PetscReal (*g_bdry)(PetscReal x, PetscReal y, void *ctx);
   PetscReal lambda;
   PetscBool exact;
   int       residualcount, ngscount;
 } BratuCtx;
 
-static PetscReal g_zero(PetscReal x, PetscReal y, PetscReal z, void *ctx) {
+static PetscReal g_zero(PetscReal x, PetscReal y, void *ctx) {
     return 0.0;
 }
 
-static PetscReal g_liouville(PetscReal x, PetscReal y, PetscReal z, void *ctx) {
+static PetscReal g_liouville(PetscReal x, PetscReal y, void *ctx) {
     PetscReal r2 = (x + 1.0) * (x + 1.0) + (y + 1.0) * (y + 1.0),
               qq = r2 * r2 + 1.0,
               omega = r2 / (qq * qq);
@@ -148,7 +148,7 @@ PetscErrorCode FormUExact(DMDALocalInfo *info, Vec u, BratuCtx* user) {
         y = j * hy;
         for (i=info->xs; i<info->xs+info->xm; i++) {
             x = i * hx;
-            au[j][i] = user->g_bdry(x,y,0.0,user);
+            au[j][i] = user->g_bdry(x,y,user);
         }
     }
     PetscCall(DMDAVecRestoreArray(info->da, u, &au));
@@ -171,7 +171,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
         for (i = info->xs; i < info->xs + info->xm; i++) {
             if (j==0 || i==0 || i==info->mx-1 || j==info->my-1) {
                 x = i * hx;
-                FF[j][i] = au[j][i] - user->g_bdry(x,y,0.0,user);
+                FF[j][i] = au[j][i] - user->g_bdry(x,y,user);
             } else {
                 FF[j][i] =   hyhx * (2.0 * au[j][i] - au[j][i-1] - au[j][i+1])
                            + hxhy * (2.0 * au[j][i] - au[j-1][i] - au[j+1][i])
@@ -219,7 +219,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
             for (i = info.xs; i < info.xs + info.xm; i++) {
                 if (j==0 || i==0 || i==info.mx-1 || j==info.my-1) {
                     x = i * hx;
-                    au[j][i] = user->g_bdry(x,y,0.0,user);
+                    au[j][i] = user->g_bdry(x,y,user);
                 } else {
                     if (b)
                         bij = ab[j][i];
