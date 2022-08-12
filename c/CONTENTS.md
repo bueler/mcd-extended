@@ -48,8 +48,8 @@ smaller inf-norm error, than `bratufd.c`.  Compare:
         done on 1025 x 1025 grid:   error |u-uexact|_inf = 1.986e-08
         real 5.62
 
-The number of quadrature points matters rather critically in the performance of
-`bratu.c`, which does more flops per quadrature point than `bratufd.c` does
-per grid point.  By default there are 4 quadrature points per element.
+The number of quadrature points matters critically in the performance of
+`bratu.c`.  It does more flops per quadrature point than `bratufd.c` does
+per grid point, and (by default) there are 4 quadrature points per element.
 
 FIXME NGS not yet implemented

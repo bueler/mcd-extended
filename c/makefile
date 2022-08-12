@@ -1,13 +1,13 @@
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
-bratu: bratu.o
-	-${CLINKER} -o bratu bratu.o ${PETSC_LIB}
-	${RM} bratu.o
-
 bratufd: bratufd.o
 	-${CLINKER} -o bratufd bratufd.o ${PETSC_LIB}
 	${RM} bratufd.o
+
+bratu: bratu.o
+	-${CLINKER} -o bratu bratu.o ${PETSC_LIB}
+	${RM} bratu.o
 
 # testing
 runbratufd_1:
