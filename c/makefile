@@ -18,7 +18,12 @@ runbratufd_2:
 
 test_bratufd: runbratufd_1 runbratufd_2
 
-test: test_bratufd
+runbratu_1:
+	-@./testit.sh bratu "-lb_exact -snes_converged_reason -lb_showcounts -snes_monitor_short -ksp_converged_reason -da_refine 1 -pc_type mg" 1 1
+
+test_bratu: runbratu_1
+
+test: test_bratufd test_bratu
 
 # etc
 
