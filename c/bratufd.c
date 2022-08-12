@@ -202,14 +202,14 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
     hxhy = hx / hy;
     hyhx = hy / hx;
 
+    if (b) {
+        PetscCall(DMDAVecGetArrayRead(da,b,&ab));
+    }
     PetscCall(DMGetLocalVector(da,&uloc));
     for (l=0; l<sweeps; l++) {
         PetscCall(DMGlobalToLocalBegin(da,u,INSERT_VALUES,uloc));
         PetscCall(DMGlobalToLocalEnd(da,u,INSERT_VALUES,uloc));
         PetscCall(DMDAVecGetArray(da,uloc,&au));
-        if (b) {
-            PetscCall(DMDAVecGetArrayRead(da,b,&ab));
-        }
         for (j = info.ys; j < info.ys + info.ym; j++) {
             y = j * hy;
             for (i = info.xs; i < info.xs + info.xm; i++) {
