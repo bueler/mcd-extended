@@ -32,6 +32,7 @@ typedef struct {
     PetscReal  xi, eta;
 } gradRef;
 
+// FLOPS: 8
 static gradRef dchi(PetscInt L, PetscReal xi, PetscReal eta) {
     const gradRef result = {0.25 * xiL[L]  * (1.0 + etaL[L] * eta),
                             0.25 * etaL[L] * (1.0 + xiL[L]  * xi)};
@@ -39,6 +40,7 @@ static gradRef dchi(PetscInt L, PetscReal xi, PetscReal eta) {
 }
 
 // evaluate partial derivs of v(xi,eta) on reference element
+// FLOPS: 4 * (8 + 4) = 48
 static gradRef deval(const PetscReal v[4], PetscReal xi, PetscReal eta) {
     gradRef   sum = {0.0,0.0}, tmp;
     PetscInt  L;

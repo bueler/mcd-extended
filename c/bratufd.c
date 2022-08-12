@@ -6,20 +6,7 @@ static char help[] =
 "Critical value occurs about at lambda = 6.808.  Optional exact solution by\n"
 "Liouville (1853) for case lambda=1.0.\n\n";
 
-/*
-incredible performance: FAS+NGS, matrix-free, full-cycles, NGS for coarse solve
-400 million unknowns in 22 seconds, 10-digit accuracy
-uses 66% of 128 Gb memory of my Thelio massive machine; note 20 cores out of 40
-note only 352 flops per degree of freedom!
-
-$ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratufd -da_grid_x 5 -da_grid_y 5 -lb_exact -snes_rtol 1.0e-10 -snes_converged_reason -lb_showcounts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 2 -fas_coarse_snes_max_it 4 -da_refine 12
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
-flops = 9.448e+10,  residual calls = 416,  NGS calls = 208
-done on 16385 x 16385 grid:   error |u-uexact|_inf = 4.038e-10
-real 21.70
-*/
-
-/* excellent evidence of convergence and optimality in Liouville exact solution case (use opt PETSc build):
+/* excellent evidence of convergence and optimality in Liouville exact solution case:
 NEWTON+MG with FD Jacobian matrix is fast
 $ for LEV in 6 7 8 9 10; do timer ./bratufd -da_refine $LEV -lb_exact -snes_rtol 1.0e-10 -snes_converged_reason -lb_showcounts -snes_type newtonls -snes_fd_color -ksp_type cg -pc_type mg; done
 FAS+NGS matrix-free full cycles are much faster

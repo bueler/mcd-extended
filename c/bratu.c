@@ -11,8 +11,7 @@ static char help[] =
 #include "q1fem.h"
 
 typedef struct {
-  // Dirichlet boundary condition g(x,y)
-  PetscReal (*g_bdry)(PetscReal x, PetscReal y, void *ctx);
+  PetscReal (*g_bdry)(PetscReal x, PetscReal y, void *ctx);  // Dirichlet b.c.
   PetscReal lambda;
   PetscBool exact;
   PetscInt  residualcount, ngscount, quadpts;
@@ -76,8 +75,8 @@ int main(int argc,char **argv) {
     }
 
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
-                        DMDA_STENCIL_BOX,  // contrast with bratufd
-                        3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+                           DMDA_STENCIL_BOX,  // contrast with bratufd
+                           3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
     PetscCall(DMSetApplicationContext(da,&bctx));
     PetscCall(DMSetFromOptions(da));
     PetscCall(DMSetUp(da));  // this must be called BEFORE SetUniformCoordinates
@@ -150,7 +149,7 @@ PetscErrorCode FormUExact(DMDALocalInfo *info, Vec u, BratuCtx* user) {
     return 0;
 }
 
-// FLOPS: 9 + 4 + 31 + 6 = 50
+// FLOPS: 4 + (48 + 8 + 9 + 31 + 6) = 106
 PetscReal IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
                        const PetscReal uu[4],
                        PetscReal xi, PetscReal eta, BratuCtx *user) {
@@ -219,9 +218,9 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
         }
     }
     // only count quadrature-point residual computations:
-    //     4 + 50 = 54 flops per quadrature point
+    //     4 + 106 = 110 flops per quadrature point
     //     q.n^2 quadrature points per element
-    PetscCall(PetscLogFlops(54.0 * q.n * q.n * info->xm * info->ym));
+    PetscCall(PetscLogFlops(110.0 * q.n * q.n * info->xm * info->ym));
     (user->residualcount)++;
     return 0;
 }
