@@ -83,6 +83,7 @@ int main(int argc,char **argv) {
     PetscCall(DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0));
 
     PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
+    PetscCall(SNESSetApplicationContext(snes,&bctx));
     PetscCall(SNESSetDM(snes,da));
     PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,
                (DMDASNESFunction)FormFunctionLocal,&bctx));
@@ -163,7 +164,14 @@ static PetscBool NodeOnBdry(DMDALocalInfo *info, PetscInt i, PetscInt j) {
     return (((i == 0) || (i == info->mx-1) || (j == 0) || (j == info->my-1)));
 }
 
-// compute F(u), the residual of the discretized PDE on the given grid
+// compute F(u), the residual of the discretized PDE on the given grid:
+//     F(u)[v] = int_Omega grad u . grad v - phi(u) v
+// this method computes the vector
+//     F_ij = F(u)[psi_ij]
+// where i,j is a node and psi_ij is the hat function there
+// note that at boundary nodes we have
+//     F_ij = u_ij - g(x_i,y_j)
+// where g(x,y) is the boundary value
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
                                  PetscReal **FF, BratuCtx *user) {
     const Quad1D    q = gausslegendre[user->quadpts-1];
@@ -225,61 +233,76 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
     return 0;
 }
 
-// FIXME FROM HERE
-// do nonlinear Gauss-Seidel (processor-block) sweeps on
-//     F(u) = b
+// do nonlinear Gauss-Seidel (processor-block) sweeps on equation
+//     F(u)[v] = ell_b[v]    for all v
+// where
+//     F(u)[v] = int_Omega grad u . grad v - phi(u) v
+//     ell_b[v] = int_Omega b v
+// and b is a field provided by the call-back
+// for each interior node i,j we define
+//     rho(c) = F(u + c psi_ij)[psi_ij] - ell_b[psi_ij]
+// where psi_ij is the hat function, and do Newton iterations
+//     c <-- c + rho(c) / rho'(c)
+// note
+//     rho'(c) = FIXME
+// for boundary nodes we set
+//     u_ij = g(x_i,y_j)
+// and we do not iterate
 PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
+    BratuCtx*      user = (BratuCtx*)ctx;
     PetscInt       i, j, k, maxits, totalits=0, sweeps, l;
-    PetscReal      atol, rtol, stol, hx, hy, darea, hxhy, hyhx, x, y,
+    PetscReal      atol, rtol, stol, hx, hy,
                    **au, **ab, bij, uu, phi0, phi, dphidu, s;
     DM             da;
     DMDALocalInfo  info;
     Vec            uloc;
-    BratuCtx*      user = (BratuCtx*)ctx;
+
+    SETERRQ(PETSC_COMM_SELF,1,"NOT YET IMPLEMENTED\n");
 
     PetscCall(SNESNGSGetSweeps(snes,&sweeps));
     PetscCall(SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&maxits));
     PetscCall(SNESGetDM(snes,&da));
     PetscCall(DMDAGetLocalInfo(da,&info));
-
     hx = 1.0 / (PetscReal)(info.mx - 1);
     hy = 1.0 / (PetscReal)(info.my - 1);
-    darea = hx * hy;
-    hxhy = hx / hy;
-    hyhx = hy / hx;
 
+    // for Dirichlet nodes assign boundary value once
+    PetscCall(DMDAVecGetArray(da,u,&au));
+    for (j = info.ys; j < info.ys + info.ym; j++)
+        for (i = info.xs; i < info.xs + info.xm; i++)
+            if (NodeOnBdry(&info,i,j))
+                au[j][i] = user->g_bdry(i*hx,j*hy,user);
+    PetscCall(DMDAVecRestoreArray(da,u,&au));
+
+    // need local vector for stencil width in parallel
     PetscCall(DMGetLocalVector(da,&uloc));
+
+    // NGS sweeps over interior nodes
+    if (b) {
+        PetscCall(DMDAVecGetArrayRead(da,b,&ab));
+    }
     for (l=0; l<sweeps; l++) {
-        PetscCall(DMGlobalToLocalBegin(da,u,INSERT_VALUES,uloc));
-        PetscCall(DMGlobalToLocalEnd(da,u,INSERT_VALUES,uloc));
+        // update ghosts
+        PetscCall(DMGlobalToLocal(da,u,INSERT_VALUES,uloc));
         PetscCall(DMDAVecGetArray(da,uloc,&au));
-        if (b) {
-            PetscCall(DMDAVecGetArrayRead(da,b,&ab));
-        }
         for (j = info.ys; j < info.ys + info.ym; j++) {
-            y = j * hy;
             for (i = info.xs; i < info.xs + info.xm; i++) {
-                if (j==0 || i==0 || i==info.mx-1 || j==info.my-1) {
-                    x = i * hx;
-                    au[j][i] = user->g_bdry(x,y,user);
-                } else {
+                // at interior points do pointwise Newton iterations
+                if (j>0 && i>0 && i<info.mx-1 && j<info.my-1) {
                     if (b)
                         bij = ab[j][i];
                     else
                         bij = 0.0;
-                    // do pointwise Newton iterations on scalar function
-                    //   phi(u) =   hyhx * (2 u - au[j][i-1] - au[j][i+1])
-                    //            + hxhy * (2 u - au[j-1][i] - au[j+1][i])
-                    //            - darea * lambda * e^u - bij
                     uu = au[j][i];
                     for (k = 0; k < maxits; k++) {
-                        phi =   hyhx * (2.0 * uu - au[j][i-1] - au[j][i+1])
-                              + hxhy * (2.0 * uu - au[j-1][i] - au[j+1][i])
-                              - darea * user->lambda * PetscExpScalar(uu) - bij;
+                        //phi =   hyhx * (2.0 * uu - au[j][i-1] - au[j][i+1])
+                        //      + hxhy * (2.0 * uu - au[j-1][i] - au[j+1][i])
+                        //      - darea * user->lambda * PetscExpScalar(uu) - bij;
+                        phi = - bij; // BOGUS
                         if (k == 0)
                              phi0 = phi;
-                        dphidu = 2.0 * (hyhx + hxhy)
-                                 - darea * user->lambda * PetscExpScalar(uu);
+                        //dphidu = 2.0 * (hyhx + hxhy)
+                        //         - darea * user->lambda * PetscExpScalar(uu);
                         s = - phi / dphidu;     // Newton step
                         uu += s;
                         totalits++;
@@ -292,16 +315,17 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
                     au[j][i] = uu;
                 }
             }
-        }
         PetscCall(DMDAVecRestoreArray(da,uloc,&au));
-        PetscCall(DMLocalToGlobalBegin(da,uloc,INSERT_VALUES,u));
-        PetscCall(DMLocalToGlobalEnd(da,uloc,INSERT_VALUES,u));
+        PetscCall(DMLocalToGlobal(da,uloc,INSERT_VALUES,u));
+        }
     }
-    PetscCall(DMRestoreLocalVector(da,&uloc));
+
     if (b) {
         PetscCall(DMDAVecRestoreArrayRead(da,b,&ab));
     }
-    PetscCall(PetscLogFlops(21.0 * totalits));
+    PetscCall(DMRestoreLocalVector(da,&uloc));
+
+    // FIXME PetscCall(PetscLogFlops(21.0 * totalits));
     (user->ngscount)++;
     return 0;
 }
