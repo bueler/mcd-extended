@@ -7,7 +7,6 @@ static char help[] =
 "Liouville (1853) for case lambda=1.0.\n\n";
 
 #include <petsc.h>
-#include "quadrature.h"
 #include "q1fem.h"
 
 typedef struct {
