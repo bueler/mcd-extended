@@ -207,8 +207,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
     }
     PetscCall(DMGetLocalVector(da,&uloc));
     for (l=0; l<sweeps; l++) {
-        PetscCall(DMGlobalToLocalBegin(da,u,INSERT_VALUES,uloc));
-        PetscCall(DMGlobalToLocalEnd(da,u,INSERT_VALUES,uloc));
+        PetscCall(DMGlobalToLocal(da,u,INSERT_VALUES,uloc));
         PetscCall(DMDAVecGetArray(da,uloc,&au));
         for (j = info.ys; j < info.ys + info.ym; j++) {
             y = j * hy;
@@ -248,8 +247,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
             }
         }
         PetscCall(DMDAVecRestoreArray(da,uloc,&au));
-        PetscCall(DMLocalToGlobalBegin(da,uloc,INSERT_VALUES,u));
-        PetscCall(DMLocalToGlobalEnd(da,uloc,INSERT_VALUES,u));
+        PetscCall(DMLocalToGlobal(da,uloc,INSERT_VALUES,u));
     }
     PetscCall(DMRestoreLocalVector(da,&uloc));
     if (b) {
