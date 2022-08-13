@@ -37,6 +37,13 @@ typedef struct {
     PetscReal  xi, eta;
 } gradRef;
 
+// FLOPS: 4
+static gradRef gradRefAXPY(PetscReal a, gradRef X, gradRef Y) {
+    const gradRef result = {a * X.xi  + Y.xi,
+                            a * X.eta + Y.eta};
+    return result;
+}
+
 // FLOPS: 8
 static gradRef dchi(PetscInt L, PetscReal xi, PetscReal eta) {
     const gradRef result = {0.25 * xiL[L]  * (1.0 + etaL[L] * eta),
