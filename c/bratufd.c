@@ -1,10 +1,11 @@
 static char help[] =
 "Solve nonlinear Liouville-Bratu equation by finite differences\n"
-"in 2D on a structured-grid.  Option prefix lb_.  Solves\n"
-"  - nabla^2 u - lambda e^u = 0\n"
-"on the unit square [0,1]x[0,1] subject to zero Dirichlet boundary conditions.\n"
-"Critical value occurs about at lambda = 6.808.  Optional exact solution by\n"
-"Liouville (1853) for case lambda=1.0.\n\n";
+"in 2D square (0,1)^2 using a structured-grid.  Option prefix lb_.  Solves\n"
+"  - nabla^2 u - lambda e^u = f(x,y)\n"
+"subject to Dirichlet boundary conditions u=g.  For f=0 and g=0 the critical\n"
+"value occurs about at lambda = 6.808.  Optional exact solutions are by\n"
+"Liouville (1853) (for lambda=1.0; -lb_exact) and by method of manufactured\n"
+"solutions (arbitrary lambda; -lb_mms).\n\n";
 
 /* excellent evidence of convergence and optimality in Liouville exact solution case:
 NEWTON+MG with FD Jacobian matrix is fast
@@ -16,15 +17,31 @@ $ for LEV in 6 7 8 9 10; do timer ./bratufd -da_refine $LEV -lb_exact -snes_rtol
 #include <petsc.h>
 
 typedef struct {
+  // right-hand side f(x,y)
+  PetscReal (*f_rhs)(PetscReal x, PetscReal y, void *ctx);
   // Dirichlet boundary condition g(x,y)
   PetscReal (*g_bdry)(PetscReal x, PetscReal y, void *ctx);
   PetscReal lambda;
-  PetscBool exact;
-  int       residualcount, ngscount;
+  PetscInt  residualcount, ngscount;
 } BratuCtx;
 
-static PetscReal g_zero(PetscReal x, PetscReal y, void *ctx) {
+static PetscReal fg_zero(PetscReal x, PetscReal y, void *ctx) {
     return 0.0;
+}
+
+static PetscReal u_mms(PetscReal x, PetscReal y, void *ctx) {
+    const PetscReal xx = x * x,
+                    yy = y * y;
+    return (xx - xx * xx) * (yy * yy - yy);
+}
+
+static PetscReal f_mms(PetscReal x, PetscReal y, void *ctx) {
+    BratuCtx *user = (BratuCtx*)ctx;
+    const PetscReal xx = x * x,
+                    yy = y * y;
+    return 2.0 * (1.0 - 6.0 * xx) * yy * (1.0 - yy)
+           + 2.0 * (1.0 - 6.0 * yy) * xx * (1.0 - xx)
+           - user->lambda * PetscExpScalar(u_mms(x,y,ctx));
 }
 
 static PetscReal g_liouville(PetscReal x, PetscReal y, void *ctx) {
@@ -34,7 +51,8 @@ static PetscReal g_liouville(PetscReal x, PetscReal y, void *ctx) {
     return PetscLogReal(32.0 * omega);
 }
 
-extern PetscErrorCode FormUExact(DMDALocalInfo*, Vec, BratuCtx*);
+extern PetscErrorCode FormExact(PetscReal (*)(PetscReal,PetscReal,void*),
+                                DMDALocalInfo*, Vec, BratuCtx*);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*, PetscReal **,
                                         PetscReal**, BratuCtx*);
 extern PetscErrorCode NonlinearGS(SNES, Vec, Vec, void*);
@@ -45,30 +63,39 @@ int main(int argc,char **argv) {
     Vec            u, uexact;
     BratuCtx       bctx;
     DMDALocalInfo  info;
-    PetscBool      showcounts = PETSC_FALSE;
+    PetscBool      exact = PETSC_FALSE, mms = PETSC_FALSE, showcounts = PETSC_FALSE;
     PetscLogDouble lflops, flops;
     PetscReal      errinf;
 
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
-    bctx.g_bdry = &g_zero;
+    bctx.f_rhs = &fg_zero;
+    bctx.g_bdry = &fg_zero;
     bctx.lambda = 1.0;
-    bctx.exact = PETSC_FALSE;
     bctx.residualcount = 0;
     bctx.ngscount = 0;
     PetscOptionsBegin(PETSC_COMM_WORLD,"lb_","Liouville-Bratu equation solver options","");
     PetscCall(PetscOptionsReal("-lambda","coefficient of e^u (reaction) term",
                             "bratufd.c",bctx.lambda,&(bctx.lambda),NULL));
-    PetscCall(PetscOptionsBool("-exact","use case of Liouville exact solution",
-                            "bratufd.c",bctx.exact,&(bctx.exact),NULL));
+    PetscCall(PetscOptionsBool("-exact","use Liouville exact solution",
+                            "bratufd.c",exact,&exact,NULL));
+    PetscCall(PetscOptionsBool("-mms","use MMS exact solution",
+                            "bratufd.c",mms,&mms,NULL));
     PetscCall(PetscOptionsBool("-showcounts","print counts for calls to call-back functions",
                             "bratufd.c",showcounts,&showcounts,NULL));
     PetscOptionsEnd();
-    if (bctx.exact) {
-        if (bctx.lambda != 1.0) {
-            SETERRQ(PETSC_COMM_SELF,1,"Liouville exact solution only implemented for lambda = 1.0\n");
-        }
-        bctx.g_bdry = &g_liouville;
+
+    // options consistency checking
+    if (exact && mms) {
+        SETERRQ(PETSC_COMM_SELF,1,"invalid option combination -lb_exact -lb_mms\n");
     }
+    if (exact) {
+        if (bctx.lambda != 1.0) {
+            SETERRQ(PETSC_COMM_SELF,2,"Liouville exact solution only implemented for lambda = 1.0\n");
+        }
+        bctx.g_bdry = &g_liouville;  // and zero for f_rhs()
+    }
+    if (mms)
+        bctx.f_rhs = &f_mms;  // and zero for g_bdry()
 
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
                         DMDA_STENCIL_STAR,
@@ -100,10 +127,13 @@ int main(int argc,char **argv) {
 
     PetscCall(SNESGetDM(snes,&da_after));
     PetscCall(DMDAGetLocalInfo(da_after,&info));
-    if (bctx.exact) {
+    if (exact || mms) {
         PetscCall(SNESGetSolution(snes,&u));  // SNES owns u; we do not destroy it
         PetscCall(DMCreateGlobalVector(da_after,&uexact));
-        PetscCall(FormUExact(&info,uexact,&bctx));
+        if (exact)
+            PetscCall(FormExact(g_liouville,&info,uexact,&bctx));
+        else
+            PetscCall(FormExact(u_mms,&info,uexact,&bctx));
         PetscCall(VecAXPY(u,-1.0,uexact));    // u <- u + (-1.0) uexact
         PetscCall(VecDestroy(&uexact));
         PetscCall(VecNorm(u,NORM_INFINITY,&errinf));
@@ -119,15 +149,10 @@ int main(int argc,char **argv) {
     return 0;
 }
 
-PetscErrorCode FormUExact(DMDALocalInfo *info, Vec u, BratuCtx* user) {
+PetscErrorCode FormExact(PetscReal (*ufcn)(PetscReal,PetscReal,void*),
+                         DMDALocalInfo *info, Vec u, BratuCtx* user) {
     PetscInt     i, j;
     PetscReal    hx, hy, x, y, **au;
-    if (user->g_bdry != &g_liouville) {
-        SETERRQ(PETSC_COMM_SELF,1,"exact solution only implemented for g_liouville() boundary conditions\n");
-    }
-    if (user->lambda != 1.0) {
-        SETERRQ(PETSC_COMM_SELF,2,"Liouville exact solution only implemented for lambda = 1.0\n");
-    }
     hx = 1.0 / (PetscReal)(info->mx - 1);
     hy = 1.0 / (PetscReal)(info->my - 1);
     PetscCall(DMDAVecGetArray(info->da, u, &au));
@@ -135,7 +160,7 @@ PetscErrorCode FormUExact(DMDALocalInfo *info, Vec u, BratuCtx* user) {
         y = j * hy;
         for (i=info->xs; i<info->xs+info->xm; i++) {
             x = i * hx;
-            au[j][i] = user->g_bdry(x,y,user);
+            au[j][i] = (*ufcn)(x,y,user);
         }
     }
     PetscCall(DMDAVecRestoreArray(info->da, u, &au));
@@ -171,7 +196,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
                 uu[ww] = NodeOnBdry(info,i-1,j) ? user->g_bdry((i-1)*hx,j*hy,user) : au[j][i-1];
                 FF[j][i] =   hyhx * (2.0 * au[j][i] - uu[ww] - uu[ee])
                            + hxhy * (2.0 * au[j][i] - uu[ss] - uu[nn])
-                           - darea * user->lambda * PetscExpScalar(au[j][i]);
+                           - darea * (user->lambda * PetscExpScalar(au[j][i])
+                                      + user->f_rhs(i*hx,j*hy,user));
             }
         }
     }
@@ -184,7 +210,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
 //     F(u) = b
 PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
     PetscInt       i, j, k, maxits, totalits=0, sweeps, l;
-    PetscReal      atol, rtol, stol, hx, hy, darea, hxhy, hyhx, x, y,
+    PetscReal      atol, rtol, stol, hx, hy, darea, hxhy, hyhx,
                    **au, **ab, bij, uu, phi0, phi, dphidu, s;
     DM             da;
     DMDALocalInfo  info;
@@ -210,11 +236,9 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
         PetscCall(DMGlobalToLocal(da,u,INSERT_VALUES,uloc));
         PetscCall(DMDAVecGetArray(da,uloc,&au));
         for (j = info.ys; j < info.ys + info.ym; j++) {
-            y = j * hy;
             for (i = info.xs; i < info.xs + info.xm; i++) {
                 if (j==0 || i==0 || i==info.mx-1 || j==info.my-1) {
-                    x = i * hx;
-                    au[j][i] = user->g_bdry(x,y,user);
+                    au[j][i] = user->g_bdry(i*hx,j*hy,user);
                 } else {
                     if (b)
                         bij = ab[j][i];
@@ -228,7 +252,9 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
                     for (k = 0; k < maxits; k++) {
                         phi =   hyhx * (2.0 * uu - au[j][i-1] - au[j][i+1])
                               + hxhy * (2.0 * uu - au[j-1][i] - au[j+1][i])
-                              - darea * user->lambda * PetscExpScalar(uu) - bij;
+                              - darea * (user->lambda * PetscExpScalar(uu)
+                                         + user->f_rhs(i*hx,j*hy,user))
+                              - bij;
                         if (k == 0)
                              phi0 = phi;
                         dphidu = 2.0 * (hyhx + hxhy)
