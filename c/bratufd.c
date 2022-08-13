@@ -201,7 +201,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
             }
         }
     }
-    PetscCall(PetscLogFlops(12.0 * info->xm * info->ym));
+    PetscCall(PetscLogFlops(14.0 * info->xm * info->ym));
     (user->residualcount)++;
     return 0;
 }
@@ -211,7 +211,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
 PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
     PetscInt       i, j, k, maxits, totalits=0, sweeps, l;
     PetscReal      atol, rtol, stol, hx, hy, darea, hxhy, hyhx,
-                   **au, **ab, bij, uu, phi0, phi, dphidu, s;
+                   **au, **ab, bij, uu, tmp, phi0, phi, dphidu, s;
     DM             da;
     DMDALocalInfo  info;
     Vec            uloc;
@@ -250,15 +250,14 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
                     //            - darea * lambda * e^u - bij
                     uu = au[j][i];
                     for (k = 0; k < maxits; k++) {
+                        tmp = user->lambda * PetscExpScalar(uu);
                         phi =   hyhx * (2.0 * uu - au[j][i-1] - au[j][i+1])
                               + hxhy * (2.0 * uu - au[j-1][i] - au[j+1][i])
-                              - darea * (user->lambda * PetscExpScalar(uu)
-                                         + user->f_rhs(i*hx,j*hy,user))
+                              - darea * (tmp + user->f_rhs(i*hx,j*hy,user))
                               - bij;
                         if (k == 0)
                              phi0 = phi;
-                        dphidu = 2.0 * (hyhx + hxhy)
-                                 - darea * user->lambda * PetscExpScalar(uu);
+                        dphidu = 2.0 * (hyhx + hxhy) - darea * tmp;
                         s = - phi / dphidu;     // Newton step
                         uu += s;
                         totalits++;
@@ -279,7 +278,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
     if (b) {
         PetscCall(DMDAVecRestoreArrayRead(da,b,&ab));
     }
-    PetscCall(PetscLogFlops(21.0 * totalits));
+    PetscCall(PetscLogFlops(22.0 * totalits));
     (user->ngscount)++;
     return 0;
 }

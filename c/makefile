@@ -33,4 +33,4 @@ test: test_bratufd test_bratu
 .PHONY: distclean test test_bratufd test_bratu runbratufd_1 runbratufd_2 runbratufd_3 runbratu_1
 
 distclean:
-	@rm -f bratufd *tmp
+	@rm -f bratufd bratu *tmp
