@@ -1,23 +1,41 @@
 static char help[] =
 "Solve nonlinear Liouville-Bratu equation by Q1 finite elements\n"
-"in 2D on a structured-grid.  Option prefix lb_.  Solves\n"
-"  - nabla^2 u - lambda e^u = 0\n"
-"on the unit square [0,1]x[0,1] subject to zero Dirichlet boundary conditions.\n"
-"Critical value occurs about at lambda = 6.808.  Optional exact solution by\n"
-"Liouville (1853) for case lambda=1.0.\n\n";
+"in 2D square (0,1)^2 using a structured-grid.  Option prefix lb_.  Solves\n"
+"  - nabla^2 u - lambda e^u = f(x,y)\n"
+"subject to Dirichlet boundary conditions u=g.  For f=0 and g=0 the critical\n"
+"value occurs about at lambda = 6.808.  Optional exact solutions are by\n"
+"Liouville (1853) (for lambda=1.0; -lb_exact) and by method of manufactured\n"
+"solutions (arbitrary lambda; -lb_mms).\n\n";
 
 #include <petsc.h>
 #include "q1fem.h"
 
 typedef struct {
-  PetscReal (*g_bdry)(PetscReal x, PetscReal y, void *ctx);  // Dirichlet b.c.
+  // right-hand side f(x,y)
+  PetscReal (*f_rhs)(PetscReal x, PetscReal y, void *ctx);
+  // Dirichlet boundary condition g(x,y)
+  PetscReal (*g_bdry)(PetscReal x, PetscReal y, void *ctx);
   PetscReal lambda;
-  PetscBool exact;
   PetscInt  residualcount, ngscount, quadpts;
 } BratuCtx;
 
-static PetscReal g_zero(PetscReal x, PetscReal y, void *ctx) {
+static PetscReal fg_zero(PetscReal x, PetscReal y, void *ctx) {
     return 0.0;
+}
+
+static PetscReal u_mms(PetscReal x, PetscReal y, void *ctx) {
+    const PetscReal xx = x * x,
+                    yy = y * y;
+    return (xx - xx * xx) * (yy * yy - yy);
+}
+
+static PetscReal f_mms(PetscReal x, PetscReal y, void *ctx) {
+    BratuCtx *user = (BratuCtx*)ctx;
+    const PetscReal xx = x * x,
+                    yy = y * y;
+    return 2.0 * (1.0 - 6.0 * xx) * yy * (1.0 - yy)
+           + 2.0 * (1.0 - 6.0 * yy) * xx * (1.0 - xx)
+           - user->lambda * PetscExpScalar(u_mms(x,y,ctx));
 }
 
 static PetscReal g_liouville(PetscReal x, PetscReal y, void *ctx) {
@@ -27,7 +45,8 @@ static PetscReal g_liouville(PetscReal x, PetscReal y, void *ctx) {
     return PetscLogReal(32.0 * omega);
 }
 
-extern PetscErrorCode FormUExact(DMDALocalInfo*, Vec, BratuCtx*);
+extern PetscErrorCode FormExact(PetscReal (*)(PetscReal,PetscReal,void*),
+                                DMDALocalInfo*, Vec, BratuCtx*);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*, PetscReal **,
                                         PetscReal**, BratuCtx*);
 extern PetscErrorCode NonlinearGS(SNES, Vec, Vec, void*);
@@ -38,23 +57,24 @@ int main(int argc,char **argv) {
     Vec            u, uexact;
     BratuCtx       bctx;
     DMDALocalInfo  info;
-    PetscBool      showcounts = PETSC_FALSE;
+    PetscBool      exact = PETSC_FALSE, mms = PETSC_FALSE, showcounts = PETSC_FALSE;
     PetscLogDouble lflops, flops;
     PetscReal      errinf;
 
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
-
-    bctx.g_bdry = &g_zero;
+    bctx.f_rhs = &fg_zero;
+    bctx.g_bdry = &fg_zero;
     bctx.lambda = 1.0;
-    bctx.exact = PETSC_FALSE;
     bctx.residualcount = 0;
     bctx.ngscount = 0;
     bctx.quadpts = 2;
     PetscOptionsBegin(PETSC_COMM_WORLD,"lb_","Liouville-Bratu equation solver options","");
     PetscCall(PetscOptionsReal("-lambda","coefficient of e^u (reaction) term",
                             "bratu.c",bctx.lambda,&(bctx.lambda),NULL));
-    PetscCall(PetscOptionsBool("-exact","use case of Liouville exact solution",
-                            "bratu.c",bctx.exact,&(bctx.exact),NULL));
+    PetscCall(PetscOptionsBool("-exact","use Liouville exact solution",
+                            "bratu.c",exact,&exact,NULL));
+    PetscCall(PetscOptionsBool("-mms","use MMS exact solution",
+                            "bratu.c",mms,&mms,NULL));
     // WARNING: coarse problems are badly solved with -lb_quadpts 1, so avoid in MG
     PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only)",
                             "bratu.c",bctx.quadpts,&(bctx.quadpts),NULL));
@@ -62,15 +82,20 @@ int main(int argc,char **argv) {
                             "bratu.c",showcounts,&showcounts,NULL));
     PetscOptionsEnd();
 
-    // check option validity
-    if (bctx.exact) {
-        if (bctx.lambda != 1.0) {
-            SETERRQ(PETSC_COMM_SELF,1,"Liouville exact solution only implemented for lambda = 1.0\n");
-        }
-        bctx.g_bdry = &g_liouville;
+    // options consistency checking
+    if (exact && mms) {
+        SETERRQ(PETSC_COMM_SELF,1,"invalid option combination -lb_exact -lb_mms\n");
     }
+    if (exact) {
+        if (bctx.lambda != 1.0) {
+            SETERRQ(PETSC_COMM_SELF,2,"Liouville exact solution only implemented for lambda = 1.0\n");
+        }
+        bctx.g_bdry = &g_liouville;  // and zero for f_rhs()
+    }
+    if (mms)
+        bctx.f_rhs = &f_mms;  // and zero for g_bdry()
     if ((bctx.quadpts < 1) || (bctx.quadpts > 3)) {
-        SETERRQ(PETSC_COMM_SELF,2,"quadrature points n=1,2,3 only");
+        SETERRQ(PETSC_COMM_SELF,3,"quadrature points n=1,2,3 only");
     }
 
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
@@ -106,10 +131,13 @@ int main(int argc,char **argv) {
 
     PetscCall(SNESGetDM(snes,&da_after));
     PetscCall(DMDAGetLocalInfo(da_after,&info));
-    if (bctx.exact) {
+    if (exact || mms) {
         PetscCall(SNESGetSolution(snes,&u));  // SNES owns u; we do not destroy it
         PetscCall(DMCreateGlobalVector(da_after,&uexact));
-        PetscCall(FormUExact(&info,uexact,&bctx));
+        if (exact)
+            PetscCall(FormExact(g_liouville,&info,uexact,&bctx));
+        else
+            PetscCall(FormExact(u_mms,&info,uexact,&bctx));
         PetscCall(VecAXPY(u,-1.0,uexact));    // u <- u + (-1.0) uexact
         PetscCall(VecDestroy(&uexact));
         PetscCall(VecNorm(u,NORM_INFINITY,&errinf));
@@ -126,15 +154,10 @@ int main(int argc,char **argv) {
     return 0;
 }
 
-PetscErrorCode FormUExact(DMDALocalInfo *info, Vec u, BratuCtx* user) {
+PetscErrorCode FormExact(PetscReal (*ufcn)(PetscReal,PetscReal,void*),
+                         DMDALocalInfo *info, Vec u, BratuCtx* user) {
     PetscInt     i, j;
     PetscReal    hx, hy, x, y, **au;
-    if (user->g_bdry != &g_liouville) {
-        SETERRQ(PETSC_COMM_SELF,1,"exact solution only implemented for g_liouville() boundary conditions\n");
-    }
-    if (user->lambda != 1.0) {
-        SETERRQ(PETSC_COMM_SELF,2,"Liouville exact solution only implemented for lambda = 1.0\n");
-    }
     hx = 1.0 / (PetscReal)(info->mx - 1);
     hy = 1.0 / (PetscReal)(info->my - 1);
     PetscCall(DMDAVecGetArray(info->da, u, &au));
@@ -142,29 +165,30 @@ PetscErrorCode FormUExact(DMDALocalInfo *info, Vec u, BratuCtx* user) {
         y = j * hy;
         for (i=info->xs; i<info->xs+info->xm; i++) {
             x = i * hx;
-            au[j][i] = user->g_bdry(x,y,user);
+            au[j][i] = (*ufcn)(x,y,user);
         }
     }
     PetscCall(DMDAVecRestoreArray(info->da, u, &au));
     return 0;
 }
 
-// FLOPS: 4 + (48 + 8 + 9 + 31 + 6) = 106
+// FIXME RECOUNT!  FLOPS: 4 + (48 + 8 + 9 + 31 + 6) = 106
 PetscReal IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
-                       const PetscReal uu[4],
+                       const PetscReal uu[4], const PetscReal ff[4],
                        PetscReal xi, PetscReal eta, BratuCtx *user) {
     const gradRef    du    = deval(uu,xi,eta),
                      dchiL = dchi(L,xi,eta);
+    const PetscReal  tmp = user->lambda * PetscExpScalar(eval(uu,xi,eta));
     return GradInnerProd(hx,hy,du,dchiL)
-           - user->lambda * PetscExpScalar(eval(uu,xi,eta)) * chi(L,xi,eta);
+           - (tmp + eval(ff,xi,eta)) * chi(L,xi,eta);
 }
 
-static PetscBool NodeOnBdry(DMDALocalInfo *info, PetscInt i, PetscInt j) {
+PetscBool NodeOnBdry(DMDALocalInfo *info, PetscInt i, PetscInt j) {
     return (((i == 0) || (i == info->mx-1) || (j == 0) || (j == info->my-1)));
 }
 
 // compute F(u), the residual of the discretized PDE on the given grid:
-//     F(u)[v] = int_Omega grad u . grad v - lambda e^u v
+//     F(u)[v] = int_Omega grad u . grad v - lambda e^u v - f v
 // this method computes the vector
 //     F_ij = F(u)[psi_ij]
 // where i,j is a node and psi_ij is the hat function there
@@ -179,7 +203,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
                     hy = 1.0 / (PetscReal)(info->my - 1),
                     detj = 0.25 * hx * hy;
     PetscInt   i, j, l, PP, QQ, r, s;
-    PetscReal  uu[4];
+    PetscReal  uu[4], ff[4];
 
     // clear residuals because we sum over elements; for Dirichlet nodes assign
     for (j = info->ys; j < info->ys + info->ym; j++)
@@ -196,12 +220,21 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
         for (i = info->xs; i <= info->xs + info->xm; i++) {
             if ((i == 0) || (i > info->mx-1))
                 continue;
+            // values of rhs f at corners of element
+            ff[0] = user->f_rhs(i*hx,j*hy,user);
+            ff[1] = user->f_rhs((i-1)*hx,j*hy,user);
+            ff[2] = user->f_rhs((i-1)*hx,(j-1)*hy,user);
+            ff[3] = user->f_rhs(i*hx,(j-1)*hy,user);
             // values of iterate u at corners of element, using Dirichlet
             // value if known (for symmetry)
-            uu[0] = NodeOnBdry(info,i,  j)   ? user->g_bdry(i*hx,j*hy,user)         : au[j][i];
-            uu[1] = NodeOnBdry(info,i-1,j)   ? user->g_bdry((i-1)*hx,j*hy,user)     : au[j][i-1];
-            uu[2] = NodeOnBdry(info,i-1,j-1) ? user->g_bdry((i-1)*hx,(j-1)*hy,user) : au[j-1][i-1];
-            uu[3] = NodeOnBdry(info,i,  j-1) ? user->g_bdry(i*hx,(j-1)*hy,user)     : au[j-1][i];
+            uu[0] = NodeOnBdry(info,i,  j)
+                    ? user->g_bdry(i*hx,j*hy,user)         : au[j][i];
+            uu[1] = NodeOnBdry(info,i-1,j)
+                    ? user->g_bdry((i-1)*hx,j*hy,user)     : au[j][i-1];
+            uu[2] = NodeOnBdry(info,i-1,j-1)
+                    ? user->g_bdry((i-1)*hx,(j-1)*hy,user) : au[j-1][i-1];
+            uu[3] = NodeOnBdry(info,i,  j-1)
+                    ? user->g_bdry(i*hx,(j-1)*hy,user)     : au[j-1][i];
             // loop over corners of element i,j; l is local (elementwise)
             // index of the corner and PP,QQ are global indices of same corner
             for (l = 0; l < 4; l++) {
@@ -216,7 +249,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
                     for (r = 0; r < q.n; r++) {
                         for (s = 0; s < q.n; s++) {
                            FF[QQ][PP] += detj * q.w[r] * q.w[s]
-                                         * IntegrandRef(hx,hy,l,uu,
+                                         * IntegrandRef(hx,hy,l,uu,ff,
                                                         q.xi[r],q.xi[s],user);
                         }
                     }
@@ -224,13 +257,15 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
             }
         }
     }
-    // only count quadrature-point residual computations:
+    // FIXME RECOUNT!  only count quadrature-point residual computations:
     //     4 + 106 = 110 flops per quadrature point
     //     q.n^2 quadrature points per element
     PetscCall(PetscLogFlops(110.0 * q.n * q.n * info->xm * info->ym));
     (user->residualcount)++;
     return 0;
 }
+
+// FIXME INCLUDE RHS
 
 // evaluate rho(c) at a point xi,eta in the reference element,
 // for the hat function at corner L
