@@ -267,27 +267,14 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
     return 0;
 }
 
-// FIXME INCLUDE RHS
-
-// evaluate rho(c) at a point xi,eta in the reference element,
-// for the hat function at corner L
-// (i.e. chi_L = psi_ij from caller)
-PetscReal rhoRef(PetscReal hx, PetscReal hy, PetscInt L,
-                 PetscReal c, const PetscReal uu[4], const PetscReal bb[4],
-                 PetscReal xi, PetscReal eta, BratuCtx *user) {
-    const gradRef du    = deval(uu,xi,eta),
-                  dchiL = dchi(L,xi,eta);
-    return GradInnerProd(hx,hy,gradRefAXPY(c,dchiL,du),dchiL)
-           - (user->lambda * PetscExpScalar(eval(uu,xi,eta) + c * chi(L,xi,eta))
-              + eval(bb,xi,eta)) * chi(L,xi,eta);
-}
-
-// for owned, interior nodes i,j, evaluate the pointwise residual corresponding
+// for owned, interior nodes i,j, we define the pointwise residual corresponding
 // to the hat function psi_ij:
-//     rho(c) = F(u + c psi_ij)[psi_ij] - ell_b[psi_ij]
+//     rho(c) = F(u + c psi_ij)[psi_ij] - b_ij
 //            = int_Omega (grad u + c grad psi_ij) . grad psi_ij
-//                        - (lambda exp(u + c psi_ij) + b) psi_ij
-// note this is value an integral over four elements, each with four quadrature
+//                        - (lambda exp(u + c psi_ij) + f) psi_ij
+//              - b_ij
+// note b_ij is outside the integral
+// note the integral is over four elements, each with four quadrature
 // points "+" (in the default -lb_quadpts 2 case), which we traverse in the
 // order 0,1,2,3 given:
 //     j+1  *-------*-------*
@@ -307,9 +294,38 @@ PetscReal rhoRef(PetscReal hx, PetscReal hy, PetscInt L,
 //          |       |
 //          |       |
 //        2 *-------* 3
+
+// FIXME combine the following two into one
+
+// evaluate integrand of rho(c) at a point xi,eta in the reference element,
+// for the hat function at corner L (i.e. chi_L = psi_ij from caller)
+PetscReal rhoIntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
+                 PetscReal c, const PetscReal uu[4], const PetscReal ff[4],
+                 PetscReal xi, PetscReal eta, BratuCtx *user) {
+    const gradRef du    = deval(uu,xi,eta),
+                  dchiL = dchi(L,xi,eta);
+    const PetscReal ushift = eval(uu,xi,eta) + c * chi(L,xi,eta);
+    return GradInnerProd(hx,hy,gradRefAXPY(c,dchiL,du),dchiL)
+           - (user->lambda * PetscExpScalar(ushift)
+              + eval(ff,xi,eta)) * chi(L,xi,eta);
+}
+
+// evaluate integrand of rho'(c) at a point xi,eta in the reference element
+PetscReal drhodcIntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
+                 PetscReal c, const PetscReal uu[4],
+                 PetscReal xi, PetscReal eta, BratuCtx *user) {
+    const gradRef dchiL = dchi(L,xi,eta);
+    const PetscReal ushift = eval(uu,xi,eta) + c * chi(L,xi,eta);
+    return GradInnerProd(hx,hy,dchiL,dchiL)
+           - user->lambda * PetscExpScalar(ushift) * chi(L,xi,eta);
+}
+
+// for owned, interior nodes i,j, evaluate rho(c) and
+//   rho'(c) = int_Omega grad psi_ij . grad psi_ij
+//                       - lambda e^(u + c psi_ij) psi_ij
 PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
-                      PetscReal c, PetscReal **au, PetscReal **ab,
-                      PetscReal *rho, BratuCtx *user) {
+                      PetscReal c, PetscReal **au,
+                      PetscReal *rho, PetscReal *drhodc, BratuCtx *user) {
     // i+oi[k],j+oj[k] gives index of upper-right node of element k
     // ll[k] gives local (ref. element) index of the i,j node on the k element
     const PetscInt  oi[4] = {1, 0, 0, 1},
@@ -320,19 +336,20 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
                     detj = 0.25 * hx * hy;
     const Quad1D    q = gausslegendre[user->quadpts-1];
     PetscInt  k, ii, jj, r, s;
-    PetscReal uu[4], bb[4];
+    PetscReal uu[4], ff[4];
 
     *rho = 0.0;
+    *drhodc = 0.0;
     // loop around 4 elements adjacent to global index node i,j
     for (k=0; k < 4; k++) {
-        // global index of adjacent element
+        // global index of this element
         ii = i + oi[k];
         jj = j + oj[k];
-        // field values for b and u on adjacent element
-        bb[0] = ab[jj][ii];
-        bb[1] = ab[jj][ii-1];
-        bb[2] = ab[jj-1][ii-1];
-        bb[3] = ab[jj-1][ii];
+        // field values for f, b, and u on this element
+        ff[0] = user->f_rhs(ii*hx,jj*hy,user);
+        ff[1] = user->f_rhs((ii-1)*hx,jj*hy,user);
+        ff[2] = user->f_rhs((ii-1)*hx,(jj-1)*hy,user);
+        ff[3] = user->f_rhs(ii*hx,(jj-1)*hy,user);
         uu[0] = NodeOnBdry(info,ii,  jj)   ?
                 user->g_bdry(ii*hx,jj*hy,user)         : au[jj][ii];
         uu[1] = NodeOnBdry(info,ii-1,jj)   ?
@@ -341,41 +358,32 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
                 user->g_bdry((ii-1)*hx,(jj-1)*hy,user) : au[jj-1][ii-1];
         uu[3] = NodeOnBdry(info,ii,  jj-1) ?
                 user->g_bdry(ii*hx,(jj-1)*hy,user)     : au[jj-1][ii];
-        // loop over quadrature points in adjacent element, summing to get rho
+        // loop over quadrature points in this element, summing to get rho
         for (r = 0; r < q.n; r++) {
             for (s = 0; s < q.n; s++) {
                 // ll[k] is local (elementwise) index of the corner (= i,j)
                 *rho += detj * q.w[r] * q.w[s]
-                        * rhoRef(hx,hy,ll[k],c,uu,bb,q.xi[r],q.xi[s],user);
+                        * rhoIntegrandRef(hx,hy,ll[k],c,uu,ff,q.xi[r],q.xi[s],user);
+                *drhodc += detj * q.w[r] * q.w[s]
+                           * drhodcIntegrandRef(hx,hy,ll[k],c,uu,q.xi[r],q.xi[s],user);
             }
         }
     }
     return 0;
 }
 
-// FIXME also need
-// PetscReal drhodcRef(...)
-
-// FIXME
-PetscErrorCode drhodcFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
-                         PetscReal c, PetscReal **au, PetscReal **ab,
-                         PetscReal *drhodc, BratuCtx *user) {
-    *drhodc = 0.0;  // BOGUS
-    return 0;
-}
-
 // do nonlinear Gauss-Seidel (processor-block) sweeps on equation
-//     F(u)[v] = ell_b[v]    for all v
-// where
-//     F(u)[v] = int_Omega grad u . grad v - lambda e^u v
-//     ell_b[v] = int_Omega b v
-// and b is a field provided by the call-back
+//     F(u)[psi_ij] = b_ij   for all nodes i,j
+// where psi_ij is the hat function and
+//     F(u)[v] = int_Omega grad u . grad v - (lambda e^u + f) v
+// and b is a nodal field provided by the call-back
 // for each interior node i,j we define
-//     rho(c) = F(u + c psi_ij)[psi_ij] - ell_b[psi_ij]
-// where psi_ij is the hat function, and do Newton iterations
+//     rho(c) = F(u + c psi_ij)[psi_ij] - b_ij
+// and do Newton iterations
 //     c <-- c + rho(c) / rho'(c)
 // note
-//     rho'(c) = FIXME
+//     rho'(c) = int_Omega grad psi_ij . grad psi_ij
+//                         - lambda e^(u + c psi_ij) psi_ij
 // for boundary nodes we set
 //     u_ij = g(x_i,y_j)
 // and we do not iterate
@@ -410,7 +418,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
         PetscCall(DMGetGlobalVector(da,&myb));
         PetscCall(VecSet(myb,0.0));
     }
-    PetscCall(DMDAVecGetArrayRead(da,b,&ab));
+    PetscCall(DMDAVecGetArrayRead(da,myb,&ab));
 
     // need local vector for stencil width in parallel
     PetscCall(DMGetLocalVector(da,&uloc));
@@ -427,9 +435,8 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
                     c = 0.0;
                     for (k = 0; k < maxits; k++) {
                         // evaluate rho(c) and rho'(c) for current c
-                        rhoFcn(&info,i,j,c,au,ab,&rho,user);
-                        SETERRQ(PETSC_COMM_SELF,1,"NOT YET IMPLEMENTED\n");
-                        drhodcFcn(&info,i,j,c,au,ab,&drhodc,user); // NOT IMPLEMENTED
+                        PetscCall(rhoFcn(&info,i,j,c,au,&rho,&drhodc,user));
+                        rho -= ab[j][i];
                         if (k == 0)
                             rho0 = rho;
                         s = - rho / drhodc;  // Newton step
@@ -444,13 +451,13 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
                     au[j][i] += c;
                 }
             }
+        }
         PetscCall(DMDAVecRestoreArray(da,uloc,&au));
         PetscCall(DMLocalToGlobal(da,uloc,INSERT_VALUES,u));
-        }
     }
 
     PetscCall(DMRestoreLocalVector(da,&uloc));
-    PetscCall(DMDAVecRestoreArrayRead(da,b,&ab));
+    PetscCall(DMDAVecRestoreArrayRead(da,myb,&ab));
     if (!b) {
         PetscCall(DMRestoreGlobalVector(da,&myb));
     }

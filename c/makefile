@@ -27,13 +27,20 @@ test_bratufd: runbratufd_1 runbratufd_2 runbratufd_3 runbratufd_4
 runbratu_1:
 	-@./testit.sh bratu "-lb_exact -snes_converged_reason -lb_showcounts -ksp_converged_reason -da_refine 1 -pc_type mg" 1 1
 
-test_bratu: runbratu_1
+runbratu_2:
+	-@./testit.sh bratu "-lb_exact -snes_converged_reason -lb_showcounts -snes_type nrichardson -npc_snes_type ngs -npc_snes_max_it 4 -npc_snes_ngs_sweeps 2 -da_refine 1" 1 2
+
+# FIXME test -lb_mms for bratu
+
+# FIXME test FAS+NGS for bratu and make sure it is comparable to bratufd
+
+test_bratu: runbratu_1 runbratu_2
 
 test: test_bratufd test_bratu
 
 # etc
 
-.PHONY: distclean test test_bratufd test_bratu runbratufd_1 runbratufd_2 runbratufd_3 runbratu_1
+.PHONY: distclean test test_bratufd test_bratu runbratufd_1 runbratufd_2 runbratufd_3 runbratufd_4 runbratu_1 runbratu_2
 
 distclean:
 	@rm -f bratufd bratu *tmp
