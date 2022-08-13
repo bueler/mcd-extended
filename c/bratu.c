@@ -24,15 +24,13 @@ static PetscReal fg_zero(PetscReal x, PetscReal y, void *ctx) {
 }
 
 static PetscReal u_mms(PetscReal x, PetscReal y, void *ctx) {
-    const PetscReal xx = x * x,
-                    yy = y * y;
+    PetscReal xx = x * x,  yy = y * y;
     return (xx - xx * xx) * (yy * yy - yy);
 }
 
 static PetscReal f_mms(PetscReal x, PetscReal y, void *ctx) {
     BratuCtx *user = (BratuCtx*)ctx;
-    const PetscReal xx = x * x,
-                    yy = y * y;
+    PetscReal xx = x * x,  yy = y * y;
     return 2.0 * (1.0 - 6.0 * xx) * yy * (1.0 - yy)
            + 2.0 * (1.0 - 6.0 * yy) * xx * (1.0 - xx)
            - user->lambda * PetscExpScalar(u_mms(x,y,ctx));
@@ -52,7 +50,7 @@ extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*, PetscReal **,
 extern PetscErrorCode NonlinearGS(SNES, Vec, Vec, void*);
 
 int main(int argc,char **argv) {
-    DM             da, da_after;
+    DM             da;
     SNES           snes;
     Vec            u, uexact;
     BratuCtx       bctx;
@@ -114,6 +112,7 @@ int main(int argc,char **argv) {
     PetscCall(SNESSetNGS(snes,NonlinearGS,&bctx));
     PetscCall(SNESSetFromOptions(snes));
 
+    // solve the problem
     PetscCall(DMGetGlobalVector(da,&u));
     PetscCall(VecSet(u,0.0));  // initialize to zero
     PetscCall(SNESSolve(snes,NULL,u));
@@ -129,11 +128,11 @@ int main(int argc,char **argv) {
                               flops,bctx.residualcount,bctx.ngscount));
     }
 
-    PetscCall(SNESGetDM(snes,&da_after));
-    PetscCall(DMDAGetLocalInfo(da_after,&info));
+    PetscCall(SNESGetDM(snes,&da));
+    PetscCall(DMDAGetLocalInfo(da,&info));
     if (exact || mms) {
         PetscCall(SNESGetSolution(snes,&u));  // SNES owns u; we do not destroy it
-        PetscCall(DMCreateGlobalVector(da_after,&uexact));
+        PetscCall(DMCreateGlobalVector(da,&uexact));
         if (exact)
             PetscCall(FormExact(g_liouville,&info,uexact,&bctx));
         else
@@ -172,7 +171,7 @@ PetscErrorCode FormExact(PetscReal (*ufcn)(PetscReal,PetscReal,void*),
     return 0;
 }
 
-// FIXME RECOUNT!  FLOPS: 4 + (48 + 8 + 9 + 31 + 6) = 106
+// FLOPS: 5 + (48 + 8 + 31 + 9 + 31 + 6) = 138
 PetscReal IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
                        const PetscReal uu[4], const PetscReal ff[4],
                        PetscReal xi, PetscReal eta, BratuCtx *user) {
@@ -205,28 +204,31 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
     PetscInt   i, j, l, PP, QQ, r, s;
     PetscReal  uu[4], ff[4];
 
-    // clear residuals because we sum over elements; for Dirichlet nodes assign
+    // clear residuals (because we sum over elements)
+    // and assign F for Dirichlet nodes
     for (j = info->ys; j < info->ys + info->ym; j++)
         for (i = info->xs; i < info->xs + info->xm; i++)
             FF[j][i] = (NodeOnBdry(info,i,j)) ? au[j][i] - user->g_bdry(i*hx,j*hy,user)
                                               : 0.0;
 
-    // sum over elements; we own elements down or left of owned nodes,
-    // but in parallel the integral needs to include elements up or right
-    // of owned nodes (i.e. halo elements)
+    // sum over elements to compute F for interior nodes
+    // we own elements down or left of owned nodes, but in parallel the integral
+    // needs to include elements up or right of owned nodes (i.e. halo elements)
     for (j = info->ys; j <= info->ys + info->ym; j++) {
         if ((j == 0) || (j > info->my-1))
             continue;
         for (i = info->xs; i <= info->xs + info->xm; i++) {
             if ((i == 0) || (i > info->mx-1))
                 continue;
+            // this element, down-or-left of node i,j, is adjacent to an owned
+            // and interior node
             // values of rhs f at corners of element
             ff[0] = user->f_rhs(i*hx,j*hy,user);
             ff[1] = user->f_rhs((i-1)*hx,j*hy,user);
             ff[2] = user->f_rhs((i-1)*hx,(j-1)*hy,user);
             ff[3] = user->f_rhs(i*hx,(j-1)*hy,user);
             // values of iterate u at corners of element, using Dirichlet
-            // value if known (for symmetry)
+            // value if known (for symmetry of Jacobian)
             uu[0] = NodeOnBdry(info,i,  j)
                     ? user->g_bdry(i*hx,j*hy,user)         : au[j][i];
             uu[1] = NodeOnBdry(info,i-1,j)
@@ -248,19 +250,19 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
                     // for this l corner of this i,j element
                     for (r = 0; r < q.n; r++) {
                         for (s = 0; s < q.n; s++) {
-                           FF[QQ][PP] += detj * q.w[r] * q.w[s]
-                                         * IntegrandRef(hx,hy,l,uu,ff,
-                                                        q.xi[r],q.xi[s],user);
+                            FF[QQ][PP] += detj * q.w[r] * q.w[s]
+                                          * IntegrandRef(hx,hy,l,uu,ff,
+                                                         q.xi[r],q.xi[s],user);
                         }
                     }
                 }
             }
         }
     }
-    // FIXME RECOUNT!  only count quadrature-point residual computations:
-    //     4 + 106 = 110 flops per quadrature point
+    // FLOPS only counting quadrature-point residual computations:
+    //     4 + 138 = 142 flops per quadrature point
     //     q.n^2 quadrature points per element
-    PetscCall(PetscLogFlops(110.0 * q.n * q.n * info->xm * info->ym));
+    PetscCall(PetscLogFlops(142.0 * q.n * q.n * info->xm * info->ym));
     (user->residualcount)++;
     return 0;
 }
