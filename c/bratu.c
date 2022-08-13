@@ -164,7 +164,7 @@ static PetscBool NodeOnBdry(DMDALocalInfo *info, PetscInt i, PetscInt j) {
 }
 
 // compute F(u), the residual of the discretized PDE on the given grid:
-//     F(u)[v] = int_Omega grad u . grad v - phi(u) v
+//     F(u)[v] = int_Omega grad u . grad v - lambda e^u v
 // this method computes the vector
 //     F_ij = F(u)[psi_ij]
 // where i,j is a node and psi_ij is the hat function there
@@ -177,7 +177,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
     const PetscInt  li[4] = {0,-1,-1,0},  lj[4] = {0,0,-1,-1};
     const PetscReal hx = 1.0 / (PetscReal)(info->mx - 1),
                     hy = 1.0 / (PetscReal)(info->my - 1),
-                    alpha = 0.25 * hx * hy;
+                    detj = 0.25 * hx * hy;
     PetscInt   i, j, l, PP, QQ, r, s;
     PetscReal  uu[4];
 
@@ -215,7 +215,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
                     // for this l corner of this i,j element
                     for (r = 0; r < q.n; r++) {
                         for (s = 0; s < q.n; s++) {
-                           FF[QQ][PP] += alpha * q.w[r] * q.w[s]
+                           FF[QQ][PP] += detj * q.w[r] * q.w[s]
                                          * IntegrandRef(hx,hy,l,uu,
                                                         q.xi[r],q.xi[s],user);
                         }
