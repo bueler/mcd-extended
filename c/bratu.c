@@ -295,34 +295,29 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
 //          |       |
 //        2 *-------* 3
 
-// FIXME combine the following two into one
-
 // evaluate integrand of rho(c) at a point xi,eta in the reference element,
 // for the hat function at corner L (i.e. chi_L = psi_ij from caller)
-PetscReal rhoIntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
+// FLOPS:  9 + (48 + 8 + 6 + 31 + 9 + 4 + 31 + 9) = 155
+PetscErrorCode rhoIntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
                  PetscReal c, const PetscReal uu[4], const PetscReal ff[4],
-                 PetscReal xi, PetscReal eta, BratuCtx *user) {
+                 PetscReal xi, PetscReal eta,
+                 PetscReal *rho, PetscReal *drhodc, BratuCtx *user) {
     const gradRef du    = deval(uu,xi,eta),
                   dchiL = dchi(L,xi,eta);
-    const PetscReal ushift = eval(uu,xi,eta) + c * chi(L,xi,eta);
-    return GradInnerProd(hx,hy,gradRefAXPY(c,dchiL,du),dchiL)
-           - (user->lambda * PetscExpScalar(ushift)
-              + eval(ff,xi,eta)) * chi(L,xi,eta);
-}
+    const PetscReal chiL   = chi(L,xi,eta),
+                    ushift = eval(uu,xi,eta) + c * chiL,
+                    phiL   = user->lambda * PetscExpScalar(ushift);
+    *rho = GradInnerProd(hx,hy,gradRefAXPY(c,dchiL,du),dchiL)
+           - (phiL + eval(ff,xi,eta)) * chiL;
+    *drhodc = GradInnerProd(hx,hy,dchiL,dchiL) - phiL * chiL;
+    return 0;
 
-// evaluate integrand of rho'(c) at a point xi,eta in the reference element
-PetscReal drhodcIntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
-                 PetscReal c, const PetscReal uu[4],
-                 PetscReal xi, PetscReal eta, BratuCtx *user) {
-    const gradRef dchiL = dchi(L,xi,eta);
-    const PetscReal ushift = eval(uu,xi,eta) + c * chi(L,xi,eta);
-    return GradInnerProd(hx,hy,dchiL,dchiL)
-           - user->lambda * PetscExpScalar(ushift) * chi(L,xi,eta);
 }
 
 // for owned, interior nodes i,j, evaluate rho(c) and
 //   rho'(c) = int_Omega grad psi_ij . grad psi_ij
 //                       - lambda e^(u + c psi_ij) psi_ij
+// FLOPS: (155 + 6) * q.n * q.n
 PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
                       PetscReal c, PetscReal **au,
                       PetscReal *rho, PetscReal *drhodc, BratuCtx *user) {
@@ -336,7 +331,7 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
                     detj = 0.25 * hx * hy;
     const Quad1D    q = gausslegendre[user->quadpts-1];
     PetscInt  k, ii, jj, r, s;
-    PetscReal uu[4], ff[4];
+    PetscReal uu[4], ff[4], prho, pdrhodc, tmp;
 
     *rho = 0.0;
     *drhodc = 0.0;
@@ -362,13 +357,14 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
         for (r = 0; r < q.n; r++) {
             for (s = 0; s < q.n; s++) {
                 // ll[k] is local (elementwise) index of the corner (= i,j)
-                *rho += detj * q.w[r] * q.w[s]
-                        * rhoIntegrandRef(hx,hy,ll[k],c,uu,ff,q.xi[r],q.xi[s],user);
-                *drhodc += detj * q.w[r] * q.w[s]
-                           * drhodcIntegrandRef(hx,hy,ll[k],c,uu,q.xi[r],q.xi[s],user);
+                rhoIntegrandRef(hx,hy,ll[k],c,uu,ff,q.xi[r],q.xi[s],&prho,&pdrhodc,user);
+                tmp = detj * q.w[r] * q.w[s];
+                *rho += tmp * prho;
+                *drhodc += tmp * pdrhodc;
             }
         }
     }
+    PetscCall(PetscLogFlops(161.0 * q.n * q.n));
     return 0;
 }
 
@@ -462,7 +458,8 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
         PetscCall(DMRestoreGlobalVector(da,&myb));
     }
 
-    // FIXME PetscCall(PetscLogFlops(21.0 * totalits));
+    // add flops for Newton iteration arithmetic; note rhoFcn() already counts flops
+    PetscCall(PetscLogFlops(6 * totalits));
     (user->ngscount)++;
     return 0;
 }
