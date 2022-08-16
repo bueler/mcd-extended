@@ -9,6 +9,10 @@ bratu: bratu.o q1fem.o
 	-${CLINKER} -o bratu bratu.o q1fem.o ${PETSC_LIB}
 	${RM} bratu.o q1fem.o
 
+obstaclesl: obstaclesl.o q1fem.o
+	-${CLINKER} -o obstaclesl obstaclesl.o q1fem.o ${PETSC_LIB}
+	${RM} obstaclesl.o q1fem.o
+
 # testing
 runbratufd_1:
 	-@./testit.sh bratufd "-lb_exact -snes_converged_reason -lb_showcounts -ksp_converged_reason -da_refine 1 -pc_type mg" 1 1
