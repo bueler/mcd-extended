@@ -5,9 +5,9 @@ bratufd: bratufd.o
 	-${CLINKER} -o bratufd bratufd.o ${PETSC_LIB}
 	${RM} bratufd.o
 
-bratu: bratu.o
-	-${CLINKER} -o bratu bratu.o ${PETSC_LIB}
-	${RM} bratu.o
+bratu: bratu.o q1fem.o
+	-${CLINKER} -o bratu bratu.o q1fem.o ${PETSC_LIB}
+	${RM} bratu.o q1fem.o
 
 # testing
 runbratufd_1:
