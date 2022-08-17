@@ -399,56 +399,57 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
 
 // do projected nonlinear Gauss-Seidel (processor-block) sweeps on equation
 //     F(u)[psi_ij] = b_ij   for all nodes i,j
-// where psi_ij is the hat function and
-//     F(u)[v] = int_Omega grad u . grad v - (lambda e^u + f) v
-// and b is a nodal field provided by the call-back
+// where psi_ij is the hat function
+//     F(u)[v] = int_Omega grad u . grad v - f v,
+// b is a nodal field provided by the call-back,
+// and the projection onto the obstacle is nodal:
+//     u_ij = max{u_ij, gamma_lower_ij}
 // for each interior node i,j we define
 //     rho(c) = F(u + c psi_ij)[psi_ij] - b_ij
 // and do Newton iterations
 //     c <-- c + rho(c) / rho'(c)
+// followed by the projection,
+//     c = max{c, gamma_lower_ij - u_ij}
 // note
 //     rho'(c) = int_Omega grad psi_ij . grad psi_ij
-//                         - lambda e^(u + c psi_ij) psi_ij
 // for boundary nodes we set
 //     u_ij = g(x_i,y_j)
 // and we do not iterate
 PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
-    ObsCtx*      user = (ObsCtx*)ctx;
+    ObsCtx*        user = (ObsCtx*)ctx;
     PetscInt       i, j, k, maxits, totalits=0, sweeps, l;
-    PetscReal      atol, rtol, stol, hx, hy, **au, **ab,
+    const PetscReal **ab;  // FIXME WHEN OBSTACLE IS Vec: **agammal;
+    PetscReal      x, y, atol, rtol, stol, hx, hy, **au,
                    c, rho, rho0, drhodc, s;
     DM             da;
     DMDALocalInfo  info;
-    Vec            myb, uloc;
-
-SETERRQ(PETSC_COMM_SELF,1,"not yet implemented");
+    Vec            uloc;
 
     PetscCall(SNESNGSGetSweeps(snes,&sweeps));
     PetscCall(SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&maxits));
     PetscCall(SNESGetDM(snes,&da));
     PetscCall(DMDAGetLocalInfo(da,&info));
-    hx = 1.0 / (PetscReal)(info.mx - 1);
-    hy = 1.0 / (PetscReal)(info.my - 1);
+    hx = 4.0 / (PetscReal)(info.mx - 1);
+    hy = 4.0 / (PetscReal)(info.my - 1);
 
     // for Dirichlet nodes assign boundary value once
+    // FIXME assumes g >= gamma_lower; maybe check this?
     PetscCall(DMDAVecGetArray(da,u,&au));
-    for (j = info.ys; j < info.ys + info.ym; j++)
-        for (i = info.xs; i < info.xs + info.xm; i++)
+    for (j = info.ys; j < info.ys + info.ym; j++) {
+        y = -2.0 + j * hy;
+        for (i = info.xs; i < info.xs + info.xm; i++) {
+            x = -2.0 + i * hx;
             if (NodeOnBdry(&info,i,j))
-                au[j][i] = user->g_bdry(i*hx,j*hy,user);
+                au[j][i] = user->g_bdry(x,y,user);
+        }
+    }
     PetscCall(DMDAVecRestoreArray(da,u,&au));
 
-    // if b is not defined, create it and set it to zero
-    if (b) {
-        myb = b;
-    } else {
-        PetscCall(DMGetGlobalVector(da,&myb));
-        PetscCall(VecSet(myb,0.0));
-    }
-    PetscCall(DMDAVecGetArrayRead(da,myb,&ab));
-
+    if (b)
+        PetscCall(DMDAVecGetArrayRead(da,b,&ab));
     // need local vector for stencil width in parallel
     PetscCall(DMGetLocalVector(da,&uloc));
+    //FIXME PetscCall(DMDAVecGetArrayRead(da,user->gamma_lower,&agammal));
 
     // NGS sweeps over interior nodes
     for (l=0; l<sweeps; l++) {
@@ -457,37 +458,38 @@ SETERRQ(PETSC_COMM_SELF,1,"not yet implemented");
         PetscCall(DMDAVecGetArray(da,uloc,&au));
         for (j = info.ys; j < info.ys + info.ym; j++) {
             for (i = info.xs; i < info.xs + info.xm; i++) {
-                if (!NodeOnBdry(&info,i,j)) { // i,j is an owned interior node
-                    // do pointwise Newton iterations
-                    c = 0.0;
-                    for (k = 0; k < maxits; k++) {
-                        // evaluate rho(c) and rho'(c) for current c
-                        PetscCall(rhoFcn(&info,i,j,c,au,&rho,&drhodc,user));
+                if (NodeOnBdry(&info,i,j))
+                    continue;
+                // i,j is owned interior node; do projected Newton iterations
+                c = 0.0;
+                for (k = 0; k < maxits; k++) {
+                    // evaluate rho(c) and rho'(c) for current c
+                    PetscCall(rhoFcn(&info,i,j,c,au,&rho,&drhodc,user));
+                    if (b)
                         rho -= ab[j][i];
-                        if (k == 0)
-                            rho0 = rho;
-                        s = - rho / drhodc;  // Newton step
-                        c += s;
-                        totalits++;
-                        if (   atol > PetscAbsReal(rho)
-                            || rtol*PetscAbsReal(rho0) > PetscAbsReal(rho)
-                            || stol*PetscAbsReal(c) > PetscAbsReal(s)    ) {
-                            break;
-                        }
+                    if (k == 0)
+                        rho0 = rho;
+                    s = - rho / drhodc;  // Newton step
+                    c += s;
+                    // FIXME do projection:  c = max{c, gamma_lower_ij - u_ij}
+                    totalits++;
+                    if (   atol > PetscAbsReal(rho)
+                        || rtol*PetscAbsReal(rho0) > PetscAbsReal(rho)
+                        || stol*PetscAbsReal(c) > PetscAbsReal(s)    ) {
+                        break;
                     }
-                    au[j][i] += c;
                 }
+                au[j][i] += c;
             }
         }
         PetscCall(DMDAVecRestoreArray(da,uloc,&au));
         PetscCall(DMLocalToGlobal(da,uloc,INSERT_VALUES,u));
     }
 
+    // FIXME PetscCall(DMDARestoreArrayRead(da,user->gamma_lower,&agammal));
     PetscCall(DMRestoreLocalVector(da,&uloc));
-    PetscCall(DMDAVecRestoreArrayRead(da,myb,&ab));
-    if (!b) {
-        PetscCall(DMRestoreGlobalVector(da,&myb));
-    }
+    if (b)
+        PetscCall(DMDAVecRestoreArrayRead(da,b,&ab));
 
     // add flops for Newton iteration arithmetic; note rhoFcn() already counts flops
     PetscCall(PetscLogFlops(6 * totalits));
