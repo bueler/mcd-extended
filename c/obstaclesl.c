@@ -1,11 +1,12 @@
 static char help[] =
 "Solve classical obstacle problem by Q1 finite elements in 2D square (-2,2)^2\n"
-"using a structured-grid and projected, nonlinear Gauss-Seidel sweeps.\n"
-"The method is a non-scalable single-level method; contrast obstacle.c to come.\n"
+"using a structured-grid (DMDA) and projected, nonlinear Gauss-Seidel sweeps.\n"
+"The method is a non-scalable single-level method; contrast obstacle.c (FIXME).\n"
 "Option prefix ob_.  Solves\n"
 "  - nabla^2 u = f(x,y),  u >= psi(x,y)\n"
-"subject to Dirichlet boundary conditions u=g.  Exact solution from Chapter 12\n"
-"in Bueler (2021), 'PETSc for Partial Differential Equations', SIAM Press.\n\n";
+"subject to Dirichlet boundary conditions u=g.  The same problem, with exact\n"
+"solution, is solved as in Chapter 12 of Bueler (2021), 'PETSc for Partial\n"
+"Differential Equations', SIAM Press.\n\n";
 
 #include <petsc.h>
 #include "q1fem.h"
@@ -59,6 +60,7 @@ static PetscReal fg_zero(PetscReal x, PetscReal y, void *ctx) {
 
 extern PetscErrorCode FormExact(PetscReal (*)(PetscReal,PetscReal,void*),
                                 DMDALocalInfo*, Vec, ObsCtx*);
+extern PetscErrorCode FormBounds(SNES, Vec, Vec);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*, PetscReal **,
                                         PetscReal**, ObsCtx*);
 extern PetscErrorCode NonlinearGS(SNES, Vec, Vec, void*);
@@ -66,6 +68,7 @@ extern PetscErrorCode NonlinearGS(SNES, Vec, Vec, void*);
 int main(int argc,char **argv) {
     DM             da;
     SNES           snes;
+    KSP            ksp;
     Vec            u, uexact;
     ObsCtx         ctx;
     DMDALocalInfo  info;
@@ -94,7 +97,7 @@ int main(int argc,char **argv) {
     }
 
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
-                           DMDA_STENCIL_BOX,  // contrast with bratufd
+                           DMDA_STENCIL_BOX,
                            3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
     PetscCall(DMSetApplicationContext(da,&ctx));
     PetscCall(DMSetFromOptions(da));
@@ -104,16 +107,22 @@ int main(int argc,char **argv) {
     PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
     PetscCall(SNESSetApplicationContext(snes,&ctx));
     PetscCall(SNESSetDM(snes,da));
+    // FIXME: MAKE OPTIONAL set the SNES type to a variational inequality (VI)
+    // solver of reduced-space (RS) type and provide bounds to it
+    PetscCall(SNESSetType(snes,SNESVINEWTONRSLS));  // FIXME GENERATES BUG?
+    PetscCall(SNESVISetComputeVariableBounds(snes,&FormBounds));
     PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,
                (DMDASNESFunction)FormFunctionLocal,&ctx));
     PetscCall(SNESSetNGS(snes,NonlinearGS,&ctx));
+    PetscCall(SNESGetKSP(snes,&ksp));
+    PetscCall(KSPSetType(ksp,KSPCG));
     PetscCall(SNESSetFromOptions(snes));
 
     // solve the problem
-    PetscCall(DMGetGlobalVector(da,&u));
+    PetscCall(DMCreateGlobalVector(da,&u));
     PetscCall(VecSet(u,0.0));  // initialize to zero; FIXME options?
     PetscCall(SNESSolve(snes,NULL,u));
-    PetscCall(DMRestoreGlobalVector(da,&u));
+    PetscCall(VecDestroy(&u));
     PetscCall(DMDestroy(&da));
 
     if (showcounts) {
@@ -160,7 +169,35 @@ PetscErrorCode FormExact(PetscReal (*ufcn)(PetscReal,PetscReal,void*),
     return 0;
 }
 
-// FLOPS: FIXME
+// tell SNESVI we want  psi <= u < +infinity;  not used when doing pNGS sweeps
+PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu) {
+  DM             da;
+  DMDALocalInfo  info;
+  PetscInt       i, j;
+  PetscReal      **aXl, dx, dy, x, y;
+  void           *ctx;
+  ObsCtx         *user;
+  PetscCall(SNESGetDM(snes,&da));
+  PetscCall(SNESGetApplicationContext(snes,&ctx));
+  user = (ObsCtx*)ctx;
+  PetscCall(DMDAGetLocalInfo(da,&info));
+  dx = 4.0 / (PetscReal)(info.mx-1);
+  dy = 4.0 / (PetscReal)(info.my-1);
+  PetscCall(DMDAVecGetArray(da, Xl, &aXl));
+  for (j=info.ys; j<info.ys+info.ym; j++) {
+      y = -2.0 + j * dy;
+      for (i=info.xs; i<info.xs+info.xm; i++) {
+          x = -2.0 + i * dx;
+          aXl[j][i] = psi(x,y,user);
+      }
+  }
+  PetscCall(DMDAVecRestoreArray(da, Xl, &aXl));
+  PetscCall(VecSet(Xu,PETSC_INFINITY));
+  return 0;
+}
+
+
+// FLOPS: 2 + (48 + 8 + 9 + 31 + 6) = 104
 PetscReal IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
                        const PetscReal uu[4], const PetscReal ff[4],
                        PetscReal xi, PetscReal eta, ObsCtx *user) {
@@ -174,12 +211,12 @@ PetscBool NodeOnBdry(DMDALocalInfo *info, PetscInt i, PetscInt j) {
     return (((i == 0) || (i == info->mx-1) || (j == 0) || (j == info->my-1)));
 }
 
-// compute F(u), the residual of the discretized PDE on the given grid:
+// compute F(u), the residual of the discretized nonlinear operator, on the grid:
 //     F(u)[v] = int_Omega grad u . grad v - f v
 // this method computes the vector
 //     F_ij = F(u)[psi_ij]
-// where i,j is a node and psi_ij is the hat function there
-// note that at boundary nodes we have
+// where i,j is a node and psi_ij is the hat function
+// at boundary nodes we have
 //     F_ij = u_ij - g(x_i,y_j)
 // where g(x,y) is the boundary value
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
@@ -203,26 +240,27 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
         }
     }
 
-    // sum over elements to compute F for interior nodes
-    // we own elements down or left of owned nodes, but in parallel the integral
-    // needs to include elements up or right of owned nodes (i.e. halo elements)
+    // Sum over elements, with upper-right node indices i,j, to compute F for
+    // interior nodes.  Note we own elements down or left of owned nodes, but
+    // in parallel the integral also needs to include non-owned (halo) elements
+    // up or right of owned nodes.  See diagram in Chapter 9 of Bueler (2021)
+    // for indexing and element ownership.
     for (j = info->ys; j <= info->ys + info->ym; j++) {
-        if ((j == 0) || (j > info->my-1))
+        if ((j == 0) || (j > info->my-1))  // does element actually exist?
             continue;
         y = -2.0 + j * hy;
         for (i = info->xs; i <= info->xs + info->xm; i++) {
-            if ((i == 0) || (i > info->mx-1))
+            if ((i == 0) || (i > info->mx-1))  // does element actually exist?
                 continue;
             x = -2.0 + i * hx;
-            // this element, down-or-left of node i,j, is adjacent to an owned
-            // and interior node
-            // values of rhs f at corners of element
+            // this element, down or left of node i,j, is adjacent to an owned
+            // and interior node; so get values of rhs f at corners of element
             ff[0] = user->f_rhs(x,y,user);
             ff[1] = user->f_rhs(x-hx,y,user);
             ff[2] = user->f_rhs(x-hx,y-hy,user);
             ff[3] = user->f_rhs(x,y-hy,user);
-            // values of iterate u at corners of element, using Dirichlet
-            // value if known (for symmetry of Jacobian)
+            // get values of iterate u at corners of element, using Dirichlet
+            // value if known (to generate symmetric Jacobian)
             uu[0] = NodeOnBdry(info,i,  j)
                     ? user->g_bdry(x,y,user)       : au[j][i];
             uu[1] = NodeOnBdry(info,i-1,j)
@@ -333,7 +371,6 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
         x = -2.0 + ii * hx;
         y = -2.0 + jj * hy;
         ff[0] = user->f_rhs(x,y,user);
-FIXME FROM HERE
         ff[1] = user->f_rhs((ii-1)*hx,jj*hy,user);
         ff[2] = user->f_rhs((ii-1)*hx,(jj-1)*hy,user);
         ff[3] = user->f_rhs(ii*hx,(jj-1)*hy,user);
@@ -383,6 +420,8 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
     DM             da;
     DMDALocalInfo  info;
     Vec            myb, uloc;
+
+SETERRQ(PETSC_COMM_SELF,1,"not yet implemented");
 
     PetscCall(SNESNGSGetSweeps(snes,&sweeps));
     PetscCall(SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&maxits));

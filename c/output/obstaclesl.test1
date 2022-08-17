@@ -1,0 +1,9 @@
+      Linear solve converged due to CONVERGED_RTOL iterations 1
+    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 3
+    Linear solve converged due to CONVERGED_RTOL iterations 2
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+  Linear solve converged due to CONVERGED_RTOL iterations 3
+  Linear solve converged due to CONVERGED_RTOL iterations 3
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+done on 9 x 9 grid:   error |u-uexact|_inf = 3.173e-02

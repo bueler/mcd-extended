@@ -61,3 +61,10 @@ FIXME run on thelio with mpiexec -n 20 and -da_refine 11 or 12
         flops = 2.724e+08,  residual calls = 325,  NGS calls = 183
         done on 513 x 513 grid:   error |u-uexact|_inf = 7.947e-08
         real 4.61
+
+
+## obstaclesl.c
+
+This solves a classical obstacle problem, specifically the problem solved in Chapter 12 of Bueler (2021), _PETSc for Partial Differential Equations_, by a Q1 finite element method using basic quadrature and FE tools from `q1fem.h`.  This is an inefficient single-level solution by sweeps of projected, nonlinear Gauss-Seidel.
+
+FIXME show runs
