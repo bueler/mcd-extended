@@ -329,16 +329,18 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
 
 // evaluate integrand of rho(c) at a point xi,eta in the reference element,
 // for the hat function at corner L (i.e. chi_L = psi_ij from caller)
-// FLOPS: FIXME 9 + (48 + 8 + 6 + 31 + 9 + 4 + 31 + 9) = 155
+// FLOPS: 2 + (48 + 8 + 9 + 4 + 31 + 6 + 9) = 117
 PetscErrorCode rhoIntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
                  PetscReal c, const PetscReal uu[4], const PetscReal ff[4],
                  PetscReal xi, PetscReal eta,
                  PetscReal *rho, PetscReal *drhodc, ObsCtx *user) {
     const gradRef du    = deval(uu,xi,eta),
                   dchiL = dchi(L,xi,eta);
-    *rho = GradInnerProd(hx,hy,gradRefAXPY(c,dchiL,du),dchiL)
-           - eval(ff,xi,eta) * chi(L,xi,eta);
-    *drhodc = GradInnerProd(hx,hy,dchiL,dchiL);
+    if (rho)
+        *rho = GradInnerProd(hx,hy,gradRefAXPY(c,dchiL,du),dchiL)
+               - eval(ff,xi,eta) * chi(L,xi,eta);
+    if (drhodc)
+        *drhodc = GradInnerProd(hx,hy,dchiL,dchiL);
     return 0;
 
 }
@@ -393,7 +395,7 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
             }
         }
     }
-    PetscCall(PetscLogFlops(161.0 * q.n * q.n));
+    // FIXME PetscCall(PetscLogFlops(161.0 * q.n * q.n));
     return 0;
 }
 
@@ -420,7 +422,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
     PetscInt       i, j, k, maxits, totalits=0, sweeps, l;
     const PetscReal **ab;  // FIXME WHEN OBSTACLE IS Vec: **agammal;
     PetscReal      x, y, atol, rtol, stol, hx, hy, **au,
-                   c, rho, rho0, drhodc, s;
+                   c, rho, rho0, drhodc, s, cold, glij;
     DM             da;
     DMDALocalInfo  info;
     Vec            uloc;
@@ -470,8 +472,18 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
                     if (k == 0)
                         rho0 = rho;
                     s = - rho / drhodc;  // Newton step
+                    cold = c;
                     c += s;
-                    // FIXME do projection:  c = max{c, gamma_lower_ij - u_ij}
+                    // FIXME make gamma_lower a Vec
+                    // do projection
+                    glij = user->gamma_lower(x,y,user);
+                    c = PetscMax(c, glij - au[j][i]);
+                    // redefine s as magnitude of actual step taken
+                    s = PetscAbsReal(c - cold);
+                    // redefine rho as complementarity residual
+                    PetscCall(rhoFcn(&info,i,j,c,au,&rho,NULL,user));
+                    if (au[j][i] + c <= glij)  // if i,j now active,
+                        rho = PetscMin(rho, 0.0);  // punish negative F values
                     totalits++;
                     if (   atol > PetscAbsReal(rho)
                         || rtol*PetscAbsReal(rho0) > PetscAbsReal(rho)
