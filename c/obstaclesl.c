@@ -12,8 +12,8 @@ static char help[] =
 #include "q1fem.h"
 
 typedef struct {
-  // obstacle psi(x,y)
-  PetscReal (*psi_obs)(PetscReal x, PetscReal y, void *ctx);
+  // obstacle gamma_lower(x,y)
+  PetscReal (*gamma_lower)(PetscReal x, PetscReal y, void *ctx);
   // right-hand side f(x,y)
   PetscReal (*f_rhs)(PetscReal x, PetscReal y, void *ctx);
   // Dirichlet boundary condition g(x,y)
@@ -21,8 +21,8 @@ typedef struct {
   PetscInt  residualcount, ngscount, quadpts;
 } ObsCtx;
 
-// z = psi(r) is the hemispherical obstacle, but made C^1 with "skirt" at r=r0
-PetscReal psi(PetscReal x, PetscReal y, void *ctx) {
+// z = gamma_lower(r) is the hemispherical obstacle, but made C^1 with "skirt" at r=r0
+PetscReal gamma_lower(PetscReal x, PetscReal y, void *ctx) {
     const PetscReal  r = PetscSqrtReal(x * x + y * y),
                      r0 = 0.9,
                      psi0 = PetscSqrtReal(1.0 - r0 * r0),
@@ -36,10 +36,10 @@ PetscReal psi(PetscReal x, PetscReal y, void *ctx) {
 
 /*  This exact solution solves a 1D radial free-boundary problem for the
 Laplace equation, on r >= 0, with hemispherical obstacle
-psi(r).  The Laplace equation applies where u(r) > psi(r),
+gamma_lower(r).  The Laplace equation applies where u(r) > gamma_lower(r),
     u''(r) + r^-1 u'(r) = 0
 with boundary conditions including free b.c.s at an unknown location r = a:
-    u(a) = psi(a),  u'(a) = psi'(a),  u(2) = 0
+    u(a) = gamma_lower(a),  u'(a) = gamma_lower'(a),  u(2) = 0
 The solution is  u(r) = - A log(r) + B   on  r > a.  The boundary conditions
 can then be reduced to a root-finding problem for a:
     a^2 (log(2) - log(a)) = 1 - a^2
@@ -50,7 +50,7 @@ PetscReal u_exact(PetscReal x, PetscReal y, void *ctx) {
                     A     = 0.680259411891719,
                     B     = 0.471519893402112;
     PetscReal       r = PetscSqrtReal(x * x + y * y);
-    return (r <= afree) ? psi(x,y,ctx)  // active set; on the obstacle
+    return (r <= afree) ? gamma_lower(x,y,ctx)  // active set; on the obstacle
                         : - A * PetscLogReal(r) + B; // solves laplace eqn
 }
 
@@ -77,7 +77,7 @@ int main(int argc,char **argv) {
     PetscReal      errinf;
 
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
-    ctx.psi_obs = &psi;
+    ctx.gamma_lower = &gamma_lower;
     ctx.f_rhs = &fg_zero;
     ctx.g_bdry = &u_exact;
     ctx.residualcount = 0;
@@ -169,7 +169,7 @@ PetscErrorCode FormExact(PetscReal (*ufcn)(PetscReal,PetscReal,void*),
     return 0;
 }
 
-// tell SNESVI we want  psi <= u < +infinity;  not used when doing pNGS sweeps
+// tell SNESVI we want  gamma_lower <= u < +infinity;  not used when doing pNGS sweeps
 PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu) {
   DM             da;
   DMDALocalInfo  info;
@@ -188,7 +188,7 @@ PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu) {
       y = -2.0 + j * dy;
       for (i=info.xs; i<info.xs+info.xm; i++) {
           x = -2.0 + i * dx;
-          aXl[j][i] = psi(x,y,user);
+          aXl[j][i] = gamma_lower(x,y,user);
       }
   }
   PetscCall(DMDAVecRestoreArray(da, Xl, &aXl));
@@ -397,7 +397,7 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
     return 0;
 }
 
-// do nonlinear Gauss-Seidel (processor-block) sweeps on equation
+// do projected nonlinear Gauss-Seidel (processor-block) sweeps on equation
 //     F(u)[psi_ij] = b_ij   for all nodes i,j
 // where psi_ij is the hat function and
 //     F(u)[v] = int_Omega grad u . grad v - (lambda e^u + f) v
