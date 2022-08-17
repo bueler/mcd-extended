@@ -67,12 +67,12 @@ extern PetscErrorCode NonlinearGS(SNES, Vec, Vec, void*);
 
 int main(int argc,char **argv) {
     DM             da;
-    SNES           snes;
+    SNES           snes, npc;
     KSP            ksp;
     Vec            u, uexact;
     ObsCtx         ctx;
     DMDALocalInfo  info;
-    PetscBool      showcounts = PETSC_FALSE;
+    PetscBool      pngs = PETSC_FALSE, showcounts = PETSC_FALSE;
     PetscLogDouble lflops, flops;
     PetscReal      errinf;
 
@@ -85,6 +85,8 @@ int main(int argc,char **argv) {
     ctx.quadpts = 2;
     PetscOptionsBegin(PETSC_COMM_WORLD,"ob_","obstacle problem solver options","");
     // WARNING: coarse problems are badly solved with -lb_quadpts 1, so avoid in MG
+    PetscCall(PetscOptionsBool("-pngs","only do sweeps of projected nonlinear Gauss-Seidel",
+                            "obstaclesl.c",pngs,&pngs,NULL));
     PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only)",
                             "obstaclesl.c",ctx.quadpts,&(ctx.quadpts),NULL));
     PetscCall(PetscOptionsBool("-showcounts","print counts for calls to call-back functions",
@@ -107,15 +109,21 @@ int main(int argc,char **argv) {
     PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
     PetscCall(SNESSetApplicationContext(snes,&ctx));
     PetscCall(SNESSetDM(snes,da));
-    // FIXME: MAKE OPTIONAL set the SNES type to a variational inequality (VI)
-    // solver of reduced-space (RS) type and provide bounds to it
-    PetscCall(SNESSetType(snes,SNESVINEWTONRSLS));  // FIXME GENERATES BUG?
-    PetscCall(SNESVISetComputeVariableBounds(snes,&FormBounds));
     PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,
                (DMDASNESFunction)FormFunctionLocal,&ctx));
-    PetscCall(SNESSetNGS(snes,NonlinearGS,&ctx));
     PetscCall(SNESGetKSP(snes,&ksp));
     PetscCall(KSPSetType(ksp,KSPCG));
+    if (pngs) {
+        PetscCall(SNESSetType(snes,SNESNRICHARDSON));
+        PetscCall(SNESGetNPC(snes,&npc));
+        PetscCall(SNESSetType(npc,SNESNGS));
+        PetscCall(SNESSetNGS(npc,NonlinearGS,&ctx));
+        PetscCall(SNESSetFromOptions(npc));
+    } else {
+        // solver of reduced-space (RS) type and provide bounds to it
+        PetscCall(SNESSetType(snes,SNESVINEWTONRSLS));
+        PetscCall(SNESVISetComputeVariableBounds(snes,&FormBounds));
+    }
     PetscCall(SNESSetFromOptions(snes));
 
     // solve the problem
