@@ -390,7 +390,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
                    c, rho, rho0, drhodc, s;
     DM             da;
     DMDALocalInfo  info;
-    Vec            myb, uloc;
+    Vec            uloc;
 
     PetscCall(SNESNGSGetSweeps(snes,&sweeps));
     PetscCall(SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&maxits));
@@ -407,15 +407,8 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
                 au[j][i] = user->g_bdry(i*hx,j*hy,user);
     PetscCall(DMDAVecRestoreArray(da,u,&au));
 
-    // if b is not defined, create it and set it to zero
-    if (b) {
-        myb = b;
-    } else {
-        PetscCall(DMGetGlobalVector(da,&myb));
-        PetscCall(VecSet(myb,0.0));
-    }
-    PetscCall(DMDAVecGetArrayRead(da,myb,&ab));
-
+    if (b)
+        PetscCall(DMDAVecGetArrayRead(da,b,&ab));
     // need local vector for stencil width in parallel
     PetscCall(DMGetLocalVector(da,&uloc));
 
@@ -432,7 +425,8 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
                     for (k = 0; k < maxits; k++) {
                         // evaluate rho(c) and rho'(c) for current c
                         PetscCall(rhoFcn(&info,i,j,c,au,&rho,&drhodc,user));
-                        rho -= ab[j][i];
+                        if (b)
+                            rho -= ab[j][i];
                         if (k == 0)
                             rho0 = rho;
                         s = - rho / drhodc;  // Newton step
@@ -453,10 +447,8 @@ PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
     }
 
     PetscCall(DMRestoreLocalVector(da,&uloc));
-    PetscCall(DMDAVecRestoreArrayRead(da,myb,&ab));
-    if (!b) {
-        PetscCall(DMRestoreGlobalVector(da,&myb));
-    }
+    if (b)
+        PetscCall(DMDAVecRestoreArrayRead(da,b,&ab));
 
     // add flops for Newton iteration arithmetic; note rhoFcn() already counts flops
     PetscCall(PetscLogFlops(6 * totalits));
