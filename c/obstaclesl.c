@@ -63,11 +63,11 @@ extern PetscErrorCode FormExact(PetscReal (*)(PetscReal,PetscReal,void*),
 extern PetscErrorCode FormBounds(SNES, Vec, Vec);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*, PetscReal **,
                                         PetscReal**, ObsCtx*);
-extern PetscErrorCode NonlinearGS(SNES, Vec, Vec, void*);
+extern PetscErrorCode ProjectedNGS(SNES, Vec, Vec, void*);
 
 int main(int argc,char **argv) {
     DM             da;
-    SNES           snes, npc;
+    SNES           snes;
     KSP            ksp;
     Vec            u, uexact;
     ObsCtx         ctx;
@@ -114,11 +114,7 @@ int main(int argc,char **argv) {
     PetscCall(SNESGetKSP(snes,&ksp));
     PetscCall(KSPSetType(ksp,KSPCG));
     if (pngs) {
-        PetscCall(SNESSetType(snes,SNESNRICHARDSON));
-        PetscCall(SNESGetNPC(snes,&npc));
-        PetscCall(SNESSetType(npc,SNESNGS));
-        PetscCall(SNESSetNGS(npc,NonlinearGS,&ctx));
-        PetscCall(SNESSetFromOptions(npc));
+        PetscCall(SNESSetNGS(snes,ProjectedNGS,&ctx));
     } else {
         // solver of reduced-space (RS) type and provide bounds to it
         PetscCall(SNESSetType(snes,SNESVINEWTONRSLS));
@@ -371,7 +367,8 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
     PetscReal x, y, uu[4], ff[4], prho, pdrhodc, tmp;
 
     *rho = 0.0;
-    *drhodc = 0.0;
+    if (drhodc)
+        *drhodc = 0.0;
     // loop around 4 elements adjacent to global index node i,j
     for (k=0; k < 4; k++) {
         // global index of this element
@@ -399,7 +396,8 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
                 rhoIntegrandRef(hx,hy,ll[k],c,uu,ff,q.xi[r],q.xi[s],&prho,&pdrhodc,user);
                 tmp = detj * q.w[r] * q.w[s];
                 *rho += tmp * prho;
-                *drhodc += tmp * pdrhodc;
+                if (drhodc)
+                    *drhodc += tmp * pdrhodc;
             }
         }
     }
@@ -425,7 +423,7 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
 // for boundary nodes we set
 //     u_ij = g(x_i,y_j)
 // and we do not iterate
-PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
+PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
     ObsCtx*        user = (ObsCtx*)ctx;
     PetscInt       i, j, k, maxits, totalits=0, sweeps, l;
     const PetscReal **ab;  // FIXME WHEN OBSTACLE IS Vec: **agammal;
