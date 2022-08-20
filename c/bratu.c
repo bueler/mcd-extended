@@ -55,7 +55,7 @@ int main(int argc,char **argv) {
     Vec            u, uexact;
     BratuCtx       bctx;
     DMDALocalInfo  info;
-    PetscBool      exact = PETSC_FALSE, mms = PETSC_FALSE, showcounts = PETSC_FALSE;
+    PetscBool      exact = PETSC_FALSE, mms = PETSC_FALSE, counts = PETSC_FALSE;
     PetscLogDouble lflops, flops;
     PetscReal      errinf;
 
@@ -76,8 +76,8 @@ int main(int argc,char **argv) {
     // WARNING: coarse problems are badly solved with -lb_quadpts 1, so avoid in MG
     PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only)",
                             "bratu.c",bctx.quadpts,&(bctx.quadpts),NULL));
-    PetscCall(PetscOptionsBool("-showcounts","print counts for calls to call-back functions",
-                            "bratu.c",showcounts,&showcounts,NULL));
+    PetscCall(PetscOptionsBool("-counts","print counts for calls to call-back functions",
+                            "bratu.c",counts,&counts,NULL));
     PetscOptionsEnd();
 
     // options consistency checking
@@ -119,7 +119,7 @@ int main(int argc,char **argv) {
     PetscCall(DMRestoreGlobalVector(da,&u));
     PetscCall(DMDestroy(&da));
 
-    if (showcounts) {
+    if (counts) {
         PetscCall(PetscGetFlops(&lflops));
         PetscCall(MPI_Allreduce(&lflops,&flops,1,MPIU_REAL,MPIU_SUM,
                                 PetscObjectComm((PetscObject)snes)));

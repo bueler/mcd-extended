@@ -63,7 +63,7 @@ int main(int argc,char **argv) {
     Vec            u, uexact;
     BratuCtx       bctx;
     DMDALocalInfo  info;
-    PetscBool      exact = PETSC_FALSE, mms = PETSC_FALSE, showcounts = PETSC_FALSE;
+    PetscBool      exact = PETSC_FALSE, mms = PETSC_FALSE, counts = PETSC_FALSE;
     PetscLogDouble lflops, flops;
     PetscReal      errinf;
 
@@ -80,8 +80,8 @@ int main(int argc,char **argv) {
                             "bratufd.c",exact,&exact,NULL));
     PetscCall(PetscOptionsBool("-mms","use MMS exact solution",
                             "bratufd.c",mms,&mms,NULL));
-    PetscCall(PetscOptionsBool("-showcounts","print counts for calls to call-back functions",
-                            "bratufd.c",showcounts,&showcounts,NULL));
+    PetscCall(PetscOptionsBool("-counts","print counts for calls to call-back functions",
+                            "bratufd.c",counts,&counts,NULL));
     PetscOptionsEnd();
 
     // options consistency checking
@@ -118,7 +118,7 @@ int main(int argc,char **argv) {
     PetscCall(DMRestoreGlobalVector(da,&u));
     PetscCall(DMDestroy(&da));
 
-    if (showcounts) {
+    if (counts) {
         PetscCall(PetscGetFlops(&lflops));
         PetscCall(MPI_Allreduce(&lflops,&flops,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes)));
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,"flops = %.3e,  residual calls = %d,  NGS calls = %d\n",
