@@ -72,7 +72,7 @@ int main(int argc,char **argv) {
     Vec            u, uexact;
     ObsCtx         ctx;
     DMDALocalInfo  info;
-    PetscBool      pngs = PETSC_FALSE, showcounts = PETSC_FALSE;
+    PetscBool      pngs = PETSC_FALSE, counts = PETSC_FALSE;
     PetscLogDouble lflops, flops;
     PetscReal      errinf;
 
@@ -85,12 +85,12 @@ int main(int argc,char **argv) {
     ctx.quadpts = 2;
     PetscOptionsBegin(PETSC_COMM_WORLD,"ob_","obstacle problem solver options","");
     // WARNING: coarse problems are badly solved with -lb_quadpts 1, so avoid in MG
+    PetscCall(PetscOptionsBool("-counts","print counts for calls to call-back functions",
+                            "bratu.c",counts,&counts,NULL));
     PetscCall(PetscOptionsBool("-pngs","only do sweeps of projected nonlinear Gauss-Seidel",
                             "obstaclesl.c",pngs,&pngs,NULL));
     PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only)",
                             "obstaclesl.c",ctx.quadpts,&(ctx.quadpts),NULL));
-    PetscCall(PetscOptionsBool("-showcounts","print counts for calls to call-back functions",
-                            "obstaclesl.c",showcounts,&showcounts,NULL));
     PetscOptionsEnd();
 
     // options consistency checking
@@ -129,12 +129,12 @@ int main(int argc,char **argv) {
     PetscCall(VecDestroy(&u));
     PetscCall(DMDestroy(&da));
 
-    if (showcounts) {
+    if (counts) {
         PetscCall(PetscGetFlops(&lflops));
         PetscCall(MPI_Allreduce(&lflops,&flops,1,MPIU_REAL,MPIU_SUM,
                                 PetscObjectComm((PetscObject)snes)));
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-                              "flops = %.3e,  residual calls = %d,  NGS calls = %d\n",
+                              "flops = %.3e,  residual calls = %d,  PNGS calls = %d\n",
                               flops,ctx.residualcount,ctx.ngscount));
     }
 

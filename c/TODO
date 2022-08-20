@@ -1,2 +1,1 @@
-* implement -ob_showcounts  (to see if both FormFunctionLocal() and ProjectedNGS() are being called under -ob_showcounts)
 * inside FormFunctionLocal(), if -ob_pngs is set then compute complementarity residual instead of ordinary residual
