@@ -178,29 +178,29 @@ PetscErrorCode FormExact(PetscReal (*ufcn)(PetscReal,PetscReal,void*),
 
 // tell SNESVI we want  gamma_lower <= u < +infinity;  not used when doing pNGS sweeps
 PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu) {
-  DM             da;
-  DMDALocalInfo  info;
-  PetscInt       i, j;
-  PetscReal      **aXl, dx, dy, x, y;
-  void           *ctx;
-  ObsCtx         *user;
-  PetscCall(SNESGetDM(snes,&da));
-  PetscCall(SNESGetApplicationContext(snes,&ctx));
-  user = (ObsCtx*)ctx;
-  PetscCall(DMDAGetLocalInfo(da,&info));
-  dx = 4.0 / (PetscReal)(info.mx-1);
-  dy = 4.0 / (PetscReal)(info.my-1);
-  PetscCall(DMDAVecGetArray(da, Xl, &aXl));
-  for (j=info.ys; j<info.ys+info.ym; j++) {
-      y = -2.0 + j * dy;
-      for (i=info.xs; i<info.xs+info.xm; i++) {
-          x = -2.0 + i * dx;
-          aXl[j][i] = gamma_lower(x,y,user);
-      }
-  }
-  PetscCall(DMDAVecRestoreArray(da, Xl, &aXl));
-  PetscCall(VecSet(Xu,PETSC_INFINITY));
-  return 0;
+    DM             da;
+    DMDALocalInfo  info;
+    PetscInt       i, j;
+    PetscReal      **aXl, dx, dy, x, y;
+    void           *ctx;
+    ObsCtx         *user;
+    PetscCall(SNESGetDM(snes,&da));
+    PetscCall(SNESGetApplicationContext(snes,&ctx));
+    user = (ObsCtx*)ctx;
+    PetscCall(DMDAGetLocalInfo(da,&info));
+    dx = 4.0 / (PetscReal)(info.mx-1);
+    dy = 4.0 / (PetscReal)(info.my-1);
+    PetscCall(DMDAVecGetArray(da, Xl, &aXl));
+    for (j=info.ys; j<info.ys+info.ym; j++) {
+        y = -2.0 + j * dy;
+        for (i=info.xs; i<info.xs+info.xm; i++) {
+            x = -2.0 + i * dx;
+            aXl[j][i] = gamma_lower(x,y,user);
+        }
+    }
+    PetscCall(DMDAVecRestoreArray(da, Xl, &aXl));
+    PetscCall(VecSet(Xu,PETSC_INFINITY));
+    return 0;
 }
 
 
@@ -301,7 +301,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
 
     // in PNGS mode we report the complementarity residual
     if (user->pngs) {
-        //PetscCall(PetscPrintf(PETSC_COMM_WORLD,"computing complementarity residual\n"));
         for (j = info->ys; j < info->ys + info->ym; j++) {
             y = -2.0 + j * hy;
             for (i = info->xs; i < info->xs + info->xm; i++) {
