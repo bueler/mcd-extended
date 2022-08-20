@@ -407,17 +407,17 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
 
 // do projected nonlinear Gauss-Seidel (processor-block) sweeps on equation
 //     F(u)[psi_ij] = b_ij   for all nodes i,j
-// where psi_ij is the hat function
+// where psi_ij is the hat function,
 //     F(u)[v] = int_Omega grad u . grad v - f v,
 // b is a nodal field provided by the call-back,
 // and the projection onto the obstacle is nodal:
-//     u_ij = max{u_ij, gamma_lower_ij}
+//     u_ij <-- max{u_ij, gamma_lower_ij}
 // for each interior node i,j we define
 //     rho(c) = F(u + c psi_ij)[psi_ij] - b_ij
 // and do Newton iterations
-//     c <-- c + rho(c) / rho'(c)
+//     c <-- c - rho(c) / rho'(c)
 // followed by the projection,
-//     c = max{c, gamma_lower_ij - u_ij}
+//     c <-- max{c, gamma_lower_ij - u_ij}
 // note
 //     rho'(c) = int_Omega grad psi_ij . grad psi_ij
 // for boundary nodes we set
@@ -488,10 +488,10 @@ PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
                     c = PetscMax(c, glij - au[j][i]);
                     // redefine s as magnitude of actual step taken
                     s = PetscAbsReal(c - cold);
-                    // redefine rho as complementarity residual
+                    // recompute rho as complementarity residual
                     PetscCall(rhoFcn(&info,i,j,c,au,&rho,NULL,user));
                     if (au[j][i] + c <= glij)  // if i,j now active,
-                        rho = PetscMin(rho, 0.0);  // punish negative F values
+                        rho = PetscMin(rho, 0.0);  // only punish negative F values
                     totalits++;
                     if (   atol > PetscAbsReal(rho)
                         || rtol*PetscAbsReal(rho0) > PetscAbsReal(rho)
