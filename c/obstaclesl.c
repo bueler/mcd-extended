@@ -305,11 +305,10 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
         for (j = info->ys; j < info->ys + info->ym; j++) {
             y = -2.0 + j * hy;
             for (i = info->xs; i < info->xs + info->xm; i++) {
+                x = -2.0 + i * hx;
                 // if constraint is active then only punish (report) negative F values
-                if (au[j][i] <= user->gamma_lower(x,y,user)) {
-                     x = -2.0 + i * hx;
+                if (au[j][i] <= user->gamma_lower(x,y,user))
                      FF[j][i] = PetscMin(FF[j][i],0.0);
-                }
             }
         }
     }
