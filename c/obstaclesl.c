@@ -465,9 +465,11 @@ PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
         PetscCall(DMGlobalToLocal(da,u,INSERT_VALUES,uloc));
         PetscCall(DMDAVecGetArray(da,uloc,&au));
         for (j = info.ys; j < info.ys + info.ym; j++) {
+            y = -2.0 + j * hy;
             for (i = info.xs; i < info.xs + info.xm; i++) {
                 if (NodeOnBdry(&info,i,j))
                     continue;
+                x = -2.0 + i * hx;
                 // i,j is owned interior node; do projected Newton iterations
                 c = 0.0;
                 for (k = 0; k < maxits; k++) {
