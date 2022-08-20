@@ -45,12 +45,14 @@ test_bratu: runbratu_1 runbratu_2 runbratu_3 runbratu_4
 runobstaclesl_1:
 	-@./testit.sh obstaclesl "-pc_type mg -snes_converged_reason -ksp_converged_reason -snes_grid_sequence 2" 1 1
 
-test_obstaclesl: runobstaclesl_1
+runobstaclesl_2:
+	-@./testit.sh obstaclesl "-ob_pngs -ob_counts -snes_type nrichardson -npc_snes_type ngs -snes_converged_reason" 1 2
+
+test_obstaclesl: runobstaclesl_1 runobstaclesl_2
 
 test: test_bratufd test_bratu test_obstaclesl
 
-
-.PHONY: distclean test test_bratufd test_bratu test_obstaclesl runbratufd_1 runbratufd_2 runbratufd_3 runbratufd_4 runbratu_1 runbratu_2 runbratu_3 runbratu_4 runobstaclesl_1
+.PHONY: distclean test test_bratufd test_bratu test_obstaclesl runbratufd_1 runbratufd_2 runbratufd_3 runbratufd_4 runbratu_1 runbratu_2 runbratu_3 runbratu_4 runobstaclesl_1 runobstaclesl_2
 
 distclean:
-	@rm -f bratufd bratu *tmp
+	@rm -f bratufd bratu obstaclesl *tmp
