@@ -46,7 +46,7 @@ runobstaclesl_1:
 	-@./testit.sh obstaclesl "-ob_counts -pc_type mg -snes_converged_reason -ksp_converged_reason -snes_grid_sequence 2" 1 1
 
 runobstaclesl_2:
-	-@./testit.sh obstaclesl "-ob_pngs -ob_counts -snes_type nrichardson -npc_snes_type ngs -snes_converged_reason" 1 2
+	-@./testit.sh obstaclesl "-ob_pngs -ob_counts -snes_type nrichardson -npc_snes_type ngs -snes_linesearch_type basic -snes_converged_reason" 1 2
 
 test_obstaclesl: runobstaclesl_1 runobstaclesl_2
 

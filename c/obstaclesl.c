@@ -18,6 +18,8 @@ typedef struct {
   PetscReal (*f_rhs)(PetscReal x, PetscReal y, void *ctx);
   // Dirichlet boundary condition g(x,y)
   PetscReal (*g_bdry)(PetscReal x, PetscReal y, void *ctx);
+  // are we in PNGS solver mode where we need to report complementarity residual
+  PetscBool pngs;
   PetscInt  residualcount, ngscount, quadpts;
 } ObsCtx;
 
@@ -72,7 +74,7 @@ int main(int argc,char **argv) {
     Vec            u, uexact;
     ObsCtx         ctx;
     DMDALocalInfo  info;
-    PetscBool      pngs = PETSC_FALSE, counts = PETSC_FALSE;
+    PetscBool      counts = PETSC_FALSE;
     PetscLogDouble lflops, flops;
     PetscReal      errinf;
 
@@ -80,6 +82,7 @@ int main(int argc,char **argv) {
     ctx.gamma_lower = &gamma_lower;
     ctx.f_rhs = &fg_zero;
     ctx.g_bdry = &u_exact;
+    ctx.pngs = PETSC_FALSE;
     ctx.residualcount = 0;
     ctx.ngscount = 0;
     ctx.quadpts = 2;
@@ -88,7 +91,7 @@ int main(int argc,char **argv) {
     PetscCall(PetscOptionsBool("-counts","print counts for calls to call-back functions",
                             "bratu.c",counts,&counts,NULL));
     PetscCall(PetscOptionsBool("-pngs","only do sweeps of projected nonlinear Gauss-Seidel",
-                            "obstaclesl.c",pngs,&pngs,NULL));
+                            "obstaclesl.c",ctx.pngs,&(ctx.pngs),NULL));
     PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only)",
                             "obstaclesl.c",ctx.quadpts,&(ctx.quadpts),NULL));
     PetscOptionsEnd();
@@ -113,7 +116,7 @@ int main(int argc,char **argv) {
                (DMDASNESFunction)FormFunctionLocal,&ctx));
     PetscCall(SNESGetKSP(snes,&ksp));
     PetscCall(KSPSetType(ksp,KSPCG));
-    if (pngs) {
+    if (ctx.pngs) {
         PetscCall(SNESSetNGS(snes,ProjectedNGS,&ctx));
     } else {
         // solver of reduced-space (RS) type and provide bounds to it
@@ -295,6 +298,22 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
             }
         }
     }
+
+    // in PNGS mode we report the complementarity residual
+    if (user->pngs) {
+        //PetscCall(PetscPrintf(PETSC_COMM_WORLD,"computing complementarity residual\n"));
+        for (j = info->ys; j < info->ys + info->ym; j++) {
+            y = -2.0 + j * hy;
+            for (i = info->xs; i < info->xs + info->xm; i++) {
+                // if constraint is active then only punish (report) negative F values
+                if (au[j][i] <= user->gamma_lower(x,y,user)) {
+                     x = -2.0 + i * hx;
+                     FF[j][i] = PetscMin(FF[j][i],0.0);
+                }
+            }
+        }
+    }
+
     // FLOPS only counting flops per quadrature point in residual computations:
     // note q.n^2 quadrature points per element
     PetscCall(PetscLogFlops(108.0 * q.n * q.n * info->xm * info->ym));
