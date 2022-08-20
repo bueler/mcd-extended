@@ -43,7 +43,7 @@ runbratu_4:
 test_bratu: runbratu_1 runbratu_2 runbratu_3 runbratu_4
 
 runobstaclesl_1:
-	-@./testit.sh obstaclesl "-pc_type mg -snes_converged_reason -ksp_converged_reason -snes_grid_sequence 2" 1 1
+	-@./testit.sh obstaclesl "-ob_counts -pc_type mg -snes_converged_reason -ksp_converged_reason -snes_grid_sequence 2" 1 1
 
 runobstaclesl_2:
 	-@./testit.sh obstaclesl "-ob_pngs -ob_counts -snes_type nrichardson -npc_snes_type ngs -snes_converged_reason" 1 2

@@ -295,10 +295,9 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
             }
         }
     }
-    // FLOPS only counting quadrature-point residual computations:
-    //     FIXME flops per quadrature point
-    //     q.n^2 quadrature points per element
-    //FIXME PetscCall(PetscLogFlops(142.0 * q.n * q.n * info->xm * info->ym));
+    // FLOPS only counting flops per quadrature point in residual computations:
+    // note q.n^2 quadrature points per element
+    PetscCall(PetscLogFlops(108.0 * q.n * q.n * info->xm * info->ym));
     (user->residualcount)++;
     return 0;
 }
