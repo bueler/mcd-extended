@@ -395,17 +395,17 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
         x = -2.0 + ii * hx;
         y = -2.0 + jj * hy;
         ff[0] = user->f_rhs(x,y,user);
-        ff[1] = user->f_rhs((ii-1)*hx,jj*hy,user);
-        ff[2] = user->f_rhs((ii-1)*hx,(jj-1)*hy,user);
-        ff[3] = user->f_rhs(ii*hx,(jj-1)*hy,user);
+        ff[1] = user->f_rhs(x-hx,y,user);
+        ff[2] = user->f_rhs(x-hx,y-hy,user);
+        ff[3] = user->f_rhs(x,y-hy,user);
         uu[0] = NodeOnBdry(info,ii,  jj)   ?
-                user->g_bdry(ii*hx,jj*hy,user)         : au[jj][ii];
+                user->g_bdry(x,y,user)       : au[jj][ii];
         uu[1] = NodeOnBdry(info,ii-1,jj)   ?
-                user->g_bdry((ii-1)*hx,jj*hy,user)     : au[jj][ii-1];
+                user->g_bdry(x-hx,y,user)    : au[jj][ii-1];
         uu[2] = NodeOnBdry(info,ii-1,jj-1) ?
-                user->g_bdry((ii-1)*hx,(jj-1)*hy,user) : au[jj-1][ii-1];
+                user->g_bdry(x-hx,y-hy,user) : au[jj-1][ii-1];
         uu[3] = NodeOnBdry(info,ii,  jj-1) ?
-                user->g_bdry(ii*hx,(jj-1)*hy,user)     : au[jj-1][ii];
+                user->g_bdry(x,y-hy,user)    : au[jj-1][ii];
         // loop over quadrature points in this element, summing to get rho
         for (r = 0; r < q.n; r++) {
             for (s = 0; s < q.n; s++) {
