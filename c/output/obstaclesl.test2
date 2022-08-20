@@ -1,3 +1,3 @@
-Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 2
-flops = 1.183e+04,  residual calls = 3,  PNGS calls = 2
+Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 1
+flops = 7.868e+03,  residual calls = 2,  PNGS calls = 1
 done on 3 x 3 grid:   error |u-uexact|_inf = 0.000e+00
