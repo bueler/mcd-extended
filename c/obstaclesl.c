@@ -1,10 +1,10 @@
 static char help[] =
 "Solve classical obstacle problem by Q1 finite elements in 2D square (-2,2)^2\n"
-"using a structured-grid (DMDA) and projected, nonlinear Gauss-Seidel sweeps.\n"
-"The method is a non-scalable single-level method; contrast obstacle.c (FIXME).\n"
-"Option prefix ob_.  Solves\n"
+"using a structured-grid (DMDA):\n"
 "  - nabla^2 u = f(x,y),  u >= psi(x,y)\n"
-"subject to Dirichlet boundary conditions u=g.  The same problem, with exact\n"
+"subject to Dirichlet boundary conditions u=g.  Implements projected, nonlinear\n"
+"Gauss-Seidel (PNGS) sweeps, a non-scalable single-level method.  Also allows\n"
+"SNESVI solutions.  Option prefix ob_.  The same problem, with exact\n"
 "solution, is solved as in Chapter 12 of Bueler (2021), 'PETSc for Partial\n"
 "Differential Equations', SIAM Press.\n\n";
 
@@ -23,7 +23,7 @@ typedef struct {
   PetscInt  residualcount, ngscount, quadpts;
 } ObsCtx;
 
-// z = gamma_lower(r) is the hemispherical obstacle, but made C^1 with "skirt" at r=r0
+// z = gamma_lower(x,y) is the hemispherical obstacle, but made C^1 with "skirt" at r=r0
 PetscReal gamma_lower(PetscReal x, PetscReal y, void *ctx) {
     const PetscReal  r = PetscSqrtReal(x * x + y * y),
                      r0 = 0.9,
@@ -60,16 +60,18 @@ static PetscReal fg_zero(PetscReal x, PetscReal y, void *ctx) {
     return 0.0;
 }
 
+extern PetscErrorCode AssertBoundaryAdmissible(DMDALocalInfo*, ObsCtx*);
 extern PetscErrorCode FormExact(PetscReal (*)(PetscReal,PetscReal,void*),
                                 DMDALocalInfo*, Vec, ObsCtx*);
 extern PetscErrorCode FormBounds(SNES, Vec, Vec);
-extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*, PetscReal **,
-                                        PetscReal**, ObsCtx*);
+extern PetscErrorCode FormResidualOrCRLocal(DMDALocalInfo*, PetscReal **,
+                                            PetscReal**, ObsCtx*);
 extern PetscErrorCode ProjectedNGS(SNES, Vec, Vec, void*);
 
 int main(int argc,char **argv) {
     DM             da;
-    SNES           snes;
+    SNES           snes, npc;
+    SNESLineSearch ls;
     KSP            ksp;
     Vec            u, uexact;
     ObsCtx         ctx;
@@ -89,7 +91,7 @@ int main(int argc,char **argv) {
     PetscOptionsBegin(PETSC_COMM_WORLD,"ob_","obstacle problem solver options","");
     // WARNING: coarse problems are badly solved with -lb_quadpts 1, so avoid in MG
     PetscCall(PetscOptionsBool("-counts","print counts for calls to call-back functions",
-                            "bratu.c",counts,&counts,NULL));
+                            "obstaclesl.c",counts,&counts,NULL));
     PetscCall(PetscOptionsBool("-pngs","only do sweeps of projected nonlinear Gauss-Seidel",
                             "obstaclesl.c",ctx.pngs,&(ctx.pngs),NULL));
     PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only)",
@@ -108,20 +110,32 @@ int main(int argc,char **argv) {
     PetscCall(DMSetFromOptions(da));
     PetscCall(DMSetUp(da));  // this must be called BEFORE SetUniformCoordinates
     PetscCall(DMDASetUniformCoordinates(da,-2.0,2.0,-2.0,2.0,0.0,1.0));
+    PetscCall(DMDAGetLocalInfo(da,&info));
+    PetscCall(AssertBoundaryAdmissible(&info,&ctx));
 
     PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
     PetscCall(SNESSetApplicationContext(snes,&ctx));
     PetscCall(SNESSetDM(snes,da));
     PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,
-               (DMDASNESFunction)FormFunctionLocal,&ctx));
-    PetscCall(SNESGetKSP(snes,&ksp));
-    PetscCall(KSPSetType(ksp,KSPCG));
+               (DMDASNESFunction)FormResidualOrCRLocal,&ctx));
     if (ctx.pngs) {
+        // defaults equivalent to
+        //   -snes_type nrichardson -npc_snes_type ngs -snes_linesearch_type basic
+        PetscCall(SNESSetType(snes,SNESNRICHARDSON));
         PetscCall(SNESSetNGS(snes,ProjectedNGS,&ctx));
+        PetscCall(SNESGetNPC(snes,&npc));
+        PetscCall(SNESSetType(npc,SNESNGS));
+        // no need to call SNESSetNGS() on npc ... it is passed down
+        PetscCall(SNESGetLineSearch(snes,&ls));
+        PetscCall(SNESLineSearchSetType(ls,SNESLINESEARCHBASIC));
     } else {
-        // solver of reduced-space (RS) type and provide bounds to it
+        // SNESVI solver, defaults to reduced-space (RS) type, with provided
+        // bounds, and CG solution of step equations:
+        //   -snes_type vinewtonrsls -ksp_type cg
         PetscCall(SNESSetType(snes,SNESVINEWTONRSLS));
         PetscCall(SNESVISetComputeVariableBounds(snes,&FormBounds));
+        PetscCall(SNESGetKSP(snes,&ksp));
+        PetscCall(KSPSetType(ksp,KSPCG));
     }
     PetscCall(SNESSetFromOptions(snes));
 
@@ -133,6 +147,8 @@ int main(int argc,char **argv) {
     PetscCall(DMDestroy(&da));
 
     if (counts) {
+        // note calls to FormResidualOrCRLocal() and ProjectedNGS() are
+        // collective but flops are per-process, so we need a reduction
         PetscCall(PetscGetFlops(&lflops));
         PetscCall(MPI_Allreduce(&lflops,&flops,1,MPIU_REAL,MPIU_SUM,
                                 PetscObjectComm((PetscObject)snes)));
@@ -155,6 +171,25 @@ int main(int argc,char **argv) {
 
     PetscCall(SNESDestroy(&snes));
     PetscCall(PetscFinalize());
+    return 0;
+}
+
+PetscErrorCode AssertBoundaryAdmissible(DMDALocalInfo *info, ObsCtx* user) {
+    PetscInt     i, j;
+    PetscReal    hx, hy, x, y;
+    char         mystr[PETSC_MAX_PATH_LEN];
+    hx = 4.0 / (PetscReal)(info->mx - 1);
+    hy = 4.0 / (PetscReal)(info->my - 1);
+    for (j=info->ys; j<info->ys+info->ym; j++) {
+        y = -2.0 + j * hy;
+        for (i=info->xs; i<info->xs+info->xm; i++) {
+            x = -2.0 + i * hx;
+            if (user->g_bdry(x,y,user) < user->gamma_lower(x,y,user)) {
+                sprintf(mystr,"assertion g(x,y) >= gamma(x,y) fails at x=%.6e,y=%.6e\n",x,y);
+                SETERRQ(PETSC_COMM_SELF,1,mystr);
+            }
+        }
+    }
     return 0;
 }
 
@@ -218,16 +253,19 @@ PetscBool NodeOnBdry(DMDALocalInfo *info, PetscInt i, PetscInt j) {
     return (((i == 0) || (i == info->mx-1) || (j == 0) || (j == info->my-1)));
 }
 
-// compute F(u), the residual of the discretized nonlinear operator, on the grid:
+// compute F_ij, the nodal residual of the discretized nonlinear operator,
+// or the complementarity residual if user->pngs is true; the residual is
 //     F(u)[v] = int_Omega grad u . grad v - f v
-// this method computes the vector
+// giving the vector of nodal residuals
 //     F_ij = F(u)[psi_ij]
-// where i,j is a node and psi_ij is the hat function
-// at boundary nodes we have
+// where i,j is a node and psi_ij is the hat function; at boundary nodes
+// we have
 //     F_ij = u_ij - g(x_i,y_j)
-// where g(x,y) is the boundary value
-PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
-                                 PetscReal **FF, ObsCtx *user) {
+// the complementarity residual is
+//     Fhat_ij = F_ij         if u_ij > gamma_lower(x_i,y_j)
+//               min{F_ij,0}  if u_ij <= gamma_lower(x_i,y_j)
+PetscErrorCode FormResidualOrCRLocal(DMDALocalInfo *info, PetscReal **au,
+                                     PetscReal **FF, ObsCtx *user) {
     const Quad1D    q = gausslegendre[user->quadpts-1];
     const PetscInt  li[4] = {0,-1,-1,0},  lj[4] = {0,0,-1,-1};
     const PetscReal hx = 4.0 / (PetscReal)(info->mx - 1),
@@ -299,20 +337,22 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
         }
     }
 
-    // in PNGS mode we report the complementarity residual
+    // in PNGS mode we report the complementarity residual instead
     if (user->pngs) {
         for (j = info->ys; j < info->ys + info->ym; j++) {
             y = -2.0 + j * hy;
             for (i = info->xs; i < info->xs + info->xm; i++) {
-                x = -2.0 + i * hx;
-                // if constraint is active then only punish (report) negative F values
-                if (au[j][i] <= user->gamma_lower(x,y,user))
-                     FF[j][i] = PetscMin(FF[j][i],0.0);
+                if (!NodeOnBdry(info,i,j)) {
+                    x = -2.0 + i * hx;
+                    // if constraint is active then only report negative F values
+                    if (au[j][i] <= user->gamma_lower(x,y,user))
+                         FF[j][i] = PetscMin(FF[j][i],0.0);
+                }
             }
         }
     }
 
-    // FLOPS only counting flops per quadrature point in residual computations:
+    // FLOPS: only count flops per quadrature point in residual computations:
     // note q.n^2 quadrature points per element
     PetscCall(PetscLogFlops(108.0 * q.n * q.n * info->xm * info->ym));
     (user->residualcount)++;
@@ -362,11 +402,9 @@ PetscErrorCode rhoIntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
     if (drhodc)
         *drhodc = GradInnerProd(hx,hy,dchiL,dchiL);
     return 0;
-
 }
 
 // for owned, interior node i,j, evaluate rho(c) and rho'(c)
-// FLOPS: FIXME (155 + 6) * q.n * q.n
 PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
                       PetscReal c, PetscReal **au,
                       PetscReal *rho, PetscReal *drhodc, ObsCtx *user) {
@@ -417,7 +455,8 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
             }
         }
     }
-    // FIXME PetscCall(PetscLogFlops(161.0 * q.n * q.n));
+    // FLOPS: only count flops per quadrature point in the four elements:
+    PetscCall(PetscLogFlops((6.0 + 117.0) * q.n * q.n * 4.0));
     return 0;
 }
 
@@ -436,9 +475,8 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
 //     c <-- max{c, gamma_lower_ij - u_ij}
 // note
 //     rho'(c) = int_Omega grad psi_ij . grad psi_ij
-// for boundary nodes we set
+// also note that for boundary nodes we simply set
 //     u_ij = g(x_i,y_j)
-// and we do not iterate
 PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
     ObsCtx*        user = (ObsCtx*)ctx;
     PetscInt       i, j, k, maxits, totalits=0, sweeps, l;
@@ -456,8 +494,7 @@ PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
     hx = 4.0 / (PetscReal)(info.mx - 1);
     hy = 4.0 / (PetscReal)(info.my - 1);
 
-    // for Dirichlet nodes assign boundary value once
-    // FIXME assumes g >= gamma_lower; maybe check this?
+    // for Dirichlet nodes assign boundary value once; assumes g >= gamma_lower
     PetscCall(DMDAVecGetArray(da,u,&au));
     for (j = info.ys; j < info.ys + info.ym; j++) {
         y = -2.0 + j * hy;
