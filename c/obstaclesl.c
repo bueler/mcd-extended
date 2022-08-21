@@ -64,6 +64,9 @@ extern PetscErrorCode AssertBoundaryAdmissible(DMDALocalInfo*, ObsCtx*);
 extern PetscErrorCode FormExact(PetscReal (*)(PetscReal,PetscReal,void*),
                                 DMDALocalInfo*, Vec, ObsCtx*);
 extern PetscErrorCode FormBounds(SNES, Vec, Vec);
+extern PetscBool NodeOnBdry(DMDALocalInfo*, PetscInt, PetscInt);
+extern PetscErrorCode CRLocal(DMDALocalInfo*, PetscReal **, PetscReal **,
+                              PetscReal**, ObsCtx*);
 extern PetscErrorCode FormResidualOrCRLocal(DMDALocalInfo*, PetscReal **,
                                             PetscReal**, ObsCtx*);
 extern PetscErrorCode ProjectedNGS(SNES, Vec, Vec, void*);
@@ -238,6 +241,34 @@ PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu) {
     return 0;
 }
 
+PetscBool NodeOnBdry(DMDALocalInfo *info, PetscInt i, PetscInt j) {
+    return (((i == 0) || (i == info->mx-1) || (j == 0) || (j == info->my-1)));
+}
+
+// compute complementarity residual Fhat from conventional residual F:
+//     Fhat_ij = F_ij         if u_ij > gamma_lower(x_i,y_j)
+//               min{F_ij,0}  if u_ij <= gamma_lower(x_i,y_j)
+// note arrays aF and aFhat can be the same, giving in-place calculation
+PetscErrorCode CRLocal(DMDALocalInfo *info, PetscReal **au, PetscReal **aF,
+                       PetscReal **aFhat, ObsCtx *user) {
+    const PetscReal hx = 4.0 / (PetscReal)(info->mx - 1),
+                    hy = 4.0 / (PetscReal)(info->my - 1);
+    PetscInt        i, j;
+    PetscReal       x, y;
+    for (j = info->ys; j < info->ys + info->ym; j++) {
+        y = -2.0 + j * hy;
+        for (i = info->xs; i < info->xs + info->xm; i++) {
+            if (!NodeOnBdry(info,i,j)) {
+                x = -2.0 + i * hx;
+                if (au[j][i] > user->gamma_lower(x,y,user))
+                     aFhat[j][i] = aF[j][i];
+                else
+                     aFhat[j][i] = PetscMin(aF[j][i],0.0);
+            }
+        }
+    }
+    return 0;
+}
 
 // FLOPS: 2 + (48 + 8 + 9 + 31 + 6) = 104
 PetscReal IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
@@ -249,21 +280,15 @@ PetscReal IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
            - eval(ff,xi,eta) * chi(L,xi,eta);
 }
 
-PetscBool NodeOnBdry(DMDALocalInfo *info, PetscInt i, PetscInt j) {
-    return (((i == 0) || (i == info->mx-1) || (j == 0) || (j == info->my-1)));
-}
-
 // compute F_ij, the nodal residual of the discretized nonlinear operator,
-// or the complementarity residual if user->pngs is true; the residual is
+// or the complementarity residual if user->pngs is true
+// the residual is
 //     F(u)[v] = int_Omega grad u . grad v - f v
 // giving the vector of nodal residuals
 //     F_ij = F(u)[psi_ij]
 // where i,j is a node and psi_ij is the hat function; at boundary nodes
 // we have
 //     F_ij = u_ij - g(x_i,y_j)
-// the complementarity residual is
-//     Fhat_ij = F_ij         if u_ij > gamma_lower(x_i,y_j)
-//               min{F_ij,0}  if u_ij <= gamma_lower(x_i,y_j)
 PetscErrorCode FormResidualOrCRLocal(DMDALocalInfo *info, PetscReal **au,
                                      PetscReal **FF, ObsCtx *user) {
     const Quad1D    q = gausslegendre[user->quadpts-1];
@@ -338,19 +363,8 @@ PetscErrorCode FormResidualOrCRLocal(DMDALocalInfo *info, PetscReal **au,
     }
 
     // in PNGS mode we report the complementarity residual instead
-    if (user->pngs) {
-        for (j = info->ys; j < info->ys + info->ym; j++) {
-            y = -2.0 + j * hy;
-            for (i = info->xs; i < info->xs + info->xm; i++) {
-                if (!NodeOnBdry(info,i,j)) {
-                    x = -2.0 + i * hx;
-                    // if constraint is active then only report negative F values
-                    if (au[j][i] <= user->gamma_lower(x,y,user))
-                         FF[j][i] = PetscMin(FF[j][i],0.0);
-                }
-            }
-        }
-    }
+    if (user->pngs)
+        PetscCall(CRLocal(info,au,FF,FF,user));
 
     // FLOPS: only count flops per quadrature point in residual computations:
     // note q.n^2 quadrature points per element
