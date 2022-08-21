@@ -1,0 +1,2 @@
+viewing solution,residual,cr into ascii_matlab file tmpview.m
+done on 5 x 5 grid:   error |u-uexact|_inf = 2.421e-01

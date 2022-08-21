@@ -48,11 +48,14 @@ runobstaclesl_1:
 runobstaclesl_2:
 	-@./testit.sh obstaclesl "-ob_counts -ob_pngs -snes_converged_reason -snes_grid_sequence 2" 1 2
 
-test_obstaclesl: runobstaclesl_1 runobstaclesl_2
+runobstaclesl_3:
+	-@./testit.sh obstaclesl "-ob_pngs -da_refine 1 -ob_view tmpview.m" 1 3
+
+test_obstaclesl: runobstaclesl_1 runobstaclesl_2 runobstaclesl_3
 
 test: test_bratufd test_bratu test_obstaclesl
 
-.PHONY: distclean test test_bratufd test_bratu test_obstaclesl runbratufd_1 runbratufd_2 runbratufd_3 runbratufd_4 runbratu_1 runbratu_2 runbratu_3 runbratu_4 runobstaclesl_1 runobstaclesl_2
+.PHONY: distclean test test_bratufd test_bratu test_obstaclesl runbratufd_1 runbratufd_2 runbratufd_3 runbratufd_4 runbratu_1 runbratu_2 runbratu_3 runbratu_4 runobstaclesl_1 runobstaclesl_2 runobstaclesl_3
 
 distclean:
-	@rm -f bratufd bratu obstaclesl *tmp
+	@rm -f bratufd bratu obstaclesl *tmp tmpview.m

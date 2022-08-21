@@ -79,9 +79,10 @@ int main(int argc,char **argv) {
     Vec            u, uexact;
     ObsCtx         ctx;
     DMDALocalInfo  info;
-    PetscBool      counts = PETSC_FALSE;
+    PetscBool      counts = PETSC_FALSE, view = PETSC_FALSE;
     PetscLogDouble lflops, flops;
     PetscReal      errinf;
+    char           viewname[PETSC_MAX_PATH_LEN];
 
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
     ctx.gamma_lower = &gamma_lower;
@@ -92,13 +93,15 @@ int main(int argc,char **argv) {
     ctx.ngscount = 0;
     ctx.quadpts = 2;
     PetscOptionsBegin(PETSC_COMM_WORLD,"ob_","obstacle problem solver options","");
-    // WARNING: coarse problems are badly solved with -lb_quadpts 1, so avoid in MG
+    // WARNING: coarse problems are badly solved with -ob_quadpts 1, so avoid in MG
     PetscCall(PetscOptionsBool("-counts","print counts for calls to call-back functions",
                             "obstaclesl.c",counts,&counts,NULL));
     PetscCall(PetscOptionsBool("-pngs","only do sweeps of projected nonlinear Gauss-Seidel",
                             "obstaclesl.c",ctx.pngs,&(ctx.pngs),NULL));
     PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only)",
                             "obstaclesl.c",ctx.quadpts,&(ctx.quadpts),NULL));
+    PetscCall(PetscOptionsString("-view","custom view of solution,residual,cr in ascii_matlab",
+                            "obstaclesl",viewname,viewname,sizeof(viewname),&view));
     PetscOptionsEnd();
 
     // options consistency checking
@@ -160,9 +163,44 @@ int main(int argc,char **argv) {
                               flops,ctx.residualcount,ctx.ngscount));
     }
 
+    // get post-solution stuff
     PetscCall(SNESGetDM(snes,&da));
     PetscCall(DMDAGetLocalInfo(da,&info));
     PetscCall(SNESGetSolution(snes,&u));  // SNES owns u; we do not destroy it
+
+    if (view) {
+        Vec          F;
+        PetscReal    **au, **aF;
+        PetscViewer  file;
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+            "viewing solution,residual,cr into ascii_matlab file %s\n",viewname));
+        PetscCall(PetscViewerCreate(PETSC_COMM_WORLD,&file));
+        PetscCall(PetscViewerSetType(file,PETSCVIEWERASCII));
+        PetscCall(PetscViewerFileSetMode(file,FILE_MODE_WRITE));
+        PetscCall(PetscViewerFileSetName(file,viewname));
+        PetscCall(PetscViewerPushFormat(file,PETSC_VIEWER_ASCII_MATLAB));
+        PetscCall(PetscObjectSetName((PetscObject)u,"u"));
+        PetscCall(VecView(u,file));
+        PetscCall(DMDAVecGetArray(da, u, &au));
+        PetscCall(DMCreateGlobalVector(da,&F));
+        PetscCall(DMDAVecGetArray(da, F, &aF));
+        ctx.pngs = PETSC_FALSE;  // we want to view plain F, *then* CR
+        PetscCall(FormResidualOrCRLocal(&info,au,aF,&ctx));
+        PetscCall(DMDAVecRestoreArray(da, F, &aF));
+        PetscCall(PetscObjectSetName((PetscObject)F,"F"));
+        PetscCall(VecView(F,file));
+        PetscCall(DMDAVecGetArray(da, F, &aF));
+        PetscCall(CRLocal(&info,au,aF,aF,&ctx));
+        PetscCall(DMDAVecRestoreArray(da, F, &aF));
+        PetscCall(DMDAVecRestoreArray(da, u, &au));
+        PetscCall(PetscObjectSetName((PetscObject)F,"Fhat"));
+        PetscCall(VecView(F,file));
+        PetscCall(VecDestroy(&F));
+        PetscCall(PetscViewerPopFormat(file));
+        PetscCall(PetscViewerDestroy(&file));
+    }
+
+    // report on numerical error
     PetscCall(DMCreateGlobalVector(da,&uexact));
     PetscCall(FormExact(u_exact,&info,uexact,&ctx));
     PetscCall(VecAXPY(u,-1.0,uexact));    // u <- u + (-1.0) uexact
@@ -249,6 +287,7 @@ PetscBool NodeOnBdry(DMDALocalInfo *info, PetscInt i, PetscInt j) {
 //     Fhat_ij = F_ij         if u_ij > gamma_lower(x_i,y_j)
 //               min{F_ij,0}  if u_ij <= gamma_lower(x_i,y_j)
 // note arrays aF and aFhat can be the same, giving in-place calculation
+// note this op is idempotent if u,gamma_lower unchanged:  CRLocal(CRLocal()) = CRLocal()
 PetscErrorCode CRLocal(DMDALocalInfo *info, PetscReal **au, PetscReal **aF,
                        PetscReal **aFhat, ObsCtx *user) {
     const PetscReal hx = 4.0 / (PetscReal)(info->mx - 1),
