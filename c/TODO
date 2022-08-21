@@ -1,8 +1,8 @@
 to complete single-level PNGS implementation:
-* separate CR calculation into function  Vec = GetCR(Vec u, Vec f, ObsCtx* user)
+* separate CR calculation into function Vec = GetCR(Vec u, Vec f, ObsCtx* user)
 * optionally write residual in ascii_matlab using SNESGetFunction() and VecView()
 * optionally write CR in ascii_matlab using GetCR() and VecView()
 * check that residual and CR look good
-* consider implementing symmetrized PNGS
-* should I build pngssl.c which does both classical obstacle and SIA exact soln?
+* rewrite in terms of Vec containing defect constraint
+* should I build dcsl.c which does both classical obstacle and SIA exact soln?
 * move on to NMCD!!
