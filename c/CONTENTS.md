@@ -1,22 +1,19 @@
 # mcd-extended/c/
 
-This directory contains a sequence of PETSc C codes on structured meshes (DMDA)
+This directory contains a sequence of PETSc C codes on 2D structured meshes (DMDA)
 which build toward NMCD functionality.  This document gives the sequence of codes
 and their capabilities or performance, especially relative to the previous
 in the sequence.  See the individual codes themselves for more information.
 
 ## bratufd.c
 
-This is a copy, with cleaning, of `c/ch7/solns/bratu2D.c` in
+This is a copy, with clean-up, of `c/ch7/solns/bratu2D.c` in
 https://github.com/bueler/p4pdes.  It solves the Liouville-Bratu problem on a
 square using finite differences and DMDA.
 
 It is the starting point showing that a single matrix-free, FAS full cycle with
 NGS smoothing suffices to give 10-digit accuracy on a problem with 270 million
-degrees of freedom, at only 352 flops per degree of freedom.  (It uses 66% of
-the 128 Gb memory of my Thelio massive machine.  Note 20 cores out of available
-40.  Of course, use an optimized PETSc build.)  Note NGS is also used for the
-coarse solve.  This is extraordinary performance.
+degrees of freedom, at only 352 flops per degree of freedom:
 
         $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratufd -da_grid_x 5 -da_grid_y 5 -lb_exact -snes_rtol 1.0e-10 -snes_converged_reason -lb_showcounts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 2 -fas_coarse_snes_max_it 4 -da_refine 12
         Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
@@ -24,8 +21,13 @@ coarse solve.  This is extraordinary performance.
         done on 16385 x 16385 grid:   error |u-uexact|_inf = 4.038e-10
         real 21.70
 
-See the code comments for convergence comparison, and performance comparison
-between Newton-Krylov-multigrid and FAS+NGS multigrid.
+This uses 66% of the 128 Gb memory of my Thelio massive machine.  Note 20 cores
+out of available 40 are used.  (Of course, an optimized PETSc build is used.)
+Note NGS is also used for the coarse solve.  This is extraordinary performance.
+
+See the code comments, and regression tests in `makefile` for convergence
+comparison, and performance comparison between Newton-Krylov-multigrid and
+FAS+NGS multigrid.
 
 ## bratu.c
 
@@ -65,6 +67,27 @@ FIXME run on thelio with mpiexec -n 20 and -da_refine 11 or 12
 
 ## obstaclesl.c
 
-This solves a classical obstacle problem, specifically the problem solved in Chapter 12 of Bueler (2021), _PETSc for Partial Differential Equations_, by a Q1 finite element method using basic quadrature and FE tools from `q1fem.h`.  This is an inefficient single-level solution by sweeps of projected, nonlinear Gauss-Seidel.
+This solves a classical obstacle problem, specifically the problem solved in
+Chapter 12 of Bueler (2021), _PETSc for Partial Differential Equations_, but
+here by a Q1 finite element method using basic quadrature and FE tools from
+`q1fem.h`.  Option `-ob_pngs` gives an inefficient single-level solution by
+sweeps of projected, nonlinear Gauss-Seidel.  Solution by SNESVI type
+`vinewtonrsls` is also implemented, which is actually more efficient.  Compare:
 
-FIXME show runs
+    $ ./obstaclesl -ob_counts -snes_converged_reason -ob_pngs -da_refine 4
+    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 330
+    flops = 1.409e+09,  residual calls = 331,  PNGS calls = 330
+    done on 33 x 33 grid:   error |u-uexact|_inf = 5.781e-03
+    $ ./obstaclesl -ob_counts -snes_converged_reason -ksp_converged_reason -da_refine 4
+      Linear solve converged due to CONVERGED_RTOL iterations 10
+      Linear solve converged due to CONVERGED_RTOL iterations 12
+      Linear solve converged due to CONVERGED_RTOL iterations 12
+      Linear solve converged due to CONVERGED_RTOL iterations 12
+      Linear solve converged due to CONVERGED_RTOL iterations 12
+    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
+    flops = 2.922e+07,  residual calls = 56,  PNGS calls = 0
+    done on 33 x 33 grid:   error |u-uexact|_inf = 5.781e-03
+
+## dcsl.c
+
+FIXME rewrite of above to use defect constraint
