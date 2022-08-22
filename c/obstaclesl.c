@@ -147,7 +147,7 @@ int main(int argc,char **argv) {
 
     // solve the problem
     PetscCall(DMCreateGlobalVector(da,&u));
-    PetscCall(VecSet(u,0.0));  // initialize to zero; FIXME options?
+    PetscCall(VecSet(u,0.0));  // initialize to zero in this single-purpose code
     PetscCall(SNESSolve(snes,NULL,u));
     PetscCall(VecDestroy(&u));
     PetscCall(DMDestroy(&da));
@@ -533,7 +533,7 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
 PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
     ObsCtx*        user = (ObsCtx*)ctx;
     PetscInt       i, j, k, maxits, totalits=0, sweeps, l;
-    const PetscReal **ab;  // FIXME WHEN OBSTACLE IS Vec: **agammal;
+    const PetscReal **ab;
     PetscReal      x, y, atol, rtol, stol, hx, hy, **au,
                    c, rho, rho0, drhodc, s, cold, glij;
     DM             da;
@@ -563,7 +563,6 @@ PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
         PetscCall(DMDAVecGetArrayRead(da,b,&ab));
     // need local vector for stencil width in parallel
     PetscCall(DMGetLocalVector(da,&uloc));
-    //FIXME PetscCall(DMDAVecGetArrayRead(da,user->gamma_lower,&agammal));
 
     // NGS sweeps over interior nodes
     for (l=0; l<sweeps; l++) {
@@ -588,7 +587,6 @@ PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
                     s = - rho / drhodc;  // Newton step
                     cold = c;
                     c += s;
-                    // FIXME make gamma_lower a Vec
                     // do projection
                     glij = user->gamma_lower(x,y,user);
                     c = PetscMax(c, glij - au[j][i]);
@@ -612,7 +610,6 @@ PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
         PetscCall(DMLocalToGlobal(da,uloc,INSERT_VALUES,u));
     }
 
-    // FIXME PetscCall(DMDARestoreArrayRead(da,user->gamma_lower,&agammal));
     PetscCall(DMRestoreLocalVector(da,&uloc));
     if (b)
         PetscCall(DMDAVecRestoreArrayRead(da,b,&ab));
