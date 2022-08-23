@@ -13,9 +13,9 @@ obstaclesl: obstaclesl.o q1fem.o
 	-${CLINKER} -o obstaclesl obstaclesl.o q1fem.o ${PETSC_LIB}
 	${RM} obstaclesl.o q1fem.o
 
-dcsl: dcsl.o q1fem.o
-	-${CLINKER} -o dcsl dcsl.o q1fem.o ${PETSC_LIB}
-	${RM} dcsl.o q1fem.o
+dcsl: dcsl.o q1fem.o ldc.o
+	-${CLINKER} -o dcsl dcsl.o q1fem.o ldc.o ${PETSC_LIB}
+	${RM} dcsl.o q1fem.o ldc.o
 
 # testing
 runbratufd_1:

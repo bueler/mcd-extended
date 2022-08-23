@@ -3,22 +3,14 @@ static char help[] =
 "using a structured-grid (DMDA):\n"
 "  - nabla^2 u = f(x,y),  u >= psi(x,y)\n"
 "subject to Dirichlet boundary conditions u=g.  Implements projected, nonlinear\n"
-"Gauss-Seidel (PNGS) sweeps, a non-scalable single-level method, in terms of a\n"
-"defect constraint Vec.  Option prefix dc_.  Compare obstaclesl.c.\n\n";
+"Gauss-Seidel (PNGS) sweeps, a non-scalable single-level method, *in terms of a\n"
+"defect constraint Vec*.  Note that here (single-level) we have only one LDC at\n"
+"the finest-level, while for NMCD (multilevel) we will have one LDC fo each\n"
+"level.  Option prefix dc_.  Compare obstaclesl.c.\n\n";
 
 #include <petsc.h>
 #include "q1fem.h"
-
-// FIXME hook this up properly
-// for MCD we will have a structured grid for each level, down obstacles, and up
-// obstacles; the obstacles are NULL if +- infinity (?)
-// for dcsl (single-level) there is only the finest-level instance
-typedef struct {
-  DM  dalevel;             // structured grid for level
-  Vec gammatop, gammabot,  // original obstacle; only non-NULL on finest level
-      chitop, chibot,      // down defect constraints: chi* = w - gamma*
-      phitop, phibot;      // up defect constraints
-} LevelDefectConstraints;
+#include "ldc.h"
 
 typedef struct {
   // obstacle gamma_lower(x,y)
@@ -31,7 +23,8 @@ typedef struct {
   PetscBool plainresidual;  // when FormCRLocal() is called, instead compute
                             // plain-old residual
   PetscInt  residualcount, ngscount, quadpts;
-  LevelDefectConstraints *finestdc;  // FIXME: replace with array of LevelDefectConstraints, one for each level
+  // FIXME: replace following with array of LevelDefectConstraints for each level
+  LDC       finest;
 } ObsCtx;
 
 // z = gamma_lower(x,y) is the hemispherical obstacle, but made C^1 with "skirt" at r=r0
@@ -74,7 +67,7 @@ static PetscReal fg_zero(PetscReal x, PetscReal y, void *ctx) {
 extern PetscErrorCode AssertBoundaryAdmissible(DMDALocalInfo*, ObsCtx*);
 extern PetscErrorCode FormVecFromFormula(PetscReal (*)(PetscReal,PetscReal,void*),
                                          DMDALocalInfo*, Vec, ObsCtx*);
-extern PetscBool NodeOnBdry(DMDALocalInfo*, PetscInt, PetscInt);
+extern PetscBool      NodeOnBdry(DMDALocalInfo*, PetscInt, PetscInt);
 extern PetscErrorCode ResidualToCR(DMDALocalInfo*, PetscReal **, PetscReal **,
                                    PetscReal**, ObsCtx*);
 extern PetscErrorCode FormCRLocal(DMDALocalInfo*, PetscReal **,
@@ -107,7 +100,7 @@ int main(int argc,char **argv) {
                             "dcsl.c",counts,&counts,NULL));
     PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only)",
                             "dcsl.c",ctx.quadpts,&(ctx.quadpts),NULL));
-    PetscCall(PetscOptionsString("-view","custom view of solution,residual,cr in ascii_matlab",
+    PetscCall(PetscOptionsString("-view","view solution,residual,cr into ascii_matlab",
                             "dcsl",viewname,viewname,sizeof(viewname),&view));
     PetscOptionsEnd();
 
@@ -125,6 +118,10 @@ int main(int argc,char **argv) {
     PetscCall(DMDASetUniformCoordinates(da,-2.0,2.0,-2.0,2.0,0.0,1.0));
     PetscCall(DMDAGetLocalInfo(da,&info));
     PetscCall(AssertBoundaryAdmissible(&info,&ctx));
+
+    PetscCall(LDCCreate(0,da,&(ctx.finest)));
+    PetscCall(DMCreateGlobalVector(ctx.finest.dal,&(ctx.finest.gamlow)));
+    PetscCall(FormVecFromFormula(gamma_lower,&info,ctx.finest.gamlow,&ctx));
 
     PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
     PetscCall(SNESSetApplicationContext(snes,&ctx));
@@ -210,6 +207,7 @@ int main(int argc,char **argv) {
                           info.mx,info.my,errinf));
 
     PetscCall(SNESDestroy(&snes));
+    PetscCall(LDCDestroy(&(ctx.finest)));
     PetscCall(PetscFinalize());
     return 0;
 }
@@ -232,7 +230,6 @@ PetscErrorCode AssertBoundaryAdmissible(DMDALocalInfo *info, ObsCtx* user) {
     }
     return 0;
 }
-
 
 PetscErrorCode FormVecFromFormula(PetscReal (*ufcn)(PetscReal,PetscReal,void*),
                                   DMDALocalInfo *info, Vec u, ObsCtx* user) {
