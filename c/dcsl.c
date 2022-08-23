@@ -9,6 +9,17 @@ static char help[] =
 #include <petsc.h>
 #include "q1fem.h"
 
+// FIXME hook this up properly
+// for MCD we will have a structured grid for each level, down obstacles, and up
+// obstacles; the obstacles are NULL if +- infinity (?)
+// for dcsl (single-level) there is only the finest-level instance
+typedef struct {
+  DM  dalevel;             // structured grid for level
+  Vec gammatop, gammabot,  // original obstacle; only non-NULL on finest level
+      chitop, chibot,      // down defect constraints: chi* = w - gamma*
+      phitop, phibot;      // up defect constraints
+} LevelDefectConstraints;
+
 typedef struct {
   // obstacle gamma_lower(x,y)
   PetscReal (*gamma_lower)(PetscReal x, PetscReal y, void *ctx);
@@ -20,6 +31,7 @@ typedef struct {
   PetscBool plainresidual;  // when FormCRLocal() is called, instead compute
                             // plain-old residual
   PetscInt  residualcount, ngscount, quadpts;
+  LevelDefectConstraints *finestdc;  // FIXME: replace with array of LevelDefectConstraints, one for each level
 } ObsCtx;
 
 // z = gamma_lower(x,y) is the hemispherical obstacle, but made C^1 with "skirt" at r=r0
@@ -60,8 +72,8 @@ static PetscReal fg_zero(PetscReal x, PetscReal y, void *ctx) {
 }
 
 extern PetscErrorCode AssertBoundaryAdmissible(DMDALocalInfo*, ObsCtx*);
-extern PetscErrorCode FormExact(PetscReal (*)(PetscReal,PetscReal,void*),
-                                DMDALocalInfo*, Vec, ObsCtx*);
+extern PetscErrorCode FormVecFromFormula(PetscReal (*)(PetscReal,PetscReal,void*),
+                                         DMDALocalInfo*, Vec, ObsCtx*);
 extern PetscBool NodeOnBdry(DMDALocalInfo*, PetscInt, PetscInt);
 extern PetscErrorCode ResidualToCR(DMDALocalInfo*, PetscReal **, PetscReal **,
                                    PetscReal**, ObsCtx*);
@@ -189,7 +201,7 @@ int main(int argc,char **argv) {
 
     // report on numerical error
     PetscCall(DMCreateGlobalVector(da,&uexact));
-    PetscCall(FormExact(u_exact,&info,uexact,&ctx));
+    PetscCall(FormVecFromFormula(u_exact,&info,uexact,&ctx));
     PetscCall(VecAXPY(u,-1.0,uexact));    // u <- u + (-1.0) uexact
     PetscCall(VecDestroy(&uexact));
     PetscCall(VecNorm(u,NORM_INFINITY,&errinf));
@@ -221,8 +233,8 @@ PetscErrorCode AssertBoundaryAdmissible(DMDALocalInfo *info, ObsCtx* user) {
     return 0;
 }
 
-PetscErrorCode FormExact(PetscReal (*ufcn)(PetscReal,PetscReal,void*),
-                         DMDALocalInfo *info, Vec u, ObsCtx* user) {
+PetscErrorCode FormVecFromFormula(PetscReal (*ufcn)(PetscReal,PetscReal,void*),
+                                  DMDALocalInfo *info, Vec u, ObsCtx* user) {
     PetscInt     i, j;
     PetscReal    hx, hy, x, y, **au;
     hx = 4.0 / (PetscReal)(info->mx - 1);
@@ -243,6 +255,7 @@ PetscBool NodeOnBdry(DMDALocalInfo *info, PetscInt i, PetscInt j) {
     return (((i == 0) || (i == info->mx-1) || (j == 0) || (j == info->my-1)));
 }
 
+// FIXME change over to using Vecs for bilateral constraints
 // compute complementarity residual Fhat from conventional residual F:
 //     Fhat_ij = F_ij         if u_ij > gamma_lower(x_i,y_j)
 //               min{F_ij,0}  if u_ij <= gamma_lower(x_i,y_j)
@@ -279,9 +292,9 @@ PetscReal IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
            - eval(ff,xi,eta) * chi(L,xi,eta);
 }
 
-// compute F_ij, the nodal residual of the discretized nonlinear operator,
-// or the complementarity residual if user->pngs is true
-// the residual is
+// compute F_ij, the complementarity residual of the discretized nonlinear operator
+// (or the plain residual if user->plainresidual)
+// the plain residual is
 //     F(u)[v] = int_Omega grad u . grad v - f v,
 // giving the vector of interior node residuals
 //     F_ij = F(u)[psi_ij]
@@ -289,7 +302,7 @@ PetscReal IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
 // over 4 elements; at boundary nodes we have
 //     F_ij = u_ij - g(x_i,y_j)
 PetscErrorCode FormCRLocal(DMDALocalInfo *info, PetscReal **au,
-                                     PetscReal **FF, ObsCtx *user) {
+                           PetscReal **FF, ObsCtx *user) {
     const Quad1D    q = gausslegendre[user->quadpts-1];
     const PetscInt  li[4] = {0,-1,-1,0},  lj[4] = {0,0,-1,-1};
     const PetscReal hx = 4.0 / (PetscReal)(info->mx - 1),
@@ -473,6 +486,7 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
     return 0;
 }
 
+// FIXME change over to using Vecs for bilateral constraints
 // do projected nonlinear Gauss-Seidel (processor-block) sweeps on equation
 //     F(u)[psi_ij] = b_ij   for all interior nodes i,j
 // where psi_ij is the hat function,
@@ -494,7 +508,7 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
 PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
     ObsCtx*        user = (ObsCtx*)ctx;
     PetscInt       i, j, k, maxits, totalits=0, sweeps, l;
-    const PetscReal **ab;  // FIXME WHEN OBSTACLE IS Vec: **agammal;
+    const PetscReal **ab;
     PetscReal      x, y, atol, rtol, stol, hx, hy, **au,
                    c, rho, rho0, drhodc, s, cold, glij;
     DM             da;
@@ -524,7 +538,6 @@ PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
         PetscCall(DMDAVecGetArrayRead(da,b,&ab));
     // need local vector for stencil width in parallel
     PetscCall(DMGetLocalVector(da,&uloc));
-    //FIXME PetscCall(DMDAVecGetArrayRead(da,user->gamma_lower,&agammal));
 
     // NGS sweeps over interior nodes
     for (l=0; l<sweeps; l++) {
@@ -549,7 +562,6 @@ PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
                     s = - rho / drhodc;  // Newton step
                     cold = c;
                     c += s;
-                    // FIXME make gamma_lower a Vec
                     // do projection
                     glij = user->gamma_lower(x,y,user);
                     c = PetscMax(c, glij - au[j][i]);
@@ -573,7 +585,6 @@ PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
         PetscCall(DMLocalToGlobal(da,uloc,INSERT_VALUES,u));
     }
 
-    // FIXME PetscCall(DMDARestoreArrayRead(da,user->gamma_lower,&agammal));
     PetscCall(DMRestoreLocalVector(da,&uloc));
     if (b)
         PetscCall(DMDAVecRestoreArrayRead(da,b,&ab));
