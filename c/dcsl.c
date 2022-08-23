@@ -217,7 +217,6 @@ int main(int argc,char **argv) {
 PetscErrorCode AssertBoundaryAdmissible(DMDALocalInfo *info, ObsCtx* user) {
     PetscInt     i, j;
     PetscReal    hx, hy, x, y;
-    char         mystr[PETSC_MAX_PATH_LEN];
     hx = 4.0 / (PetscReal)(info->mx - 1);
     hy = 4.0 / (PetscReal)(info->my - 1);
     for (j=info->ys; j<info->ys+info->ym; j++) {
@@ -225,13 +224,15 @@ PetscErrorCode AssertBoundaryAdmissible(DMDALocalInfo *info, ObsCtx* user) {
         for (i=info->xs; i<info->xs+info->xm; i++) {
             x = -2.0 + i * hx;
             if (user->g_bdry(x,y,user) < user->gamma_lower(x,y,user)) {
-                sprintf(mystr,"assertion g(x,y) >= gamma(x,y) fails at x=%.6e,y=%.6e\n",x,y);
-                SETERRQ(PETSC_COMM_SELF,1,mystr);
+                PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+                    "ERROR: g(x,y) >= gamma(x,y) fails at x=%.6e,y=%.6e\n",x,y));
+                SETERRQ(PETSC_COMM_SELF,1,"assertion fails: boundary values are above obstacle");
             }
         }
     }
     return 0;
 }
+
 
 PetscErrorCode FormVecFromFormula(PetscReal (*ufcn)(PetscReal,PetscReal,void*),
                                   DMDALocalInfo *info, Vec u, ObsCtx* user) {
