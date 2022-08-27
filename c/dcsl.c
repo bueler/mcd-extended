@@ -145,7 +145,6 @@ int main(int argc,char **argv) {
     PetscCall(VecSet(u,0.0));  // initialize to zero; FIXME options?
     PetscCall(SNESSolve(snes,NULL,u));
     PetscCall(VecDestroy(&u));
-    PetscCall(DMDestroy(&da));
 
     if (counts) {
         // calls to FormResidualOrCRLocal() and ProjectedNGS() are

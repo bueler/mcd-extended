@@ -19,8 +19,6 @@ PetscErrorCode LDCCreate(PetscInt level, DM da, LDC *ldc) {
 }
 
 PetscErrorCode LDCDestroy(LDC *ldc) {
-    if (ldc->dal)
-        PetscCall(DMDestroy(&(ldc->dal)));
     if (ldc->gamupp)
         PetscCall(VecDestroy(&(ldc->gamupp)));
     if (ldc->gamlow)
@@ -33,6 +31,8 @@ PetscErrorCode LDCDestroy(LDC *ldc) {
         PetscCall(VecDestroy(&(ldc->phiupp)));
     if (ldc->philow)
         PetscCall(VecDestroy(&(ldc->philow)));
+    if (ldc->dal)
+        PetscCall(DMDestroy(&(ldc->dal)));
     return 0;
 }
 
