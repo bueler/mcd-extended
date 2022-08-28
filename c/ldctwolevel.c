@@ -1,6 +1,9 @@
 static char help[] =
 "Test a two-level LDC stack.\n\n";
 
+// FIXME: generate and test Mats for interpolation and restriction and injection
+// FIXME: implement and test monotone restriction
+
 #include <petsc.h>
 #include "ldc.h"
 
@@ -24,6 +27,8 @@ extern PetscErrorCode FormVecFromFormula(PetscReal (*)(PetscReal,PetscReal),
 int main(int argc,char **argv) {
     DM             coarseda;
     DMDALocalInfo  info;
+    Vec            w;
+    PetscReal      vmin,vmax;
     LDC            ldc[2];
 
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
@@ -38,21 +43,36 @@ int main(int argc,char **argv) {
 
     // create LDC stack
     PetscCall(LDCCreate(0,coarseda,&(ldc[0])));
+    PetscCall(LDCTogglePrintInfo(&(ldc[0])));
     PetscCall(LDCRefine(ldc[0], &(ldc[1])));
+    PetscCall(LDCTogglePrintInfo(&(ldc[1])));
 
     // gamma_lower obstacle on fine level
     PetscCall(DMDAGetLocalInfo(ldc[1].dal,&info));
     PetscCall(DMCreateGlobalVector(ldc[1].dal,&(ldc[1].gamlow)));
     PetscCall(FormVecFromFormula(gamma_lower,&info,ldc[1].gamlow));
-
-    // view stuff
+    
+    // view stuff: DMDA at each level, vector norm
     PetscCall(PetscOptionsSetValue(NULL, "-dm_view", ""));
-    PetscCall(PetscOptionsSetValue(NULL, "-vec_view", "::ascii_matlab"));
     PetscCall(DMViewFromOptions(ldc[0].dal, NULL, "-dm_view"));
     PetscCall(DMViewFromOptions(ldc[1].dal, NULL, "-dm_view"));
-    PetscCall(VecViewFromOptions(ldc[1].gamlow, NULL, "-vec_view"));
+    PetscCall(VecMin(ldc[1].gamlow,NULL,&vmin));
+    PetscCall(VecMax(ldc[1].gamlow,NULL,&vmax));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"on fine: %.6f <= |gamlow| <= %.6f\n",
+                          vmin,vmax));
+
+    // zero iterate w generates up defect constraints (FIXME only on fine level so far)
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"on fine: set w=1.000000\n"));
+    PetscCall(DMCreateGlobalVector(ldc[1].dal,&w));
+    PetscCall(VecSet(w,1.0));
+    PetscCall(LDCUpDefects(w,&(ldc[1])));
+    PetscCall(VecMin(ldc[1].chilow,NULL,&vmin));
+    PetscCall(VecMax(ldc[1].chilow,NULL,&vmax));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"on fine: %.6f <= |chilow| <= %.6f\n",
+                          vmin,vmax));
 
     // destroy
+    PetscCall(VecDestroy(&w));
     PetscCall(LDCDestroy(&(ldc[1])));
     PetscCall(LDCDestroy(&(ldc[0])));
     PetscCall(PetscFinalize());

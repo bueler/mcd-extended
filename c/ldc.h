@@ -35,14 +35,17 @@ typedef struct {
 // private
   PetscInt      level;           // =0 in single-level usage; otherwise 0 is coarsest
   DMDALocalInfo dalinfo;
+  PetscBool     printinfo;
 } LDC;
 
 PetscErrorCode LDCCreate(PetscInt level, DM da, LDC *ldc);
 
-PetscErrorCode LDCRefine(LDC coarse, LDC *fine);
-
 PetscErrorCode LDCDestroy(LDC *ldc);
 
-PetscErrorCode LDCUpDefects(LDC ldc, Vec w);
+PetscErrorCode LDCTogglePrintInfo(LDC *ldc);
+
+PetscErrorCode LDCRefine(LDC coarse, LDC *fine);
+
+PetscErrorCode LDCUpDefects(Vec w, LDC *ldc);
 
 #endif  // #ifndef LDC_H_

@@ -17,9 +17,9 @@ dcsl: dcsl.o q1fem.o ldc.o
 	-${CLINKER} -o dcsl dcsl.o q1fem.o ldc.o ${PETSC_LIB}
 	${RM} dcsl.o q1fem.o ldc.o
 
-ldctest: ldctest.o ldc.o
-	-${CLINKER} -o ldctest ldctest.o ldc.o ${PETSC_LIB}
-	${RM} ldctest.o ldc.o
+ldctwolevel: ldctwolevel.o ldc.o
+	-${CLINKER} -o ldctwolevel ldctwolevel.o ldc.o ${PETSC_LIB}
+	${RM} ldctwolevel.o ldc.o
 
 # testing
 runbratufd_1:
@@ -66,9 +66,14 @@ rundcsl_1:
 
 test_dcsl: rundcsl_1
 
-test: test_bratufd test_bratu test_obstaclesl test_dcsl
+runldctwolevel_1:
+	-@./testit.sh ldctwolevel "" 1 1
 
-.PHONY: clean test test_bratufd test_bratu test_obstaclesl test_dcsl runbratufd_1 runbratufd_2 runbratufd_3 runbratufd_4 runbratu_1 runbratu_2 runbratu_3 runbratu_4 runobstaclesl_1 runobstaclesl_2 runobstaclesl_3 rundcsl_1
+test_ldctwolevel: runldctwolevel_1
+
+test: test_bratufd test_bratu test_obstaclesl test_dcsl test_ldctwolevel
+
+.PHONY: clean test test_bratufd test_bratu test_obstaclesl test_dcsl test_ldctwolevel runbratufd_1 runbratufd_2 runbratufd_3 runbratufd_4 runbratu_1 runbratu_2 runbratu_3 runbratu_4 runobstaclesl_1 runobstaclesl_2 runobstaclesl_3 rundcsl_1 runldctwolevel_1
 
 clean::
-	@rm -f bratufd bratu obstaclesl dcsl *tmp tmpview.m
+	@rm -f bratufd bratu obstaclesl dcsl ldctwolevel *tmp tmpview.m

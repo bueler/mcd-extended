@@ -1,0 +1,16 @@
+LDC info: refining coarse LDC with level 0 to generate fine LDC with level 1
+DM Object: 1 MPI process
+  type: da
+Processor [0] M 3 N 3 m 1 n 1 w 1 s 1
+X range of indices: 0 3, Y range of indices: 0 3
+DM Object: 1 MPI process
+  type: da
+Processor [0] M 5 N 5 m 1 n 1 w 1 s 1
+X range of indices: 0 5, Y range of indices: 0 5
+on fine: -3.545814 <= |gamlow| <= 1.000000
+on fine: set w=1.000000
+LDC info: chiupp=NULL because gamupp=+infty
+LDC info: creating chilow and setting chilow=gamlow-w at level 1
+on fine: -4.545814 <= |chilow| <= 0.000000
+LDC info: destroying LDC with level 1
+LDC info: destroying LDC with level 0
