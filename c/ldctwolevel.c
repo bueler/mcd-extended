@@ -43,10 +43,8 @@ int main(int argc,char **argv) {
 
     // create LDC stack
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"at level 0: creating LDC at level 0 from coarseda\n"));
-    PetscCall(LDCCreate(0,coarseda,&(ldc[0])));
-    PetscCall(LDCTogglePrintInfo(&(ldc[0])));
-    PetscCall(LDCRefine(ldc[0], &(ldc[1])));
-    PetscCall(LDCTogglePrintInfo(&(ldc[1])));
+    PetscCall(LDCCreate(PETSC_TRUE,0,coarseda,&(ldc[0])));
+    PetscCall(LDCRefine(PETSC_TRUE,ldc[0], &(ldc[1])));
 
     // view DMDA at each level
     PetscCall(PetscOptionsSetValue(NULL, "-dm_view", ""));

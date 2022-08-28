@@ -1,9 +1,9 @@
 #include <petsc.h>
 #include "ldc.h"
 
-PetscErrorCode LDCCreate(PetscInt level, DM da, LDC *ldc) {
+PetscErrorCode LDCCreate(PetscBool verbose, PetscInt level, DM da, LDC *ldc) {
     ldc->level = level;
-    ldc->printinfo = PETSC_FALSE;
+    ldc->printinfo = verbose;
     if (da) {
         ldc->dal = da;
         PetscCall(DMDAGetLocalInfo(da,&(ldc->dalinfo)));
@@ -40,7 +40,7 @@ PetscErrorCode LDCDestroy(LDC *ldc) {
     return 0;
 }
 
-PetscErrorCode LDCRefine(LDC coarse, LDC *fine) {
+PetscErrorCode LDCRefine(PetscBool verbose, LDC coarse, LDC *fine) {
     if (!(coarse.dal)) {
         SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: allocate coarse DMDA before calling LDCRefine()");
     }
@@ -49,7 +49,7 @@ PetscErrorCode LDCRefine(LDC coarse, LDC *fine) {
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
         "LDC info: refining coarse LDC at level %d to generate fine LDC at level %d\n",
         coarse.level,fine->level));
-    fine->printinfo = PETSC_FALSE;
+    fine->printinfo = verbose;
     PetscCall(DMRefine(coarse.dal,PETSC_COMM_WORLD,&(fine->dal)));
     PetscCall(DMDAGetLocalInfo(fine->dal,&(fine->dalinfo)));
     fine->gamupp = NULL;
@@ -58,11 +58,6 @@ PetscErrorCode LDCRefine(LDC coarse, LDC *fine) {
     fine->chilow = NULL;
     fine->phiupp = NULL;
     fine->philow = NULL;
-    return 0;
-}
-
-PetscErrorCode LDCTogglePrintInfo(LDC *ldc) {
-    ldc->printinfo = !(ldc->printinfo);
     return 0;
 }
 

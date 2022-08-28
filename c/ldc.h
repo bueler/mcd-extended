@@ -1,13 +1,15 @@
 // LDC = Level Defect Constraints
 //
-// Tools for managing defect constraints, specifically box constraints, at each
-// level of a mesh hierarchy.  Contains a structured grid, and upper and lower
-// obstacles, for each level.
+// Tools for managing defect constraints, for box constraints, at each
+// level of a mesh hierarchy.  LDC is a struct which contains a structured
+// grid (DMDA), and upper and lower up and down defect constraints (Vecs)
+// for each level.  The finest level will also hold the original obstacles
+// (Vecs).
 //
 // Canonical two-level usage with nontrivial upper and lower obstacles;
 // note ldc[0] is coarse, ldc[1] is fine:
 //     LDC ldc[2];
-//     [  create and set up coarse DMDA  ]
+//     [  create and set up DMDA coarseda ]
 //     LDCCreate(0,coarseda,&(ldc[0]));
 //     LDCRefine(ldc[0],&(ldc[1]));
 //     DMCreateGlobalVector(ldc[1].dal,&(ldc[1].gamupp)));
@@ -25,7 +27,7 @@
 //
 // Canonical usage for single-level with nontrivial upper and lower obstacles:
 //     LDC ldc;
-//     [  create and set up DMDA  ]
+//     [  create and set up DMDA da ]
 //     LDCCreate(0,da,&ldc);
 //     DMCreateGlobalVector(ldc.dal,&(ldc.gamupp)));
 //     [  set Vec ldc.gamupp  ]
@@ -57,15 +59,13 @@ typedef struct {
   PetscBool     printinfo;
 } LDC;
 
-PetscErrorCode LDCCreate(PetscInt level, DM da, LDC *ldc);
+PetscErrorCode LDCCreate(PetscBool verbose, PetscInt level, DM da, LDC *ldc);
 
 PetscErrorCode LDCDestroy(LDC *ldc);
 
-PetscErrorCode LDCTogglePrintInfo(LDC *ldc);
-
 PetscErrorCode LDCReportRanges(LDC ldc);
 
-PetscErrorCode LDCRefine(LDC coarse, LDC *fine);
+PetscErrorCode LDCRefine(PetscBool verbose, LDC coarse, LDC *fine);
 
 PetscErrorCode LDCUpDefectsFromObstacles(Vec w, LDC *ldc);
 
