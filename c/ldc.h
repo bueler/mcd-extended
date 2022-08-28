@@ -4,19 +4,38 @@
 // level of a mesh hierarchy.  Contains a structured grid, and upper and lower
 // obstacles, for each level.
 //
-// Canonical usage for single-level with nontrivial upper and lower constraints:
-//     [  create and set up DM da  ]
-//     LDCCreate(k,da,&ldc);
+// Canonical two-level usage with nontrivial upper and lower obstacles;
+// note ldc[0] is coarse, ldc[1] is fine:
+//     LDC ldc[2];
+//     [  create and set up coarse DMDA  ]
+//     LDCCreate(0,coarseda,&(ldc[0]));
+//     LDCRefine(ldc[0],&(ldc[1]));
+//     DMCreateGlobalVector(ldc[1].dal,&(ldc[1].gamupp)));
+//     [  set Vec ldc[1].gamupp  ]
+//     DMCreateGlobalVector(ldc[1].dal,&(ldc[1].gamlow)));
+//     [  set Vec ldc[1].gamlow  ]
+//     [  start a box-constrained solver, and get a fine-level iterate w  ]
+//     LDCUpDefectsFromObstacles(w,&(ldc[1]));
+//     LDCUpDefectsMonotoneRestrict(ldc[1],&(ldc[0]));
+//     LDCDownDefects(&(ldc[0]),&(ldc[1]));
+//     LDCDownDefects(NULL,&(ldc[0]));
+//     [  continue with the solver  ]
+//     LDCDestroy(&(ldc[1]));
+//     LDCDestroy(&(ldc[0]));
+//
+// Canonical usage for single-level with nontrivial upper and lower obstacles:
+//     LDC ldc;
+//     [  create and set up DMDA  ]
+//     LDCCreate(0,da,&ldc);
 //     DMCreateGlobalVector(ldc.dal,&(ldc.gamupp)));
-//     [  set values in Vec ldc.gamupp from a formula  ]
+//     [  set Vec ldc.gamupp  ]
 //     DMCreateGlobalVector(ldc.dal,&(ldc.gamlow)));
-//     [  set values in Vec ldc.gamlow from a formula  ]
+//     [  set Vec ldc.gamlow  ]
 //     [  start a box-constrained solver, and get an iterate w  ]
-//     LDCUpDefects(ldc,w);
+//     LDCUpDefectsFromObstacles(w,&ldc);
+//     LDCDownDefects(NULL,&ldc);
 //     [  continue with the solver  ]
 //     LDCDestroy(&ldc);
-//
-// FIXME for multilevel use, do monotone restriction in here
 
 #ifndef LDC_H_
 #define LDC_H_
@@ -44,8 +63,14 @@ PetscErrorCode LDCDestroy(LDC *ldc);
 
 PetscErrorCode LDCTogglePrintInfo(LDC *ldc);
 
+PetscErrorCode LDCReportRanges(LDC ldc);
+
 PetscErrorCode LDCRefine(LDC coarse, LDC *fine);
 
-PetscErrorCode LDCUpDefects(Vec w, LDC *ldc);
+PetscErrorCode LDCUpDefectsFromObstacles(Vec w, LDC *ldc);
+
+//FIXME implement PetscErrorCode LDCUpDefectsMonotoneRestrict(LDC fine, LDC *coarse);
+
+PetscErrorCode LDCDownDefects(LDC *coarse, LDC *fine); // modifies fine but not coarse
 
 #endif  // #ifndef LDC_H_

@@ -1,16 +1,31 @@
-LDC info: refining coarse LDC with level 0 to generate fine LDC with level 1
-DM Object: 1 MPI process
+at level 0: creating coarseda
+at level 0: creating LDC at level 0 from coarseda
+LDC info: refining coarse LDC at level 0 to generate fine LDC at level 1
+DM Object: ldc[0].dal 1 MPI process
   type: da
 Processor [0] M 3 N 3 m 1 n 1 w 1 s 1
 X range of indices: 0 3, Y range of indices: 0 3
-DM Object: 1 MPI process
+DM Object: ldc[1].dal 1 MPI process
   type: da
 Processor [0] M 5 N 5 m 1 n 1 w 1 s 1
 X range of indices: 0 5, Y range of indices: 0 5
-on fine: -3.545814 <= |gamlow| <= 1.000000
-on fine: set w=1.000000
+at level 1: creating gamlow at level 1 from formula
+at level 1: using iterate w=1.000000
 LDC info: chiupp=NULL because gamupp=+infty
 LDC info: creating chilow and setting chilow=gamlow-w at level 1
-on fine: -4.545814 <= |chilow| <= 0.000000
-LDC info: destroying LDC with level 1
-LDC info: destroying LDC with level 0
+defect constraint ranges at level 0:
+  [ gamupp=NULL is +infty ]
+  [ gamlow=NULL is -infty ]
+  [ chiupp=NULL is +infty ]
+  [ chilow=NULL is -infty ]
+  [ phiupp=NULL is +infty ]
+  [ philow=NULL is -infty ]
+defect constraint ranges at level 1:
+  [ gamupp=NULL is +infty ]
+  -3.545814 <= |gamlow| <=  1.000000
+  [ chiupp=NULL is +infty ]
+  -4.545814 <= |chilow| <=  0.000000
+  [ phiupp=NULL is +infty ]
+  [ philow=NULL is -infty ]
+LDC info: destroying LDC at level 1
+LDC info: destroying LDC at level 0

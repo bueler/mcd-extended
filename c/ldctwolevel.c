@@ -28,12 +28,12 @@ int main(int argc,char **argv) {
     DM             coarseda;
     DMDALocalInfo  info;
     Vec            w;
-    PetscReal      vmin,vmax;
     LDC            ldc[2];
 
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
     // create coarse DMDA
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"at level 0: creating coarseda\n"));
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
                            DMDA_STENCIL_BOX,
                            3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&coarseda));
@@ -42,34 +42,40 @@ int main(int argc,char **argv) {
     PetscCall(DMDASetUniformCoordinates(coarseda,-2.0,2.0,-2.0,2.0,0.0,1.0));
 
     // create LDC stack
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"at level 0: creating LDC at level 0 from coarseda\n"));
     PetscCall(LDCCreate(0,coarseda,&(ldc[0])));
     PetscCall(LDCTogglePrintInfo(&(ldc[0])));
     PetscCall(LDCRefine(ldc[0], &(ldc[1])));
     PetscCall(LDCTogglePrintInfo(&(ldc[1])));
 
+    // view DMDA at each level
+    PetscCall(PetscOptionsSetValue(NULL, "-dm_view", ""));
+    PetscCall(PetscObjectSetName((PetscObject)(ldc[0].dal),"ldc[0].dal"));
+    PetscCall(PetscObjectSetName((PetscObject)(ldc[1].dal),"ldc[1].dal"));
+    PetscCall(DMViewFromOptions(ldc[0].dal, NULL, "-dm_view"));
+    PetscCall(DMViewFromOptions(ldc[1].dal, NULL, "-dm_view"));
+
     // gamma_lower obstacle on fine level
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"at level 1: creating gamlow at level 1 from formula\n"));
     PetscCall(DMDAGetLocalInfo(ldc[1].dal,&info));
     PetscCall(DMCreateGlobalVector(ldc[1].dal,&(ldc[1].gamlow)));
     PetscCall(FormVecFromFormula(gamma_lower,&info,ldc[1].gamlow));
-    
-    // view stuff: DMDA at each level, vector norm
-    PetscCall(PetscOptionsSetValue(NULL, "-dm_view", ""));
-    PetscCall(DMViewFromOptions(ldc[0].dal, NULL, "-dm_view"));
-    PetscCall(DMViewFromOptions(ldc[1].dal, NULL, "-dm_view"));
-    PetscCall(VecMin(ldc[1].gamlow,NULL,&vmin));
-    PetscCall(VecMax(ldc[1].gamlow,NULL,&vmax));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"on fine: %.6f <= |gamlow| <= %.6f\n",
-                          vmin,vmax));
 
     // zero iterate w generates up defect constraints (FIXME only on fine level so far)
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"on fine: set w=1.000000\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"at level 1: using iterate w=1.000000\n"));
     PetscCall(DMCreateGlobalVector(ldc[1].dal,&w));
     PetscCall(VecSet(w,1.0));
-    PetscCall(LDCUpDefects(w,&(ldc[1])));
-    PetscCall(VecMin(ldc[1].chilow,NULL,&vmin));
-    PetscCall(VecMax(ldc[1].chilow,NULL,&vmax));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"on fine: %.6f <= |chilow| <= %.6f\n",
-                          vmin,vmax));
+    PetscCall(LDCUpDefectsFromObstacles(w,&(ldc[1])));
+    // FIXME monotone restrict for chiupp,chilow on ldc[0]
+
+    // generate down defects
+    // FIXME untested
+    //PetscCall(LDCDownDefects(&(ldc[0]),&(ldc[1])));
+    //PetscCall(LDCDownDefects(NULL,&(ldc[0])));
+
+    // ranges on Vecs on each level
+    PetscCall(LDCReportRanges(ldc[0]));
+    PetscCall(LDCReportRanges(ldc[1]));
 
     // destroy
     PetscCall(VecDestroy(&w));
