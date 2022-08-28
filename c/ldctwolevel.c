@@ -48,12 +48,33 @@ int main(int argc,char **argv) {
     PetscCall(DMCreateGlobalVector(ldc[1].dal,&(ldc[1].gamlow)));
     PetscCall(FormVecFromFormula(gamma_lower,&info,ldc[1].gamlow));
 
+#if 0
+    // test Q1 restriction, injection, and interpolation on temporary vecs
+    Vec vcoarseFW, vcoarseINJ, vfine;
+    PetscCall(DMCreateGlobalVector(ldc[0].dal,&vcoarseFW));
+    PetscCall(DMCreateGlobalVector(ldc[0].dal,&vcoarseINJ));
+    PetscCall(DMCreateGlobalVector(ldc[1].dal,&vfine));
+    PetscCall(LDCQ1RestrictVec(ldc[1],ldc[0],ldc[1].gamlow,&vcoarseFW));
+    PetscCall(LDCQ1InjectVec(ldc[1],ldc[0],ldc[1].gamlow,&vcoarseINJ));
+    PetscCall(LDCQ1InterpolateVec(ldc[0],ldc[1],vcoarseFW,&vfine));
+    PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB));
+    PetscCall(VecView(ldc[1].gamlow,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(VecView(vcoarseFW,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(VecView(vcoarseINJ,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(VecView(vfine,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(VecDestroy(&vfine));
+    PetscCall(VecDestroy(&vcoarseINJ));
+    PetscCall(VecDestroy(&vcoarseFW));
+#endif
+
     // zero iterate w generates up defect constraints (FIXME only on fine level so far)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"at level 1: using iterate w=1.000000\n"));
     PetscCall(DMCreateGlobalVector(ldc[1].dal,&w));
     PetscCall(VecSet(w,1.0));
     PetscCall(LDCUpDefectsFromObstacles(w,&(ldc[1])));
     // FIXME monotone restrict for chiupp,chilow on ldc[0]
+    //PetscCall(LDCUpDefectsMonotoneRestrict(ldc[1],&(ldc[0])));
 
     // generate down defects
     // FIXME untested

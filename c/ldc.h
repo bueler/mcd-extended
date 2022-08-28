@@ -68,11 +68,19 @@ PetscErrorCode LDCReportRanges(LDC ldc);
 
 PetscErrorCode LDCRefine(LDC coarse, LDC *fine);
 
+PetscErrorCode LDCQ1InterpolateVec(LDC coarse, LDC fine, Vec vcoarse, Vec *vfine);
+
+// following is full-weighting, the scaled transpose of interpolation
+PetscErrorCode LDCQ1RestrictVec(LDC fine, LDC coarse, Vec vfine, Vec *vcoarse);
+
+PetscErrorCode LDCQ1InjectVec(LDC fine, LDC coarse, Vec vfine, Vec *vcoarse);
+
 PetscErrorCode LDCUpDefectsFromObstacles(Vec w, LDC *ldc);
 
-//FIXME this implementation is NOT monotone ... just Q1 restriction
-//PetscErrorCode LDCUpDefectsMonotoneRestrict(LDC fine, LDC *coarse);
+//FIXME not implemented
+PetscErrorCode LDCUpDefectsMonotoneRestrict(LDC fine, LDC *coarse);
 
-PetscErrorCode LDCDownDefects(LDC *coarse, LDC *fine); // modifies fine but not coarse
+// following modifies fine but not coarse; coarsest case uses coarse=NULL
+PetscErrorCode LDCDownDefects(LDC *coarse, LDC *fine);
 
 #endif  // #ifndef LDC_H_

@@ -14,6 +14,7 @@ PetscErrorCode LDCCreate(PetscBool verbose, PetscInt level,
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
                            DMDA_STENCIL_BOX,
                            mx,my,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&(ldc->dal)));
+    PetscCall(DMDASetInterpolationType(ldc->dal,DMDA_Q1));
     PetscCall(DMSetFromOptions(ldc->dal));
     PetscCall(DMSetUp(ldc->dal));  // this must be called BEFORE SetUniformCoordinates
     PetscCall(DMDASetUniformCoordinates(ldc->dal,xmin,xmax,ymin,ymax,0.0,0.0));
@@ -121,6 +122,38 @@ PetscErrorCode LDCUpDefectsFromObstacles(Vec w, LDC *ldc) {
         if (ldc->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
             "LDC info: chilow=NULL because gamlow=-infty\n"));
+    return 0;
+}
+
+PetscErrorCode LDCQ1InterpolateVec(LDC coarse, LDC fine, Vec vcoarse, Vec *vfine) {
+    Mat Ainterp;
+    PetscCall(DMCreateInterpolation(coarse.dal, fine.dal, &Ainterp, NULL));
+    PetscCall(MatInterpolate(Ainterp,vcoarse,*vfine));
+    PetscCall(MatDestroy(&Ainterp));
+    return 0;
+}
+
+PetscErrorCode LDCQ1RestrictVec(LDC fine, LDC coarse, Vec vfine, Vec *vcoarse) {
+    Mat Ainterp;
+    Vec vscale;
+    PetscCall(DMCreateInterpolation(coarse.dal, fine.dal, &Ainterp, &vscale));
+    PetscCall(MatRestrict(Ainterp,vfine,*vcoarse));
+    PetscCall(VecPointwiseMult(*vcoarse,vscale,*vcoarse));
+    PetscCall(VecDestroy(&vscale));
+    PetscCall(MatDestroy(&Ainterp));
+    return 0;
+}
+
+PetscErrorCode LDCQ1InjectVec(LDC fine, LDC coarse, Vec vfine, Vec *vcoarse) {
+    Mat Ainject;
+    PetscCall(DMCreateInjection(coarse.dal, fine.dal, &Ainject));
+    PetscCall(MatRestrict(Ainject,vfine,*vcoarse));
+    PetscCall(MatDestroy(&Ainject));
+    return 0;
+}
+
+PetscErrorCode LDCUpDefectsMonotoneRestrict(LDC fine, LDC *coarse) {
+    SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: not implemented");
     return 0;
 }
 
