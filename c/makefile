@@ -64,7 +64,7 @@ test_dcsl: rundcsl_1
 
 test: test_bratufd test_bratu test_obstaclesl test_dcsl
 
-.PHONY: distclean test test_bratufd test_bratu test_obstaclesl test_dcsl runbratufd_1 runbratufd_2 runbratufd_3 runbratufd_4 runbratu_1 runbratu_2 runbratu_3 runbratu_4 runobstaclesl_1 runobstaclesl_2 runobstaclesl_3 rundcsl_1
+.PHONY: clean test test_bratufd test_bratu test_obstaclesl test_dcsl runbratufd_1 runbratufd_2 runbratufd_3 runbratufd_4 runbratu_1 runbratu_2 runbratu_3 runbratu_4 runobstaclesl_1 runobstaclesl_2 runobstaclesl_3 rundcsl_1
 
-distclean:
+clean::
 	@rm -f bratufd bratu obstaclesl dcsl *tmp tmpview.m
