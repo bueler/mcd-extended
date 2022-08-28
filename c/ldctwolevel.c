@@ -25,26 +25,15 @@ extern PetscErrorCode FormVecFromFormula(PetscReal (*)(PetscReal,PetscReal),
                                          DMDALocalInfo*, Vec);
 
 int main(int argc,char **argv) {
-    DM             coarseda;
     DMDALocalInfo  info;
     Vec            w;
     LDC            ldc[2];
 
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
-    // create coarse DMDA
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"at level 0: creating coarseda\n"));
-    PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
-                           DMDA_STENCIL_BOX,
-                           3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&coarseda));
-    PetscCall(DMSetFromOptions(coarseda));
-    PetscCall(DMSetUp(coarseda));  // this must be called BEFORE SetUniformCoordinates
-    PetscCall(DMDASetUniformCoordinates(coarseda,-2.0,2.0,-2.0,2.0,0.0,1.0));
-
     // create LDC stack
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"at level 0: creating LDC at level 0 from coarseda\n"));
-    PetscCall(LDCCreate(PETSC_TRUE,0,coarseda,&(ldc[0])));
-    PetscCall(LDCRefine(PETSC_TRUE,ldc[0], &(ldc[1])));
+    PetscCall(LDCCreate(PETSC_TRUE,0,3,3,-2.0,2.0,-2.0,2.0,&(ldc[0])));
+    PetscCall(LDCRefine(ldc[0], &(ldc[1])));
 
     // view DMDA at each level
     PetscCall(PetscOptionsSetValue(NULL, "-dm_view", ""));

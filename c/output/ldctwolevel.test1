@@ -1,5 +1,4 @@
-at level 0: creating coarseda
-at level 0: creating LDC at level 0 from coarseda
+LDC info: creating LDC at level 0 based on 3 x 3 grid DMDA
 LDC info: refining coarse LDC at level 0 to generate fine LDC at level 1
 DM Object: ldc[0].dal 1 MPI process
   type: da

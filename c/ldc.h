@@ -9,8 +9,7 @@
 // Canonical two-level usage with nontrivial upper and lower obstacles;
 // note ldc[0] is coarse, ldc[1] is fine:
 //     LDC ldc[2];
-//     [  create and set up DMDA coarseda ]
-//     LDCCreate(0,coarseda,&(ldc[0]));
+//     LDCCreate(PETSC_TRUE,0,mx,my,xmin,xmax,ymin,ymax,&(ldc[0]));
 //     LDCRefine(ldc[0],&(ldc[1]));
 //     DMCreateGlobalVector(ldc[1].dal,&(ldc[1].gamupp)));
 //     [  set Vec ldc[1].gamupp  ]
@@ -27,8 +26,7 @@
 //
 // Canonical usage for single-level with nontrivial upper and lower obstacles:
 //     LDC ldc;
-//     [  create and set up DMDA da ]
-//     LDCCreate(0,da,&ldc);
+//     LDCCreate(PETSC_TRUE,0,mx,my,xmin,xmax,ymin,ymax,&ldc);
 //     DMCreateGlobalVector(ldc.dal,&(ldc.gamupp)));
 //     [  set Vec ldc.gamupp  ]
 //     DMCreateGlobalVector(ldc.dal,&(ldc.gamlow)));
@@ -43,7 +41,8 @@
 #define LDC_H_
 
 // notes:
-//   * DM dal must be allocated at creation
+//   * DM dal is for a 2D rectangle with uniform coordinates, box stencil,
+//     and no (extra) boundary allocations
 //   * obstacle values from extended real line [-\infty,+\infty]
 //   * PETSC_INFINITY and PETSC_NINFINITY are valid entries
 //   * special case: if an obstacle is identically PETSC_INFINITY or
@@ -54,22 +53,25 @@ typedef struct {
                 chiupp, chilow,  // down defect constraints: chi* = w - gamma*
                 phiupp, philow;  // up defect constraints
 // private
-  PetscInt      level;           // =0 in single-level usage; otherwise 0 is coarsest
-  DMDALocalInfo dalinfo;
-  PetscBool     printinfo;
+  PetscInt      _level;           // =0 in single-level usage; otherwise 0 is coarsest
+  PetscBool     _printinfo;
 } LDC;
 
-PetscErrorCode LDCCreate(PetscBool verbose, PetscInt level, DM da, LDC *ldc);
+PetscErrorCode LDCCreate(PetscBool verbose, PetscInt level,
+                         PetscInt mx, PetscInt my,
+                         PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax,
+                         LDC *ldc);
 
 PetscErrorCode LDCDestroy(LDC *ldc);
 
 PetscErrorCode LDCReportRanges(LDC ldc);
 
-PetscErrorCode LDCRefine(PetscBool verbose, LDC coarse, LDC *fine);
+PetscErrorCode LDCRefine(LDC coarse, LDC *fine);
 
 PetscErrorCode LDCUpDefectsFromObstacles(Vec w, LDC *ldc);
 
-//FIXME implement PetscErrorCode LDCUpDefectsMonotoneRestrict(LDC fine, LDC *coarse);
+//FIXME this implementation is NOT monotone ... just Q1 restriction
+//PetscErrorCode LDCUpDefectsMonotoneRestrict(LDC fine, LDC *coarse);
 
 PetscErrorCode LDCDownDefects(LDC *coarse, LDC *fine); // modifies fine but not coarse
 
