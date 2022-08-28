@@ -18,6 +18,22 @@ PetscErrorCode LDCCreate(PetscInt level, DM da, LDC *ldc) {
     return 0;
 }
 
+PetscErrorCode LDCRefine(LDC coarse, LDC *fine) {
+    if (!(coarse.dal)) {
+        SETERRQ(PETSC_COMM_SELF,1,"LDC error: allocate coarse DMDA before calling LDCRefine()");
+    }
+    fine->level = coarse.level + 1;
+    PetscCall(DMRefine(coarse.dal,PETSC_COMM_WORLD,&(fine->dal)));
+    PetscCall(DMDAGetLocalInfo(fine->dal,&(fine->dalinfo)));
+    fine->gamupp = NULL;
+    fine->gamlow = NULL;
+    fine->chiupp = NULL;
+    fine->chilow = NULL;
+    fine->phiupp = NULL;
+    fine->philow = NULL;
+    return 0;
+}
+
 PetscErrorCode LDCDestroy(LDC *ldc) {
     if (ldc->gamupp)
         PetscCall(VecDestroy(&(ldc->gamupp)));

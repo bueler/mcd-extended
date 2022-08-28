@@ -17,6 +17,10 @@ dcsl: dcsl.o q1fem.o ldc.o
 	-${CLINKER} -o dcsl dcsl.o q1fem.o ldc.o ${PETSC_LIB}
 	${RM} dcsl.o q1fem.o ldc.o
 
+ldctest: ldctest.o ldc.o
+	-${CLINKER} -o ldctest ldctest.o ldc.o ${PETSC_LIB}
+	${RM} ldctest.o ldc.o
+
 # testing
 runbratufd_1:
 	-@./testit.sh bratufd "-lb_exact -snes_converged_reason -lb_counts -ksp_converged_reason -da_refine 1 -pc_type mg" 1 1

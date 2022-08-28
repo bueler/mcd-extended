@@ -5,15 +5,15 @@
 // obstacles, for each level.
 //
 // Canonical usage for single-level with nontrivial upper and lower constraints:
-//     [create and set up DM da]
+//     [  create and set up DM da  ]
 //     LDCCreate(k,da,&ldc);
 //     DMCreateGlobalVector(ldc.dal,&(ldc.gamupp)));
-//     [set values in Vec ldc.gamupp from a formula]
+//     [  set values in Vec ldc.gamupp from a formula  ]
 //     DMCreateGlobalVector(ldc.dal,&(ldc.gamlow)));
-//     [set values in Vec ldc.gamlow from a formula]
-//     [start a box-constrained solver, and get an iterate w]
+//     [  set values in Vec ldc.gamlow from a formula  ]
+//     [  start a box-constrained solver, and get an iterate w  ]
 //     LDCUpDefects(ldc,w);
-//     [continue with the solver]
+//     [  continue with the solver  ]
 //     LDCDestroy(&ldc);
 //
 // FIXME for multilevel use, do monotone restriction in here
@@ -38,6 +38,8 @@ typedef struct {
 } LDC;
 
 PetscErrorCode LDCCreate(PetscInt level, DM da, LDC *ldc);
+
+PetscErrorCode LDCRefine(LDC coarse, LDC *fine);
 
 PetscErrorCode LDCDestroy(LDC *ldc);
 
