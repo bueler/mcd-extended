@@ -68,13 +68,6 @@ PetscErrorCode LDCReportRanges(LDC ldc);
 
 PetscErrorCode LDCRefine(LDC coarse, LDC *fine);
 
-PetscErrorCode LDCQ1InterpolateVec(LDC coarse, LDC fine, Vec vcoarse, Vec *vfine);
-
-// following is full-weighting, the scaled transpose of interpolation
-PetscErrorCode LDCQ1RestrictVec(LDC fine, LDC coarse, Vec vfine, Vec *vcoarse);
-
-PetscErrorCode LDCQ1InjectVec(LDC fine, LDC coarse, Vec vfine, Vec *vcoarse);
-
 PetscErrorCode LDCUpDefectsFromObstacles(Vec w, LDC *ldc);
 
 PetscErrorCode LDCUpDefectsMonotoneRestrict(LDC fine, LDC *coarse);
