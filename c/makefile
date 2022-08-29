@@ -13,10 +13,6 @@ obstaclesl: obstaclesl.o q1fem.o
 	-${CLINKER} -o obstaclesl obstaclesl.o q1fem.o ${PETSC_LIB}
 	${RM} obstaclesl.o q1fem.o
 
-dcsl: dcsl.o q1fem.o ldc.o
-	-${CLINKER} -o dcsl dcsl.o q1fem.o ldc.o ${PETSC_LIB}
-	${RM} dcsl.o q1fem.o ldc.o
-
 ldctwolevel: ldctwolevel.o ldc.o
 	-${CLINKER} -o ldctwolevel ldctwolevel.o ldc.o ${PETSC_LIB}
 	${RM} ldctwolevel.o ldc.o
@@ -61,19 +57,14 @@ runobstaclesl_3:
 
 test_obstaclesl: runobstaclesl_1 runobstaclesl_2 runobstaclesl_3
 
-rundcsl_1:
-	-@./testit.sh dcsl "-dc_counts -snes_converged_reason -snes_grid_sequence 2" 1 1
-
-test_dcsl: rundcsl_1
-
 runldctwolevel_1:
 	-@./testit.sh ldctwolevel "" 1 1
 
 test_ldctwolevel: runldctwolevel_1
 
-test: test_bratufd test_bratu test_obstaclesl test_dcsl test_ldctwolevel
+test: test_bratufd test_bratu test_obstaclesl test_ldctwolevel
 
-.PHONY: clean test test_bratufd test_bratu test_obstaclesl test_dcsl test_ldctwolevel runbratufd_1 runbratufd_2 runbratufd_3 runbratufd_4 runbratu_1 runbratu_2 runbratu_3 runbratu_4 runobstaclesl_1 runobstaclesl_2 runobstaclesl_3 rundcsl_1 runldctwolevel_1
+.PHONY: clean test test_bratufd test_bratu test_obstaclesl test_ldctwolevel runbratufd_1 runbratufd_2 runbratufd_3 runbratufd_4 runbratu_1 runbratu_2 runbratu_3 runbratu_4 runobstaclesl_1 runobstaclesl_2 runobstaclesl_3 rundcsl_1 runldctwolevel_1
 
 clean::
-	@rm -f bratufd bratu obstaclesl dcsl ldctwolevel *tmp tmpview.m
+	@rm -f bratufd bratu obstaclesl ldctwolevel *tmp tmpview.m

@@ -1,5 +1,2 @@
-to complete single-level PNGS implementation:
-* rewrite in terms of Vec containing defect constraint: dcsl.c
-* should dcsl.c include both classical obstacle and SIA exact soln?
 * move on to NMCD: + PNGS must be capable as smoother at any level
                    + add NMCD which is plugged in as highest-level NGS

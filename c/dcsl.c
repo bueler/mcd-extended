@@ -1,3 +1,7 @@
+// FIXME
+// abandon
+// go ahead and try two-level NMCD ... start from this, probably
+
 static char help[] =
 "Solve classical obstacle problem by Q1 finite elements in 2D square (-2,2)^2\n"
 "using a structured-grid (DMDA):\n"

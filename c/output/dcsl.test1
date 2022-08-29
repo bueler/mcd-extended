@@ -1,5 +1,0 @@
-    Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 1
-  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 27
-flops = 6.376e+06,  residual calls = 34,  PNGS calls = 31
-done on 9 x 9 grid:   error |u-uexact|_inf = 3.173e-02
