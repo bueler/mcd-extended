@@ -5,17 +5,17 @@ bratufd: bratufd.o
 	-${CLINKER} -o bratufd bratufd.o ${PETSC_LIB}
 	${RM} bratufd.o
 
-bratu: bratu.o q1fem.o
-	-${CLINKER} -o bratu bratu.o q1fem.o ${PETSC_LIB}
-	${RM} bratu.o q1fem.o
+bratu: bratu.o src/q1fem.o
+	-${CLINKER} -o bratu bratu.o src/q1fem.o ${PETSC_LIB}
+	${RM} bratu.o src/q1fem.o
 
-obstaclesl: obstaclesl.o q1fem.o
-	-${CLINKER} -o obstaclesl obstaclesl.o q1fem.o ${PETSC_LIB}
-	${RM} obstaclesl.o q1fem.o
+obstaclesl: obstaclesl.o src/q1fem.o
+	-${CLINKER} -o obstaclesl obstaclesl.o src/q1fem.o ${PETSC_LIB}
+	${RM} obstaclesl.o src/q1fem.o
 
-ldctwolevel: ldctwolevel.o q1transfers.o ldc.o
-	-${CLINKER} -o ldctwolevel ldctwolevel.o q1transfers.o ldc.o ${PETSC_LIB}
-	${RM} ldctwolevel.o q1transfers.o ldc.o
+ldctwolevel: ldctwolevel.o src/q1transfers.o src/ldc.o
+	-${CLINKER} -o ldctwolevel ldctwolevel.o src/q1transfers.o src/ldc.o ${PETSC_LIB}
+	${RM} ldctwolevel.o src/q1transfers.o src/ldc.o
 
 # testing
 runbratufd_1:

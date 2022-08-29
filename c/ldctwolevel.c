@@ -1,12 +1,8 @@
 static char help[] =
 "Test a two-level LDC stack.\n\n";
 
-// FIXME: generate and test Mats for interpolation and restriction and injection
-// FIXME: implement and test monotone restriction
-
 #include <petsc.h>
-#include "ldc.h"
-
+#include "src/ldc.h"
 
 // z = gamma_lower(x,y) is the hemispherical obstacle, but made C^1 with "skirt" at r=r0
 PetscReal gamma_lower(PetscReal x, PetscReal y) {

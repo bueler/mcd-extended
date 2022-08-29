@@ -8,7 +8,7 @@ static char help[] =
 "solutions (arbitrary lambda; -lb_mms).\n\n";
 
 #include <petsc.h>
-#include "q1fem.h"
+#include "src/q1fem.h"
 
 typedef struct {
   // right-hand side f(x,y)

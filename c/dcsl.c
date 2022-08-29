@@ -13,8 +13,8 @@ static char help[] =
 "level.  Option prefix dc_.  Compare obstaclesl.c.\n\n";
 
 #include <petsc.h>
-#include "q1fem.h"
-#include "ldc.h"
+#include "src/q1fem.h"
+#include "src/ldc.h"
 
 typedef struct {
   // obstacle gamma_lower(x,y)

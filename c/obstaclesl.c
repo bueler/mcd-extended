@@ -9,7 +9,7 @@ static char help[] =
 "Differential Equations', SIAM Press.\n\n";
 
 #include <petsc.h>
-#include "q1fem.h"
+#include "src/q1fem.h"
 
 typedef struct {
   // obstacle gamma_lower(x,y)
