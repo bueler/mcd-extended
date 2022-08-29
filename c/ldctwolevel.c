@@ -21,6 +21,7 @@ PetscReal gamma_lower(PetscReal x, PetscReal y) {
     }
 }
 
+extern PetscErrorCode VecViewMatlabStdout(Vec);
 extern PetscErrorCode FormVecFromFormula(PetscReal (*)(PetscReal,PetscReal),
                                          DMDALocalInfo*, Vec);
 
@@ -57,12 +58,10 @@ int main(int argc,char **argv) {
     PetscCall(LDCQ1RestrictVec(ldc[1],ldc[0],ldc[1].gamlow,&vcoarseFW));
     PetscCall(LDCQ1InjectVec(ldc[1],ldc[0],ldc[1].gamlow,&vcoarseINJ));
     PetscCall(LDCQ1InterpolateVec(ldc[0],ldc[1],vcoarseFW,&vfine));
-    PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB));
-    PetscCall(VecView(ldc[1].gamlow,PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(VecView(vcoarseFW,PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(VecView(vcoarseINJ,PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(VecView(vfine,PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(VecViewMatlabStdout(ldc[1].gamlow));
+    PetscCall(VecViewMatlabStdout(vcoarseFW));
+    PetscCall(VecViewMatlabStdout(vcoarseINJ));
+    PetscCall(VecViewMatlabStdout(vfine));
     PetscCall(VecDestroy(&vfine));
     PetscCall(VecDestroy(&vcoarseINJ));
     PetscCall(VecDestroy(&vcoarseFW));
@@ -90,6 +89,14 @@ int main(int argc,char **argv) {
     PetscCall(LDCDestroy(&(ldc[1])));
     PetscCall(LDCDestroy(&(ldc[0])));
     PetscCall(PetscFinalize());
+    return 0;
+}
+
+
+PetscErrorCode VecViewMatlabStdout(Vec v) {
+    PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB));
+    PetscCall(VecView(v,PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
     return 0;
 }
 
