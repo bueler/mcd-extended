@@ -16,7 +16,7 @@ defect constraint ranges at level 0:
   [ gamupp=NULL is +infty ]
   [ gamlow=NULL is -infty ]
   [ chiupp=NULL is +infty ]
-  [ chilow=NULL is -infty ]
+  -1.625828 <= |chilow| <=  0.000000
   [ phiupp=NULL is +infty ]
   [ philow=NULL is -infty ]
 defect constraint ranges at level 1:

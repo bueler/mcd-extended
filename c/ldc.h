@@ -77,7 +77,6 @@ PetscErrorCode LDCQ1InjectVec(LDC fine, LDC coarse, Vec vfine, Vec *vcoarse);
 
 PetscErrorCode LDCUpDefectsFromObstacles(Vec w, LDC *ldc);
 
-//FIXME not implemented
 PetscErrorCode LDCUpDefectsMonotoneRestrict(LDC fine, LDC *coarse);
 
 // following modifies fine but not coarse; coarsest case uses coarse=NULL

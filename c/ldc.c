@@ -155,8 +155,114 @@ PetscErrorCode LDCQ1InjectVec(LDC fine, LDC coarse, Vec vfine, Vec *vcoarse) {
     return 0;
 }
 
+PetscBool _NodeOnBdry(DM da, PetscInt i, PetscInt j) {
+    DMDALocalInfo info;
+    PetscCall(DMDAGetLocalInfo(da,&info));
+    return (((i == 0) || (i == info.mx-1) || (j == 0) || (j == info.my-1)));
+}
+
+typedef enum {
+    MAX, MIN
+} OptimumType;
+
+typedef enum {
+    INTERIOR, E, N, S, W, NE, NW, SW, SE
+} DirectionType;
+
+// find optimum values of au[][] at points +,o in 9-, 6-, or 4-point
+// neighborhood of o, according to dir:
+//   INTERIOR    E        N        S        W     NE       NW     SW   SE
+//    + + +      + +    + + +             + +     + +    + +
+//    + o +      o +    + o +    + o +    + o     o +    + o    + o    o +
+//    + + +      + +             + + +    + +                   + +    + +
+// (note * has indices i,j)
+PetscReal _OptNeighbors(OptimumType opt, DirectionType dir,
+                        PetscReal **au, PetscInt i, PetscInt j) {
+    PetscInt        p, q;
+    const PetscInt  ps[9] = { -1,  0, -1, -1, -1,  0, -1, -1,  0},
+                    pe[9] = {  1,  1,  1,  1,  0,  1,  0,  0,  1},
+                    qs[9] = { -1, -1,  0, -1, -1,  0,  0, -1, -1},
+                    qe[9] = {  1,  1,  1,  0,  1,  1,  1,  0,  0};
+    PetscReal       x = au[j][i];
+    for (q=qs[(int)dir]; q<=qe[(int)dir]; q++) {
+        for (p=ps[(int)dir]; p<=pe[(int)dir]; p++) {
+            if (opt == MAX)
+                x = PetscMax(x, au[j+q][i+p]);
+            else
+                x = PetscMin(x, au[j+q][i+p]);
+        }
+    }
+    return x;
+}
+
+// assumes both Vecs are already created
+PetscErrorCode _MonotoneRestrict(OptimumType opt, DM dac, DM daf,
+                                 Vec vfine, Vec vcoarse) {
+    DMDALocalInfo cinfo;
+    Vec           vfineloc;
+    PetscInt      ic, jc;
+    PetscReal     **ac, **af;
+    PetscCall(DMDAGetLocalInfo(dac,&cinfo));
+    PetscCall(DMGetLocalVector(daf,&vfineloc));
+    PetscCall(DMGlobalToLocal(daf,vfine,INSERT_VALUES,vfineloc));
+    PetscCall(DMDAVecGetArray(dac,vcoarse,&ac));
+    PetscCall(DMDAVecGetArray(daf,vfineloc,&af));
+    for (jc=cinfo.ys; jc<cinfo.ys+cinfo.ym; jc++) {
+        for (ic=cinfo.xs; ic<cinfo.xs+cinfo.xm; ic++) {
+            if (!_NodeOnBdry(dac,ic,jc)) {
+                ac[jc][ic] = _OptNeighbors(opt,INTERIOR,af,2*ic,2*jc);
+                continue;
+            }
+            // special cases for boundary nodes
+            if (ic == 0) {
+                // along left side of domain
+                if (jc == 0)
+                    ac[jc][ic] = _OptNeighbors(opt,NE,af,2*ic,2*jc);
+                else if (jc == cinfo.my-1)
+                    ac[jc][ic] = _OptNeighbors(opt,SE,af,2*ic,2*jc);
+                else
+                    ac[jc][ic] = _OptNeighbors(opt,E,af,2*ic,2*jc);
+            } else if (ic == cinfo.mx-1) {
+                // along right side of domain
+                if (jc == 0)
+                    ac[jc][ic] = _OptNeighbors(opt,NW,af,2*ic,2*jc);
+                else if (jc == cinfo.my-1)
+                    ac[jc][ic] = _OptNeighbors(opt,SW,af,2*ic,2*jc);
+                else
+                    ac[jc][ic] = _OptNeighbors(opt,W,af,2*ic,2*jc);
+            } else {
+                // along bottom or top sides of domain, not at corners
+                if (jc == 0)
+                    ac[jc][ic] = _OptNeighbors(opt,N,af,2*ic,2*jc);
+                else
+                    ac[jc][ic] = _OptNeighbors(opt,S,af,2*ic,2*jc);
+            }
+        }
+    }
+    PetscCall(DMDAVecRestoreArray(daf,vfineloc,&af));
+    PetscCall(DMDAVecRestoreArray(dac,vcoarse,&ac));
+    PetscCall(DMRestoreLocalVector(daf,&vfineloc));
+    return 0;
+}
+
 PetscErrorCode LDCUpDefectsMonotoneRestrict(LDC fine, LDC *coarse) {
-    SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: not implemented");
+    if (!coarse) {
+        SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: coarse not created");
+    }
+    if (coarse->chiupp) {
+        SETERRQ(PETSC_COMM_SELF,2,"LDC ERROR: coarse chiupp already created");
+    }
+    if (coarse->chilow) {
+        SETERRQ(PETSC_COMM_SELF,3,"LDC ERROR: coarse chilow already created");
+    }
+    if (fine.chiupp) {
+        PetscCall(DMCreateGlobalVector(coarse->dal,&(coarse->chiupp)));
+        PetscCall(_MonotoneRestrict(MIN,coarse->dal,fine.dal,fine.chiupp,coarse->chiupp));
+    }
+    if (fine.chilow) {
+        PetscCall(DMCreateGlobalVector(coarse->dal,&(coarse->chilow)));
+        PetscCall(_MonotoneRestrict(MAX,coarse->dal,fine.dal,fine.chilow,coarse->chilow));
+    }
     return 0;
 }
 

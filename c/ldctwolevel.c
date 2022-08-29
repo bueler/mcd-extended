@@ -72,8 +72,9 @@ int main(int argc,char **argv) {
     PetscCall(DMCreateGlobalVector(ldc[1].dal,&w));
     PetscCall(VecSet(w,1.0));
     PetscCall(LDCUpDefectsFromObstacles(w,&(ldc[1])));
-    // FIXME monotone restrict for chiupp,chilow on ldc[0]
-    //PetscCall(LDCUpDefectsMonotoneRestrict(ldc[1],&(ldc[0])));
+    //PetscCall(VecViewMatlabStdout(ldc[1].chilow));
+    PetscCall(LDCUpDefectsMonotoneRestrict(ldc[1],&(ldc[0])));
+    //PetscCall(VecViewMatlabStdout(ldc[0].chilow));
 
     // generate down defects
     // FIXME untested
