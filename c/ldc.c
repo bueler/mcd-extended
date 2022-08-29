@@ -14,8 +14,9 @@ PetscErrorCode LDCCreate(PetscBool verbose, PetscInt level,
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
                            DMDA_STENCIL_BOX,
                            mx,my,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&(ldc->dal)));
+    // make defaults explicit:
     PetscCall(DMDASetInterpolationType(ldc->dal,DMDA_Q1));
-    PetscCall(DMSetFromOptions(ldc->dal));
+    PetscCall(DMDASetRefinementFactor(ldc->dal,2,2,2));
     PetscCall(DMSetUp(ldc->dal));  // this must be called BEFORE SetUniformCoordinates
     PetscCall(DMDASetUniformCoordinates(ldc->dal,xmin,xmax,ymin,ymax,0.0,0.0));
     ldc->gamupp = NULL;
@@ -59,6 +60,8 @@ PetscErrorCode LDCRefine(LDC coarse, LDC *fine) {
         coarse._level,fine->_level));
     fine->_printinfo = coarse._printinfo;
     PetscCall(DMRefine(coarse.dal,PETSC_COMM_WORLD,&(fine->dal)));
+    PetscCall(DMDASetInterpolationType(fine->dal,DMDA_Q1));
+    PetscCall(DMDASetRefinementFactor(fine->dal,2,2,2));
     fine->gamupp = NULL;
     fine->gamlow = NULL;
     fine->chiupp = NULL;
