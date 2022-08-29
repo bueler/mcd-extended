@@ -1,7 +1,10 @@
 static char help[] =
 "Test a two-level LDC stack.\n\n";
 
+// FIXME check all results!
+
 #include <petsc.h>
+#include "src/q1transfers.h"
 #include "src/ldc.h"
 
 // z = gamma_lower(x,y) is the hemispherical obstacle, but made C^1 with "skirt" at r=r0
@@ -39,10 +42,10 @@ int main(int argc,char **argv) {
     PetscCall(DMViewFromOptions(ldc[0].dal, NULL, "-dm_view"));
     PetscCall(DMViewFromOptions(ldc[1].dal, NULL, "-dm_view"));
 
-    // gamma_lower obstacle on fine level
+    // lower obstacle on fine level
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"at level 1: creating gamlow at level 1 from formula\n"));
-    PetscCall(DMDAGetLocalInfo(ldc[1].dal,&info));
     PetscCall(DMCreateGlobalVector(ldc[1].dal,&(ldc[1].gamlow)));
+    PetscCall(DMDAGetLocalInfo(ldc[1].dal,&info));
     PetscCall(FormVecFromFormula(gamma_lower,&info,ldc[1].gamlow));
 
 #if 0
@@ -51,9 +54,9 @@ int main(int argc,char **argv) {
     PetscCall(DMCreateGlobalVector(ldc[0].dal,&vcoarseFW));
     PetscCall(DMCreateGlobalVector(ldc[0].dal,&vcoarseINJ));
     PetscCall(DMCreateGlobalVector(ldc[1].dal,&vfine));
-    PetscCall(LDCQ1RestrictVec(ldc[1],ldc[0],ldc[1].gamlow,&vcoarseFW));
-    PetscCall(LDCQ1InjectVec(ldc[1],ldc[0],ldc[1].gamlow,&vcoarseINJ));
-    PetscCall(LDCQ1InterpolateVec(ldc[0],ldc[1],vcoarseFW,&vfine));
+    PetscCall(Q1Restrict(ldc[1].dal,ldc[0].dal,ldc[1].gamlow,&vcoarseFW));
+    PetscCall(Q1Inject(ldc[1].dal,ldc[0].dal,ldc[1].gamlow,&vcoarseINJ));
+    PetscCall(Q1Interpolate(ldc[0].dal,ldc[1].dal,vcoarseFW,&vfine));
     PetscCall(VecViewMatlabStdout(ldc[1].gamlow));
     PetscCall(VecViewMatlabStdout(vcoarseFW));
     PetscCall(VecViewMatlabStdout(vcoarseINJ));
@@ -63,19 +66,16 @@ int main(int argc,char **argv) {
     PetscCall(VecDestroy(&vcoarseFW));
 #endif
 
-    // zero iterate w generates up defect constraints (FIXME only on fine level so far)
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"at level 1: using iterate w=1.000000\n"));
+    // iterate w=1 gives up defect constraint on fine level
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"at level 1: using admissible iterate w=1\n"));
     PetscCall(DMCreateGlobalVector(ldc[1].dal,&w));
     PetscCall(VecSet(w,1.0));
-    PetscCall(LDCUpDefectsFromObstacles(w,&(ldc[1])));
-    //PetscCall(VecViewMatlabStdout(ldc[1].chilow));
-    PetscCall(LDCUpDefectsMonotoneRestrict(ldc[1],&(ldc[0])));
-    //PetscCall(VecViewMatlabStdout(ldc[0].chilow));
+    PetscCall(LDCUpDefectConstraintsFromObstacles(w,&(ldc[1])));
+    PetscCall(LDCUpDefectConstraintsMonotoneRestrict(ldc[1],&(ldc[0])));
 
     // generate down defects
-    // FIXME untested
-    //PetscCall(LDCDownDefects(&(ldc[0]),&(ldc[1])));
-    //PetscCall(LDCDownDefects(NULL,&(ldc[0])));
+    PetscCall(LDCDownDefectConstraints(&(ldc[0]),&(ldc[1])));
+    PetscCall(LDCDownDefectConstraints(NULL,&(ldc[0])));
 
     // ranges on Vecs on each level
     PetscCall(LDCReportRanges(ldc[0]));

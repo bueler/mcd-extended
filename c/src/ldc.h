@@ -68,11 +68,15 @@ PetscErrorCode LDCReportRanges(LDC ldc);
 
 PetscErrorCode LDCRefine(LDC coarse, LDC *fine);
 
-PetscErrorCode LDCUpDefectsFromObstacles(Vec w, LDC *ldc);
+PetscErrorCode LDCUpDefectConstraintsFromObstacles(Vec w, LDC *ldc);
 
-PetscErrorCode LDCUpDefectsMonotoneRestrict(LDC fine, LDC *coarse);
+PetscErrorCode LDCUpDefectConstraintsMonotoneRestrict(LDC fine, LDC *coarse);
 
 // following modifies fine but not coarse; coarsest case uses coarse=NULL
-PetscErrorCode LDCDownDefects(LDC *coarse, LDC *fine);
+PetscErrorCode LDCDownDefectConstraints(LDC *coarse, LDC *fine);
+
+// FIXME PetscErrorCode LDCCheckAdmissibleIterate(Vec w, PetscBool *flg)
+// FIXME PetscErrorCode LDCCheckAdmissibleDownDefect(Vec y, PetscBool *flg)
+// FIXME PetscErrorCode LDCCheckAdmissibleUpDefect(Vec z, PetscBool *flg)
 
 #endif  // #ifndef LDC_H_

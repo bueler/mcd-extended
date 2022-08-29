@@ -9,22 +9,26 @@ DM Object: ldc[1].dal 1 MPI process
 Processor [0] M 5 N 5 m 1 n 1 w 1 s 1
 X range of indices: 0 5, Y range of indices: 0 5
 at level 1: creating gamlow at level 1 from formula
-at level 1: using iterate w=1.000000
+at level 1: using admissible iterate w=1
 LDC info: chiupp=NULL because gamupp=+infty
 LDC info: creating chilow and setting chilow=gamlow-w at level 1
+LDC info: phiupp=NULL at level 1
+LDC info: creating and setting philow=chilow-chilow_coarse at level 1
+LDC info: phiupp=NULL at level 0
+LDC info: creating and setting philow=chilow (coarsest case) at level 0
 defect constraint ranges at level 0:
   [ gamupp=NULL is +infty ]
   [ gamlow=NULL is -infty ]
   [ chiupp=NULL is +infty ]
   -1.625828 <= |chilow| <=  0.000000
   [ phiupp=NULL is +infty ]
-  [ philow=NULL is -infty ]
+  -1.625828 <= |philow| <=  0.000000
 defect constraint ranges at level 1:
   [ gamupp=NULL is +infty ]
   -3.545814 <= |gamlow| <=  1.000000
   [ chiupp=NULL is +infty ]
   -4.545814 <= |chilow| <=  0.000000
   [ phiupp=NULL is +infty ]
-  [ philow=NULL is -infty ]
+  -2.919986 <= |philow| <=  0.000000
 LDC info: destroying LDC at level 1
 LDC info: destroying LDC at level 0

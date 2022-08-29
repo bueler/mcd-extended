@@ -97,7 +97,7 @@ PetscErrorCode LDCReportRanges(LDC ldc) {
     return 0;
 }
 
-PetscErrorCode LDCUpDefectsFromObstacles(Vec w, LDC *ldc) {
+PetscErrorCode LDCUpDefectConstraintsFromObstacles(Vec w, LDC *ldc) {
     if (ldc->chiupp) {
         SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: chiupp already created");
     }
@@ -129,7 +129,7 @@ PetscErrorCode LDCUpDefectsFromObstacles(Vec w, LDC *ldc) {
     return 0;
 }
 
-PetscErrorCode LDCUpDefectsMonotoneRestrict(LDC fine, LDC *coarse) {
+PetscErrorCode LDCUpDefectConstraintsMonotoneRestrict(LDC fine, LDC *coarse) {
     if (!coarse) {
         SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: coarse not created");
     }
@@ -152,13 +152,19 @@ PetscErrorCode LDCUpDefectsMonotoneRestrict(LDC fine, LDC *coarse) {
     return 0;
 }
 
-PetscErrorCode LDCDownDefects(LDC *coarse, LDC *fine) {
+PetscErrorCode LDCDownDefectConstraints(LDC *coarse, LDC *fine) {
+    if (fine->phiupp) {
+        SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: phiupp already created");
+    }
+    if (fine->philow) {
+        SETERRQ(PETSC_COMM_SELF,2,"LDC ERROR: philow already created");
+    }
     // generate phiupp
     if (!coarse) {
         if (fine->chiupp) {
             if (fine->_printinfo)
                 PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-                "LDC info: creating phiupp and setting phiupp=chiupp (coarsest case) at level %d\n",
+                "LDC info: creating and setting phiupp=chiupp (coarsest case) at level %d\n",
                 fine->_level));
             PetscCall(DMCreateGlobalVector(fine->dal,&(fine->phiupp)));
             PetscCall(VecCopy(fine->chiupp,fine->phiupp));
@@ -170,19 +176,22 @@ PetscErrorCode LDCDownDefects(LDC *coarse, LDC *fine) {
     } else if (coarse->chiupp && fine->chiupp) {
         if (fine->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "LDC info: creating phiupp and setting phiupp=chiupp-chiupp_coarse at level %d\n",
+            "LDC info: creating and setting phiupp=chiupp-chiupp_coarse at level %d\n",
             fine->_level));
         PetscCall(DMCreateGlobalVector(fine->dal,&(fine->phiupp)));
-        PetscCall(VecWAXPY(fine->phiupp,-1.0,coarse->chiupp,fine->chiupp));  // phiupp = chiupp - chiupp_coarse
-    } else {
-        SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: unanticipated case");
-    }
+        // phiupp = chiupp - P(chiupp_coarse)
+        PetscCall(Q1Interpolate(coarse->dal,fine->dal,coarse->chiupp,&(fine->phiupp)));
+        PetscCall(VecAYPX(fine->phiupp,-1.0,fine->chiupp));
+    } else
+        if (fine->_printinfo)
+            PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+            "LDC info: phiupp=NULL at level %d\n",fine->_level));
     // generate philow
     if (!coarse) {
         if (fine->chilow) {
             if (fine->_printinfo)
                 PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-                "LDC info: creating philow and setting philow=chilow (coarsest case) at level %d\n",
+                "LDC info: creating and setting philow=chilow (coarsest case) at level %d\n",
                 fine->_level));
             PetscCall(DMCreateGlobalVector(fine->dal,&(fine->philow)));
             PetscCall(VecCopy(fine->chilow,fine->philow));
@@ -194,12 +203,15 @@ PetscErrorCode LDCDownDefects(LDC *coarse, LDC *fine) {
     } else if (coarse->chilow && fine->chilow) {
         if (fine->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "LDC info: creating philow and setting phiupp=chilow-chilow_coarse at level %d\n",
+            "LDC info: creating and setting philow=chilow-chilow_coarse at level %d\n",
             fine->_level));
         PetscCall(DMCreateGlobalVector(fine->dal,&(fine->philow)));
-        PetscCall(VecWAXPY(fine->philow,-1.0,coarse->chilow,fine->chilow));  // philow = chilow - chilow_coarse
-    } else {
-        SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: unanticipated case");
-    }
+        // philow = chilow - P(chilow_coarse)
+        PetscCall(Q1Interpolate(coarse->dal,fine->dal,coarse->chilow,&(fine->philow)));
+        PetscCall(VecAYPX(fine->philow,-1.0,fine->chilow));
+    } else
+        if (fine->_printinfo)
+            PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+            "LDC info: philow=NULL at level %d\n",fine->_level));
     return 0;
 }
