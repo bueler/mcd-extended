@@ -14,7 +14,8 @@ Q1 finite elements.
 
 With finite differences, a single matrix-free, FAS full cycle with
 NGS smoothing suffices to give 10-digit accuracy on a problem with 270 million
-degrees of freedom, at only 802 flops per degree of freedom:
+degrees of freedom, at only 802 flops per degree of freedom, and 2.4 processor-
+microseconds per degree of freedom:
 
     $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fd -da_grid_x 5 -da_grid_y 5 -lb_exact -snes_rtol 1.0e-12 -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 2 -fas_coarse_snes_max_it 4 -da_refine 12
     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
@@ -30,15 +31,27 @@ build is used.  This is extraordinary performance.
 The Q1 finite element implementation is slower.  It is built starting from the
 basic quadrature and FE tools from `c/ch9/phelm.c` in `p4pdes`; here they are
 in `q1fem.{h|c}`.  The following run gets comparable error to above on a
-grid with 4 times fewer degrees of freedom (67 million), but it costs 61000
+grid with 4 times fewer degrees of freedom (67 million), but it costs 62000
 flops per degree of freedom.  This is almost 100 times more work per degree
-of freedom.  (FIXME so I am motivated to try to speed-up the Q1 tools)
+of freedom.  The reason is that NGS is much more expensive per degree of
+freedom.
 
     $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fem -da_grid_x 5 -da_grid_y 5 -lb_exact -snes_rtol 1.0e-12 -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 2 -fas_coarse_snes_max_it 4 -da_refine 11
     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
-    flops = 4.079e+12,  residual calls = 1479,  NGS calls = 753
+    flops = 4.173e+12,  residual calls = 1479,  NGS calls = 753
     done on 8193 x 8193 grid:   error |u-uexact|_inf = 8.366e-11
-    real 292.67
+    real 207.49
+
+Here is the Q1 FEM run on the same grid as the highest-resolution FD run above:
+
+    timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fem -da_grid_x 5 -da_grid_y 5 -lb_exact -snes_rtol 1.0e-12 -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 2 -fas_coarse_snes_max_it 4 -da_refine 12
+    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
+    flops = 1.629e+13,  residual calls = 1733,  NGS calls = 868
+    done on 16385 x 16385 grid:   error |u-uexact|_inf = 2.091e-11
+    real 824.33
+
+This did about 61000 flops per degree of freedom, illustrating optimal
+complexity, and about 61 processor-microseconds per degree of freedom.
 
 See the regression tests in `makefile` for additional comparisons between FD
 and FEM results.
