@@ -47,25 +47,31 @@ typedef struct {
 PetscReal Q1chi[4][3][3];   // Q1chi[L][r][s]
 Q1GradRef Q1dchi[4][3][3];  // Q1dchi[L][r][s]
 
-PetscErrorCode Q1Setup(PetscInt quadpts);
-
-PetscErrorCode Q1SetupForGrid(PetscReal hx, PetscReal hy);
+// set up Q1 tools for quadpts (=1,2,3) quadrature points in each direction,
+// DMDA da, and solution on rectangle [ax,bx] x [ay,by]
+PetscErrorCode Q1Setup(PetscInt quadpts, DM da,
+                       PetscReal ax, PetscReal bx, PetscReal ay, PetscReal by);
 
 // evaluate v(xi,eta) at xi=xi[r],eta=xi[s] on reference element using
 // local node numbering
 // FLOPS: 7
 PetscReal Q1Eval(const PetscReal v[4], PetscInt r, PetscInt s);
 
-// evaluate partial derivs of v(xi,eta) on reference element
+// evaluate partial derivs of v(xi,eta), with respect to xi and eta, on
+// reference element
 // FLOPS: 16
 Q1GradRef Q1DEval(const PetscReal v[4], PetscInt r, PetscInt s);
 
+// compute  a X + Y  for Q1GradRef
 // FLOPS: 4
 Q1GradRef Q1GradAXPY(PetscReal a, Q1GradRef X, Q1GradRef Y);
 
+// compute  < du, dv >  over element (not reference element)
 // FLOPS: 5
 PetscReal Q1GradInnerProd(Q1GradRef du, Q1GradRef dv);
 
+// compute regularized pth power of norm:
+//   || du ||_eps^p = ( < du, du > + eps^2 )^(p/2)
 // FLOPS: 9
 PetscReal Q1GradPow(Q1GradRef du, PetscReal p, PetscReal eps);
 

@@ -1,8 +1,8 @@
 #include <petsc.h>
 #include "q1fem.h"
 
-PetscReal Q1_IP_CX = NAN,
-          Q1_IP_CY = NAN;
+PetscReal _Q1_IP_CX = NAN,
+          _Q1_IP_CY = NAN;
 
 static const PetscReal _Q1xiL[4]  = { 1.0, -1.0, -1.0,  1.0},
                        _Q1etaL[4] = { 1.0,  1.0, -1.0, -1.0};
@@ -19,8 +19,11 @@ Q1GradRef _Q1dchiFormula(PetscInt L, PetscReal xi, PetscReal eta) {
     return result;
 }
 
-PetscErrorCode Q1Setup(PetscInt quadpts) {
+PetscErrorCode Q1Setup(PetscInt quadpts, DM da,
+                       PetscReal ax, PetscReal bx, PetscReal ay, PetscReal by) {
     const Q1Quad1D q = Q1gausslegendre[quadpts-1];
+    DMDALocalInfo  info;
+    PetscReal      hx, hy;
     PetscInt l, r, s;
     for (l = 0; l < 4; l++)
         for (r = 0; r < q.n; r++)
@@ -28,12 +31,11 @@ PetscErrorCode Q1Setup(PetscInt quadpts) {
                 Q1chi[l][r][s] = _Q1chiFormula(l,q.xi[r],q.xi[s]);
                 Q1dchi[l][r][s] = _Q1dchiFormula(l,q.xi[r],q.xi[s]);
             }
-    return 0;
-}
-
-PetscErrorCode Q1SetupForGrid(PetscReal hx, PetscReal hy) {
-    Q1_IP_CX = 4.0 / (hx * hx);
-    Q1_IP_CY = 4.0 / (hy * hy);
+    PetscCall(DMDAGetLocalInfo(da,&info));
+    hx = (bx - ax) / (PetscReal)(info.mx - 1);
+    hy = (by - ay) / (PetscReal)(info.my - 1);
+    _Q1_IP_CX = 4.0 / (hx * hx);
+    _Q1_IP_CY = 4.0 / (hy * hy);
     return 0;
 }
 
@@ -60,7 +62,7 @@ Q1GradRef Q1GradAXPY(PetscReal a, Q1GradRef X, Q1GradRef Y) {
 }
 
 PetscReal Q1GradInnerProd(Q1GradRef du, Q1GradRef dv) {
-    return Q1_IP_CX * du.xi * dv.xi + Q1_IP_CX * du.eta * dv.eta;
+    return _Q1_IP_CX * du.xi * dv.xi + _Q1_IP_CX * du.eta * dv.eta;
 }
 
 PetscReal Q1GradPow(Q1GradRef du, PetscReal p, PetscReal eps) {
