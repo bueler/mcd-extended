@@ -511,8 +511,7 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
             }
         }
     }
-    // FLOPS: only count flops per quadrature point in the four elements:
-    //   6 + 39 = 45
+    // FLOPS per quadrature point in the four elements: 6 + 39 = 45
     PetscCall(PetscLogFlops(45.0 * q.n * q.n * 4.0));
     return 0;
 }

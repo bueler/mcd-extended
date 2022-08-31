@@ -461,7 +461,6 @@ PetscErrorCode rhoIntegrandRef(PetscInt L,
 // rho(c) and
 //   rho'(c) = int_Omega grad psi_ij . grad psi_ij
 //                       - lambda e^(u + c psi_ij) psi_ij
-// FLOPS: (155 + 6) * q.n * q.n
 PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
                       PetscReal c, PetscReal **au,
                       PetscReal *rho, PetscReal *drhodc, BratuCtx *user) {
@@ -508,9 +507,8 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
             }
         }
     }
-    // work per quadrature point:
-    //   FLOPS = 6 + 53 = 59
-    PetscCall(PetscLogFlops(59.0 * q.n * q.n));
+    // FLOPS per quadrature point in the 4 elements: 6 + 53 = 59
+    PetscCall(PetscLogFlops(59.0 * q.n * q.n * 4.0));
     return 0;
 }
 
