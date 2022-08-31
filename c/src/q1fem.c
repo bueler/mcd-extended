@@ -7,27 +7,33 @@ PetscReal Q1_IP_CX = NAN,
 static const PetscReal _Q1xiL[4]  = { 1.0, -1.0, -1.0,  1.0},
                        _Q1etaL[4] = { 1.0,  1.0, -1.0, -1.0};
 
+// only used in setup, not "production" computation
 PetscReal _Q1chiFormula(PetscInt L, PetscReal xi, PetscReal eta) {
     return 0.25 * (1.0 + _Q1xiL[L] * xi) * (1.0 + _Q1etaL[L] * eta);
 }
 
+// only used in setup, not "production" computation
 Q1GradRef _Q1dchiFormula(PetscInt L, PetscReal xi, PetscReal eta) {
     const Q1GradRef result = {0.25 * _Q1xiL[L]  * (1.0 + _Q1etaL[L] * eta),
-                            0.25 * _Q1etaL[L] * (1.0 + _Q1xiL[L]  * xi)};
+                              0.25 * _Q1etaL[L] * (1.0 + _Q1xiL[L]  * xi)};
     return result;
 }
 
-PetscErrorCode Q1SetupForGrid(PetscInt quadpts, PetscReal hx, PetscReal hy) {
+PetscErrorCode Q1Setup(PetscInt quadpts) {
     const Q1Quad1D q = Q1gausslegendre[quadpts-1];
     PetscInt l, r, s;
-    Q1_IP_CX = 4.0 / (hx * hx);
-    Q1_IP_CY = 4.0 / (hy * hy);
     for (l = 0; l < 4; l++)
         for (r = 0; r < q.n; r++)
             for (s = 0; s < q.n; s++) {
                 Q1chi[l][r][s] = _Q1chiFormula(l,q.xi[r],q.xi[s]);
                 Q1dchi[l][r][s] = _Q1dchiFormula(l,q.xi[r],q.xi[s]);
             }
+    return 0;
+}
+
+PetscErrorCode Q1SetupForGrid(PetscReal hx, PetscReal hy) {
+    Q1_IP_CX = 4.0 / (hx * hx);
+    Q1_IP_CY = 4.0 / (hy * hy);
     return 0;
 }
 

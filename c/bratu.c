@@ -117,6 +117,8 @@ int main(int argc,char **argv) {
         SETERRQ(PETSC_COMM_SELF,5,"quadrature points n=1,2,3 only");
     }
 
+    PetscCall(Q1Setup(bctx.quadpts));
+
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
                            fd ? DMDA_STENCIL_STAR : DMDA_STENCIL_BOX,
                            3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
@@ -268,7 +270,7 @@ PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
     PetscReal  uu[4], ff[4];
 
     // set up Q1 FEM tools for this grid
-    PetscCall(Q1SetupForGrid(user->quadpts,hx,hy));
+    PetscCall(Q1SetupForGrid(hx,hy));
 
     // clear residuals (because we sum over elements)
     // and assign F for Dirichlet nodes
@@ -545,7 +547,7 @@ PetscErrorCode NonlinearGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
     PetscCall(DMDAGetLocalInfo(da,&info));
     hx = 1.0 / (PetscReal)(info.mx - 1);
     hy = 1.0 / (PetscReal)(info.my - 1);
-    PetscCall(Q1SetupForGrid(user->quadpts,hx,hy));
+    PetscCall(Q1SetupForGrid(hx,hy));
 
     // for Dirichlet nodes assign boundary value once
     PetscCall(DMDAVecGetArray(da,u,&au));

@@ -47,7 +47,9 @@ typedef struct {
 PetscReal Q1chi[4][3][3];   // Q1chi[L][r][s]
 Q1GradRef Q1dchi[4][3][3];  // Q1dchi[L][r][s]
 
-PetscErrorCode Q1SetupForGrid(PetscInt quadpts, PetscReal hx, PetscReal hy);
+PetscErrorCode Q1Setup(PetscInt quadpts);
+
+PetscErrorCode Q1SetupForGrid(PetscReal hx, PetscReal hy);
 
 // evaluate v(xi,eta) at xi=xi[r],eta=xi[s] on reference element using
 // local node numbering
