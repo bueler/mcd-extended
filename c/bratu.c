@@ -238,15 +238,14 @@ PetscErrorCode FormFunctionLocalFD(DMDALocalInfo *info, PetscReal **au,
 
 // using Q1 finite elements, evaluate the integrand of the residual on
 // the reference element
-// FLOPS: 5 + (48 + 8 + 31 + 9 + 31 + 6) = 138
-PetscReal IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
-                       const PetscReal uu[4], const PetscReal ff[4],
-                       PetscReal xi, PetscReal eta, BratuCtx *user) {
-    const gradRef    du    = deval(uu,xi,eta),
-                     dchiL = dchi(L,xi,eta);
-    const PetscReal  tmp = user->lambda * PetscExpScalar(eval(uu,xi,eta));
-    return GradInnerProd(hx,hy,du,dchiL)
-           - (tmp + eval(ff,xi,eta)) * chi(L,xi,eta);
+// FLOPS: FIXME
+PetscReal IntegrandRef(PetscInt L, const PetscReal uu[4], const PetscReal ff[4],
+                       PetscInt r, PetscInt s, BratuCtx *user) {
+    const gradRef    du    = deval(uu,r,s),
+                     dchiL = dchi[L][r][s];
+    const PetscReal  tmp = user->lambda * PetscExpScalar(eval(uu,r,s));
+    return GradInnerProd(du,dchiL)
+           - (tmp + eval(ff,r,s)) * chi[L][r][s];
 }
 
 // using Q1 finite elements, compute F(u), the residual of the discretized
@@ -268,6 +267,7 @@ PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
     PetscInt   i, j, l, PP, QQ, r, s;
     PetscReal  uu[4], ff[4];
 
+    PetscCall(q1setup(user->quadpts,hx,hy));
     // clear residuals (because we sum over elements)
     // and assign F for Dirichlet nodes
     for (j = info->ys; j < info->ys + info->ym; j++)
@@ -315,8 +315,7 @@ PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
                     for (r = 0; r < q.n; r++) {
                         for (s = 0; s < q.n; s++) {
                             FF[QQ][PP] += detj * q.w[r] * q.w[s]
-                                          * IntegrandRef(hx,hy,l,uu,ff,
-                                                         q.xi[r],q.xi[s],user);
+                                          * IntegrandRef(l,uu,ff,r,s,user);
                         }
                     }
                 }
@@ -324,7 +323,7 @@ PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
         }
     }
     // FLOPS only counting quadrature-point residual computations:
-    //     4 + 138 = 142 flops per quadrature point
+    //     FIXME 4 + 138 = 142 flops per quadrature point
     //     q.n^2 quadrature points per element
     PetscCall(PetscLogFlops(142.0 * q.n * q.n * info->xm * info->ym));
     (user->residualcount)++;
@@ -440,18 +439,18 @@ PetscErrorCode NonlinearGSFD(SNES snes, Vec u, Vec b, void *ctx) {
 // evaluate integrand of rho(c) at a point xi,eta in the reference element,
 // for the hat function at corner L (i.e. chi_L = psi_ij from caller)
 // FLOPS:  9 + (48 + 8 + 6 + 31 + 9 + 4 + 31 + 9) = 155
-PetscErrorCode rhoIntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
+PetscErrorCode rhoIntegrandRef(PetscInt L,
                  PetscReal c, const PetscReal uu[4], const PetscReal ff[4],
-                 PetscReal xi, PetscReal eta,
+                 PetscInt r, PetscInt s,
                  PetscReal *rho, PetscReal *drhodc, BratuCtx *user) {
-    const gradRef du    = deval(uu,xi,eta),
-                  dchiL = dchi(L,xi,eta);
-    const PetscReal chiL   = chi(L,xi,eta),
-                    ushift = eval(uu,xi,eta) + c * chiL,
+    const gradRef du    = deval(uu,r,s),
+                  dchiL = dchi[L][r][s];
+    const PetscReal chiL   = chi[L][r][s],
+                    ushift = eval(uu,r,s) + c * chiL,
                     phiL   = user->lambda * PetscExpScalar(ushift);
-    *rho = GradInnerProd(hx,hy,gradRefAXPY(c,dchiL,du),dchiL)
-           - (phiL + eval(ff,xi,eta)) * chiL;
-    *drhodc = GradInnerProd(hx,hy,dchiL,dchiL) - phiL * chiL;
+    *rho = GradInnerProd(gradRefAXPY(c,dchiL,du),dchiL)
+           - (phiL + eval(ff,r,s)) * chiL;
+    *drhodc = GradInnerProd(dchiL,dchiL) - phiL * chiL;
     return 0;
 
 }
@@ -500,7 +499,7 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
         for (r = 0; r < q.n; r++) {
             for (s = 0; s < q.n; s++) {
                 // ll[k] is local (elementwise) index of the corner (= i,j)
-                rhoIntegrandRef(hx,hy,ll[k],c,uu,ff,q.xi[r],q.xi[s],&prho,&pdrhodc,user);
+                rhoIntegrandRef(ll[k],c,uu,ff,r,s,&prho,&pdrhodc,user);
                 tmp = detj * q.w[r] * q.w[s];
                 *rho += tmp * prho;
                 *drhodc += tmp * pdrhodc;
@@ -542,6 +541,7 @@ PetscErrorCode NonlinearGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
     PetscCall(DMDAGetLocalInfo(da,&info));
     hx = 1.0 / (PetscReal)(info.mx - 1);
     hy = 1.0 / (PetscReal)(info.my - 1);
+    PetscCall(q1setup(user->quadpts,hx,hy));
 
     // for Dirichlet nodes assign boundary value once
     PetscCall(DMDAVecGetArray(da,u,&au));

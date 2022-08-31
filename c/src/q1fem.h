@@ -8,8 +8,8 @@
 // Reference element hat functions are denoted chi_L(xi,eta),
 // with gradient (in reference coordinates) returned by dchi().
 //
-// At bottom, one-dimensional Gauss-Legendre quadrature for interval [-1,1],
-// of degree 1,2,3.
+// Starts with one-dimensional Gauss-Legendre quadrature for interval [-1,1],
+// of degree 1,2,3.  Namely, type Quad1D and array gausslegendre[].
 //
 // For documentation see Chapter 9 and Interlude of Bueler, "PETSc for Partial
 // Differential Equations", SIAM Press 2021, and c/ch9/phelm.c at
@@ -17,33 +17,6 @@
 
 #ifndef Q1FEM_H_
 #define Q1FEM_H_
-
-// FLOPS: 6
-PetscReal chi(PetscInt L, PetscReal xi, PetscReal eta);
-
-// evaluate v(xi,eta) on reference element using local node numbering
-// FLOPS: 7 + 4 * chi = 31
-PetscReal eval(const PetscReal v[4], PetscReal xi, PetscReal eta);
-
-typedef struct {
-    PetscReal  xi, eta;
-} gradRef;
-
-// FLOPS: 4
-gradRef gradRefAXPY(PetscReal a, gradRef X, gradRef Y);
-
-// FLOPS: 8
-gradRef dchi(PetscInt L, PetscReal xi, PetscReal eta);
-
-// evaluate partial derivs of v(xi,eta) on reference element
-// FLOPS: 4 * (8 + 4) = 48
-gradRef deval(const PetscReal v[4], PetscReal xi, PetscReal eta);
-
-// FLOPS: 9
-PetscReal GradInnerProd(PetscReal hx, PetscReal hy, gradRef du, gradRef dv);
-
-// FLOPS: 13
-PetscReal GradPow(PetscReal hx, PetscReal hy, gradRef du, PetscReal P, PetscReal eps);
 
 #define MAXPTS 3
 
@@ -64,4 +37,31 @@ static const Quad1D gausslegendre[3]
           {-0.774596669241483, 0.0,               0.774596669241483},
           {0.555555555555556,  0.888888888888889, 0.555555555555556}} };
 
+typedef struct {
+    PetscReal  xi, eta;
+} gradRef;
+
+// following are global, NOT static
+PetscReal chi[4][3][3];   // chi[L][r][s]
+gradRef   dchi[4][3][3];  // dchi[L][r][s]
+
+PetscErrorCode q1setup(PetscInt quadpts, PetscReal hx, PetscReal hy);
+
+// evaluate v(xi,eta) at xi=xi[r],eta=xi[s] on reference element using
+// local node numbering
+// FLOPS: FIXME
+PetscReal eval(const PetscReal v[4], PetscInt r, PetscInt s);
+
+// evaluate partial derivs of v(xi,eta) on reference element
+// FLOPS: FIXME
+gradRef deval(const PetscReal v[4], PetscInt r, PetscInt s);
+
+// FLOPS: 4
+gradRef gradRefAXPY(PetscReal a, gradRef X, gradRef Y);
+
+// FLOPS: 5
+PetscReal GradInnerProd(gradRef du, gradRef dv);
+
+// FLOPS: 9
+PetscReal GradPow(gradRef du, PetscReal P, PetscReal eps);
 #endif
