@@ -1,6 +1,6 @@
   Linear solve converged due to CONVERGED_RTOL iterations 4
-  Linear solve converged due to CONVERGED_RTOL iterations 3
+  Linear solve converged due to CONVERGED_RTOL iterations 4
   Linear solve converged due to CONVERGED_RTOL iterations 4
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-flops = 7.206e+05,  residual calls = 64,  NGS calls = 0
-done on 5 x 5 grid:   error |u-uexact|_inf = 3.475e-04
+flops = 7.470e+04,  residual calls = 40,  NGS calls = 0
+done on 5 x 5 grid:   error |u-uexact|_inf = 1.177e-03

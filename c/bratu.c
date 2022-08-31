@@ -1,11 +1,15 @@
 static char help[] =
-"Solve nonlinear Liouville-Bratu equation by Q1 finite elements\n"
-"in 2D square (0,1)^2 using a structured-grid.  Option prefix lb_.  Solves\n"
+"Solve nonlinear Liouville-Bratu equation\n"
 "  - nabla^2 u - lambda e^u = f(x,y)\n"
-"subject to Dirichlet boundary conditions u=g.  For f=0 and g=0 the critical\n"
-"value occurs about at lambda = 6.808.  Optional exact solutions are by\n"
-"Liouville (1853) (for lambda=1.0; -lb_exact) and by method of manufactured\n"
-"solutions (arbitrary lambda; -lb_mms).\n\n";
+"on the 2D square (0,1)^2, subject to Dirichlet boundary conditions u=g.\n"
+"Grid is structured and equally-spaced.  Option prefix is lb_.\n"
+"Choose either method:\n"
+"  * finite differences (-lb_fd)\n"
+"  * Q1 finite elements (-lb_fem)\n"
+"For f=0 and g=0 the critical value occurs about at lambda = 6.808.\n"
+"Optional exact solutions are from Liouville (1853) (for lambda=1.0;\n"
+"-lb_exact), or from method of manufactured solutions (arbitrary lambda;\n"
+"-lb_mms).\n\n";
 
 #include <petsc.h>
 #include "src/q1fem.h"
@@ -45,9 +49,15 @@ static PetscReal g_liouville(PetscReal x, PetscReal y, void *ctx) {
 
 extern PetscErrorCode FormExact(PetscReal (*)(PetscReal,PetscReal,void*),
                                 DMDALocalInfo*, Vec, BratuCtx*);
-extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*, PetscReal **,
-                                        PetscReal**, BratuCtx*);
-extern PetscErrorCode NonlinearGS(SNES, Vec, Vec, void*);
+extern PetscBool NodeOnBdry(DMDALocalInfo*, PetscInt, PetscInt);
+
+extern PetscErrorCode FormFunctionLocalFD(DMDALocalInfo*, PetscReal **,
+                                          PetscReal**, BratuCtx*);
+extern PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo*, PetscReal **,
+                                           PetscReal**, BratuCtx*);
+
+extern PetscErrorCode NonlinearGSFD(SNES, Vec, Vec, void*);
+extern PetscErrorCode NonlinearGSFEM(SNES, Vec, Vec, void*);
 
 int main(int argc,char **argv) {
     DM             da;
@@ -55,7 +65,8 @@ int main(int argc,char **argv) {
     Vec            u, uexact;
     BratuCtx       bctx;
     DMDALocalInfo  info;
-    PetscBool      exact = PETSC_FALSE, mms = PETSC_FALSE, counts = PETSC_FALSE;
+    PetscBool      exact = PETSC_FALSE, mms = PETSC_FALSE, counts = PETSC_FALSE,
+                   fd = PETSC_FALSE, fem = PETSC_FALSE;
     PetscLogDouble lflops, flops;
     PetscReal      errinf;
 
@@ -67,37 +78,47 @@ int main(int argc,char **argv) {
     bctx.ngscount = 0;
     bctx.quadpts = 2;
     PetscOptionsBegin(PETSC_COMM_WORLD,"lb_","Liouville-Bratu equation solver options","");
-    PetscCall(PetscOptionsReal("-lambda","coefficient of e^u (reaction) term",
-                            "bratu.c",bctx.lambda,&(bctx.lambda),NULL));
     PetscCall(PetscOptionsBool("-exact","use Liouville exact solution",
                             "bratu.c",exact,&exact,NULL));
+    PetscCall(PetscOptionsBool("-fd","use finite differences",
+                            "bratu.c",fd,&fd,NULL));
+    PetscCall(PetscOptionsBool("-fem","use Q1 finite elements",
+                            "bratu.c",fem,&fem,NULL));
+    PetscCall(PetscOptionsReal("-lambda","coefficient of e^u (reaction) term",
+                            "bratu.c",bctx.lambda,&(bctx.lambda),NULL));
     PetscCall(PetscOptionsBool("-mms","use MMS exact solution",
                             "bratu.c",mms,&mms,NULL));
     // WARNING: coarse problems are badly solved with -lb_quadpts 1, so avoid in MG
-    PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only)",
+    PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only; for Q1 FEM case only)",
                             "bratu.c",bctx.quadpts,&(bctx.quadpts),NULL));
     PetscCall(PetscOptionsBool("-counts","print counts for calls to call-back functions",
                             "bratu.c",counts,&counts,NULL));
     PetscOptionsEnd();
 
     // options consistency checking
+    if (fd && fem) {
+        SETERRQ(PETSC_COMM_SELF,1,"invalid option combination -lb_fd -lb_fem; choose one\n");
+    }
+    if (!fd && !fem) {
+        SETERRQ(PETSC_COMM_SELF,2,"invalid option combination; choose either -lb_fd or -lb_fem\n");
+    }
     if (exact && mms) {
-        SETERRQ(PETSC_COMM_SELF,1,"invalid option combination -lb_exact -lb_mms\n");
+        SETERRQ(PETSC_COMM_SELF,3,"invalid option combination -lb_exact -lb_mms; choose one or neither\n");
     }
     if (exact) {
         if (bctx.lambda != 1.0) {
-            SETERRQ(PETSC_COMM_SELF,2,"Liouville exact solution only implemented for lambda = 1.0\n");
+            SETERRQ(PETSC_COMM_SELF,4,"Liouville exact solution only implemented for lambda = 1.0\n");
         }
         bctx.g_bdry = &g_liouville;  // and zero for f_rhs()
     }
     if (mms)
         bctx.f_rhs = &f_mms;  // and zero for g_bdry()
     if ((bctx.quadpts < 1) || (bctx.quadpts > 3)) {
-        SETERRQ(PETSC_COMM_SELF,3,"quadrature points n=1,2,3 only");
+        SETERRQ(PETSC_COMM_SELF,5,"quadrature points n=1,2,3 only");
     }
 
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
-                           DMDA_STENCIL_BOX,  // contrast with bratufd
+                           fd ? DMDA_STENCIL_STAR : DMDA_STENCIL_BOX,
                            3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
     PetscCall(DMSetApplicationContext(da,&bctx));
     PetscCall(DMSetFromOptions(da));
@@ -107,9 +128,15 @@ int main(int argc,char **argv) {
     PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
     PetscCall(SNESSetApplicationContext(snes,&bctx));
     PetscCall(SNESSetDM(snes,da));
-    PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,
-               (DMDASNESFunction)FormFunctionLocal,&bctx));
-    PetscCall(SNESSetNGS(snes,NonlinearGS,&bctx));
+    if (fd) {
+        PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,
+                   (DMDASNESFunction)FormFunctionLocalFD,&bctx));
+        PetscCall(SNESSetNGS(snes,NonlinearGSFD,&bctx));
+    } else {
+        PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,
+                   (DMDASNESFunction)FormFunctionLocalFEM,&bctx));
+        PetscCall(SNESSetNGS(snes,NonlinearGSFEM,&bctx));
+    }
     PetscCall(SNESSetFromOptions(snes));
 
     // solve the problem
@@ -171,6 +198,46 @@ PetscErrorCode FormExact(PetscReal (*ufcn)(PetscReal,PetscReal,void*),
     return 0;
 }
 
+PetscBool NodeOnBdry(DMDALocalInfo *info, PetscInt i, PetscInt j) {
+    return (((i == 0) || (i == info->mx-1) || (j == 0) || (j == info->my-1)));
+}
+
+// compute F(u), the residual of the discretized PDE on the given grid,
+// using finite differences
+PetscErrorCode FormFunctionLocalFD(DMDALocalInfo *info, PetscReal **au,
+                                   PetscReal **FF, BratuCtx *user) {
+    PetscInt   i, j;
+    const PetscInt nn = 0, ss = 1, ee = 2, ww = 3;
+    PetscReal  hx, hy, darea, hxhy, hyhx, uu[4];
+
+    hx = 1.0 / (PetscReal)(info->mx - 1);
+    hy = 1.0 / (PetscReal)(info->my - 1);
+    darea = hx * hy;
+    hxhy = hx / hy;
+    hyhx = hy / hx;
+    for (j = info->ys; j < info->ys + info->ym; j++) {
+        for (i = info->xs; i < info->xs + info->xm; i++) {
+            if (j==0 || i==0 || i==info->mx-1 || j==info->my-1) {
+                FF[j][i] = au[j][i] - user->g_bdry(i*hx,j*hy,user);
+            } else {
+                uu[nn] = NodeOnBdry(info,i,j+1) ? user->g_bdry(i*hx,(j+1)*hy,user) : au[j+1][i];
+                uu[ss] = NodeOnBdry(info,i,j-1) ? user->g_bdry(i*hx,(j-1)*hy,user) : au[j-1][i];
+                uu[ee] = NodeOnBdry(info,i+1,j) ? user->g_bdry((i+1)*hx,j*hy,user) : au[j][i+1];
+                uu[ww] = NodeOnBdry(info,i-1,j) ? user->g_bdry((i-1)*hx,j*hy,user) : au[j][i-1];
+                FF[j][i] =   hyhx * (2.0 * au[j][i] - uu[ww] - uu[ee])
+                           + hxhy * (2.0 * au[j][i] - uu[ss] - uu[nn])
+                           - darea * (user->lambda * PetscExpScalar(au[j][i])
+                                      + user->f_rhs(i*hx,j*hy,user));
+            }
+        }
+    }
+    PetscCall(PetscLogFlops(14.0 * info->xm * info->ym));
+    (user->residualcount)++;
+    return 0;
+}
+
+// using Q1 finite elements, evaluate the integrand of the residual on
+// the reference element
 // FLOPS: 5 + (48 + 8 + 31 + 9 + 31 + 6) = 138
 PetscReal IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
                        const PetscReal uu[4], const PetscReal ff[4],
@@ -182,11 +249,8 @@ PetscReal IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
            - (tmp + eval(ff,xi,eta)) * chi(L,xi,eta);
 }
 
-PetscBool NodeOnBdry(DMDALocalInfo *info, PetscInt i, PetscInt j) {
-    return (((i == 0) || (i == info->mx-1) || (j == 0) || (j == info->my-1)));
-}
-
-// compute F(u), the residual of the discretized PDE on the given grid:
+// using Q1 finite elements, compute F(u), the residual of the discretized
+// PDE on the given grid,
 //     F(u)[v] = int_Omega grad u . grad v - lambda e^u v - f v
 // this method computes the vector
 //     F_ij = F(u)[psi_ij]
@@ -194,8 +258,8 @@ PetscBool NodeOnBdry(DMDALocalInfo *info, PetscInt i, PetscInt j) {
 // note that at boundary nodes we have
 //     F_ij = u_ij - g(x_i,y_j)
 // where g(x,y) is the boundary value
-PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
-                                 PetscReal **FF, BratuCtx *user) {
+PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
+                                    PetscReal **FF, BratuCtx *user) {
     const Quad1D    q = gausslegendre[user->quadpts-1];
     const PetscInt  li[4] = {0,-1,-1,0},  lj[4] = {0,0,-1,-1};
     const PetscReal hx = 1.0 / (PetscReal)(info->mx - 1),
@@ -267,8 +331,86 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscReal **au,
     return 0;
 }
 
-// for owned, interior nodes i,j, we define the pointwise residual corresponding
-// to the hat function psi_ij:
+// using finite differences, do nonlinear Gauss-Seidel (processor-block)
+// sweeps on equation
+//     F(u) = b
+PetscErrorCode NonlinearGSFD(SNES snes, Vec u, Vec b, void *ctx) {
+    PetscInt       i, j, k, maxits, totalits=0, sweeps, l;
+    PetscReal      atol, rtol, stol, hx, hy, darea, hxhy, hyhx,
+                   **au, **ab, bij, uu, tmp, phi0, phi, dphidu, s;
+    DM             da;
+    DMDALocalInfo  info;
+    Vec            uloc;
+    BratuCtx*      user = (BratuCtx*)ctx;
+
+    PetscCall(SNESNGSGetSweeps(snes,&sweeps));
+    PetscCall(SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&maxits));
+    PetscCall(SNESGetDM(snes,&da));
+    PetscCall(DMDAGetLocalInfo(da,&info));
+
+    hx = 1.0 / (PetscReal)(info.mx - 1);
+    hy = 1.0 / (PetscReal)(info.my - 1);
+    darea = hx * hy;
+    hxhy = hx / hy;
+    hyhx = hy / hx;
+
+    if (b) {
+        PetscCall(DMDAVecGetArrayRead(da,b,&ab));
+    }
+    PetscCall(DMGetLocalVector(da,&uloc));
+    for (l=0; l<sweeps; l++) {
+        PetscCall(DMGlobalToLocal(da,u,INSERT_VALUES,uloc));
+        PetscCall(DMDAVecGetArray(da,uloc,&au));
+        for (j = info.ys; j < info.ys + info.ym; j++) {
+            for (i = info.xs; i < info.xs + info.xm; i++) {
+                if (j==0 || i==0 || i==info.mx-1 || j==info.my-1) {
+                    au[j][i] = user->g_bdry(i*hx,j*hy,user);
+                } else {
+                    if (b)
+                        bij = ab[j][i];
+                    else
+                        bij = 0.0;
+                    // do pointwise Newton iterations on scalar function
+                    //   phi(u) =   hyhx * (2 u - au[j][i-1] - au[j][i+1])
+                    //            + hxhy * (2 u - au[j-1][i] - au[j+1][i])
+                    //            - darea * lambda * e^u - bij
+                    uu = au[j][i];
+                    for (k = 0; k < maxits; k++) {
+                        tmp = user->lambda * PetscExpScalar(uu);
+                        phi =   hyhx * (2.0 * uu - au[j][i-1] - au[j][i+1])
+                              + hxhy * (2.0 * uu - au[j-1][i] - au[j+1][i])
+                              - darea * (tmp + user->f_rhs(i*hx,j*hy,user))
+                              - bij;
+                        if (k == 0)
+                             phi0 = phi;
+                        dphidu = 2.0 * (hyhx + hxhy) - darea * tmp;
+                        s = - phi / dphidu;     // Newton step
+                        uu += s;
+                        totalits++;
+                        if (   atol > PetscAbsReal(phi)
+                            || rtol*PetscAbsReal(phi0) > PetscAbsReal(phi)
+                            || stol*PetscAbsReal(uu) > PetscAbsReal(s)    ) {
+                            break;
+                        }
+                    }
+                    au[j][i] = uu;
+                }
+            }
+        }
+        PetscCall(DMDAVecRestoreArray(da,uloc,&au));
+        PetscCall(DMLocalToGlobal(da,uloc,INSERT_VALUES,u));
+    }
+    PetscCall(DMRestoreLocalVector(da,&uloc));
+    if (b) {
+        PetscCall(DMDAVecRestoreArrayRead(da,b,&ab));
+    }
+    PetscCall(PetscLogFlops(22.0 * totalits));
+    (user->ngscount)++;
+    return 0;
+}
+
+// using Q1 finite elements, for owned, interior nodes i,j, we define the
+// pointwise residual corresponding to the hat function psi_ij:
 //     rho(c) = F(u + c psi_ij)[psi_ij] - b_ij
 //            = int_Omega (grad u + c grad psi_ij) . grad psi_ij
 //                        - (lambda exp(u + c psi_ij) + f) psi_ij
@@ -314,7 +456,8 @@ PetscErrorCode rhoIntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
 
 }
 
-// for owned, interior nodes i,j, evaluate rho(c) and
+// using Q1 finite elements, for owned, interior nodes i,j, evaluate
+// rho(c) and
 //   rho'(c) = int_Omega grad psi_ij . grad psi_ij
 //                       - lambda e^(u + c psi_ij) psi_ij
 // FLOPS: (155 + 6) * q.n * q.n
@@ -368,7 +511,8 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
     return 0;
 }
 
-// do nonlinear Gauss-Seidel (processor-block) sweeps on equation
+// using Q1 finite elements, do nonlinear Gauss-Seidel (processor-block)
+// sweeps on equation
 //     F(u)[psi_ij] = b_ij   for all nodes i,j
 // where psi_ij is the hat function and
 //     F(u)[v] = int_Omega grad u . grad v - (lambda e^u + f) v
@@ -383,7 +527,7 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
 // for boundary nodes we set
 //     u_ij = g(x_i,y_j)
 // and we do not iterate
-PetscErrorCode NonlinearGS(SNES snes, Vec u, Vec b, void *ctx) {
+PetscErrorCode NonlinearGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
     BratuCtx*      user = (BratuCtx*)ctx;
     PetscInt       i, j, k, maxits, totalits=0, sweeps, l;
     PetscReal      atol, rtol, stol, hx, hy, **au, **ab,
