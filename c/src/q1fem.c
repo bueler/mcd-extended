@@ -1,63 +1,62 @@
 #include <petsc.h>
 #include "q1fem.h"
 
-static const PetscReal xiL[4]  = { 1.0, -1.0, -1.0,  1.0},
-                       etaL[4] = { 1.0,  1.0, -1.0, -1.0};
+static const PetscReal _Q1xiL[4]  = { 1.0, -1.0, -1.0,  1.0},
+                       _Q1etaL[4] = { 1.0,  1.0, -1.0, -1.0};
 
-PetscReal Q1FEM_IP_CX = NAN,
-          Q1FEM_IP_CY = NAN;
+PetscReal Q1_IP_CX = NAN,
+          Q1_IP_CY = NAN;
 
-PetscReal chiFormula(PetscInt L, PetscReal xi, PetscReal eta) {
-    return 0.25 * (1.0 + xiL[L] * xi) * (1.0 + etaL[L] * eta);
+PetscReal _Q1chiFormula(PetscInt L, PetscReal xi, PetscReal eta) {
+    return 0.25 * (1.0 + _Q1xiL[L] * xi) * (1.0 + _Q1etaL[L] * eta);
 }
 
-gradRef dchiFormula(PetscInt L, PetscReal xi, PetscReal eta) {
-    const gradRef result = {0.25 * xiL[L]  * (1.0 + etaL[L] * eta),
-                            0.25 * etaL[L] * (1.0 + xiL[L]  * xi)};
+Q1GradRef _Q1dchiFormula(PetscInt L, PetscReal xi, PetscReal eta) {
+    const Q1GradRef result = {0.25 * _Q1xiL[L]  * (1.0 + _Q1etaL[L] * eta),
+                            0.25 * _Q1etaL[L] * (1.0 + _Q1xiL[L]  * xi)};
     return result;
 }
 
-PetscErrorCode q1setup(PetscInt quadpts, PetscReal hx, PetscReal hy) {
-    const Quad1D  q = gausslegendre[quadpts-1];
+PetscErrorCode Q1Setup(PetscInt quadpts, PetscReal hx, PetscReal hy) {
+    const Q1Quad1D q = Q1gausslegendre[quadpts-1];
     PetscInt l, r, s;
-    Q1FEM_IP_CX = 4.0 / (hx * hx);
-    Q1FEM_IP_CY = 4.0 / (hy * hy);
+    Q1_IP_CX = 4.0 / (hx * hx);
+    Q1_IP_CY = 4.0 / (hy * hy);
     for (l = 0; l < 4; l++)
         for (r = 0; r < q.n; r++)
             for (s = 0; s < q.n; s++) {
-                chi[l][r][s] = chiFormula(l,q.xi[r],q.xi[s]);
-                dchi[l][r][s] = dchiFormula(l,q.xi[r],q.xi[s]);
+                Q1chi[l][r][s] = _Q1chiFormula(l,q.xi[r],q.xi[s]);
+                Q1dchi[l][r][s] = _Q1dchiFormula(l,q.xi[r],q.xi[s]);
             }
     return 0;
 }
 
-
-PetscReal eval(const PetscReal v[4], PetscInt r, PetscInt s) {
-    return   v[0] * chi[0][r][s] + v[1] * chi[1][r][s]
-           + v[2] * chi[2][r][s] + v[3] * chi[3][r][s];
+PetscReal Q1Eval(const PetscReal v[4], PetscInt r, PetscInt s) {
+    return   v[0] * Q1chi[0][r][s] + v[1] * Q1chi[1][r][s]
+           + v[2] * Q1chi[2][r][s] + v[3] * Q1chi[3][r][s];
 }
 
-gradRef deval(const PetscReal v[4], PetscInt r, PetscInt s) {
-    gradRef   sum = {0.0,0.0}, tmp;
+Q1GradRef Q1DEval(const PetscReal v[4], PetscInt r, PetscInt s) {
+    Q1GradRef sum = {0.0,0.0}, tmp;
     PetscInt  L;
     for (L=0; L<4; L++) {
-        tmp = dchi[L][r][s];
+        tmp = Q1dchi[L][r][s];
         sum.xi += v[L] * tmp.xi;
         sum.eta += v[L] * tmp.eta;
     }
     return sum;
 }
 
-gradRef gradRefAXPY(PetscReal a, gradRef X, gradRef Y) {
-    const gradRef result = {a * X.xi  + Y.xi,
-                            a * X.eta + Y.eta};
+Q1GradRef Q1GradAXPY(PetscReal a, Q1GradRef X, Q1GradRef Y) {
+    const Q1GradRef result = {a * X.xi  + Y.xi,
+                              a * X.eta + Y.eta};
     return result;
 }
 
-PetscReal GradInnerProd(gradRef du, gradRef dv) {
-    return Q1FEM_IP_CX * du.xi * dv.xi + Q1FEM_IP_CX * du.eta * dv.eta;
+PetscReal Q1GradInnerProd(Q1GradRef du, Q1GradRef dv) {
+    return Q1_IP_CX * du.xi * dv.xi + Q1_IP_CX * du.eta * dv.eta;
 }
 
-PetscReal GradPow(gradRef du, PetscReal P, PetscReal eps) {
-    return PetscPowScalar(GradInnerProd(du,du) + eps*eps, P/2.0);
+PetscReal Q1GradPow(Q1GradRef du, PetscReal p, PetscReal eps) {
+    return PetscPowScalar(Q1GradInnerProd(du,du) + eps*eps, p/2.0);
 }

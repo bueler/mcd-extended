@@ -309,14 +309,14 @@ PetscErrorCode CRLocal(DMDALocalInfo *info, PetscReal **au, PetscReal **aF,
     return 0;
 }
 
-// FLOPS: 2 + (48 + 8 + 9 + 31 + 6) = 104
+// FLOPS: FIXME
 PetscReal IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
                        const PetscReal uu[4], const PetscReal ff[4],
-                       PetscReal xi, PetscReal eta, ObsCtx *user) {
-    const gradRef    du    = deval(uu,xi,eta),
-                     dchiL = dchi(L,xi,eta);
-    return GradInnerProd(hx,hy,du,dchiL)
-           - eval(ff,xi,eta) * chi(L,xi,eta);
+                       PetscInt r, PetscInt s, ObsCtx *user) {
+    const Q1GradRef  du    = Q1DEval(uu,r,s),
+                     dchiL = Q1dchi[L][r][s];
+    return Q1GradInnerProd(du,dchiL)
+           - Q1Eval(ff,r,s) * Q1chi[L][r][s];
 }
 
 // compute F_ij, the nodal residual of the discretized nonlinear operator,
@@ -330,13 +330,16 @@ PetscReal IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
 //     F_ij = u_ij - g(x_i,y_j)
 PetscErrorCode FormResidualOrCRLocal(DMDALocalInfo *info, PetscReal **au,
                                      PetscReal **FF, ObsCtx *user) {
-    const Quad1D    q = gausslegendre[user->quadpts-1];
+    const Q1Quad1D  q = Q1gausslegendre[user->quadpts-1];
     const PetscInt  li[4] = {0,-1,-1,0},  lj[4] = {0,0,-1,-1};
     const PetscReal hx = 4.0 / (PetscReal)(info->mx - 1),
                     hy = 4.0 / (PetscReal)(info->my - 1),
                     detj = 0.25 * hx * hy;
     PetscInt   i, j, l, PP, QQ, r, s;
     PetscReal  x, y, uu[4], ff[4];
+
+    // set up Q1 FEM tools for this grid
+    PetscCall(Q1Setup(user->quadpts,hx,hy));
 
     // clear residuals (because we sum over elements)
     // and assign F for Dirichlet nodes
@@ -392,8 +395,7 @@ PetscErrorCode FormResidualOrCRLocal(DMDALocalInfo *info, PetscReal **au,
                     for (r = 0; r < q.n; r++) {
                         for (s = 0; s < q.n; s++) {
                             FF[QQ][PP] += detj * q.w[r] * q.w[s]
-                                          * IntegrandRef(hx,hy,l,uu,ff,
-                                                         q.xi[r],q.xi[s],user);
+                                          * IntegrandRef(hx,hy,l,uu,ff,r,s,user);
                         }
                     }
                 }
@@ -405,7 +407,7 @@ PetscErrorCode FormResidualOrCRLocal(DMDALocalInfo *info, PetscReal **au,
     if (user->pngs)
         PetscCall(CRLocal(info,au,FF,FF,user));
 
-    // FLOPS: only count flops per quadrature point in residual computations:
+    // FLOPS: FIXME only count flops per quadrature point in residual computations:
     // note q.n^2 quadrature points per element
     PetscCall(PetscLogFlops(108.0 * q.n * q.n * info->xm * info->ym));
     (user->residualcount)++;
@@ -445,15 +447,15 @@ PetscErrorCode FormResidualOrCRLocal(DMDALocalInfo *info, PetscReal **au,
 // FLOPS: 2 + (48 + 8 + 9 + 4 + 31 + 6 + 9) = 117
 PetscErrorCode rhoIntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
                  PetscReal c, const PetscReal uu[4], const PetscReal ff[4],
-                 PetscReal xi, PetscReal eta,
+                 PetscInt r, PetscInt s,
                  PetscReal *rho, PetscReal *drhodc, ObsCtx *user) {
-    const gradRef du    = deval(uu,xi,eta),
-                  dchiL = dchi(L,xi,eta);
+    const Q1GradRef du    = Q1DEval(uu,r,s),
+                    dchiL = Q1dchi[L][r][s];
     if (rho)
-        *rho = GradInnerProd(hx,hy,gradRefAXPY(c,dchiL,du),dchiL)
-               - eval(ff,xi,eta) * chi(L,xi,eta);
+        *rho = Q1GradInnerProd(Q1GradAXPY(c,dchiL,du),dchiL)
+               - Q1Eval(ff,r,s) * Q1chi[L][r][s];
     if (drhodc)
-        *drhodc = GradInnerProd(hx,hy,dchiL,dchiL);
+        *drhodc = Q1GradInnerProd(dchiL,dchiL);
     return 0;
 }
 
@@ -469,7 +471,7 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
     const PetscReal hx = 4.0 / (PetscReal)(info->mx - 1),
                     hy = 4.0 / (PetscReal)(info->my - 1),
                     detj = 0.25 * hx * hy;
-    const Quad1D    q = gausslegendre[user->quadpts-1];
+    const Q1Quad1D  q = Q1gausslegendre[user->quadpts-1];
     PetscInt  k, ii, jj, r, s;
     PetscReal x, y, uu[4], ff[4], prho, pdrhodc, tmp;
 
@@ -500,7 +502,7 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
         for (r = 0; r < q.n; r++) {
             for (s = 0; s < q.n; s++) {
                 // ll[k] is local (elementwise) index of the corner (= i,j)
-                rhoIntegrandRef(hx,hy,ll[k],c,uu,ff,q.xi[r],q.xi[s],&prho,&pdrhodc,user);
+                rhoIntegrandRef(hx,hy,ll[k],c,uu,ff,r,s,&prho,&pdrhodc,user);
                 tmp = detj * q.w[r] * q.w[s];
                 *rho += tmp * prho;
                 if (drhodc)
@@ -508,7 +510,7 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
             }
         }
     }
-    // FLOPS: only count flops per quadrature point in the four elements:
+    // FLOPS: FIXME only count flops per quadrature point in the four elements:
     PetscCall(PetscLogFlops((6.0 + 117.0) * q.n * q.n * 4.0));
     return 0;
 }
@@ -543,9 +545,12 @@ PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
     PetscCall(SNESNGSGetSweeps(snes,&sweeps));
     PetscCall(SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&maxits));
     PetscCall(SNESGetDM(snes,&da));
+
+    // set up Q1 FEM tools for this grid
     PetscCall(DMDAGetLocalInfo(da,&info));
     hx = 4.0 / (PetscReal)(info.mx - 1);
     hy = 4.0 / (PetscReal)(info.my - 1);
+    PetscCall(Q1Setup(user->quadpts,hx,hy));
 
     // for Dirichlet nodes assign boundary value once; assumes g >= gamma_lower
     PetscCall(DMDAVecGetArray(da,u,&au));
@@ -614,7 +619,7 @@ PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
     if (b)
         PetscCall(DMDAVecRestoreArrayRead(da,b,&ab));
 
-    // add flops for Newton iteration arithmetic; note rhoFcn() already counts flops
+    // FIXME add flops for Newton iteration arithmetic; note rhoFcn() already counts flops
     PetscCall(PetscLogFlops(6 * totalits));
     (user->ngscount)++;
     return 0;

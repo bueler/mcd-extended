@@ -18,15 +18,13 @@
 #ifndef Q1FEM_H_
 #define Q1FEM_H_
 
-#define MAXPTS 3
-
 typedef struct {
-    PetscInt   n;          // number of quadrature points for this rule
-    PetscReal  xi[MAXPTS], // locations in [-1,1]
-               w[MAXPTS];  // weights (sum to 2)
-} Quad1D;
+    PetscInt   n;     // number of quadrature points for this rule (=1,2,3)
+    PetscReal  xi[3], // locations in [-1,1]
+               w[3];  // weights (sum to 2)
+} Q1Quad1D;
 
-static const Quad1D gausslegendre[3]
+static const Q1Quad1D Q1gausslegendre[3]
     = {  {1,
           {0.0,                NAN,               NAN},
           {2.0,                NAN,               NAN}},
@@ -39,29 +37,30 @@ static const Quad1D gausslegendre[3]
 
 typedef struct {
     PetscReal  xi, eta;
-} gradRef;
+} Q1GradRef;
 
 // following are global, NOT static
-PetscReal chi[4][3][3];   // chi[L][r][s]
-gradRef   dchi[4][3][3];  // dchi[L][r][s]
+PetscReal Q1chi[4][3][3];   // Q1chi[L][r][s]
+Q1GradRef Q1dchi[4][3][3];  // Q1dchi[L][r][s]
 
-PetscErrorCode q1setup(PetscInt quadpts, PetscReal hx, PetscReal hy);
+PetscErrorCode Q1Setup(PetscInt quadpts, PetscReal hx, PetscReal hy);
 
 // evaluate v(xi,eta) at xi=xi[r],eta=xi[s] on reference element using
 // local node numbering
 // FLOPS: FIXME
-PetscReal eval(const PetscReal v[4], PetscInt r, PetscInt s);
+PetscReal Q1Eval(const PetscReal v[4], PetscInt r, PetscInt s);
 
 // evaluate partial derivs of v(xi,eta) on reference element
 // FLOPS: FIXME
-gradRef deval(const PetscReal v[4], PetscInt r, PetscInt s);
+Q1GradRef Q1DEval(const PetscReal v[4], PetscInt r, PetscInt s);
 
 // FLOPS: 4
-gradRef gradRefAXPY(PetscReal a, gradRef X, gradRef Y);
+Q1GradRef Q1GradAXPY(PetscReal a, Q1GradRef X, Q1GradRef Y);
 
 // FLOPS: 5
-PetscReal GradInnerProd(gradRef du, gradRef dv);
+PetscReal Q1GradInnerProd(Q1GradRef du, Q1GradRef dv);
 
 // FLOPS: 9
-PetscReal GradPow(gradRef du, PetscReal P, PetscReal eps);
+PetscReal Q1GradPow(Q1GradRef du, PetscReal p, PetscReal eps);
+
 #endif
