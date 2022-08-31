@@ -1,11 +1,11 @@
 #include <petsc.h>
 #include "q1fem.h"
 
-static const PetscReal _Q1xiL[4]  = { 1.0, -1.0, -1.0,  1.0},
-                       _Q1etaL[4] = { 1.0,  1.0, -1.0, -1.0};
-
 PetscReal Q1_IP_CX = NAN,
           Q1_IP_CY = NAN;
+
+static const PetscReal _Q1xiL[4]  = { 1.0, -1.0, -1.0,  1.0},
+                       _Q1etaL[4] = { 1.0,  1.0, -1.0, -1.0};
 
 PetscReal _Q1chiFormula(PetscInt L, PetscReal xi, PetscReal eta) {
     return 0.25 * (1.0 + _Q1xiL[L] * xi) * (1.0 + _Q1etaL[L] * eta);
@@ -17,7 +17,7 @@ Q1GradRef _Q1dchiFormula(PetscInt L, PetscReal xi, PetscReal eta) {
     return result;
 }
 
-PetscErrorCode Q1Setup(PetscInt quadpts, PetscReal hx, PetscReal hy) {
+PetscErrorCode Q1SetupForGrid(PetscInt quadpts, PetscReal hx, PetscReal hy) {
     const Q1Quad1D q = Q1gausslegendre[quadpts-1];
     PetscInt l, r, s;
     Q1_IP_CX = 4.0 / (hx * hx);

@@ -309,7 +309,7 @@ PetscErrorCode CRLocal(DMDALocalInfo *info, PetscReal **au, PetscReal **aF,
     return 0;
 }
 
-// FLOPS: FIXME
+// FLOPS: 2 + (16 + 5 + 7) = 30
 PetscReal IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
                        const PetscReal uu[4], const PetscReal ff[4],
                        PetscInt r, PetscInt s, ObsCtx *user) {
@@ -339,7 +339,7 @@ PetscErrorCode FormResidualOrCRLocal(DMDALocalInfo *info, PetscReal **au,
     PetscReal  x, y, uu[4], ff[4];
 
     // set up Q1 FEM tools for this grid
-    PetscCall(Q1Setup(user->quadpts,hx,hy));
+    PetscCall(Q1SetupForGrid(user->quadpts,hx,hy));
 
     // clear residuals (because we sum over elements)
     // and assign F for Dirichlet nodes
@@ -407,9 +407,10 @@ PetscErrorCode FormResidualOrCRLocal(DMDALocalInfo *info, PetscReal **au,
     if (user->pngs)
         PetscCall(CRLocal(info,au,FF,FF,user));
 
-    // FLOPS: FIXME only count flops per quadrature point in residual computations:
+    // FLOPS: only count flops per quadrature point in residual computations:
+    //   4 + 30 = 34
     // note q.n^2 quadrature points per element
-    PetscCall(PetscLogFlops(108.0 * q.n * q.n * info->xm * info->ym));
+    PetscCall(PetscLogFlops(34.0 * q.n * q.n * info->xm * info->ym));
     (user->residualcount)++;
     return 0;
 }
@@ -444,7 +445,7 @@ PetscErrorCode FormResidualOrCRLocal(DMDALocalInfo *info, PetscReal **au,
 
 // evaluate integrand of rho(c) at a point xi,eta in the reference element,
 // for the hat function at corner L (i.e. chi_L = psi_ij from caller)
-// FLOPS: 2 + (48 + 8 + 9 + 4 + 31 + 6 + 9) = 117
+// FLOPS: 2 + (16 + 5 + 4 + 7 + 5) = 39
 PetscErrorCode rhoIntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
                  PetscReal c, const PetscReal uu[4], const PetscReal ff[4],
                  PetscInt r, PetscInt s,
@@ -510,8 +511,9 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
             }
         }
     }
-    // FLOPS: FIXME only count flops per quadrature point in the four elements:
-    PetscCall(PetscLogFlops((6.0 + 117.0) * q.n * q.n * 4.0));
+    // FLOPS: only count flops per quadrature point in the four elements:
+    //   6 + 39 = 45
+    PetscCall(PetscLogFlops(45.0 * q.n * q.n * 4.0));
     return 0;
 }
 
@@ -550,7 +552,7 @@ PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
     PetscCall(DMDAGetLocalInfo(da,&info));
     hx = 4.0 / (PetscReal)(info.mx - 1);
     hy = 4.0 / (PetscReal)(info.my - 1);
-    PetscCall(Q1Setup(user->quadpts,hx,hy));
+    PetscCall(Q1SetupForGrid(user->quadpts,hx,hy));
 
     // for Dirichlet nodes assign boundary value once; assumes g >= gamma_lower
     PetscCall(DMDAVecGetArray(da,u,&au));
@@ -619,8 +621,8 @@ PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
     if (b)
         PetscCall(DMDAVecRestoreArrayRead(da,b,&ab));
 
-    // FIXME add flops for Newton iteration arithmetic; note rhoFcn() already counts flops
-    PetscCall(PetscLogFlops(6 * totalits));
+    // add flops for Newton iteration arithmetic; note rhoFcn() already counts flops
+    PetscCall(PetscLogFlops(8 * totalits));
     (user->ngscount)++;
     return 0;
 }

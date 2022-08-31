@@ -1,19 +1,23 @@
 // Tools for Q1 finite elements in two dimensions, including quadrature.
-// Here xi,eta denote coordinates on [-1,1]^2 reference element.  Node
-// numbering is
+//
+// Starts with one-dimensional Gauss-Legendre quadrature for interval [-1,1],
+// for 1,2,3 quadrature points.  Namely, type Q1Quad1D and array Q1gausslegendre[].
+//
+// Node numbering on reference element [-1,1]^2 is
 //   1 *---* 0
 //     |   |
 //   2 *---* 3
 // on reference element.  (E.g. L=0 is (1,1), ..., L=3 is (1,-1).)
-// Reference element hat functions are denoted chi_L(xi,eta),
-// with gradient (in reference coordinates) returned by dchi().
-//
-// Starts with one-dimensional Gauss-Legendre quadrature for interval [-1,1],
-// of degree 1,2,3.  Namely, type Quad1D and array gausslegendre[].
+// Reference element hat functions are
+//    chi_L(xi,eta) = Q1chi[L][r][s]
+// where xi,eta denote coordinates on reference element and quadature points
+// are xi=xi[r],eta=xi[s].  Similarly, the gradient of chi_L(xi,et), in
+// reference coordinates, is in the array Q1dchi[L][r][s].
 //
 // For documentation see Chapter 9 and Interlude of Bueler, "PETSc for Partial
 // Differential Equations", SIAM Press 2021, and c/ch9/phelm.c at
 //   https://github.com/bueler/p4pdes
+// but not optimizations have been applied here.
 
 #ifndef Q1FEM_H_
 #define Q1FEM_H_
@@ -43,15 +47,15 @@ typedef struct {
 PetscReal Q1chi[4][3][3];   // Q1chi[L][r][s]
 Q1GradRef Q1dchi[4][3][3];  // Q1dchi[L][r][s]
 
-PetscErrorCode Q1Setup(PetscInt quadpts, PetscReal hx, PetscReal hy);
+PetscErrorCode Q1SetupForGrid(PetscInt quadpts, PetscReal hx, PetscReal hy);
 
 // evaluate v(xi,eta) at xi=xi[r],eta=xi[s] on reference element using
 // local node numbering
-// FLOPS: FIXME
+// FLOPS: 7
 PetscReal Q1Eval(const PetscReal v[4], PetscInt r, PetscInt s);
 
 // evaluate partial derivs of v(xi,eta) on reference element
-// FLOPS: FIXME
+// FLOPS: 16
 Q1GradRef Q1DEval(const PetscReal v[4], PetscInt r, PetscInt s);
 
 // FLOPS: 4

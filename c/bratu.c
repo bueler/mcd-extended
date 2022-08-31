@@ -238,7 +238,7 @@ PetscErrorCode FormFunctionLocalFD(DMDALocalInfo *info, PetscReal **au,
 
 // using Q1 finite elements, evaluate the integrand of the residual on
 // the reference element
-// FLOPS: FIXME
+// FLOPS: 5 + (16 + 7 + 5 + 7) = 40
 PetscReal IntegrandRef(PetscInt L, const PetscReal uu[4], const PetscReal ff[4],
                        PetscInt r, PetscInt s, BratuCtx *user) {
     const Q1GradRef  du    = Q1DEval(uu,r,s),
@@ -268,7 +268,7 @@ PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
     PetscReal  uu[4], ff[4];
 
     // set up Q1 FEM tools for this grid
-    PetscCall(Q1Setup(user->quadpts,hx,hy));
+    PetscCall(Q1SetupForGrid(user->quadpts,hx,hy));
 
     // clear residuals (because we sum over elements)
     // and assign F for Dirichlet nodes
@@ -325,9 +325,9 @@ PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
         }
     }
     // FLOPS only counting quadrature-point residual computations:
-    //     FIXME 4 + 138 = 142 flops per quadrature point
+    //     4 + 40 = 44 flops per quadrature point
     //     q.n^2 quadrature points per element
-    PetscCall(PetscLogFlops(142.0 * q.n * q.n * info->xm * info->ym));
+    PetscCall(PetscLogFlops(44.0 * q.n * q.n * info->xm * info->ym));
     (user->residualcount)++;
     return 0;
 }
@@ -440,7 +440,7 @@ PetscErrorCode NonlinearGSFD(SNES snes, Vec u, Vec b, void *ctx) {
 
 // evaluate integrand of rho(c) at a point xi,eta in the reference element,
 // for the hat function at corner L (i.e. chi_L = psi_ij from caller)
-// FLOPS:  9 + (48 + 8 + 6 + 31 + 9 + 4 + 31 + 9) = 155
+// FLOPS:  9 + (16 + 7 + 5 + 4 + 7 + 5) = 53
 PetscErrorCode rhoIntegrandRef(PetscInt L,
                  PetscReal c, const PetscReal uu[4], const PetscReal ff[4],
                  PetscInt r, PetscInt s,
@@ -508,8 +508,9 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
             }
         }
     }
-    // FIXME
-    PetscCall(PetscLogFlops(161.0 * q.n * q.n));
+    // work per quadrature point:
+    //   FLOPS = 6 + 53 = 59
+    PetscCall(PetscLogFlops(59.0 * q.n * q.n));
     return 0;
 }
 
@@ -546,7 +547,7 @@ PetscErrorCode NonlinearGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
     PetscCall(DMDAGetLocalInfo(da,&info));
     hx = 1.0 / (PetscReal)(info.mx - 1);
     hy = 1.0 / (PetscReal)(info.my - 1);
-    PetscCall(Q1Setup(user->quadpts,hx,hy));
+    PetscCall(Q1SetupForGrid(user->quadpts,hx,hy));
 
     // for Dirichlet nodes assign boundary value once
     PetscCall(DMDAVecGetArray(da,u,&au));
@@ -599,7 +600,7 @@ PetscErrorCode NonlinearGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
     if (b)
         PetscCall(DMDAVecRestoreArrayRead(da,b,&ab));
 
-    // FIXME add flops for Newton iteration arithmetic; note rhoFcn() already counts flops
+    // add flops for Newton iteration arithmetic; note rhoFcn() already counts flops
     PetscCall(PetscLogFlops(6 * totalits));
     (user->ngscount)++;
     return 0;

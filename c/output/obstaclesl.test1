@@ -6,5 +6,5 @@
   Linear solve converged due to CONVERGED_RTOL iterations 3
   Linear solve converged due to CONVERGED_RTOL iterations 3
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
-flops = 1.322e+06,  residual calls = 58,  PNGS calls = 0
+flops = 5.687e+05,  residual calls = 58,  PNGS calls = 0
 done on 9 x 9 grid:   error |u-uexact|_inf = 3.173e-02
