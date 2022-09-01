@@ -12,7 +12,7 @@ https://github.com/bueler/p4pdes.  It solves the Liouville-Bratu problem on a
 square using a structured-grid DMDA and either finite differences or
 Q1 finite elements.
 
-With finite differences, a single matrix-free, FAS full cycle with
+With finite differences, two matrix-free, FAS full cycles with
 NGS smoothing suffices to give 10-digit accuracy on a problem with 270 million
 degrees of freedom, at only 802 flops per degree of freedom, and 2.4 processor-
 microseconds per degree of freedom:
@@ -30,8 +30,8 @@ build is used.  This is extraordinary performance.
 
 The Q1 finite element implementation is slower.  It is built starting from the
 basic quadrature and FE tools from `c/ch9/phelm.c` in `p4pdes`; here they are
-in `q1fem.{h|c}`.  The following run gets comparable error to above on a
-grid with 4 times fewer degrees of freedom (67 million), but it costs 62000
+in `q1fem.{h|c}`.  The following FAS+NGS run gets comparable error to above on
+a grid with 4 times fewer degrees of freedom (67 million), but it costs 62000
 flops per degree of freedom.  This is almost 100 times more work per degree
 of freedom.  The reason is that NGS is much more expensive per degree of
 freedom.
@@ -42,7 +42,7 @@ freedom.
     done on 8193 x 8193 grid:   error |u-uexact|_inf = 8.366e-11
     real 207.49
 
-Here is the Q1 FEM run on the same grid as the highest-resolution FD run above:
+Here is the FAS+NGS Q1 FEM run on the same grid as the highest-resolution FD run above:
 
     timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fem -da_grid_x 5 -da_grid_y 5 -lb_exact -snes_rtol 1.0e-12 -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 2 -fas_coarse_snes_max_it 4 -da_refine 12
     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
@@ -53,29 +53,39 @@ Here is the Q1 FEM run on the same grid as the highest-resolution FD run above:
 This did about 61000 flops per degree of freedom, illustrating optimal
 complexity, and about 61 processor-microseconds per degree of freedom.
 
+The following comparison of Newton-Krylov-multigrid runs, which do not use NGS,
+shows that in the above FD-versus-FEM comparison it is the Q1 FEM NGS that
+causes most of the performance hit:
+
+    $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fd -lb_exact -da_grid_x 5 -da_grid_y 5 -snes_converged_reason -lb_counts -ksp_converged_reason -pc_type mg -snes_rtol 1.0e-12 -da_refine 11
+      Linear solve converged due to CONVERGED_RTOL iterations 5
+      Linear solve converged due to CONVERGED_RTOL iterations 4
+      Linear solve converged due to CONVERGED_RTOL iterations 6
+      Linear solve converged due to CONVERGED_RTOL iterations 8
+    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
+    flops = 5.087e+11,  residual calls = 293,  NGS calls = 0
+    done on 8193 x 8193 grid:   error |u-uexact|_inf = 3.104e-10
+    real 91.04
+    $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fem -lb_exact -da_grid_x 5 -da_grid_y 5 -snes_converged_reason -lb_counts -ksp_converged_reason -pc_type mg -snes_rtol 1.0e-12 -da_refine 10
+      Linear solve converged due to CONVERGED_RTOL iterations 5
+      Linear solve converged due to CONVERGED_RTOL iterations 3
+      Linear solve converged due to CONVERGED_RTOL iterations 6
+      Linear solve converged due to CONVERGED_RTOL iterations 8
+    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
+    flops = 3.444e+11,  residual calls = 445,  NGS calls = 0
+    done on 4097 x 4097 grid:   error |u-uexact|_inf = 3.346e-10
+    real 53.79
+
+The number of quadrature points is important in the performance of
+`bratu.c -lb_fem`.  With `-lb_quadpts 1` there seem to be convergence
+difficulties.  With `-lb_quadpts 2` and `-lb_quadpts 3` the error norms
+and convergence results are nearly the same, but since the 9/4 increase
+in the number of 2D quadrature points is indeed reflected by a slowdown
+by a factor of about 2.
+
 See the regression tests in `makefile` for additional comparisons between FD
 and FEM results.
 
-FIXME performance comparison between Newton-Krylov-multigrid and
-FAS+NGS multigrid.
-
-Using a Newton-Krylov-multigrid approach, with default `-lb_quadpts 2` setting,
-`bratu.c` does 5 times as many flops, is about 4 times slower, but generates
-smaller inf-norm error, than `bratufd.c`.  Compare:
-
-    $ timer ./bratu -da_refine 9 -lb_exact -snes_rtol 1.0e-10 -snes_converged_reason -lb_showcounts -snes_type newtonls -snes_fd_color -ksp_type cg -pc_type mg
-    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-    flops = 2.493e+10,  residual calls = 301,  NGS calls = 0
-    done on 1025 x 1025 grid:   error |u-uexact|_inf = 5.355e-09
-    real 23.59
-    $ timer ./bratufd -da_refine 9 -lb_exact -snes_rtol 1.0e-10 -snes_converged_reason -lb_showcounts -snes_type newtonls -snes_fd_color -ksp_type cg -pc_type mg
-    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-    flops = 4.362e+09,  residual calls = 181,  NGS calls = 0
-    done on 1025 x 1025 grid:   error |u-uexact|_inf = 1.986e-08
-    real 5.62
-
-The number of quadrature points matters critically in the performance of
-`bratu.c`.
 
 ## obstaclesl.c
 
