@@ -55,7 +55,7 @@ PetscErrorCode LDCRefine(LDC *coarse, LDC *fine) {
     fine->_level = coarse->_level + 1;
     if (coarse->_printinfo)
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-        "  LDC info: refining coarse LDC at level %d to generate fine LDC at level %d\n",
+        "  LDC info: refining level %d LDC to generate finer LDC at level %d\n",
         coarse->_level,fine->_level));
     fine->_printinfo = coarse->_printinfo;
     PetscCall(DMRefine(coarse->dal,PETSC_COMM_WORLD,&(fine->dal)));
@@ -307,12 +307,47 @@ PetscErrorCode LDCGenerateDCsVCycle(LDC *finest) {
     return 0;
 }
 
+// set flg=PETSC_TRUE if  u <= v  everywhere, otherwise flg=PETSC_FALSE
+// extended reals rule:  if u=NULL (-infty) or v=NULL (+infty) then flg=PETSC_TRUE
+PetscErrorCode _LDCVecLessThanOrEqual(LDC ldc, Vec u, Vec v, PetscBool *flg) {
+    PetscInt      i, j;
+    PetscReal     **au, **av;
+    DMDALocalInfo info;
+    if ((!u) || (!v)) {
+        *flg = PETSC_TRUE;
+        return 0;
+    }
+    PetscCall(DMDAGetLocalInfo(ldc.dal,&info));
+    PetscCall(DMDAVecGetArray(info.da, u, &au));
+    PetscCall(DMDAVecGetArray(info.da, v, &av));
+    for (j=info.ys; j<info.ys+info.ym; j++) {
+        for (i=info.xs; i<info.xs+info.xm; i++) {
+            if (au[j][i] > av[j][i]) {
+                PetscCall(DMDAVecRestoreArray(info.da, u, &au));
+                PetscCall(DMDAVecRestoreArray(info.da, v, &av));
+                *flg = PETSC_FALSE;
+                return 0;
+            }
+        }
+    }
+    PetscCall(DMDAVecRestoreArray(info.da, u, &au));
+    PetscCall(DMDAVecRestoreArray(info.da, v, &av));
+    *flg = PETSC_TRUE;
+    return 0;
+}
+
 PetscErrorCode LDCCheckAdmissibleDownDefect(LDC ldc, Vec y, PetscBool *flg) {
-    // TODO
+    PetscCall(_LDCVecLessThanOrEqual(ldc,ldc.philow,y,flg));
+    if (!(*flg))
+        return 0;
+    PetscCall(_LDCVecLessThanOrEqual(ldc,y,ldc.phiupp,flg));
     return 0;
 }
 
 PetscErrorCode LDCCheckAdmissibleUpDefect(LDC ldc, Vec z, PetscBool *flg) {
-    // TODO
+    PetscCall(_LDCVecLessThanOrEqual(ldc,ldc.chilow,z,flg));
+    if (!(*flg))
+        return 0;
+    PetscCall(_LDCVecLessThanOrEqual(ldc,z,ldc.chiupp,flg));
     return 0;
 }

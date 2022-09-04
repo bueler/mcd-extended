@@ -85,8 +85,10 @@ PetscErrorCode LDCGenerateDCsVCycle(LDC *finest);
 
 PetscErrorCode LDCReportDCRanges(LDC ldc);
 
+// return flg=PETSC_TRUE if  ldc.philow <= y <= ldc.phiupp,  otherwise flg=PETSC_FALSE
 PetscErrorCode LDCCheckAdmissibleDownDefect(LDC ldc, Vec y, PetscBool *flg);
 
+// return flg=PETSC_TRUE if  ldc.chilow <= z <= ldc.chiupp,  otherwise flg=PETSC_FALSE
 PetscErrorCode LDCCheckAdmissibleUpDefect(LDC ldc, Vec z, PetscBool *flg);
 
 #endif  // #ifndef LDC_H_
