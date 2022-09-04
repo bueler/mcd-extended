@@ -35,29 +35,10 @@ int main(int argc,char **argv) {
     PetscCall(LDCRefine(&(ldc[0]),&(ldc[1])));
 
     // view DMDA at each level
-    PetscCall(PetscOptionsSetValue(NULL, "-dm_view", ""));
     PetscCall(PetscObjectSetName((PetscObject)(ldc[0].dal),"ldc[0].dal"));
     PetscCall(PetscObjectSetName((PetscObject)(ldc[1].dal),"ldc[1].dal"));
-    PetscCall(DMViewFromOptions(ldc[0].dal, NULL, "-dm_view"));
-    PetscCall(DMViewFromOptions(ldc[1].dal, NULL, "-dm_view"));
-
-#if 0
-    // test Q1 restriction, injection, and interpolation on temporary vecs
-    Vec vcoarseFW, vcoarseINJ, vfine;
-    PetscCall(DMCreateGlobalVector(ldc[0].dal,&vcoarseFW));
-    PetscCall(DMCreateGlobalVector(ldc[0].dal,&vcoarseINJ));
-    PetscCall(DMCreateGlobalVector(ldc[1].dal,&vfine));
-    PetscCall(Q1Restrict(ldc[1].dal,ldc[0].dal,ldc[1].gamlow,&vcoarseFW));
-    PetscCall(Q1Inject(ldc[1].dal,ldc[0].dal,ldc[1].gamlow,&vcoarseINJ));
-    PetscCall(Q1Interpolate(ldc[0].dal,ldc[1].dal,vcoarseFW,&vfine));
-    PetscCall(VecViewMatlabStdout(ldc[1].gamlow));
-    PetscCall(VecViewMatlabStdout(vcoarseFW));
-    PetscCall(VecViewMatlabStdout(vcoarseINJ));
-    PetscCall(VecViewMatlabStdout(vfine));
-    PetscCall(VecDestroy(&vfine));
-    PetscCall(VecDestroy(&vcoarseINJ));
-    PetscCall(VecDestroy(&vcoarseFW));
-#endif
+    PetscCall(DMView(ldc[0].dal, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(DMView(ldc[1].dal, PETSC_VIEWER_STDOUT_WORLD));
 
     // iterate w=1 gives up defect constraint on finest level
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"using iterate w=1 to generate finest-level up defect constraints\n"));
