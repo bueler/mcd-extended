@@ -88,7 +88,7 @@ PetscErrorCode _VecPrintRange(Vec X, const char *name, const char *infcase) {
     return 0;
 }
 
-PetscErrorCode LDCReportRanges(LDC ldc) {
+PetscErrorCode LDCReportDCRanges(LDC ldc) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"defect constraint ranges at level %d:\n",
                           ldc._level));
     PetscCall(_VecPrintRange(ldc.chiupp,"chiupp","+infty"));
@@ -98,11 +98,7 @@ PetscErrorCode LDCReportRanges(LDC ldc) {
     return 0;
 }
 
-PetscErrorCode LDCFinestUpDefectConstraintsFromVecs(
-                   Vec w,
-                   Vec vgamupp,
-                   Vec vgamlow,
-                   LDC *ldc) {
+PetscErrorCode LDCFinestUpDCsFromVecs(Vec w, Vec vgamupp, Vec vgamlow, LDC *ldc) {
     if (ldc->chiupp) {
         SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: chiupp already created");
     }
@@ -158,8 +154,7 @@ PetscErrorCode _LDCVecFromFormula(LDC ldc,
     return 0;
 }
 
-PetscErrorCode LDCFinestUpDefectConstraintsFromFormulas(
-                   Vec w,
+PetscErrorCode LDCFinestUpDCsFromFormulas(Vec w,
                    PetscReal (*fgamupp)(PetscReal,PetscReal),
                    PetscReal (*fgamlow)(PetscReal,PetscReal),
                    LDC *ldc) {
@@ -188,7 +183,7 @@ PetscErrorCode LDCFinestUpDefectConstraintsFromFormulas(
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
             "  LDC info: formula gamlow=NULL at level %d\n",
             ldc->_level));
-    PetscCall(LDCFinestUpDefectConstraintsFromVecs(w,vgamupp,vgamlow,ldc));
+    PetscCall(LDCFinestUpDCsFromVecs(w,vgamupp,vgamlow,ldc));
     if (vgamupp)
         PetscCall(VecDestroy(&vgamupp));
     if (vgamlow)
@@ -196,7 +191,7 @@ PetscErrorCode LDCFinestUpDefectConstraintsFromFormulas(
     return 0;
 }
 
-PetscErrorCode _LDCUpDefectConstraintsMonotoneRestrict(LDC fine, LDC *coarse) {
+PetscErrorCode _LDCUpDCsMonotoneRestrict(LDC fine, LDC *coarse) {
     if (!coarse) {
         SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: coarse not created");
     }
@@ -235,7 +230,7 @@ PetscErrorCode _LDCUpDefectConstraintsMonotoneRestrict(LDC fine, LDC *coarse) {
     return 0;
 }
 
-PetscErrorCode _LDCDownDefectConstraints(LDC *coarse, LDC *fine) {
+PetscErrorCode _LDCDownDCs(LDC *coarse, LDC *fine) {
     if (fine->phiupp) {
         SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: phiupp already created");
     }
@@ -299,15 +294,25 @@ PetscErrorCode _LDCDownDefectConstraints(LDC *coarse, LDC *fine) {
     return 0;
 }
 
-PetscErrorCode LDCGenerateDefectConstraintsVCycle(LDC *finest) {
+PetscErrorCode LDCGenerateDCsVCycle(LDC *finest) {
     LDC *ldc = finest,
         *coarse;
     while (ldc->_coarser) {
         coarse = (LDC*)(ldc->_coarser);
-        PetscCall(_LDCUpDefectConstraintsMonotoneRestrict(*ldc,coarse));
-        PetscCall(_LDCDownDefectConstraints(coarse,ldc));
+        PetscCall(_LDCUpDCsMonotoneRestrict(*ldc,coarse));
+        PetscCall(_LDCDownDCs(coarse,ldc));
         ldc = coarse;
     }
-    PetscCall(_LDCDownDefectConstraints(NULL,ldc));
+    PetscCall(_LDCDownDCs(NULL,ldc));
+    return 0;
+}
+
+PetscErrorCode LDCCheckAdmissibleDownDefect(LDC ldc, Vec y, PetscBool *flg) {
+    // TODO
+    return 0;
+}
+
+PetscErrorCode LDCCheckAdmissibleUpDefect(LDC ldc, Vec z, PetscBool *flg) {
+    // TODO
     return 0;
 }

@@ -1,7 +1,9 @@
 // Level Defect Constraints (LDC) are box constraints for a mesh hierarchy
 // based on subtracting a fine-level admissible iterate.  The intended use
 // is that there is one LDC object per level during each multilevel V-cycle
-// of a multilevel constraint decomposition (MCD) method.
+// of a multilevel constraint decomposition (MCD) method.  Each LDC contains
+// 4 DCs (defect constraints), namely upper and lower DCs for the up and
+// down directions in a V-cycle.
 //
 // The theory of nonlinear MCD methods using defect constraints at each level
 // is in paper/mcd2.pdf, namely
@@ -10,19 +12,19 @@
 //
 // LDC is a struct which contains
 //   * a structured grid (DM dal, a DMDA)
-//   * upper and lower up defect constraints (Vec chiupp, chilow)
-//   * upper and lower down defect constraints (Vec phiupp, philow)
+//   * upper and lower up DCs (Vec chiupp, chilow)
+//   * upper and lower down DCs (Vec phiupp, philow)
 // for each level.
 //
 // After creation, at the finest level one uses the original upper/lower
 // obstacles (e.g. Vec gamupp, gamlow) to generate the finest-level up
-// defect constraints.  Then monotone restriction (see src/q1transfers.h|c)
-// is used to generate up defect constraints at coarser levels.  Then
-// subtraction is used to generate down defect constraints.
+// DCs.  Then monotone restriction (see src/q1transfers.h|c) is used to
+// generate up DCs at coarser levels.  Then subtraction is used to generate
+// down DCs.
 //
-// Canonical V-cycle usage with nontrivial upper and lower finest-level
-// obstacles defined by Vecs vgamupp, vgamlow.  Note ldc[0] is coarse while
-// ldc[N] is finest:
+// The following gives canonical V-cycle usage with nontrivial upper and
+// lower finest-level obstacles defined by Vecs vgamupp, vgamlow.  Note
+// ldc[0] is coarse while ldc[N] is finest:
 //
 //     LDC       ldc[N+1];
 //     PetscInt  k;
@@ -31,15 +33,15 @@
 //         LDCRefine(ldc[k],&(ldc[k+1]));
 //     [  start a box-constrained solver on the finest level, and get a
 //        fine-level iterate w  ]
-//     LDCFinestUpDefectConstraintsFromVecs(w,vgamupp,vgamlow,&(ldc[N]));
-//     LDCGenerateDefectConstraintsVCycle(&(ldc[N]));
+//     LDCFinestUpDCsFromVecs(w,vgamupp,vgamlow,&(ldc[N]));
+//     LDCGenerateDCsVCycle(&(ldc[N]));
 //     [  continue with the solver  ]
 //     for (k=0; k<N+1; k++)
 //         LDCDestroy(&(ldc[k]));
 //
 // Alternatively one can use formulas to define the finest-level up defect
 // constraints:
-//     LDCFinestUpDefectConstraintsFromFormulas(w,fgamupp,fgamlow,&(ldc[N]));
+//     LDCFinestUpDCsFromFormulas(w,fgamupp,fgamlow,&(ldc[N]));
 
 
 #ifndef LDC_H_
@@ -72,23 +74,19 @@ PetscErrorCode LDCDestroy(LDC *ldc);
 
 PetscErrorCode LDCRefine(LDC *coarse, LDC *fine);
 
-PetscErrorCode LDCFinestUpDefectConstraintsFromVecs(
-                   Vec w,
-                   Vec gamupp,
-                   Vec gamlow,
-                   LDC *ldc);
+PetscErrorCode LDCFinestUpDCsFromVecs(Vec w, Vec gamupp, Vec gamlow, LDC *ldc);
 
-PetscErrorCode LDCFinestUpDefectConstraintsFromFormulas(
-                   Vec w,
+PetscErrorCode LDCFinestUpDCsFromFormulas(Vec w,
                    PetscReal (*fgamupp)(PetscReal,PetscReal),
                    PetscReal (*fgamlow)(PetscReal,PetscReal),
                    LDC *ldc);
 
-PetscErrorCode LDCGenerateDefectConstraintsVCycle(LDC *finest);
+PetscErrorCode LDCGenerateDCsVCycle(LDC *finest);
 
-PetscErrorCode LDCReportRanges(LDC ldc);
+PetscErrorCode LDCReportDCRanges(LDC ldc);
 
-// FIXME PetscErrorCode LDCCheckAdmissibleDownDefect(Vec y, PetscBool *flg)
-// FIXME PetscErrorCode LDCCheckAdmissibleUpDefect(Vec z, PetscBool *flg)
+PetscErrorCode LDCCheckAdmissibleDownDefect(LDC ldc, Vec y, PetscBool *flg);
+
+PetscErrorCode LDCCheckAdmissibleUpDefect(LDC ldc, Vec z, PetscBool *flg);
 
 #endif  // #ifndef LDC_H_

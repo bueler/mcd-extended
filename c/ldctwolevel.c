@@ -44,16 +44,16 @@ int main(int argc,char **argv) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"using iterate w=1 to generate finest-level up defect constraints\n"));
     PetscCall(DMCreateGlobalVector(ldc[1].dal,&w));
     PetscCall(VecSet(w,1.0));
-    PetscCall(LDCFinestUpDefectConstraintsFromFormulas(w,NULL,&gamma_lower,&(ldc[1])));
+    PetscCall(LDCFinestUpDCsFromFormulas(w,NULL,&gamma_lower,&(ldc[1])));
     PetscCall(VecDestroy(&w));
 
     // generate up and down defect constraints for both levels
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"generating defect constraints for V-cycle\n"));
-    PetscCall(LDCGenerateDefectConstraintsVCycle(&(ldc[1])));
+    PetscCall(LDCGenerateDCsVCycle(&(ldc[1])));
 
     // ranges on Vecs on each level
-    PetscCall(LDCReportRanges(ldc[0]));
-    PetscCall(LDCReportRanges(ldc[1]));
+    PetscCall(LDCReportDCRanges(ldc[0]));
+    PetscCall(LDCReportDCRanges(ldc[1]));
 
     // destroy
     PetscCall(LDCDestroy(&(ldc[1])));
