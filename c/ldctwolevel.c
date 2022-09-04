@@ -1,23 +1,17 @@
 static char help[] =
-"Test a two-level LDC stack.\n\n";
-
-// FIXME check all results!
+"Test a two-level LDC stack.  Here the upper DCs are +infty\n"
+"but the lower DCs are nontrivial.  The fine-level original\n"
+"lower obstacle has range 0 <= gamlow <= 1, and the iterate\n"
+"w=2 is constant.  The fine level is a 5x5 grid and the coarse\n"
+"is a 3x3 grid.  The region is the square [0,1]^2.\n\n";
 
 #include <petsc.h>
 #include "src/q1transfers.h"
 #include "src/ldc.h"
 
-// z = gamma_lower(x,y) is the hemispherical obstacle, but made C^1 with "skirt" at r=r0
+// z = gamma_lower(x,y) has tight bounds  0 <= z <= 1
 PetscReal gamma_lower(PetscReal x, PetscReal y) {
-    const PetscReal  r = PetscSqrtReal(x * x + y * y),
-                     r0 = 0.9,
-                     psi0 = PetscSqrtReal(1.0 - r0 * r0),
-                     dpsi0 = - r0 / psi0;
-    if (r <= r0) {
-        return PetscSqrtReal(1.0 - r * r);
-    } else {
-        return psi0 + dpsi0 * (r - r0);
-    }
+    return 16.0 * x * (1.0 - x) * y * (1.0 - y);
 }
 
 extern PetscErrorCode VecViewMatlabStdout(Vec);
@@ -31,7 +25,7 @@ int main(int argc,char **argv) {
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
     // create LDC stack
-    PetscCall(LDCCreateCoarsest(PETSC_TRUE,3,3,-2.0,2.0,-2.0,2.0,&(ldc[0])));
+    PetscCall(LDCCreateCoarsest(PETSC_TRUE,3,3,0.0,1.0,0.0,1.0,&(ldc[0])));
     PetscCall(LDCRefine(&(ldc[0]),&(ldc[1])));
 
     // view DMDA at each level
@@ -41,9 +35,9 @@ int main(int argc,char **argv) {
     PetscCall(DMView(ldc[1].dal, PETSC_VIEWER_STDOUT_WORLD));
 
     // iterate w=1 gives up defect constraint on finest level
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"using iterate w=1 to generate finest-level up defect constraints\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"using iterate w=2 to generate finest-level up defect constraints\n"));
     PetscCall(DMCreateGlobalVector(ldc[1].dal,&w));
-    PetscCall(VecSet(w,1.0));
+    PetscCall(VecSet(w,2.0));
     PetscCall(LDCFinestUpDCsFromFormulas(w,NULL,&gamma_lower,&(ldc[1])));
     PetscCall(VecDestroy(&w));
 
@@ -51,9 +45,26 @@ int main(int argc,char **argv) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"generating defect constraints for V-cycle\n"));
     PetscCall(LDCGenerateDCsVCycle(&(ldc[1])));
 
+#if 0
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"printing lower defect constraints in Matlab format\n"));
+    // print ldc[0].chilow and ldc[1].chilow to check that monotone restriction
+    // did the right thing; in Matlab use "reshape(chilow0,3,3)" etc
+    PetscCall(PetscObjectSetName((PetscObject)(ldc[0].chilow),"chilow0"));
+    PetscCall(PetscObjectSetName((PetscObject)(ldc[1].chilow),"chilow1"));
+    PetscCall(VecViewMatlabStdout(ldc[0].chilow));
+    PetscCall(VecViewMatlabStdout(ldc[1].chilow));
+    // print ldc[0].philow and ldc[1].philow to check subtraction etc.
+    PetscCall(PetscObjectSetName((PetscObject)(ldc[0].philow),"philow0"));
+    PetscCall(PetscObjectSetName((PetscObject)(ldc[1].philow),"philow1"));
+    PetscCall(VecViewMatlabStdout(ldc[0].philow));
+    PetscCall(VecViewMatlabStdout(ldc[1].philow));
+#endif
+
     // ranges on Vecs on each level
     PetscCall(LDCReportDCRanges(ldc[0]));
     PetscCall(LDCReportDCRanges(ldc[1]));
+
+// TODO  check admissibility of a y and a z
 
     // destroy
     PetscCall(LDCDestroy(&(ldc[1])));
