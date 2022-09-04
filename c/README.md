@@ -111,6 +111,6 @@ sweeps of projected, nonlinear Gauss-Seidel.  Solution by SNESVI type
     flops = 2.922e+07,  residual calls = 56,  PNGS calls = 0
     done on 33 x 33 grid:   error |u-uexact|_inf = 5.781e-03
 
-## dcsl.c
+## nmcd.c
 
-FIXME rewrite of above to use defect constraint
+FIXME do the thing
