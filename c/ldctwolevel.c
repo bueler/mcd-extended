@@ -25,15 +25,14 @@ extern PetscErrorCode FormVecFromFormula(PetscReal (*)(PetscReal,PetscReal),
                                          DMDALocalInfo*, Vec);
 
 int main(int argc,char **argv) {
-    DMDALocalInfo  info;
     Vec            w;
     LDC            ldc[2];
 
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
     // create LDC stack
-    PetscCall(LDCCreate(PETSC_TRUE,0,3,3,-2.0,2.0,-2.0,2.0,&(ldc[0])));
-    PetscCall(LDCRefine(ldc[0], &(ldc[1])));
+    PetscCall(LDCCreateCoarsest(PETSC_TRUE,3,3,-2.0,2.0,-2.0,2.0,&(ldc[0])));
+    PetscCall(LDCRefine(&(ldc[0]),&(ldc[1])));
 
     // view DMDA at each level
     PetscCall(PetscOptionsSetValue(NULL, "-dm_view", ""));
@@ -41,12 +40,6 @@ int main(int argc,char **argv) {
     PetscCall(PetscObjectSetName((PetscObject)(ldc[1].dal),"ldc[1].dal"));
     PetscCall(DMViewFromOptions(ldc[0].dal, NULL, "-dm_view"));
     PetscCall(DMViewFromOptions(ldc[1].dal, NULL, "-dm_view"));
-
-    // lower obstacle on fine level
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"at level 1: creating gamlow at level 1 from formula\n"));
-    PetscCall(DMCreateGlobalVector(ldc[1].dal,&(ldc[1].gamlow)));
-    PetscCall(DMDAGetLocalInfo(ldc[1].dal,&info));
-    PetscCall(FormVecFromFormula(gamma_lower,&info,ldc[1].gamlow));
 
 #if 0
     // test Q1 restriction, injection, and interpolation on temporary vecs
@@ -66,23 +59,22 @@ int main(int argc,char **argv) {
     PetscCall(VecDestroy(&vcoarseFW));
 #endif
 
-    // iterate w=1 gives up defect constraint on fine level
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"at level 1: using admissible iterate w=1\n"));
+    // iterate w=1 gives up defect constraint on finest level
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"using iterate w=1 to generate finest-level up defect constraints\n"));
     PetscCall(DMCreateGlobalVector(ldc[1].dal,&w));
     PetscCall(VecSet(w,1.0));
-    PetscCall(LDCUpDefectConstraintsFromObstacles(w,&(ldc[1])));
-    PetscCall(LDCUpDefectConstraintsMonotoneRestrict(ldc[1],&(ldc[0])));
+    PetscCall(LDCFinestUpDefectConstraintsFromFormulas(w,NULL,&gamma_lower,&(ldc[1])));
+    PetscCall(VecDestroy(&w));
 
-    // generate down defects
-    PetscCall(LDCDownDefectConstraints(&(ldc[0]),&(ldc[1])));
-    PetscCall(LDCDownDefectConstraints(NULL,&(ldc[0])));
+    // generate up and down defect constraints for both levels
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"generating defect constraints for V-cycle\n"));
+    PetscCall(LDCGenerateDefectConstraintsVCycle(&(ldc[1])));
 
     // ranges on Vecs on each level
     PetscCall(LDCReportRanges(ldc[0]));
     PetscCall(LDCReportRanges(ldc[1]));
 
     // destroy
-    PetscCall(VecDestroy(&w));
     PetscCall(LDCDestroy(&(ldc[1])));
     PetscCall(LDCDestroy(&(ldc[0])));
     PetscCall(PetscFinalize());
