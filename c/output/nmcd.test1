@@ -1,0 +1,21 @@
+  LDC info: creating LDC at level 0 based on 4 x 4 DMDA
+  LDC info: refining level 0 LDC, yielding LDC with 7 x 7 DMDA at level 1
+  LDC info: refining level 1 LDC, yielding LDC with 13 x 13 DMDA at level 2
+  LDC info: chiupp=NULL because gamupp=NULL is +infty at level 2
+  LDC info: creating chilow and setting chilow=gamlow-w at level 2
+  LDC info: chiupp=NULL is +infty at level 1
+  LDC info: setting chilow at level 1 using monotone restriction from level 2
+  LDC info: phiupp=NULL is -infty at level 2
+  LDC info: creating and setting philow=chilow-chilow_coarse at level 2
+  LDC info: chiupp=NULL is +infty at level 0
+  LDC info: setting chilow at level 0 using monotone restriction from level 1
+  LDC info: phiupp=NULL is -infty at level 1
+  LDC info: creating and setting philow=chilow-chilow_coarse at level 1
+  LDC info: phiupp=NULL is +infty at level 0
+  LDC info: creating and setting philow=chilow (coarsest case) at level 0
+*NOT YET* SOLVING PROBLEM BY 1 V-CYCLES
+flops = 2.499e+03,  residual calls = 0,  PNGS calls = 0
+done on 13 x 13 grid:   error |u-uexact|_inf = 0.000e+00
+  LDC info: destroying LDC at level 2
+  LDC info: destroying LDC at level 1
+  LDC info: destroying LDC at level 0

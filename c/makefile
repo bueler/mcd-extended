@@ -9,6 +9,10 @@ obstaclesl: obstaclesl.o src/q1fem.o
 	-${CLINKER} -o obstaclesl obstaclesl.o src/q1fem.o ${PETSC_LIB}
 	${RM} obstaclesl.o src/q1fem.o
 
+nmcd: nmcd.o src/q1fem.o src/q1transfers.o src/ldc.o
+	-${CLINKER} -o nmcd nmcd.o src/q1fem.o src/q1transfers.o src/ldc.o ${PETSC_LIB}
+	${RM} nmcd.o src/q1fem.o src/q1transfers.o src/ldc.o
+
 ldctwolevel: ldctwolevel.o src/q1transfers.o src/ldc.o
 	-${CLINKER} -o ldctwolevel ldctwolevel.o src/q1transfers.o src/ldc.o ${PETSC_LIB}
 	${RM} ldctwolevel.o src/q1transfers.o src/ldc.o
@@ -55,6 +59,11 @@ runobstaclesl_3:
 
 test_obstaclesl: runobstaclesl_1 runobstaclesl_2 runobstaclesl_3
 
+runnmcd_1:
+	-@./testit.sh nmcd "-nm_counts -nm_info -nm_levels 3 -da_grid_x 4 -da_grid_y 4" 1 1
+
+test_nmcd: runnmcd_1
+
 runldctwolevel_1:
 	-@./testit.sh ldctwolevel "" 1 1
 
@@ -65,9 +74,9 @@ runtransfers_1:
 
 test_transfers: runtransfers_1
 
-test: test_bratu test_obstaclesl test_ldctwolevel test_transfers
+test: test_bratu test_obstaclesl test_nmcd test_ldctwolevel test_transfers
 
-.PHONY: clean test test_bratu test_obstaclesl test_ldctwolevel test_transfers runbratu_1 runbratu_2 runbratu_3 runbratu_4 runbratu_5 runbratu_6 runbratu_7 runbratu_8 runobstaclesl_1 runobstaclesl_2 runobstaclesl_3 rundcsl_1 runldctwolevel_1 runtransfers_1
+.PHONY: clean test test_bratu test_obstaclesl test_nmcd test_ldctwolevel test_transfers runbratu_1 runbratu_2 runbratu_3 runbratu_4 runbratu_5 runbratu_6 runbratu_7 runbratu_8 runobstaclesl_1 runobstaclesl_2 runobstaclesl_3 runnmcd_1 runldctwolevel_1 runtransfers_1
 
 clean::
-	@rm -f bratu obstaclesl ldctwolevel transfers *tmp tmpview.m
+	@rm -f bratu obstaclesl nmcd ldctwolevel transfers *tmp tmpview.m
