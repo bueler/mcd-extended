@@ -132,10 +132,8 @@ PetscErrorCode LDCFinestUpDCsFromVecs(Vec w, Vec vgamupp, Vec vgamlow, LDC *ldc)
     return 0;
 }
 
-
-PetscErrorCode _LDCVecFromFormula(LDC ldc,
-                                  PetscReal (*ufcn)(PetscReal,PetscReal),
-                                  Vec u) {
+PetscErrorCode LDCVecFromFormula(LDC ldc,PetscReal (*ufcn)(PetscReal,PetscReal),
+                                 Vec u) {
     PetscInt      i, j;
     PetscReal     hx, hy, x, y, **au;
     DMDALocalInfo info;
@@ -165,7 +163,7 @@ PetscErrorCode LDCFinestUpDCsFromFormulas(Vec w,
             "  LDC info: using formula gamupp at level %d\n",
             ldc->_level));
         PetscCall(DMCreateGlobalVector(ldc->dal,&vgamupp));
-        PetscCall(_LDCVecFromFormula(*ldc,fgamupp,vgamupp));
+        PetscCall(LDCVecFromFormula(*ldc,fgamupp,vgamupp));
     } else
         if (ldc->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
@@ -177,7 +175,7 @@ PetscErrorCode LDCFinestUpDCsFromFormulas(Vec w,
             "  LDC info: using formula gamlow at level %d\n",
             ldc->_level));
         PetscCall(DMCreateGlobalVector(ldc->dal,&vgamlow));
-        PetscCall(_LDCVecFromFormula(*ldc,fgamlow,vgamlow));
+        PetscCall(LDCVecFromFormula(*ldc,fgamlow,vgamlow));
     } else
         if (ldc->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,

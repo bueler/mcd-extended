@@ -83,6 +83,13 @@ PetscErrorCode LDCFinestUpDCsFromFormulas(Vec w,
 
 PetscErrorCode LDCGenerateDCsVCycle(LDC *finest);
 
+// utilities:
+
+// create a Vec from a formula
+PetscErrorCode LDCVecFromFormula(LDC ldc,PetscReal (*ufcn)(PetscReal,PetscReal),
+                                 Vec u);
+
+// for each of 4 DCs, report min and max
 PetscErrorCode LDCReportDCRanges(LDC ldc);
 
 // return flg=PETSC_TRUE if  ldc.philow <= y <= ldc.phiupp,  otherwise flg=PETSC_FALSE
