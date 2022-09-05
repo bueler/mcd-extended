@@ -28,7 +28,7 @@ PetscErrorCode Q1Inject(DM daf, DM dac, Vec vfine, Vec *vcoarse) {
     return 0;
 }
 
-PetscBool _NodeOnBdry(DM da, PetscInt i, PetscInt j) {
+PetscBool _Q1NodeOnBdry(DM da, PetscInt i, PetscInt j) {
     DMDALocalInfo info;
     PetscCall(DMDAGetLocalInfo(da,&info));
     return (((i == 0) || (i == info.mx-1) || (j == 0) || (j == info.my-1)));
@@ -45,8 +45,8 @@ typedef enum {
 //    + o +      o +    + o +    + o +    + o     o +    + o    + o    o +
 //    + + +      + +             + + +    + +                   + +    + +
 // (note * has indices i,j)
-PetscReal _OptNeighbors(Q1MonotoneType opt, _DirectionType dir,
-                        PetscReal **au, PetscInt i, PetscInt j) {
+PetscReal _Q1OptNeighbors(Q1MonotoneType opt, _DirectionType dir,
+                          PetscReal **au, PetscInt i, PetscInt j) {
     PetscInt        p, q;
     const PetscInt  ps[9] = { -1,  0, -1, -1, -1,  0, -1, -1,  0},
                     pe[9] = {  1,  1,  1,  1,  0,  1,  0,  0,  1},
@@ -77,33 +77,33 @@ PetscErrorCode Q1MonotoneRestrict(Q1MonotoneType opt, DM daf, DM dac,
     PetscCall(DMDAVecGetArray(daf,vfineloc,&af));
     for (jc=cinfo.ys; jc<cinfo.ys+cinfo.ym; jc++) {
         for (ic=cinfo.xs; ic<cinfo.xs+cinfo.xm; ic++) {
-            if (!_NodeOnBdry(dac,ic,jc)) {
-                ac[jc][ic] = _OptNeighbors(opt,INTERIOR,af,2*ic,2*jc);
+            if (!_Q1NodeOnBdry(dac,ic,jc)) {
+                ac[jc][ic] = _Q1OptNeighbors(opt,INTERIOR,af,2*ic,2*jc);
                 continue;
             }
             // special cases for boundary nodes
             if (ic == 0) {
                 // along left side of domain
                 if (jc == 0)
-                    ac[jc][ic] = _OptNeighbors(opt,NE,af,2*ic,2*jc);
+                    ac[jc][ic] = _Q1OptNeighbors(opt,NE,af,2*ic,2*jc);
                 else if (jc == cinfo.my-1)
-                    ac[jc][ic] = _OptNeighbors(opt,SE,af,2*ic,2*jc);
+                    ac[jc][ic] = _Q1OptNeighbors(opt,SE,af,2*ic,2*jc);
                 else
-                    ac[jc][ic] = _OptNeighbors(opt,E,af,2*ic,2*jc);
+                    ac[jc][ic] = _Q1OptNeighbors(opt,E,af,2*ic,2*jc);
             } else if (ic == cinfo.mx-1) {
                 // along right side of domain
                 if (jc == 0)
-                    ac[jc][ic] = _OptNeighbors(opt,NW,af,2*ic,2*jc);
+                    ac[jc][ic] = _Q1OptNeighbors(opt,NW,af,2*ic,2*jc);
                 else if (jc == cinfo.my-1)
-                    ac[jc][ic] = _OptNeighbors(opt,SW,af,2*ic,2*jc);
+                    ac[jc][ic] = _Q1OptNeighbors(opt,SW,af,2*ic,2*jc);
                 else
-                    ac[jc][ic] = _OptNeighbors(opt,W,af,2*ic,2*jc);
+                    ac[jc][ic] = _Q1OptNeighbors(opt,W,af,2*ic,2*jc);
             } else {
                 // along bottom or top sides of domain, not at corners
                 if (jc == 0)
-                    ac[jc][ic] = _OptNeighbors(opt,N,af,2*ic,2*jc);
+                    ac[jc][ic] = _Q1OptNeighbors(opt,N,af,2*ic,2*jc);
                 else
-                    ac[jc][ic] = _OptNeighbors(opt,S,af,2*ic,2*jc);
+                    ac[jc][ic] = _Q1OptNeighbors(opt,S,af,2*ic,2*jc);
             }
         }
     }
