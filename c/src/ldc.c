@@ -5,16 +5,21 @@
 PetscErrorCode LDCCreateCoarsest(PetscBool verbose, PetscInt mx, PetscInt my,
                                  PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax,
                                  LDC *ldc) {
+    DMDALocalInfo  info;
     ldc->_level = 0;
     ldc->_printinfo = verbose;
     if (ldc->_printinfo)
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-        "  LDC info: creating LDC at level %d based on %d x %d DMDA\n",
-        ldc->_level,mx,my));
+        "  LDC info: creating LDC at level %d",ldc->_level));
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
                            DMDA_STENCIL_BOX,
                            mx,my,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&(ldc->dal)));
-    // make defaults explicit:
+    PetscCall(DMSetFromOptions(ldc->dal));  // allows -da_grid_x mx -da_grid_y my etc.
+    PetscCall(DMDAGetLocalInfo(ldc->dal,&info));
+    if (ldc->_printinfo)
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+        " based on %d x %d DMDA\n",info.mx,info.my));
+    // force these defaults:
     PetscCall(DMDASetInterpolationType(ldc->dal,DMDA_Q1));
     PetscCall(DMDASetRefinementFactor(ldc->dal,2,2,2));
     PetscCall(DMSetUp(ldc->dal));  // this must be called BEFORE SetUniformCoordinates
@@ -63,7 +68,7 @@ PetscErrorCode LDCRefine(LDC *coarse, LDC *fine) {
     if (coarse->_printinfo)
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
         ", yielding LDC with %d x %d DMDA at level %d\n",
-        info.xm,info.ym,fine->_level));
+        info.mx,info.my,fine->_level));
     PetscCall(DMDASetInterpolationType(fine->dal,DMDA_Q1));
     PetscCall(DMDASetRefinementFactor(fine->dal,2,2,2));
     fine->_xmin = coarse->_xmin;
