@@ -13,6 +13,10 @@ ldctwolevel: ldctwolevel.o src/q1transfers.o src/ldc.o
 	-${CLINKER} -o ldctwolevel ldctwolevel.o src/q1transfers.o src/ldc.o ${PETSC_LIB}
 	${RM} ldctwolevel.o src/q1transfers.o src/ldc.o
 
+transfers: transfers.o src/q1transfers.o src/ldc.o
+	-${CLINKER} -o transfers transfers.o src/q1transfers.o src/ldc.o ${PETSC_LIB}
+	${RM} transfers.o src/q1transfers.o src/ldc.o
+
 # testing
 runbratu_1:
 	-@./testit.sh bratu "-lb_fd  -lb_exact -snes_converged_reason -lb_counts -ksp_converged_reason -da_refine 1 -pc_type mg" 1 1
@@ -56,9 +60,14 @@ runldctwolevel_1:
 
 test_ldctwolevel: runldctwolevel_1
 
-test: test_bratu test_obstaclesl test_ldctwolevel
+runtransfers_1:
+	-@./testit.sh transfers "" 1 1
 
-.PHONY: clean test test_bratu test_obstaclesl test_ldctwolevel runbratu_1 runbratu_2 runbratu_3 runbratu_4 runbratu_5 runbratu_6 runbratu_7 runbratu_8 runobstaclesl_1 runobstaclesl_2 runobstaclesl_3 rundcsl_1 runldctwolevel_1
+test_transfers: runtransfers_1
+
+test: test_bratu test_obstaclesl test_ldctwolevel test_transfers
+
+.PHONY: clean test test_bratu test_obstaclesl test_ldctwolevel test_transfers runbratu_1 runbratu_2 runbratu_3 runbratu_4 runbratu_5 runbratu_6 runbratu_7 runbratu_8 runobstaclesl_1 runobstaclesl_2 runobstaclesl_3 rundcsl_1 runldctwolevel_1 runtransfers_1
 
 clean::
-	@rm -f bratu obstaclesl ldctwolevel *tmp tmpview.m
+	@rm -f bratu obstaclesl ldctwolevel transfers *tmp tmpview.m
