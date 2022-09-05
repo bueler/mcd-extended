@@ -142,8 +142,8 @@ PetscErrorCode LDCFinestUpDCsFromVecs(Vec w, Vec vgamupp, Vec vgamlow, LDC *ldc)
     return 0;
 }
 
-PetscErrorCode LDCVecFromFormula(LDC ldc,PetscReal (*ufcn)(PetscReal,PetscReal),
-                                 Vec u) {
+PetscErrorCode LDCVecFromFormula(LDC ldc,PetscReal (*ufcn)(PetscReal,PetscReal,void*),
+                                 Vec u, void *ctx) {
     PetscInt      i, j;
     PetscReal     hx, hy, x, y, **au;
     DMDALocalInfo info;
@@ -155,7 +155,7 @@ PetscErrorCode LDCVecFromFormula(LDC ldc,PetscReal (*ufcn)(PetscReal,PetscReal),
         y = ldc._ymin + j * hy;
         for (i=info.xs; i<info.xs+info.xm; i++) {
             x = ldc._xmin + i * hx;
-            au[j][i] = (*ufcn)(x,y);
+            au[j][i] = (*ufcn)(x,y,ctx);
         }
     }
     PetscCall(DMDAVecRestoreArray(info.da, u, &au));
@@ -163,9 +163,9 @@ PetscErrorCode LDCVecFromFormula(LDC ldc,PetscReal (*ufcn)(PetscReal,PetscReal),
 }
 
 PetscErrorCode LDCFinestUpDCsFromFormulas(Vec w,
-                   PetscReal (*fgamupp)(PetscReal,PetscReal),
-                   PetscReal (*fgamlow)(PetscReal,PetscReal),
-                   LDC *ldc) {
+                   PetscReal (*fgamupp)(PetscReal,PetscReal,void*),
+                   PetscReal (*fgamlow)(PetscReal,PetscReal,void*),
+                   LDC *ldc, void *ctx) {
     Vec vgamupp = NULL, vgamlow = NULL;
     if (fgamupp) {
         if (ldc->_printinfo)
@@ -173,7 +173,7 @@ PetscErrorCode LDCFinestUpDCsFromFormulas(Vec w,
             "  LDC info: using formula gamupp at level %d\n",
             ldc->_level));
         PetscCall(DMCreateGlobalVector(ldc->dal,&vgamupp));
-        PetscCall(LDCVecFromFormula(*ldc,fgamupp,vgamupp));
+        PetscCall(LDCVecFromFormula(*ldc,fgamupp,vgamupp,ctx));
     } else
         if (ldc->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
@@ -185,7 +185,7 @@ PetscErrorCode LDCFinestUpDCsFromFormulas(Vec w,
             "  LDC info: using formula gamlow at level %d\n",
             ldc->_level));
         PetscCall(DMCreateGlobalVector(ldc->dal,&vgamlow));
-        PetscCall(LDCVecFromFormula(*ldc,fgamlow,vgamlow));
+        PetscCall(LDCVecFromFormula(*ldc,fgamlow,vgamlow,ctx));
     } else
         if (ldc->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
@@ -315,9 +315,7 @@ PetscErrorCode LDCGenerateDCsVCycle(LDC *finest) {
     return 0;
 }
 
-// set flg=PETSC_TRUE if  u <= v  everywhere, otherwise flg=PETSC_FALSE
-// extended reals rule:  if u=NULL (-infty) or v=NULL (+infty) then flg=PETSC_TRUE
-PetscErrorCode _LDCVecLessThanOrEqual(LDC ldc, Vec u, Vec v, PetscBool *flg) {
+PetscErrorCode LDCVecLessThanOrEqual(LDC ldc, Vec u, Vec v, PetscBool *flg) {
     PetscInt      i, j;
     PetscReal     **au, **av;
     DMDALocalInfo info;
@@ -345,17 +343,17 @@ PetscErrorCode _LDCVecLessThanOrEqual(LDC ldc, Vec u, Vec v, PetscBool *flg) {
 }
 
 PetscErrorCode LDCCheckAdmissibleDownDefect(LDC ldc, Vec y, PetscBool *flg) {
-    PetscCall(_LDCVecLessThanOrEqual(ldc,ldc.philow,y,flg));
+    PetscCall(LDCVecLessThanOrEqual(ldc,ldc.philow,y,flg));
     if (!(*flg))
         return 0;
-    PetscCall(_LDCVecLessThanOrEqual(ldc,y,ldc.phiupp,flg));
+    PetscCall(LDCVecLessThanOrEqual(ldc,y,ldc.phiupp,flg));
     return 0;
 }
 
 PetscErrorCode LDCCheckAdmissibleUpDefect(LDC ldc, Vec z, PetscBool *flg) {
-    PetscCall(_LDCVecLessThanOrEqual(ldc,ldc.chilow,z,flg));
+    PetscCall(LDCVecLessThanOrEqual(ldc,ldc.chilow,z,flg));
     if (!(*flg))
         return 0;
-    PetscCall(_LDCVecLessThanOrEqual(ldc,z,ldc.chiupp,flg));
+    PetscCall(LDCVecLessThanOrEqual(ldc,z,ldc.chiupp,flg));
     return 0;
 }

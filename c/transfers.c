@@ -9,7 +9,7 @@ static char help[] =
 #include "src/ldc.h"
 
 // z = gamma_lower(x,y) has tight bounds  0 <= z <= 1
-PetscReal gamma_lower(PetscReal x, PetscReal y) {
+PetscReal gamma_lower(PetscReal x, PetscReal y, void *ctx) {
     return 16.0 * x * (1.0 - x) * y * (1.0 - y);
 }
 
@@ -31,7 +31,7 @@ int main(int argc,char **argv) {
     PetscCall(PetscObjectSetName((PetscObject)(vgamlow),"gamlow"));
     PetscCall(DMDAGetLocalInfo(ldc[1].dal,&info));
     //PetscCall(FormVecFromFormula(gamma_lower,&info,vgamlow));
-    PetscCall(LDCVecFromFormula(ldc[1],gamma_lower,vgamlow));
+    PetscCall(LDCVecFromFormula(ldc[1],gamma_lower,vgamlow,NULL));
     PetscCall(VecViewMatlabStdout(vgamlow));
 
     // test Q1 restriction, injection, and interpolation on temporary vecs

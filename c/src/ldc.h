@@ -77,17 +77,21 @@ PetscErrorCode LDCRefine(LDC *coarse, LDC *fine);
 PetscErrorCode LDCFinestUpDCsFromVecs(Vec w, Vec gamupp, Vec gamlow, LDC *ldc);
 
 PetscErrorCode LDCFinestUpDCsFromFormulas(Vec w,
-                   PetscReal (*fgamupp)(PetscReal,PetscReal),
-                   PetscReal (*fgamlow)(PetscReal,PetscReal),
-                   LDC *ldc);
+                   PetscReal (*fgamupp)(PetscReal,PetscReal,void*),
+                   PetscReal (*fgamlow)(PetscReal,PetscReal,void*),
+                   LDC *ldc, void *ctx);
 
 PetscErrorCode LDCGenerateDCsVCycle(LDC *finest);
 
-// utilities:
+// UTILITIES
 
 // create a Vec from a formula
-PetscErrorCode LDCVecFromFormula(LDC ldc,PetscReal (*ufcn)(PetscReal,PetscReal),
-                                 Vec u);
+PetscErrorCode LDCVecFromFormula(LDC ldc, PetscReal (*ufcn)(PetscReal,PetscReal,void*),
+                                 Vec u, void *ctx);
+
+// set flg=PETSC_TRUE if  u <= v  everywhere, otherwise flg=PETSC_FALSE
+// extended reals rule:  if u=NULL (-infty) or v=NULL (+infty) then flg=PETSC_TRUE
+PetscErrorCode LDCVecLessThanOrEqual(LDC ldc, Vec u, Vec v, PetscBool *flg);
 
 // for each of 4 DCs, report min and max
 PetscErrorCode LDCReportDCRanges(LDC ldc);

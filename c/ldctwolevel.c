@@ -10,13 +10,11 @@ static char help[] =
 #include "src/ldc.h"
 
 // z = gamma_lower(x,y) has tight bounds  0 <= z <= 1
-PetscReal gamma_lower(PetscReal x, PetscReal y) {
+PetscReal gamma_lower(PetscReal x, PetscReal y, void *ctx) {
     return 16.0 * x * (1.0 - x) * y * (1.0 - y);
 }
 
 extern PetscErrorCode VecViewMatlabStdout(Vec);
-extern PetscErrorCode FormVecFromFormula(PetscReal (*)(PetscReal,PetscReal),
-                                         DMDALocalInfo*, Vec);
 
 int main(int argc,char **argv) {
     Vec            w, v;
@@ -39,7 +37,7 @@ int main(int argc,char **argv) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"using iterate w=2 to generate finest-level up defect constraints\n"));
     PetscCall(DMCreateGlobalVector(ldc[1].dal,&w));
     PetscCall(VecSet(w,2.0));
-    PetscCall(LDCFinestUpDCsFromFormulas(w,NULL,&gamma_lower,&(ldc[1])));
+    PetscCall(LDCFinestUpDCsFromFormulas(w,NULL,&gamma_lower,&(ldc[1]),NULL));
     PetscCall(VecDestroy(&w));
 
     // generate up and down defect constraints for both levels
@@ -102,23 +100,5 @@ PetscErrorCode VecViewMatlabStdout(Vec v) {
     PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB));
     PetscCall(VecView(v,PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
-    return 0;
-}
-
-PetscErrorCode FormVecFromFormula(PetscReal (*ufcn)(PetscReal,PetscReal),
-                                  DMDALocalInfo *info, Vec u) {
-    PetscInt     i, j;
-    PetscReal    hx, hy, x, y, **au;
-    hx = 4.0 / (PetscReal)(info->mx - 1);
-    hy = 4.0 / (PetscReal)(info->my - 1);
-    PetscCall(DMDAVecGetArray(info->da, u, &au));
-    for (j=info->ys; j<info->ys+info->ym; j++) {
-        y = -2.0 + j * hy;
-        for (i=info->xs; i<info->xs+info->xm; i++) {
-            x = -2.0 + i * hx;
-            au[j][i] = (*ufcn)(x,y);
-        }
-    }
-    PetscCall(DMDAVecRestoreArray(info->da, u, &au));
     return 0;
 }
