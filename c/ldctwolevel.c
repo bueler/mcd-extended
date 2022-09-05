@@ -1,9 +1,9 @@
 static char help[] =
-"Test a two-level LDC stack.  Here the upper DCs are +infty\n"
-"but the lower DCs are nontrivial.  The fine-level original\n"
-"lower obstacle has range 0 <= gamlow <= 1, and the iterate\n"
-"w=2 is constant.  The fine level is a 5x5 grid and the coarse\n"
-"is a 3x3 grid.  The region is the square [0,1]^2.\n\n";
+"Test a two-level LDC stack.  Here the upper DCs are +infty, but the\n"
+"lower DCs are nontrivial.  The region is the square [0,1]^2, the\n"
+"fine level is a 5x5 grid and the coarse is a 3x3 grid.  The fine-level\n"
+"original lower obstacle has range 0 <= gamlow <= 1, and the iterate\n"
+"w=2 is constant.\n\n";
 
 #include <petsc.h>
 #include "src/q1transfers.h"
@@ -19,7 +19,8 @@ extern PetscErrorCode FormVecFromFormula(PetscReal (*)(PetscReal,PetscReal),
                                          DMDALocalInfo*, Vec);
 
 int main(int argc,char **argv) {
-    Vec            w;
+    Vec            w, v;
+    PetscBool      admis;
     LDC            ldc[2];
 
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
@@ -64,7 +65,30 @@ int main(int argc,char **argv) {
     PetscCall(LDCReportDCRanges(ldc[0]));
     PetscCall(LDCReportDCRanges(ldc[1]));
 
-// TODO  check admissibility of a y and a z
+    // check admissibility of constant z on level 0 and y and z on level 1
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"checking admissibility of constant vectors:\n"));
+    PetscCall(DMCreateGlobalVector(ldc[0].dal,&v));
+    PetscCall(VecSet(v,0.0));
+    PetscCall(LDCCheckAdmissibleUpDefect(ldc[0],v,&admis));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"    z0=0     admissible up   defect? %d\n",(int)admis));
+    PetscCall(VecSet(v,-1.25));
+    PetscCall(LDCCheckAdmissibleUpDefect(ldc[0],v,&admis));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"    z0=-1.25 admissible up   defect? %d\n",(int)admis));
+    PetscCall(VecDestroy(&v));
+    PetscCall(DMCreateGlobalVector(ldc[1].dal,&v));
+    PetscCall(VecSet(v,0.0));
+    PetscCall(LDCCheckAdmissibleDownDefect(ldc[1],v,&admis));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"    y1=0     admissible down defect? %d\n",(int)admis));
+    PetscCall(VecSet(v,-1.00));
+    PetscCall(LDCCheckAdmissibleDownDefect(ldc[1],v,&admis));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"    y1=-1.00 admissible down defect? %d\n",(int)admis));
+    PetscCall(VecSet(v,-1.00));
+    PetscCall(LDCCheckAdmissibleUpDefect(ldc[1],v,&admis));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"    z1=-1.00 admissible up   defect? %d\n",(int)admis));
+    PetscCall(VecSet(v,-1.25));
+    PetscCall(LDCCheckAdmissibleUpDefect(ldc[1],v,&admis));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"    z1=-1.25 admissible up   defect? %d\n",(int)admis));
+    PetscCall(VecDestroy(&v));
 
     // destroy
     PetscCall(LDCDestroy(&(ldc[1])));

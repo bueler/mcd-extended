@@ -30,5 +30,12 @@ defect constraint ranges at level 1:
   -2.000000 <= |chilow| <= -1.000000
   [ phiupp=NULL is +infty ]
   -0.750000 <= |philow| <=  0.000000
+checking admissibility of constant vectors:
+    z0=0     admissible up   defect? 1
+    z0=-1.25 admissible up   defect? 0
+    y1=0     admissible down defect? 1
+    y1=-1.00 admissible down defect? 0
+    z1=-1.00 admissible up   defect? 1
+    z1=-1.25 admissible up   defect? 0
   LDC info: destroying LDC at level 1
   LDC info: destroying LDC at level 0
