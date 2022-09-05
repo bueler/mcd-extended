@@ -9,7 +9,7 @@ PetscErrorCode LDCCreateCoarsest(PetscBool verbose, PetscInt mx, PetscInt my,
     ldc->_printinfo = verbose;
     if (ldc->_printinfo)
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-        "  LDC info: creating LDC at level %d based on %d x %d grid DMDA\n",
+        "  LDC info: creating LDC at level %d based on %d x %d DMDA\n",
         ldc->_level,mx,my));
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
                            DMDA_STENCIL_BOX,
@@ -49,16 +49,21 @@ PetscErrorCode LDCDestroy(LDC *ldc) {
 }
 
 PetscErrorCode LDCRefine(LDC *coarse, LDC *fine) {
+    DMDALocalInfo info;
     if (!(coarse->dal)) {
         SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: allocate coarse DMDA before calling LDCRefine()");
     }
-    fine->_level = coarse->_level + 1;
     if (coarse->_printinfo)
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-        "  LDC info: refining level %d LDC to generate finer LDC at level %d\n",
-        coarse->_level,fine->_level));
+        "  LDC info: refining level %d LDC",coarse->_level));
     fine->_printinfo = coarse->_printinfo;
     PetscCall(DMRefine(coarse->dal,PETSC_COMM_WORLD,&(fine->dal)));
+    fine->_level = coarse->_level + 1;
+    PetscCall(DMDAGetLocalInfo(fine->dal,&info));
+    if (coarse->_printinfo)
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+        ", yielding LDC with %d x %d DMDA at level %d\n",
+        info.xm,info.ym,fine->_level));
     PetscCall(DMDASetInterpolationType(fine->dal,DMDA_Q1));
     PetscCall(DMDASetRefinementFactor(fine->dal,2,2,2));
     fine->_xmin = coarse->_xmin;
