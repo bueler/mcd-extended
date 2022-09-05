@@ -113,7 +113,7 @@ int main(int argc,char **argv) {
     }
     if (mms)
         bctx.f_rhs = &f_mms;  // and zero for g_bdry()
-    if ((bctx.quadpts < 1) || (bctx.quadpts > 3)) {
+    if (bctx.quadpts < 1 || bctx.quadpts > 3) {
         SETERRQ(PETSC_COMM_SELF,5,"quadrature points n=1,2,3 only");
     }
 
@@ -199,7 +199,7 @@ PetscErrorCode FormExact(PetscReal (*ufcn)(PetscReal,PetscReal,void*),
 }
 
 PetscBool NodeOnBdry(DMDALocalInfo *info, PetscInt i, PetscInt j) {
-    return (((i == 0) || (i == info->mx-1) || (j == 0) || (j == info->my-1)));
+    return ((i == 0 || i == info->mx-1 || j == 0 || j == info->my-1));
 }
 
 // compute F(u), the residual of the discretized PDE on the given grid,
@@ -281,10 +281,10 @@ PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
     // we own elements down or left of owned nodes, but in parallel the integral
     // needs to include elements up or right of owned nodes (i.e. halo elements)
     for (j = info->ys; j <= info->ys + info->ym; j++) {
-        if ((j == 0) || (j > info->my-1))
+        if (j == 0 || j > info->my-1)
             continue;
         for (i = info->xs; i <= info->xs + info->xm; i++) {
-            if ((i == 0) || (i > info->mx-1))
+            if (i == 0 || i > info->mx-1)
                 continue;
             // this element, down-or-left of node i,j, is adjacent to an owned
             // and interior node

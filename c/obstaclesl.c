@@ -105,7 +105,7 @@ int main(int argc,char **argv) {
     PetscOptionsEnd();
 
     // options consistency checking
-    if ((ctx.quadpts < 1) || (ctx.quadpts > 3)) {
+    if (ctx.quadpts < 1 || ctx.quadpts > 3) {
         SETERRQ(PETSC_COMM_SELF,3,"quadrature points n=1,2,3 only");
     }
 
@@ -280,7 +280,7 @@ PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu) {
 }
 
 PetscBool NodeOnBdry(DMDALocalInfo *info, PetscInt i, PetscInt j) {
-    return (((i == 0) || (i == info->mx-1) || (j == 0) || (j == info->my-1)));
+    return ((i == 0 || i == info->mx-1 || j == 0 || j == info->my-1));
 }
 
 // compute complementarity residual Fhat from conventional residual F:
