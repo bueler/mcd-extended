@@ -60,9 +60,8 @@ static PetscReal fg_zero(PetscReal x, PetscReal y, void *ctx) {
     return 0.0;
 }
 
-extern PetscErrorCode AssertBoundaryAdmissible(DMDALocalInfo*, ObsCtx*);
-extern PetscErrorCode FormExact(DMDALocalInfo*, PetscReal (*)(PetscReal,PetscReal,void*),
-                                Vec, ObsCtx*);
+extern PetscErrorCode AssertBoundaryAdmissible(DM da, ObsCtx*);
+extern PetscErrorCode FormExact(DM da, Vec, ObsCtx*);
 extern PetscErrorCode FormResidualOrCRLocal(DMDALocalInfo*, PetscReal **,
                                             PetscReal**, ObsCtx*);
 extern PetscErrorCode ProjectedNGS(SNES, Vec, Vec, void*);
@@ -119,10 +118,9 @@ int main(int argc,char **argv) {
         PetscCall(LDCRefine(&(ldc[l-1]),&(ldc[l])));
     for (l=0; l<levels; l++)
         PetscCall(DMSetApplicationContext(ldc[l].dal,&ctx));
-    PetscCall(DMDAGetLocalInfo(ldc[levels-1].dal,&finfo));
 
     // check finest-level boundary admissiblity
-    PetscCall(AssertBoundaryAdmissible(&finfo,&ctx));
+    PetscCall(AssertBoundaryAdmissible(ldc[levels-1].dal,&ctx));
 
     // generate finest-level obstacle as Vec
     PetscCall(DMCreateGlobalVector(ldc[levels-1].dal,&gamlow));
@@ -130,7 +128,7 @@ int main(int argc,char **argv) {
 
     // initial iterate
     PetscCall(DMCreateGlobalVector(ldc[levels-1].dal,&u));
-    PetscCall(FormExact(&finfo,u_exact,u,&ctx));  // FIXME initializing with exact solution
+    PetscCall(FormExact(ldc[levels-1].dal,u,&ctx));  // FIXME initializing with exact solution
     //PetscCall(VecSet(u,0.0));
     PetscCall(VecLessThanOrEqual(ldc[levels-1].dal,gamlow,u,&admis));
     if (!admis) {
@@ -192,9 +190,10 @@ int main(int argc,char **argv) {
 
     // report on numerical error
     PetscCall(DMCreateGlobalVector(ldc[levels-1].dal,&uexact));
-    PetscCall(FormExact(&finfo,u_exact,uexact,&ctx));
+    PetscCall(FormExact(ldc[levels-1].dal,uexact,&ctx));
     PetscCall(VecAXPY(u,-1.0,uexact));    // u <- u + (-1.0) uexact
     PetscCall(VecNorm(u,NORM_INFINITY,&errinf));
+    PetscCall(DMDAGetLocalInfo(ldc[levels-1].dal,&finfo));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,
                           "done on %d x %d grid:   error |u-uexact|_inf = %.3e\n",
                           finfo.mx,finfo.my,errinf));
@@ -209,14 +208,16 @@ int main(int argc,char **argv) {
     return 0;
 }
 
-PetscErrorCode AssertBoundaryAdmissible(DMDALocalInfo *info, ObsCtx* user) {
-    PetscInt     i, j;
-    PetscReal    hx, hy, x, y;
-    hx = 4.0 / (PetscReal)(info->mx - 1);
-    hy = 4.0 / (PetscReal)(info->my - 1);
-    for (j=info->ys; j<info->ys+info->ym; j++) {
+PetscErrorCode AssertBoundaryAdmissible(DM da, ObsCtx* user) {
+    DMDALocalInfo  info;
+    PetscInt       i, j;
+    PetscReal      hx, hy, x, y;
+    PetscCall(DMDAGetLocalInfo(da,&info));
+    hx = 4.0 / (PetscReal)(info.mx - 1);
+    hy = 4.0 / (PetscReal)(info.my - 1);
+    for (j=info.ys; j<info.ys+info.ym; j++) {
         y = -2.0 + j * hy;
-        for (i=info->xs; i<info->xs+info->xm; i++) {
+        for (i=info.xs; i<info.xs+info.xm; i++) {
             x = -2.0 + i * hx;
             if (user->g_bdry(x,y,user) < user->gamma_lower(x,y,user)) {
                 PetscCall(PetscPrintf(PETSC_COMM_WORLD,
@@ -228,21 +229,22 @@ PetscErrorCode AssertBoundaryAdmissible(DMDALocalInfo *info, ObsCtx* user) {
     return 0;
 }
 
-PetscErrorCode FormExact(DMDALocalInfo *info, PetscReal (*ufcn)(PetscReal,PetscReal,void*),
-                         Vec u, ObsCtx* user) {
-    PetscInt     i, j;
-    PetscReal    hx, hy, x, y, **au;
-    hx = 4.0 / (PetscReal)(info->mx - 1);
-    hy = 4.0 / (PetscReal)(info->my - 1);
-    PetscCall(DMDAVecGetArray(info->da, u, &au));
-    for (j=info->ys; j<info->ys+info->ym; j++) {
+PetscErrorCode FormExact(DM da, Vec u, ObsCtx* user) {
+    DMDALocalInfo  info;
+    PetscInt       i, j;
+    PetscReal      hx, hy, x, y, **au;
+    PetscCall(DMDAGetLocalInfo(da,&info));
+    hx = 4.0 / (PetscReal)(info.mx - 1);
+    hy = 4.0 / (PetscReal)(info.my - 1);
+    PetscCall(DMDAVecGetArray(da, u, &au));
+    for (j=info.ys; j<info.ys+info.ym; j++) {
         y = -2.0 + j * hy;
-        for (i=info->xs; i<info->xs+info->xm; i++) {
+        for (i=info.xs; i<info.xs+info.xm; i++) {
             x = -2.0 + i * hx;
-            au[j][i] = (*ufcn)(x,y,user);
+            au[j][i] = u_exact(x,y,user);
         }
     }
-    PetscCall(DMDAVecRestoreArray(info->da, u, &au));
+    PetscCall(DMDAVecRestoreArray(da, u, &au));
     return 0;
 }
 
