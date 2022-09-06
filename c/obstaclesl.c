@@ -181,7 +181,7 @@ int main(int argc,char **argv) {
         PetscCall(PetscViewerPushFormat(file,PETSC_VIEWER_ASCII_MATLAB));
         PetscCall(PetscObjectSetName((PetscObject)u,"u"));
         PetscCall(VecView(u,file));
-        PetscCall(DMDAVecGetArray(da, u, &au));
+        PetscCall(DMDAVecGetArrayRead(da, u, &au));
         PetscCall(DMCreateGlobalVector(da,&F));
         PetscCall(DMDAVecGetArray(da, F, &aF));
         ctx.pngs = PETSC_FALSE;  // we want to view plain F, *then* CR
@@ -192,7 +192,7 @@ int main(int argc,char **argv) {
         PetscCall(DMDAVecGetArray(da, F, &aF));
         PetscCall(CRLocal(&info,au,aF,aF,&ctx));
         PetscCall(DMDAVecRestoreArray(da, F, &aF));
-        PetscCall(DMDAVecRestoreArray(da, u, &au));
+        PetscCall(DMDAVecRestoreArrayRead(da, u, &au));
         PetscCall(PetscObjectSetName((PetscObject)F,"Fhat"));
         PetscCall(VecView(F,file));
         PetscCall(VecDestroy(&F));

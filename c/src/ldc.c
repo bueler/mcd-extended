@@ -142,7 +142,7 @@ PetscErrorCode LDCFinestUpDCsFromVecs(Vec w, Vec vgamupp, Vec vgamlow, LDC *ldc)
     return 0;
 }
 
-PetscErrorCode LDCVecFromFormula(LDC ldc,PetscReal (*ufcn)(PetscReal,PetscReal,void*),
+PetscErrorCode LDCVecFromFormula(LDC ldc, PetscReal (*ufcn)(PetscReal,PetscReal,void*),
                                  Vec u, void *ctx) {
     PetscInt      i, j;
     PetscReal     hx, hy, x, y, **au;
@@ -316,28 +316,28 @@ PetscErrorCode LDCGenerateDCsVCycle(LDC *finest) {
 }
 
 PetscErrorCode LDCVecLessThanOrEqual(LDC ldc, Vec u, Vec v, PetscBool *flg) {
-    PetscInt      i, j;
-    PetscReal     **au, **av;
+    PetscInt         i, j;
+    const PetscReal  **au, **av;
     DMDALocalInfo info;
     if ((!u) || (!v)) {
         *flg = PETSC_TRUE;
         return 0;
     }
     PetscCall(DMDAGetLocalInfo(ldc.dal,&info));
-    PetscCall(DMDAVecGetArray(info.da, u, &au));
-    PetscCall(DMDAVecGetArray(info.da, v, &av));
+    PetscCall(DMDAVecGetArrayRead(info.da, u, &au));
+    PetscCall(DMDAVecGetArrayRead(info.da, v, &av));
     for (j=info.ys; j<info.ys+info.ym; j++) {
         for (i=info.xs; i<info.xs+info.xm; i++) {
             if (au[j][i] > av[j][i]) {
-                PetscCall(DMDAVecRestoreArray(info.da, u, &au));
-                PetscCall(DMDAVecRestoreArray(info.da, v, &av));
+                PetscCall(DMDAVecRestoreArrayRead(info.da, u, &au));
+                PetscCall(DMDAVecRestoreArrayRead(info.da, v, &av));
                 *flg = PETSC_FALSE;
                 return 0;
             }
         }
     }
-    PetscCall(DMDAVecRestoreArray(info.da, u, &au));
-    PetscCall(DMDAVecRestoreArray(info.da, v, &av));
+    PetscCall(DMDAVecRestoreArrayRead(info.da, u, &au));
+    PetscCall(DMDAVecRestoreArrayRead(info.da, v, &av));
     *flg = PETSC_TRUE;
     return 0;
 }

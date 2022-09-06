@@ -46,7 +46,7 @@ typedef enum {
 //    + + +      + +             + + +    + +                   + +    + +
 // (note * has indices i,j)
 PetscReal _Q1OptNeighbors(Q1MonotoneType opt, _DirectionType dir,
-                          PetscReal **au, PetscInt i, PetscInt j) {
+                          const PetscReal **au, PetscInt i, PetscInt j) {
     PetscInt        p, q;
     const PetscInt  ps[9] = { -1,  0, -1, -1, -1,  0, -1, -1,  0},
                     pe[9] = {  1,  1,  1,  1,  0,  1,  0,  0,  1},
@@ -66,15 +66,16 @@ PetscReal _Q1OptNeighbors(Q1MonotoneType opt, _DirectionType dir,
 
 PetscErrorCode Q1MonotoneRestrict(Q1MonotoneType opt, DM daf, DM dac,
                                   Vec vfine, Vec *vcoarse) {
-    DMDALocalInfo cinfo;
-    Vec           vfineloc;
-    PetscInt      ic, jc;
-    PetscReal     **ac, **af;
+    DMDALocalInfo    cinfo;
+    Vec              vfineloc;
+    PetscInt         ic, jc;
+    const PetscReal  **af;
+    PetscReal        **ac;
     PetscCall(DMDAGetLocalInfo(dac,&cinfo));
     PetscCall(DMGetLocalVector(daf,&vfineloc));
     PetscCall(DMGlobalToLocal(daf,vfine,INSERT_VALUES,vfineloc));
     PetscCall(DMDAVecGetArray(dac,*vcoarse,&ac));
-    PetscCall(DMDAVecGetArray(daf,vfineloc,&af));
+    PetscCall(DMDAVecGetArrayRead(daf,vfineloc,&af));
     for (jc=cinfo.ys; jc<cinfo.ys+cinfo.ym; jc++) {
         for (ic=cinfo.xs; ic<cinfo.xs+cinfo.xm; ic++) {
             if (!_Q1NodeOnBdry(dac,ic,jc)) {
@@ -107,7 +108,7 @@ PetscErrorCode Q1MonotoneRestrict(Q1MonotoneType opt, DM daf, DM dac,
             }
         }
     }
-    PetscCall(DMDAVecRestoreArray(daf,vfineloc,&af));
+    PetscCall(DMDAVecRestoreArrayRead(daf,vfineloc,&af));
     PetscCall(DMDAVecRestoreArray(dac,*vcoarse,&ac));
     PetscCall(DMRestoreLocalVector(daf,&vfineloc));
     return 0;
