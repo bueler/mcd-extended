@@ -16,6 +16,7 @@ PetscErrorCode VecLessThanOrEqual(DM da, Vec u, Vec v, PetscBool *flg);
 //     Fhat_ij = F_ij         if  Lower_ij < u_ij < Upper_ij   (inactive constraints)
 //               min{F_ij,0}  if  u_ij <= Lower_ij
 //               max{F_ij,0}  if  u_ij >= Upper_ij
+// avoids tests if Upper=NULL (+infty) or Lower=NULL (-infty)
 // reference: page 24 of https://pages.cs.wisc.edu/~ferris/cs635/complementarity.pdf
 // FIXME consider an epsilon for active determination
 PetscErrorCode CRFromResidual(DM da, Vec Upper, Vec Lower, Vec u, Vec F, Vec Fhat);
