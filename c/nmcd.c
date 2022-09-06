@@ -20,7 +20,8 @@ typedef struct {
   PetscReal (*f_rhs)(PetscReal x, PetscReal y, void *ctx);
   // Dirichlet boundary condition g(x,y)
   PetscReal (*g_bdry)(PetscReal x, PetscReal y, void *ctx);
-  PetscInt  residualcount, ngscount, quadpts;
+  PetscInt  maxits, quadpts, sweeps,
+            residualcount, ngscount;
 } ObsCtx;
 
 // z = gamma_lower(x,y) is the hemispherical obstacle, but made C^1 with "skirt" at r=r0
@@ -62,15 +63,15 @@ static PetscReal fg_zero(PetscReal x, PetscReal y, void *ctx) {
 
 extern PetscErrorCode AssertBoundaryAdmissible(DM da, ObsCtx*);
 extern PetscErrorCode FormExact(DM da, Vec, ObsCtx*);
-extern PetscErrorCode FormResidual(DM, Vec, Vec, ObsCtx *user);
-extern PetscErrorCode ProjectedNGS(SNES, Vec, Vec, void*);
+extern PetscErrorCode ApplyOperatorF(DM, Vec, Vec, ObsCtx*);
+extern PetscErrorCode ProjectedNGS(LDC*, PetscBool, Vec, Vec, ObsCtx*);
 
 int main(int argc,char **argv) {
     LDC            *ldc;
     Vec            gamlow, u, uexact, F;
     ObsCtx         ctx;
     DMDALocalInfo  finfo;
-    PetscInt       levels, l, maxit;
+    PetscInt       levels=2, cycles=1, j;
     PetscBool      ldcinfo = PETSC_FALSE, counts = PETSC_FALSE, view = PETSC_FALSE,
                    admis;
     PetscLogDouble lflops, flops;
@@ -81,23 +82,27 @@ int main(int argc,char **argv) {
     ctx.gamma_lower = &gamma_lower;
     ctx.f_rhs = &fg_zero;
     ctx.g_bdry = &u_exact;
+    ctx.maxits = 2;
+    ctx.quadpts = 2;
+    ctx.sweeps = 1;
     ctx.residualcount = 0;
     ctx.ngscount = 0;
-    ctx.quadpts = 2;
-    levels = 2;
-    maxit = 1;
     PetscOptionsBegin(PETSC_COMM_WORLD,"nm_","obstacle problem NMCD solver options","");
     PetscCall(PetscOptionsBool("-counts","print counts for calls to call-back functions",
                             "nmcd.c",counts,&counts,NULL));
+    PetscCall(PetscOptionsInt("-cycles","maximum number of NMCD V-cycles",
+                            "nmcd.c",cycles,&cycles,NULL));
     PetscCall(PetscOptionsBool("-info","print info on LDC (MCD) actions",
                             "nmcd.c",ldcinfo,&ldcinfo,NULL));
     PetscCall(PetscOptionsInt("-levels","number NMCD levels (>= 1)",
                             "nmcd.c",levels,&levels,NULL));
-    PetscCall(PetscOptionsInt("-max_it","maximum number of NMCD V-cycles",
-                            "nmcd.c",maxit,&maxit,NULL));
+    PetscCall(PetscOptionsInt("-maxits","number of Newton iterations at each point",
+                            "nmcd.c",ctx.maxits,&(ctx.maxits),NULL));
     // WARNING: coarse problems are badly solved with -nm_quadpts 1
     PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only)",
                             "nmcd.c",ctx.quadpts,&(ctx.quadpts),NULL));
+    PetscCall(PetscOptionsInt("-sweeps","number of PNGS sweeps in smoother",  // FIXME separate for coarse solver
+                            "nmcd.c",ctx.sweeps,&(ctx.sweeps),NULL));
     PetscCall(PetscOptionsString("-view","custom view of solution,residual,cr in ascii_matlab",
                             "nmcd",viewname,viewname,sizeof(viewname),&view));
     PetscOptionsEnd();
@@ -113,10 +118,10 @@ int main(int argc,char **argv) {
     // create LDC stack: create coarsest, then refine levels-1 times
     PetscCall(PetscMalloc1(levels,&ldc));
     PetscCall(LDCCreateCoarsest(ldcinfo,3,3,-2.0,2.0,-2.0,2.0,&(ldc[0])));
-    for (l=1; l<levels; l++)
-        PetscCall(LDCRefine(&(ldc[l-1]),&(ldc[l])));
-    for (l=0; l<levels; l++)
-        PetscCall(DMSetApplicationContext(ldc[l].dal,&ctx));
+    for (j=1; j<levels; j++)
+        PetscCall(LDCRefine(&(ldc[j-1]),&(ldc[j])));
+    for (j=0; j<levels; j++)
+        PetscCall(DMSetApplicationContext(ldc[j].dal,&ctx));
 
     // check finest-level boundary admissiblity
     PetscCall(AssertBoundaryAdmissible(ldc[levels-1].dal,&ctx));
@@ -140,13 +145,27 @@ int main(int argc,char **argv) {
 
     // solve the problem
     PetscCall(VecPrintRange(u,"initial iterate u",""));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"*NOT YET* SOLVING PROBLEM BY %d V-CYCLES\n",maxit));
-    //FIXME replace SNESSolve() with V-cycle action
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"*NOT YET* SOLVING PROBLEM BY %d V-CYCLES\n",cycles));
+
+#if 0
+    // FIXME one NMCD V-cycle with one smoother iteration at each j>0 level
+    PetscCall(VecCopy(u,ldc[levels-1].g));
+    // FIXME fill ldc[j].ell
+    for (j=levels-1; j>0; j--) {
+        PetscCall(VecSet(ldc[j].y,0.0));
+        PetscCall(ProjectedNGS(&(ldc[j]),ldc[j].phiupp,ldc[j].philow,ldc[j].ell,
+                               ldc[j].g,ldc[j].y,&ctx));
+        PetscCall(VecWAXPY(ldc[j].tmp,1.0,ldc[j].g,ldc[j].y));
+        PetscCall(Q1Inject(ldc[j].dal,ldc[j-1].dal,ldc[j].tmp,ldc[j-1].g));
+        PetscCall(ApplyOperatorF(ldc[j].dal,u,F,&ctx));
+        PetscCall(VecWAXPY(ldc[j-1].ell,ldc[j-1].
+    }
+#endif
 
     // FIXME not needed for run
     // compute and report residual for initial iterate
     PetscCall(DMCreateGlobalVector(ldc[levels-1].dal,&F));
-    PetscCall(FormResidual(ldc[levels-1].dal,u,F,&ctx));
+    PetscCall(ApplyOperatorF(ldc[levels-1].dal,u,F,&ctx));
     PetscCall(VecPrintRange(F,"residual F[u]",""));
     PetscCall(VecDestroy(&F));
 
@@ -208,8 +227,8 @@ int main(int argc,char **argv) {
     PetscCall(VecDestroy(&uexact));
     PetscCall(VecDestroy(&gamlow));
     PetscCall(VecDestroy(&u));
-    for (l=levels-1; l>=0; l--)
-        PetscCall(LDCDestroy(&(ldc[l])));
+    for (j=levels-1; j>=0; j--)
+        PetscCall(LDCDestroy(&(ldc[j])));
     PetscCall(PetscFree(ldc));
     PetscCall(PetscFinalize());
     return 0;
@@ -295,14 +314,14 @@ PetscReal _IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
            - Q1Eval(ff,r,s) * Q1chi[L][r][s];
 }
 
-// compute F_ij, the nodal residual of the discretized nonlinear operator:
+// compute F_ij, the discretized nonlinear operator:
 //     F(u)[v] = int_Omega grad u . grad v - f v
-// giving the vector of nodal residuals
+// giving the vector of nodal values (residuals w/o ell)
 //     F_ij = F(u)[psi_ij]
 // where i,j is a node and psi_ij is the hat function
 // at boundary nodes we have
 //     F_ij = u_ij - g(x_i,y_j)
-PetscErrorCode FormResidual(DM da, Vec u, Vec F, ObsCtx *user) {
+PetscErrorCode ApplyOperatorF(DM da, Vec u, Vec F, ObsCtx *user) {
     DMDALocalInfo    info;
     const Q1Quad1D   q = Q1gausslegendre[user->quadpts-1];
     const PetscInt   li[4] = {0,-1,-1,0},  lj[4] = {0,0,-1,-1};
@@ -498,42 +517,38 @@ PetscErrorCode _rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
 }
 
 // do projected nonlinear Gauss-Seidel (processor-block) sweeps on equation
-//     F(u)[psi_ij] = b_ij   for all nodes i,j
+//     F(u)[psi_ij] = ell_ij   for all nodes i,j
 // where psi_ij is the hat function,
 //     F(u)[v] = int_Omega grad u . grad v - f v,
-// b is a nodal field provided by the call-back,
-// and the projection onto the obstacle is nodal:
-//     u_ij <-- max{u_ij, gamma_lower_ij}
+// ell is a nodal field (linear functional)
 // for each interior node i,j we define
-//     rho(c) = F(u + c psi_ij)[psi_ij] - b_ij
+//     rho(c) = F(u + c psi_ij)[psi_ij] - ell_ij
 // and do Newton iterations
 //     c <-- c - rho(c) / rho'(c)
-// followed by the projection,
-//     c <-- max{c, gamma_lower_ij - u_ij}
+// followed by the bi-obstacle projection,
+//     c <-- min{c, upper_ij - u_ij}
+//     c <-- max{c, lower_ij - u_ij}
 // note
 //     rho'(c) = int_Omega grad psi_ij . grad psi_ij
 // also note that for boundary nodes we simply set
 //     u_ij = g(x_i,y_j)
-PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
-    ObsCtx*        user = (ObsCtx*)ctx;
-    PetscInt       i, j, k, maxits, totalits=0, sweeps, l;
-    const PetscReal **ab;
-    PetscReal      x, y, atol, rtol, stol, hx, hy, **au,
-                   c, rho, rho0, drhodc, s, cold, glij;
-    DM             da;
-    DMDALocalInfo  info;
-    Vec            uloc;
+PetscErrorCode ProjectedNGS(LDC *ldc, PetscBool updcs, Vec ell, Vec u,
+                            ObsCtx *user) {
+    PetscInt        i, j, k, totalits=0, l;
+    const PetscReal **aell, **aupper, **alower;
+    PetscBool       haveupper = PETSC_FALSE, havelower = PETSC_FALSE;
+    PetscReal       x, y, hx, hy, c, rho, drhodc,
+                    **au;
+    DMDALocalInfo   info;
+    Vec             uloc;
 
-    PetscCall(SNESNGSGetSweeps(snes,&sweeps));
-    PetscCall(SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&maxits));
-    PetscCall(SNESGetDM(snes,&da));
-    PetscCall(Q1Setup(user->quadpts,da,-2.0,2.0,-2.0,2.0));
+    PetscCall(Q1Setup(user->quadpts,ldc->dal,-2.0,2.0,-2.0,2.0));
 
     // for Dirichlet nodes assign boundary value once; assumes g >= gamma_lower
-    PetscCall(DMDAGetLocalInfo(da,&info));
+    PetscCall(DMDAGetLocalInfo(ldc->dal,&info));
     hx = 4.0 / (PetscReal)(info.mx - 1);
     hy = 4.0 / (PetscReal)(info.my - 1);
-    PetscCall(DMDAVecGetArray(da,u,&au));
+    PetscCall(DMDAVecGetArray(ldc->dal,u,&au));
     for (j = info.ys; j < info.ys + info.ym; j++) {
         y = -2.0 + j * hy;
         for (i = info.xs; i < info.xs + info.xm; i++) {
@@ -542,18 +557,39 @@ PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
                 au[j][i] = user->g_bdry(x,y,user);
         }
     }
-    PetscCall(DMDAVecRestoreArray(da,u,&au));
+    PetscCall(DMDAVecRestoreArray(ldc->dal,u,&au));
 
-    if (b)
-        PetscCall(DMDAVecGetArrayRead(da,b,&ab));
+    // set-up for bi-obstacles
+    if (updcs) {
+        if (ldc->chiupp) {
+            PetscCall(DMDAVecGetArrayRead(ldc->dal,ldc->chiupp,&aupper));
+            haveupper = PETSC_TRUE;
+        }
+        if (ldc->chilow) {
+            PetscCall(DMDAVecGetArrayRead(ldc->dal,ldc->chilow,&alower));
+            havelower = PETSC_TRUE;
+        }
+    } else {
+        if (ldc->phiupp) {
+            PetscCall(DMDAVecGetArrayRead(ldc->dal,ldc->phiupp,&aupper));
+            haveupper = PETSC_TRUE;
+        }
+        if (ldc->philow) {
+            PetscCall(DMDAVecGetArrayRead(ldc->dal,ldc->philow,&alower));
+            havelower = PETSC_TRUE;
+        }
+    }
+
+    if (ell)
+        PetscCall(DMDAVecGetArrayRead(ldc->dal,ell,&aell));
     // need local vector for stencil width in parallel
-    PetscCall(DMGetLocalVector(da,&uloc));
+    PetscCall(DMGetLocalVector(ldc->dal,&uloc));
 
     // NGS sweeps over interior nodes
-    for (l=0; l<sweeps; l++) {
+    for (l=0; l<user->sweeps; l++) {
         // update ghosts
-        PetscCall(DMGlobalToLocal(da,u,INSERT_VALUES,uloc));
-        PetscCall(DMDAVecGetArray(da,uloc,&au));
+        PetscCall(DMGlobalToLocal(ldc->dal,u,INSERT_VALUES,uloc));
+        PetscCall(DMDAVecGetArray(ldc->dal,uloc,&au));
         for (j = info.ys; j < info.ys + info.ym; j++) {
             y = -2.0 + j * hy;
             for (i = info.xs; i < info.xs + info.xm; i++) {
@@ -562,42 +598,40 @@ PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
                 x = -2.0 + i * hx;
                 // i,j is owned interior node; do projected Newton iterations
                 c = 0.0;
-                for (k = 0; k < maxits; k++) {
+                for (k = 0; k < user->maxits; k++) {
                     // evaluate rho(c) and rho'(c) for current c
                     PetscCall(_rhoFcn(&info,i,j,c,au,&rho,&drhodc,user));
-                    if (b)
-                        rho -= ab[j][i];
-                    if (k == 0)
-                        rho0 = rho;
-                    s = - rho / drhodc;  // Newton step
-                    cold = c;
-                    c += s;
-                    // do projection
-                    glij = user->gamma_lower(x,y,user);
-                    c = PetscMax(c, glij - au[j][i]);
-                    // redefine s as magnitude of actual step taken
-                    s = PetscAbsReal(c - cold);
-                    // recompute rho as complementarity residual
-                    PetscCall(_rhoFcn(&info,i,j,c,au,&rho,NULL,user));
-                    if (au[j][i] + c <= glij)  // if i,j now active,
-                        rho = PetscMin(rho, 0.0);  // only punish negative F values
+                    if (ell)
+                        rho -= aell[j][i];
+                    c = c - rho / drhodc;  // Newton step
+                    // bi-obstacle projection
+                    if (haveupper)
+                        c = PetscMin(c, aupper[j][i] - au[j][i]);
+                    else if (havelower)
+                        c = PetscMax(c, alower[j][i] - au[j][i]);
                     totalits++;
-                    if (   atol > PetscAbsReal(rho)
-                        || rtol*PetscAbsReal(rho0) > PetscAbsReal(rho)
-                        || stol*PetscAbsReal(c) > PetscAbsReal(s)    ) {
-                        break;
-                    }
                 }
                 au[j][i] += c;
             }
         }
-        PetscCall(DMDAVecRestoreArray(da,uloc,&au));
-        PetscCall(DMLocalToGlobal(da,uloc,INSERT_VALUES,u));
+        PetscCall(DMDAVecRestoreArray(ldc->dal,uloc,&au));
+        PetscCall(DMLocalToGlobal(ldc->dal,uloc,INSERT_VALUES,u));
     }
 
-    PetscCall(DMRestoreLocalVector(da,&uloc));
-    if (b)
-        PetscCall(DMDAVecRestoreArrayRead(da,b,&ab));
+    PetscCall(DMRestoreLocalVector(ldc->dal,&uloc));
+    if (updcs) {
+        if (ldc->chiupp)
+            PetscCall(DMDAVecRestoreArrayRead(ldc->dal,ldc->chiupp,&aupper));
+        if (ldc->chilow)
+            PetscCall(DMDAVecRestoreArrayRead(ldc->dal,ldc->chilow,&alower));
+    } else {
+        if (ldc->phiupp)
+            PetscCall(DMDAVecRestoreArrayRead(ldc->dal,ldc->phiupp,&aupper));
+        if (ldc->philow)
+            PetscCall(DMDAVecRestoreArrayRead(ldc->dal,ldc->philow,&alower));
+    }
+    if (ell)
+        PetscCall(DMDAVecRestoreArrayRead(ldc->dal,ell,&aell));
 
     // add flops for Newton iteration arithmetic; note rhoFcn() already counts flops
     PetscCall(PetscLogFlops(8 * totalits));
