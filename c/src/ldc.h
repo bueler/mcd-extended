@@ -74,16 +74,28 @@ PetscErrorCode LDCDestroy(LDC *ldc);
 
 PetscErrorCode LDCRefine(LDC *coarse, LDC *fine);
 
+// create up DCs on finest level using original constraints gamupp, gamlow
+// and current iterate w
 PetscErrorCode LDCFinestUpDCsFromVecs(Vec w, Vec gamupp, Vec gamlow, LDC *ldc);
 
+// same, but use formulas for gamupp, gamlow
 PetscErrorCode LDCFinestUpDCsFromFormulas(Vec w,
                    PetscReal (*fgamupp)(PetscReal,PetscReal,void*),
                    PetscReal (*fgamlow)(PetscReal,PetscReal,void*),
                    LDC *ldc, void *ctx);
 
+// after finest up DCs are created, generate up and down DCs on all levels
 PetscErrorCode LDCGenerateDCsVCycle(LDC *finest);
 
 // UTILITIES
+
+// compute complementarity residual Fhat from ordinary residual F and
+// defect z, for up DCs
+PetscErrorCode LDCUpDCsCRFromResidual(LDC *ldc, Vec z, Vec F, Vec Fhat);
+
+// compute complementarity residual Fhat from ordinary residual F and
+// defect y, for down DCs
+PetscErrorCode LDCDownDCsCRFromResidual(LDC *ldc, Vec y, Vec F, Vec Fhat);
 
 // create a Vec from a formula
 PetscErrorCode LDCVecFromFormula(LDC ldc, PetscReal (*ufcn)(PetscReal,PetscReal,void*),

@@ -315,6 +315,51 @@ PetscErrorCode LDCGenerateDCsVCycle(LDC *finest) {
     return 0;
 }
 
+// compute complementarity residual Fhat from ordinary residual F, for bi-lateral constraints:
+//     Fhat_ij = F_ij         if  Lower_ij < u_ij < Upper_ij   (inactive constraints)
+//               min{F_ij,0}  if  u_ij <= Lower_ij
+//               max{F_ij,0}  if  u_ij >= Upper_ij
+// reference: page 24 of https://pages.cs.wisc.edu/~ferris/cs635/complementarity.pdf
+// FIXME consider an epsilon for active determination
+PetscErrorCode _CRFromResidual(DM da, Vec Upper, Vec Lower, Vec u, Vec F, Vec Fhat) {
+    DMDALocalInfo    info;
+    PetscInt         i, j;
+    const PetscReal  **au, **aUpper, **aLower, **aF;
+    PetscReal        **aFhat;
+    PetscCall(DMDAGetLocalInfo(da,&info));
+    PetscCall(DMDAVecGetArrayRead(da, Upper, &aUpper));
+    PetscCall(DMDAVecGetArrayRead(da, Lower, &aLower));
+    PetscCall(DMDAVecGetArrayRead(da, u, &au));
+    PetscCall(DMDAVecGetArrayRead(da, F, &aF));
+    PetscCall(DMDAVecGetArray(da, Fhat, &aFhat));
+    for (j = info.ys; j < info.ys + info.ym; j++) {
+        for (i = info.xs; i < info.xs + info.xm; i++) {
+            if (au[j][i] >= aUpper[j][i])       // active upper constraint
+                aFhat[j][i] = PetscMax(aF[j][i],0.0);
+            else if (au[j][i] <= aLower[j][i])  // active lower constraint
+                aFhat[j][i] = PetscMin(aF[j][i],0.0);
+            else
+                aFhat[j][i] = aF[j][i];         // constraints inactive
+        }
+    }
+    PetscCall(DMDAVecRestoreArrayRead(da, Upper, &aUpper));
+    PetscCall(DMDAVecRestoreArrayRead(da, Lower, &aLower));
+    PetscCall(DMDAVecRestoreArrayRead(da, u, &au));
+    PetscCall(DMDAVecRestoreArrayRead(da, F, &aF));
+    PetscCall(DMDAVecRestoreArray(da, Fhat, &aFhat));
+    return 0;
+}
+
+PetscErrorCode LDCUpDCsCRFromResidual(LDC *ldc, Vec z, Vec F, Vec Fhat) {
+    PetscCall(_CRFromResidual(ldc->dal,ldc->chiupp,ldc->chilow,z,F,Fhat));
+    return 0;
+}
+
+PetscErrorCode LDCDownDCsCRFromResidual(LDC *ldc, Vec y, Vec F, Vec Fhat) {
+    PetscCall(_CRFromResidual(ldc->dal,ldc->phiupp,ldc->philow,y,F,Fhat));
+    return 0;
+}
+
 PetscErrorCode LDCVecLessThanOrEqual(LDC ldc, Vec u, Vec v, PetscBool *flg) {
     PetscInt         i, j;
     const PetscReal  **au, **av;
