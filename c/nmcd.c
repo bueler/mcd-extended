@@ -62,13 +62,12 @@ static PetscReal fg_zero(PetscReal x, PetscReal y, void *ctx) {
 
 extern PetscErrorCode AssertBoundaryAdmissible(DM da, ObsCtx*);
 extern PetscErrorCode FormExact(DM da, Vec, ObsCtx*);
-extern PetscErrorCode FormResidualOrCRLocal(DMDALocalInfo*, PetscReal **,
-                                            PetscReal**, ObsCtx*);
+extern PetscErrorCode FormResidual(DM, Vec, Vec, ObsCtx *user);
 extern PetscErrorCode ProjectedNGS(SNES, Vec, Vec, void*);
 
 int main(int argc,char **argv) {
     LDC            *ldc;
-    Vec            gamlow, u, uexact;
+    Vec            gamlow, u, uexact, F;
     ObsCtx         ctx;
     DMDALocalInfo  finfo;
     PetscInt       levels, l, maxit;
@@ -140,8 +139,16 @@ int main(int argc,char **argv) {
     PetscCall(LDCGenerateDCsVCycle(&(ldc[levels-1])));
 
     // solve the problem
+    PetscCall(VecPrintRange(u,"initial iterate u",""));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"*NOT YET* SOLVING PROBLEM BY %d V-CYCLES\n",maxit));
     //FIXME replace SNESSolve() with V-cycle action
+
+    // FIXME not needed for run
+    // compute and report residual for initial iterate
+    PetscCall(DMCreateGlobalVector(ldc[levels-1].dal,&F));
+    PetscCall(FormResidual(ldc[levels-1].dal,u,F,&ctx));
+    PetscCall(VecPrintRange(F,"residual F[u]",""));
+    PetscCall(VecDestroy(&F));
 
     if (counts) {
         // note calls to FormResidualOrCRLocal() and ProjectedNGS() are
@@ -248,8 +255,8 @@ PetscErrorCode FormExact(DM da, Vec u, ObsCtx* user) {
     return 0;
 }
 
-PetscBool _NodeOnBdry(DMDALocalInfo *info, PetscInt i, PetscInt j) {
-    return (i == 0 || i == info->mx-1 || j == 0 || j == info->my-1);
+PetscBool _NodeOnBdry(DMDALocalInfo info, PetscInt i, PetscInt j) {
+    return (i == 0 || i == info.mx-1 || j == 0 || j == info.my-1);
 }
 
 // compute complementarity residual Fhat from conventional residual F:
@@ -266,7 +273,7 @@ PetscErrorCode _CRLocal(DMDALocalInfo *info, PetscReal **au, PetscReal **aF,
     for (j = info->ys; j < info->ys + info->ym; j++) {
         y = -2.0 + j * hy;
         for (i = info->xs; i < info->xs + info->xm; i++) {
-            if (!_NodeOnBdry(info,i,j)) {
+            if (!_NodeOnBdry(*info,i,j)) {
                 x = -2.0 + i * hx;
                 if (au[j][i] > user->gamma_lower(x,y,user))
                      aFhat[j][i] = aF[j][i];
@@ -288,36 +295,40 @@ PetscReal _IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
            - Q1Eval(ff,r,s) * Q1chi[L][r][s];
 }
 
-// compute F_ij, the nodal residual of the discretized nonlinear operator,
-// or the complementarity residual if user->pngs is true
-// the residual is
+// compute F_ij, the nodal residual of the discretized nonlinear operator:
 //     F(u)[v] = int_Omega grad u . grad v - f v
 // giving the vector of nodal residuals
 //     F_ij = F(u)[psi_ij]
-// where i,j is a node and psi_ij is the hat function; at boundary nodes
-// we have
+// where i,j is a node and psi_ij is the hat function
+// at boundary nodes we have
 //     F_ij = u_ij - g(x_i,y_j)
-PetscErrorCode FormResidualOrCRLocal(DMDALocalInfo *info, PetscReal **au,
-                                     PetscReal **FF, ObsCtx *user) {
-    const Q1Quad1D  q = Q1gausslegendre[user->quadpts-1];
-    const PetscInt  li[4] = {0,-1,-1,0},  lj[4] = {0,0,-1,-1};
-    const PetscReal hx = 4.0 / (PetscReal)(info->mx - 1),
-                    hy = 4.0 / (PetscReal)(info->my - 1),
-                    detj = 0.25 * hx * hy;
-    PetscInt   i, j, l, PP, QQ, r, s;
-    PetscReal  x, y, uu[4], ff[4];
+PetscErrorCode FormResidual(DM da, Vec u, Vec F, ObsCtx *user) {
+    DMDALocalInfo    info;
+    const Q1Quad1D   q = Q1gausslegendre[user->quadpts-1];
+    const PetscInt   li[4] = {0,-1,-1,0},  lj[4] = {0,0,-1,-1};
+    PetscInt         i, j, l, PP, QQ, r, s;
+    const PetscReal  **au;
+    PetscReal        hx, hy, detj, **FF, x, y, uu[4], ff[4];
+
+    // grid info and arrays
+    PetscCall(DMDAGetLocalInfo(da,&info));
+    hx = 4.0 / (PetscReal)(info.mx - 1),
+    hy = 4.0 / (PetscReal)(info.my - 1),
+    detj = 0.25 * hx * hy;
+    PetscCall(DMDAVecGetArrayRead(da, u, &au));
+    PetscCall(DMDAVecGetArray(da, F, &FF));
 
     // set up Q1 FEM tools for this grid
-    PetscCall(Q1Setup(user->quadpts,info->da,-2.0,2.0,-2.0,2.0));
+    PetscCall(Q1Setup(user->quadpts,da,-2.0,2.0,-2.0,2.0));
 
     // clear residuals (because we sum over elements)
     // and assign F for Dirichlet nodes
-    for (j = info->ys; j < info->ys + info->ym; j++) {
+    for (j = info.ys; j < info.ys + info.ym; j++) {
         y = -2.0 + j * hy;
-        for (i = info->xs; i < info->xs + info->xm; i++) {
+        for (i = info.xs; i < info.xs + info.xm; i++) {
             x = -2.0 + i * hx;
             FF[j][i] = (_NodeOnBdry(info,i,j)) ? au[j][i] - user->g_bdry(x,y,user)
-                                              : 0.0;
+                                               : 0.0;
         }
     }
 
@@ -326,12 +337,12 @@ PetscErrorCode FormResidualOrCRLocal(DMDALocalInfo *info, PetscReal **au,
     // in parallel the integral also needs to include non-owned (halo) elements
     // up or right of owned nodes.  See diagram in Chapter 9 of Bueler (2021)
     // for indexing and element ownership.
-    for (j = info->ys; j <= info->ys + info->ym; j++) {
-        if ((j == 0) || (j > info->my-1))  // does element actually exist?
+    for (j = info.ys; j <= info.ys + info.ym; j++) {
+        if ((j == 0) || (j > info.my-1))  // does element actually exist?
             continue;
         y = -2.0 + j * hy;
-        for (i = info->xs; i <= info->xs + info->xm; i++) {
-            if ((i == 0) || (i > info->mx-1))  // does element actually exist?
+        for (i = info.xs; i <= info.xs + info.xm; i++) {
+            if ((i == 0) || (i > info.mx-1))  // does element actually exist?
                 continue;
             x = -2.0 + i * hx;
             // this element, down or left of node i,j, is adjacent to an owned
@@ -356,8 +367,8 @@ PetscErrorCode FormResidualOrCRLocal(DMDALocalInfo *info, PetscReal **au,
                 PP = i + li[l];
                 QQ = j + lj[l];
                 // only update residual if we own node and it is not boundary
-                if (PP >= info->xs && PP < info->xs + info->xm
-                    && QQ >= info->ys && QQ < info->ys + info->ym
+                if (PP >= info.xs && PP < info.xs + info.xm
+                    && QQ >= info.ys && QQ < info.ys + info.ym
                     && !_NodeOnBdry(info,PP,QQ)) {
                     // loop over quadrature points to contribute to residual
                     // for this l corner of this i,j element
@@ -372,17 +383,18 @@ PetscErrorCode FormResidualOrCRLocal(DMDALocalInfo *info, PetscReal **au,
         }
     }
 
-    // FIXME in PNGS mode we report the complementarity residual instead
-//    if (user->pngs)
-//        PetscCall(CRLocal(info,au,FF,FF,user));
+    PetscCall(DMDAVecRestoreArrayRead(da, u, &au));
+    PetscCall(DMDAVecRestoreArray(da, F, &FF));
 
     // FLOPS: only count flops per quadrature point in residual computations:
     //   4 + 30 = 34
     // note q.n^2 quadrature points per element
-    PetscCall(PetscLogFlops(34.0 * q.n * q.n * info->xm * info->ym));
+    PetscCall(PetscLogFlops(34.0 * q.n * q.n * info.xm * info.ym));
     (user->residualcount)++;
     return 0;
 }
+
+// FIXME want complementarity residual too?
 
 // for owned, interior nodes i,j, we define the pointwise residual corresponding
 // to the hat function psi_ij:
@@ -460,13 +472,13 @@ PetscErrorCode _rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
         ff[1] = user->f_rhs(x-hx,y,user);
         ff[2] = user->f_rhs(x-hx,y-hy,user);
         ff[3] = user->f_rhs(x,y-hy,user);
-        uu[0] = _NodeOnBdry(info,ii,  jj)   ?
+        uu[0] = _NodeOnBdry(*info,ii,  jj)   ?
                 user->g_bdry(x,y,user)       : au[jj][ii];
-        uu[1] = _NodeOnBdry(info,ii-1,jj)   ?
+        uu[1] = _NodeOnBdry(*info,ii-1,jj)   ?
                 user->g_bdry(x-hx,y,user)    : au[jj][ii-1];
-        uu[2] = _NodeOnBdry(info,ii-1,jj-1) ?
+        uu[2] = _NodeOnBdry(*info,ii-1,jj-1) ?
                 user->g_bdry(x-hx,y-hy,user) : au[jj-1][ii-1];
-        uu[3] = _NodeOnBdry(info,ii,  jj-1) ?
+        uu[3] = _NodeOnBdry(*info,ii,  jj-1) ?
                 user->g_bdry(x,y-hy,user)    : au[jj-1][ii];
         // loop over quadrature points in this element, summing to get rho
         for (r = 0; r < q.n; r++) {
@@ -526,7 +538,7 @@ PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
         y = -2.0 + j * hy;
         for (i = info.xs; i < info.xs + info.xm; i++) {
             x = -2.0 + i * hx;
-            if (_NodeOnBdry(&info,i,j))
+            if (_NodeOnBdry(info,i,j))
                 au[j][i] = user->g_bdry(x,y,user);
         }
     }
@@ -545,7 +557,7 @@ PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
         for (j = info.ys; j < info.ys + info.ym; j++) {
             y = -2.0 + j * hy;
             for (i = info.xs; i < info.xs + info.xm; i++) {
-                if (_NodeOnBdry(&info,i,j))
+                if (_NodeOnBdry(info,i,j))
                     continue;
                 x = -2.0 + i * hx;
                 // i,j is owned interior node; do projected Newton iterations

@@ -13,8 +13,10 @@
   LDC info: creating and setting philow=chilow-chilow_coarse at level 1
   LDC info: phiupp=NULL is +infty at level 0
   LDC info: creating and setting philow=chilow (coarsest case) at level 0
+  -0.235760 <= initial iterate u <=  1.000000
 *NOT YET* SOLVING PROBLEM BY 1 V-CYCLES
-flops = 2.499e+03,  residual calls = 0,  PNGS calls = 0
+  -0.002833 <= residual F[u] <=  0.274846
+flops = 2.548e+04,  residual calls = 1,  PNGS calls = 0
 done on 13 x 13 grid:   error |u-uexact|_inf = 0.000e+00
   LDC info: destroying LDC at level 2
   LDC info: destroying LDC at level 1
