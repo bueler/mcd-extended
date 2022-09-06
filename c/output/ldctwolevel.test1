@@ -22,14 +22,14 @@ generating defect constraints for V-cycle
   LDC info: creating and setting philow=chilow (coarsest case) at level 0
 defect constraint ranges at level 0:
   [ chiupp=NULL is +infty ]
-  -1.437500 <= |chilow| <= -1.000000
+  -1.437500 <= chilow <= -1.000000
   [ phiupp=NULL is +infty ]
-  -1.437500 <= |philow| <= -1.000000
+  -1.437500 <= philow <= -1.000000
 defect constraint ranges at level 1:
   [ chiupp=NULL is +infty ]
-  -2.000000 <= |chilow| <= -1.000000
+  -2.000000 <= chilow <= -1.000000
   [ phiupp=NULL is +infty ]
-  -0.750000 <= |philow| <=  0.000000
+  -0.750000 <= philow <=  0.000000
 checking admissibility of constant vectors:
     z0=0     admissible up   defect? 1
     z0=-1.25 admissible up   defect? 0

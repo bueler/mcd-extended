@@ -5,7 +5,7 @@ PetscErrorCode VecPrintRange(Vec X, const char *name, const char *infcase) {
     if (X) {
         PetscCall(VecMin(X,NULL,&vmin));
         PetscCall(VecMax(X,NULL,&vmax));
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  %9.6f <= |%s| <= %9.6f\n",
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  %9.6f <= %s <= %9.6f\n",
                               vmin,name,vmax));
     } else
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  [ %s=NULL is %s ]\n",
