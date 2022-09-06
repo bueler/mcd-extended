@@ -9,17 +9,17 @@ obstaclesl: obstaclesl.o src/q1fem.o
 	-${CLINKER} -o obstaclesl obstaclesl.o src/q1fem.o ${PETSC_LIB}
 	${RM} obstaclesl.o src/q1fem.o
 
-nmcd: nmcd.o src/q1fem.o src/q1transfers.o src/ldc.o
-	-${CLINKER} -o nmcd nmcd.o src/q1fem.o src/q1transfers.o src/ldc.o ${PETSC_LIB}
-	${RM} nmcd.o src/q1fem.o src/q1transfers.o src/ldc.o
+nmcd: nmcd.o src/utilities.o src/q1fem.o src/q1transfers.o src/ldc.o
+	-${CLINKER} -o nmcd nmcd.o src/utilities.o src/q1fem.o src/q1transfers.o src/ldc.o ${PETSC_LIB}
+	${RM} nmcd.o src/utilities.o src/q1fem.o src/q1transfers.o src/ldc.o
 
-ldctwolevel: ldctwolevel.o src/q1transfers.o src/ldc.o
-	-${CLINKER} -o ldctwolevel ldctwolevel.o src/q1transfers.o src/ldc.o ${PETSC_LIB}
-	${RM} ldctwolevel.o src/q1transfers.o src/ldc.o
+ldctwolevel: ldctwolevel.o src/utilities.o src/q1transfers.o src/ldc.o
+	-${CLINKER} -o ldctwolevel ldctwolevel.o src/utilities.o src/q1transfers.o src/ldc.o ${PETSC_LIB}
+	${RM} ldctwolevel.o src/utilities.o src/q1transfers.o src/ldc.o
 
-transfers: transfers.o src/q1transfers.o src/ldc.o
-	-${CLINKER} -o transfers transfers.o src/q1transfers.o src/ldc.o ${PETSC_LIB}
-	${RM} transfers.o src/q1transfers.o src/ldc.o
+transfers: transfers.o src/utilities.o src/q1transfers.o src/ldc.o
+	-${CLINKER} -o transfers transfers.o src/utilities.o src/q1transfers.o src/ldc.o ${PETSC_LIB}
+	${RM} transfers.o src/utilities.o src/q1transfers.o src/ldc.o
 
 # testing
 runbratu_1:

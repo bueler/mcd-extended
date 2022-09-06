@@ -8,6 +8,7 @@ static char help[] =
 "nm_.  Compare obstaclesl.c.\n\n";
 
 #include <petsc.h>
+#include "src/utilities.h"
 #include "src/q1fem.h"
 #include "src/q1transfers.h"
 #include "src/ldc.h"
@@ -131,7 +132,7 @@ int main(int argc,char **argv) {
     PetscCall(DMCreateGlobalVector(ldc[levels-1].dal,&u));
     PetscCall(FormExact(&finfo,u_exact,u,&ctx));  // FIXME initializing with exact solution
     //PetscCall(VecSet(u,0.0));
-    PetscCall(LDCVecLessThanOrEqual(ldc[levels-1],gamlow,u,&admis));
+    PetscCall(VecLessThanOrEqual(ldc[levels-1].dal,gamlow,u,&admis));
     if (!admis) {
         SETERRQ(PETSC_COMM_SELF,3,"initial iterate u is not admissible\n");
     }

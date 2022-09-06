@@ -1,4 +1,5 @@
 #include <petsc.h>
+#include "utilities.h"
 #include "q1transfers.h"
 #include "ldc.h"
 
@@ -85,26 +86,13 @@ PetscErrorCode LDCRefine(LDC *coarse, LDC *fine) {
     return 0;
 }
 
-PetscErrorCode _VecPrintRange(Vec X, const char *name, const char *infcase) {
-    PetscReal vmin, vmax;
-    if (X) {
-        PetscCall(VecMin(X,NULL,&vmin));
-        PetscCall(VecMax(X,NULL,&vmax));
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  %9.6f <= |%s| <= %9.6f\n",
-                              vmin,name,vmax));
-    } else
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  [ %s=NULL is %s ]\n",
-                              name,infcase));
-    return 0;
-}
-
 PetscErrorCode LDCReportDCRanges(LDC ldc) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"defect constraint ranges at level %d:\n",
                           ldc._level));
-    PetscCall(_VecPrintRange(ldc.chiupp,"chiupp","+infty"));
-    PetscCall(_VecPrintRange(ldc.chilow,"chilow","-infty"));
-    PetscCall(_VecPrintRange(ldc.phiupp,"phiupp","+infty"));
-    PetscCall(_VecPrintRange(ldc.philow,"philow","-infty"));
+    PetscCall(VecPrintRange(ldc.chiupp,"chiupp","+infty"));
+    PetscCall(VecPrintRange(ldc.chilow,"chilow","-infty"));
+    PetscCall(VecPrintRange(ldc.phiupp,"phiupp","+infty"));
+    PetscCall(VecPrintRange(ldc.philow,"philow","-infty"));
     return 0;
 }
 
@@ -315,90 +303,28 @@ PetscErrorCode LDCGenerateDCsVCycle(LDC *finest) {
     return 0;
 }
 
-// compute complementarity residual Fhat from ordinary residual F, for bi-lateral constraints:
-//     Fhat_ij = F_ij         if  Lower_ij < u_ij < Upper_ij   (inactive constraints)
-//               min{F_ij,0}  if  u_ij <= Lower_ij
-//               max{F_ij,0}  if  u_ij >= Upper_ij
-// reference: page 24 of https://pages.cs.wisc.edu/~ferris/cs635/complementarity.pdf
-// FIXME consider an epsilon for active determination
-PetscErrorCode _CRFromResidual(DM da, Vec Upper, Vec Lower, Vec u, Vec F, Vec Fhat) {
-    DMDALocalInfo    info;
-    PetscInt         i, j;
-    const PetscReal  **au, **aUpper, **aLower, **aF;
-    PetscReal        **aFhat;
-    PetscCall(DMDAGetLocalInfo(da,&info));
-    PetscCall(DMDAVecGetArrayRead(da, Upper, &aUpper));
-    PetscCall(DMDAVecGetArrayRead(da, Lower, &aLower));
-    PetscCall(DMDAVecGetArrayRead(da, u, &au));
-    PetscCall(DMDAVecGetArrayRead(da, F, &aF));
-    PetscCall(DMDAVecGetArray(da, Fhat, &aFhat));
-    for (j = info.ys; j < info.ys + info.ym; j++) {
-        for (i = info.xs; i < info.xs + info.xm; i++) {
-            if (au[j][i] >= aUpper[j][i])       // active upper constraint
-                aFhat[j][i] = PetscMax(aF[j][i],0.0);
-            else if (au[j][i] <= aLower[j][i])  // active lower constraint
-                aFhat[j][i] = PetscMin(aF[j][i],0.0);
-            else
-                aFhat[j][i] = aF[j][i];         // constraints inactive
-        }
-    }
-    PetscCall(DMDAVecRestoreArrayRead(da, Upper, &aUpper));
-    PetscCall(DMDAVecRestoreArrayRead(da, Lower, &aLower));
-    PetscCall(DMDAVecRestoreArrayRead(da, u, &au));
-    PetscCall(DMDAVecRestoreArrayRead(da, F, &aF));
-    PetscCall(DMDAVecRestoreArray(da, Fhat, &aFhat));
-    return 0;
-}
-
 PetscErrorCode LDCUpDCsCRFromResidual(LDC *ldc, Vec z, Vec F, Vec Fhat) {
-    PetscCall(_CRFromResidual(ldc->dal,ldc->chiupp,ldc->chilow,z,F,Fhat));
+    PetscCall(CRFromResidual(ldc->dal,ldc->chiupp,ldc->chilow,z,F,Fhat));
     return 0;
 }
 
 PetscErrorCode LDCDownDCsCRFromResidual(LDC *ldc, Vec y, Vec F, Vec Fhat) {
-    PetscCall(_CRFromResidual(ldc->dal,ldc->phiupp,ldc->philow,y,F,Fhat));
-    return 0;
-}
-
-PetscErrorCode LDCVecLessThanOrEqual(LDC ldc, Vec u, Vec v, PetscBool *flg) {
-    PetscInt         i, j;
-    const PetscReal  **au, **av;
-    DMDALocalInfo info;
-    if ((!u) || (!v)) {
-        *flg = PETSC_TRUE;
-        return 0;
-    }
-    PetscCall(DMDAGetLocalInfo(ldc.dal,&info));
-    PetscCall(DMDAVecGetArrayRead(info.da, u, &au));
-    PetscCall(DMDAVecGetArrayRead(info.da, v, &av));
-    for (j=info.ys; j<info.ys+info.ym; j++) {
-        for (i=info.xs; i<info.xs+info.xm; i++) {
-            if (au[j][i] > av[j][i]) {
-                PetscCall(DMDAVecRestoreArrayRead(info.da, u, &au));
-                PetscCall(DMDAVecRestoreArrayRead(info.da, v, &av));
-                *flg = PETSC_FALSE;
-                return 0;
-            }
-        }
-    }
-    PetscCall(DMDAVecRestoreArrayRead(info.da, u, &au));
-    PetscCall(DMDAVecRestoreArrayRead(info.da, v, &av));
-    *flg = PETSC_TRUE;
+    PetscCall(CRFromResidual(ldc->dal,ldc->phiupp,ldc->philow,y,F,Fhat));
     return 0;
 }
 
 PetscErrorCode LDCCheckAdmissibleDownDefect(LDC ldc, Vec y, PetscBool *flg) {
-    PetscCall(LDCVecLessThanOrEqual(ldc,ldc.philow,y,flg));
+    PetscCall(VecLessThanOrEqual(ldc.dal,ldc.philow,y,flg));
     if (!(*flg))
         return 0;
-    PetscCall(LDCVecLessThanOrEqual(ldc,y,ldc.phiupp,flg));
+    PetscCall(VecLessThanOrEqual(ldc.dal,y,ldc.phiupp,flg));
     return 0;
 }
 
 PetscErrorCode LDCCheckAdmissibleUpDefect(LDC ldc, Vec z, PetscBool *flg) {
-    PetscCall(LDCVecLessThanOrEqual(ldc,ldc.chilow,z,flg));
+    PetscCall(VecLessThanOrEqual(ldc.dal,ldc.chilow,z,flg));
     if (!(*flg))
         return 0;
-    PetscCall(LDCVecLessThanOrEqual(ldc,z,ldc.chiupp,flg));
+    PetscCall(VecLessThanOrEqual(ldc.dal,z,ldc.chiupp,flg));
     return 0;
 }

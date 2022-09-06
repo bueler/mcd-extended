@@ -87,8 +87,6 @@ PetscErrorCode LDCFinestUpDCsFromFormulas(Vec w,
 // after finest up DCs are created, generate up and down DCs on all levels
 PetscErrorCode LDCGenerateDCsVCycle(LDC *finest);
 
-// UTILITIES
-
 // compute complementarity residual Fhat from ordinary residual F and
 // defect z, for up DCs
 PetscErrorCode LDCUpDCsCRFromResidual(LDC *ldc, Vec z, Vec F, Vec Fhat);
@@ -100,10 +98,6 @@ PetscErrorCode LDCDownDCsCRFromResidual(LDC *ldc, Vec y, Vec F, Vec Fhat);
 // create a Vec from a formula
 PetscErrorCode LDCVecFromFormula(LDC ldc, PetscReal (*ufcn)(PetscReal,PetscReal,void*),
                                  Vec u, void *ctx);
-
-// set flg=PETSC_TRUE if  u <= v  everywhere, otherwise flg=PETSC_FALSE
-// extended reals rule:  if u=NULL (-infty) or v=NULL (+infty) then flg=PETSC_TRUE
-PetscErrorCode LDCVecLessThanOrEqual(LDC ldc, Vec u, Vec v, PetscBool *flg);
 
 // for each of 4 DCs, report min and max
 PetscErrorCode LDCReportDCRanges(LDC ldc);
