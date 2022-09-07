@@ -44,8 +44,8 @@ typedef struct {
 } Q1GradRef;
 
 // following are global, NOT static
-PetscReal Q1chi[4][3][3];   // Q1chi[L][r][s]
-Q1GradRef Q1dchi[4][3][3];  // Q1dchi[L][r][s]
+extern PetscReal Q1chi[4][3][3];   // Q1chi[L][r][s]
+extern Q1GradRef Q1dchi[4][3][3];  // Q1dchi[L][r][s]
 
 // set up Q1 tools for quadpts (=1,2,3) quadrature points in each direction,
 // DMDA da, and solution on rectangle [ax,bx] x [ay,by]

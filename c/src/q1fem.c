@@ -1,6 +1,9 @@
 #include <petsc.h>
 #include "q1fem.h"
 
+PetscReal Q1chi[4][3][3] = {0};
+Q1GradRef Q1dchi[4][3][3] = {0};
+
 PetscReal _Q1_IP_CX = NAN,
           _Q1_IP_CY = NAN;
 
