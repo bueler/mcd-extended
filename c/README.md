@@ -53,10 +53,15 @@ Here is the FAS+NGS Q1 FEM run on the same grid as the highest-resolution FD run
 This did about 61000 flops per degree of freedom, illustrating optimal
 complexity, and about 61 processor-microseconds per degree of freedom.
 
-The following comparison of Newton-Krylov-multigrid runs, which do not use NGS,
-shows that in the above FD-versus-FEM comparison it is the Q1 FEM NGS that
-causes most of the performance hit.  This compares different resolutions but
-generating nearly the same accuracy; Q1 FEM is more accurate in L^inf:
+Consider Newton-Krylov-multigrid runs, which do not use NGS.  These use
+ `-snes_fd_color`, the default, and the FEM method has a 9 point stencil
+versus the 5 point stencil of FD, so FEM already does more residual calls
+on a given mesh.
+
+The following comparison different resolutions but they generate nearly
+the same accuracy; Q1 FEM is more accurate in L^inf.  The comparison shows
+that in the above FD-versus-FEM comparison for FAS-multigrid it is the
+Q1 FEM NGS that causes most of the performance hit.
 
     $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fd -lb_exact -da_grid_x 5 -da_grid_y 5 -snes_converged_reason -lb_counts -ksp_converged_reason -pc_type mg -snes_rtol 1.0e-12 -da_refine 11
       Linear solve converged due to CONVERGED_RTOL iterations 5
