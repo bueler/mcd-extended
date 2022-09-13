@@ -22,7 +22,8 @@ typedef struct {
   // Dirichlet boundary condition g(x,y)
   PetscReal (*g_bdry)(PetscReal x, PetscReal y, void *ctx);
   PetscReal lambda;
-  PetscInt  residualcount, ngscount, quadpts;
+  PetscInt  expcount, residualcount, ngscount,
+            quadpts;
 } BratuCtx;
 
 static PetscReal fg_zero(PetscReal x, PetscReal y, void *ctx) {
@@ -76,6 +77,7 @@ int main(int argc,char **argv) {
     bctx.f_rhs = &fg_zero;
     bctx.g_bdry = &fg_zero;
     bctx.lambda = 1.0;
+    bctx.expcount = 0;
     bctx.residualcount = 0;
     bctx.ngscount = 0;
     bctx.quadpts = 2;
@@ -153,8 +155,8 @@ int main(int argc,char **argv) {
         PetscCall(MPI_Allreduce(&lflops,&flops,1,MPIU_REAL,MPIU_SUM,
                                 PetscObjectComm((PetscObject)snes)));
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-                              "flops = %.3e,  residual calls = %d,  NGS calls = %d\n",
-                              flops,bctx.residualcount,bctx.ngscount));
+                              "flops = %.3e,  exps = %.3e,  residual calls = %d,  NGS calls = %d\n",
+                              flops,(PetscReal)(bctx.expcount),bctx.residualcount,bctx.ngscount));
     }
 
     PetscCall(SNESGetDM(snes,&da));
@@ -230,9 +232,11 @@ PetscErrorCode FormFunctionLocalFD(DMDALocalInfo *info, PetscReal **au,
                            + hxhy * (2.0 * au[j][i] - uu[ss] - uu[nn])
                            - darea * (user->lambda * PetscExpScalar(au[j][i])
                                       + user->f_rhs(i*hx,j*hy,user));
+                (user->expcount)++;
             }
         }
     }
+    // estimated FLOPS
     PetscCall(PetscLogFlops(14.0 * info->xm * info->ym));
     (user->residualcount)++;
     return 0;
@@ -247,6 +251,7 @@ PetscReal IntegrandRef(PetscInt L, const PetscReal uu[4], const PetscReal ff[4],
                      dchiL = Q1dchi[L][r][s];
 // FIXME next value does not depend on L, so reorder l,r,s loops so l is inner-most, and refactor to pull out this value as it depends on r,s only, so it is not recomputed 4 times
     const PetscReal  tmp = user->lambda * PetscExpScalar(Q1Eval(uu,r,s));
+    (user->expcount)++;
     return Q1GradInnerProd(du,dchiL)
            - (tmp + Q1Eval(ff,r,s)) * Q1chi[L][r][s];
 }
@@ -327,7 +332,7 @@ PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
             }
         }
     }
-    // FLOPS only counting quadrature-point residual computations:
+    // estimated FLOPS: only counting quadrature-point residual computations:
     //     4 + 40 = 44 flops per quadrature point
     //     q.n^2 quadrature points per element
     PetscCall(PetscLogFlops(44.0 * q.n * q.n * info->xm * info->ym));
@@ -381,6 +386,7 @@ PetscErrorCode NonlinearGSFD(SNES snes, Vec u, Vec b, void *ctx) {
                     uu = au[j][i];
                     for (k = 0; k < maxits; k++) {
                         tmp = user->lambda * PetscExpScalar(uu);
+                        (user->expcount)++;
                         phi =   hyhx * (2.0 * uu - au[j][i-1] - au[j][i+1])
                               + hxhy * (2.0 * uu - au[j-1][i] - au[j+1][i])
                               - darea * (tmp + user->f_rhs(i*hx,j*hy,user))
@@ -456,6 +462,7 @@ PetscErrorCode rhoIntegrandRef(PetscInt L,
     *rho = Q1GradInnerProd(Q1GradAXPY(c,dchiL,du),dchiL)
            - (phiL + Q1Eval(ff,r,s)) * chiL;
     *drhodc = Q1GradInnerProd(dchiL,dchiL) - phiL * chiL;
+    (user->expcount)++;
     return 0;
 }
 
@@ -509,8 +516,8 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
             }
         }
     }
-    // FLOPS per quadrature point in the 4 elements: 6 + 53 = 59
-    PetscCall(PetscLogFlops(59.0 * q.n * q.n * 4.0));
+    // estimated FLOPS per quadrature point in the 4 elements: 6 + 53 = 59
+    PetscCall(PetscLogFlops(59.0 * 4.0 * q.n * q.n));
     return 0;
 }
 

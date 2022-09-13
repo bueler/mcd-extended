@@ -1,3 +1,3 @@
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-flops = 8.033e+05,  residual calls = 10,  NGS calls = 12
+flops = 8.033e+05,  exps = 1.421e+04,  residual calls = 10,  NGS calls = 12
 done on 5 x 5 grid:   error |u-uexact|_inf = 3.475e-04
