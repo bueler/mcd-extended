@@ -1,9 +1,9 @@
 static char help[] =
-"Solve nonlinear Liouville-Bratu equation\n"
-"  - nabla^2 u - lambda e^u = f(x,y)\n"
-"on the 2D square (0,1)^2, subject to Dirichlet boundary conditions u=g.\n"
-"Grid is structured and equally-spaced.  Option prefix is lb_.\n"
-"Choose either method:\n"
+"Solve nonlinear Liouville-Bratu, a semilinear elliptic equation\n"
+"  - nabla^2 u - R(u) = f(x,y)\n"
+"on the 2D square (0,1)^2, subject to Dirichlet boundary conditions u=g,\n"
+"where R(u) = lambda e^u.  Grid is structured and equally-spaced.\n"
+"Option prefix is lb_.  Choose either method:\n"
 "  * finite differences (-lb_fd)\n"
 "  * Q1 finite elements (-lb_fem)\n"
 "For f=0 and g=0 the critical value occurs about at lambda = 6.808.\n"
@@ -17,6 +17,10 @@ static char help[] =
 #include "src/q1fem.h"
 
 typedef struct {
+  // nonlinear reaction R(u)
+  PetscReal (*R_fcn)(PetscReal u, void *ctx);
+  // nonlinear reaction derivative dRdu(u)
+  PetscReal (*dRdu_fcn)(PetscReal u, void *ctx);
   // right-hand side f(x,y)
   PetscReal (*f_rhs)(PetscReal x, PetscReal y, void *ctx);
   // Dirichlet boundary condition g(x,y)
@@ -25,6 +29,12 @@ typedef struct {
   PetscInt  expcount, residualcount, ngscount,
             quadpts;
 } BratuCtx;
+
+static PetscReal R_bratu(PetscReal u, void *ctx) {
+    BratuCtx *user = (BratuCtx*)ctx;
+    (user->expcount)++;
+    return user->lambda * PetscExpScalar(u);
+}
 
 static PetscReal fg_zero(PetscReal x, PetscReal y, void *ctx) {
     return 0.0;
@@ -40,7 +50,7 @@ static PetscReal f_mms(PetscReal x, PetscReal y, void *ctx) {
     PetscReal xx = x * x,  yy = y * y;
     return 2.0 * (1.0 - 6.0 * xx) * yy * (1.0 - yy)
            + 2.0 * (1.0 - 6.0 * yy) * xx * (1.0 - xx)
-           - user->lambda * PetscExpScalar(u_mms(x,y,ctx));
+           - user->R_fcn(u_mms(x,y,ctx),user);
 }
 
 static PetscReal g_liouville(PetscReal x, PetscReal y, void *ctx) {
@@ -74,6 +84,8 @@ int main(int argc,char **argv) {
     PetscReal      errinf;
 
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+    bctx.R_fcn = &R_bratu;
+    bctx.dRdu_fcn = &R_bratu;
     bctx.f_rhs = &fg_zero;
     bctx.g_bdry = &fg_zero;
     bctx.lambda = 1.0;
@@ -230,9 +242,8 @@ PetscErrorCode FormFunctionLocalFD(DMDALocalInfo *info, PetscReal **au,
                 uu[ww] = NodeOnBdry(info,i-1,j) ? user->g_bdry((i-1)*hx,j*hy,user) : au[j][i-1];
                 FF[j][i] =   hyhx * (2.0 * au[j][i] - uu[ww] - uu[ee])
                            + hxhy * (2.0 * au[j][i] - uu[ss] - uu[nn])
-                           - darea * (user->lambda * PetscExpScalar(au[j][i])
+                           - darea * (user->R_fcn(au[j][i],user)
                                       + user->f_rhs(i*hx,j*hy,user));
-                (user->expcount)++;
             }
         }
     }
@@ -247,13 +258,14 @@ PetscErrorCode FormFunctionLocalFD(DMDALocalInfo *info, PetscReal **au,
 // FLOPS: 5 + (16 + 7 + 5 + 7) = 40
 PetscReal IntegrandRef(PetscInt L, const PetscReal uu[4], const PetscReal ff[4],
                        PetscInt r, PetscInt s, BratuCtx *user) {
+//FIXME
+//PetscReal IntegrandRef(PetscInt L, const PetscReal uu[4], const PetscReal ff[4],
+//                       const PetscReal expu, PetscInt r, PetscInt s, BratuCtx *user) {
     const Q1GradRef  du    = Q1DEval(uu,r,s),
                      dchiL = Q1dchi[L][r][s];
 // FIXME next value does not depend on L, so reorder l,r,s loops so l is inner-most, and refactor to pull out this value as it depends on r,s only, so it is not recomputed 4 times
-    const PetscReal  tmp = user->lambda * PetscExpScalar(Q1Eval(uu,r,s));
-    (user->expcount)++;
     return Q1GradInnerProd(du,dchiL)
-           - (tmp + Q1Eval(ff,r,s)) * Q1chi[L][r][s];
+           - (user->R_fcn(Q1Eval(uu,r,s),user) + Q1Eval(ff,r,s)) * Q1chi[L][r][s];
 }
 
 // using Q1 finite elements, compute F(u), the residual of the discretized
@@ -346,7 +358,7 @@ PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
 PetscErrorCode NonlinearGSFD(SNES snes, Vec u, Vec b, void *ctx) {
     PetscInt       i, j, k, maxits, totalits=0, sweeps, l;
     PetscReal      atol, rtol, stol, hx, hy, darea, hxhy, hyhx,
-                   **au, **ab, bij, uu, tmp, phi0, phi, dphidu, s;
+                   **au, **ab, bij, uu, Ru, dRdu, phi0, phi, dphidu, s;
     DM             da;
     DMDALocalInfo  info;
     Vec            uloc;
@@ -382,18 +394,19 @@ PetscErrorCode NonlinearGSFD(SNES snes, Vec u, Vec b, void *ctx) {
                     // do pointwise Newton iterations on scalar function
                     //   phi(u) =   hyhx * (2 u - au[j][i-1] - au[j][i+1])
                     //            + hxhy * (2 u - au[j-1][i] - au[j+1][i])
-                    //            - darea * lambda * e^u - bij
+                    //            - darea * (R(u) + f(x,y)) - bij
                     uu = au[j][i];
                     for (k = 0; k < maxits; k++) {
-                        tmp = user->lambda * PetscExpScalar(uu);
-                        (user->expcount)++;
+                        Ru = user->R_fcn(uu,user);
+                        dRdu = Ru;  // NOTE: this is special optimization for Bratu;
+                                    //       generally apply user->dRdu_fcn()
                         phi =   hyhx * (2.0 * uu - au[j][i-1] - au[j][i+1])
                               + hxhy * (2.0 * uu - au[j-1][i] - au[j+1][i])
-                              - darea * (tmp + user->f_rhs(i*hx,j*hy,user))
+                              - darea * (Ru + user->f_rhs(i*hx,j*hy,user))
                               - bij;
                         if (k == 0)
                              phi0 = phi;
-                        dphidu = 2.0 * (hyhx + hxhy) - darea * tmp;
+                        dphidu = 2.0 * (hyhx + hxhy) - darea * dRdu;
                         s = - phi / dphidu;     // Newton step
                         uu += s;
                         totalits++;
@@ -458,11 +471,12 @@ PetscErrorCode rhoIntegrandRef(PetscInt L,
                     dchiL  = Q1dchi[L][r][s];
     const PetscReal chiL   = Q1chi[L][r][s],
                     ushift = Q1Eval(uu,r,s) + c * chiL,
-                    phiL   = user->lambda * PetscExpScalar(ushift);
+                    RuL    = user->R_fcn(ushift,user);
     *rho = Q1GradInnerProd(Q1GradAXPY(c,dchiL,du),dchiL)
-           - (phiL + Q1Eval(ff,r,s)) * chiL;
-    *drhodc = Q1GradInnerProd(dchiL,dchiL) - phiL * chiL;
-    (user->expcount)++;
+           - (RuL + Q1Eval(ff,r,s)) * chiL;
+    // NOTE: next line uses special optimization for Bratu
+    //       generally apply user->dRdu_fcn()
+    *drhodc = Q1GradInnerProd(dchiL,dchiL) - RuL * chiL;
     return 0;
 }
 
