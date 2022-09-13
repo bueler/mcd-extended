@@ -11,6 +11,8 @@ static char help[] =
 "-lb_exact), or from method of manufactured solutions (arbitrary lambda;\n"
 "-lb_mms).\n\n";
 
+// FIXME write njacobi()
+
 #include <petsc.h>
 #include "src/q1fem.h"
 
@@ -243,6 +245,7 @@ PetscReal IntegrandRef(PetscInt L, const PetscReal uu[4], const PetscReal ff[4],
                        PetscInt r, PetscInt s, BratuCtx *user) {
     const Q1GradRef  du    = Q1DEval(uu,r,s),
                      dchiL = Q1dchi[L][r][s];
+// FIXME next value does not depend on L, so reorder l,r,s loops so l is inner-most, and refactor to pull out this value as it depends on r,s only, so it is not recomputed 4 times
     const PetscReal  tmp = user->lambda * PetscExpScalar(Q1Eval(uu,r,s));
     return Q1GradInnerProd(du,dchiL)
            - (tmp + Q1Eval(ff,r,s)) * Q1chi[L][r][s];
@@ -454,7 +457,6 @@ PetscErrorCode rhoIntegrandRef(PetscInt L,
            - (phiL + Q1Eval(ff,r,s)) * chiL;
     *drhodc = Q1GradInnerProd(dchiL,dchiL) - phiL * chiL;
     return 0;
-
 }
 
 // using Q1 finite elements, for owned, interior nodes i,j, evaluate
