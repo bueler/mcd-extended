@@ -42,6 +42,21 @@ freedom.
     done on 8193 x 8193 grid:   error |u-uexact|_inf = 8.366e-11
     real 178.62
 
+One can use FAS with nonlinear Richardson, thereby avoiding the calling NGS.  However, this requires tuning, here through linesearch and its initial damping parameter `-fas_levels_snes_linesearch_damping`.  For clarity we solve the coarse problem quite exactly with Newton, and we do 4 `nrichardson` iterations as the smoother.  Note these are FAS V-cycles:
+
+    $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fem -da_grid_x 5 -da_grid_y 5 -lb_exact -snes_converged_reason -lb_counts -snes_type fas -fas_levels_snes_type nrichardson -fas_levels_snes_linesearch_type l2 -fas_levels_snes_linesearch_damping 1.0 -fas_levels_snes_max_it 4 -fas_coarse_snes_type newtonls -da_refine 10 -fas_coarse_snes_converged_reason
+                          Nonlinear fas_coarse_ solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+                          Nonlinear fas_coarse_ solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+                          Nonlinear fas_coarse_ solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+                          Nonlinear fas_coarse_ solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+                          Nonlinear fas_coarse_ solve converged due to CONVERGED_SNORM_RELATIVE iterations 1
+    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
+    flops = 8.607e+11,  exps = 5.697e+08,  residual calls = 1411,  NGS calls = 0
+    done on 4097 x 4097 grid:   error |u-uexact|_inf = 3.608e-08
+    real 37.63
+
+Apparently `-snes_fas_type full` in the above seems to be buggy and produces NaNs.
+
 Now consider Newton-Krylov-multigrid runs, which do not use NGS.  These use
  `-snes_fd_color`, the default, and the FEM method has a 9 point stencil
 versus the 5 point stencil of FD, so FEM already does more residual calls
