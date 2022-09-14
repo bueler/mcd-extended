@@ -18,21 +18,21 @@ static char help[] =
 
 typedef struct {
   // nonlinear reaction R(u)
-  PetscReal (*R_fcn)(PetscReal u, void *ctx);
+  PetscReal       (*R_fcn)(PetscReal u, void *ctx);
   // nonlinear reaction derivative dRdu(u)
-  PetscReal (*dRdu_fcn)(PetscReal u, void *ctx);
+  PetscReal       (*dRdu_fcn)(PetscReal u, void *ctx);
   // right-hand side f(x,y)
-  PetscReal (*f_rhs)(PetscReal x, PetscReal y, void *ctx);
+  PetscReal       (*f_rhs)(PetscReal x, PetscReal y, void *ctx);
   // Dirichlet boundary condition g(x,y)
-  PetscReal (*g_bdry)(PetscReal x, PetscReal y, void *ctx);
-  PetscReal lambda;
-  PetscInt  expcount, residualcount, ngscount,
-            quadpts;
+  PetscReal       (*g_bdry)(PetscReal x, PetscReal y, void *ctx);
+  PetscReal       lambda;
+  PetscInt        residualcount, ngscount, quadpts;
+  PetscLogDouble  expcount;  // same as PetscLogFlops(); exact integers up to 2^53=10^16
 } BratuCtx;
 
 static PetscReal R_bratu(PetscReal u, void *ctx) {
     BratuCtx *user = (BratuCtx*)ctx;
-    (user->expcount)++;
+    user->expcount += 1.0;
     return user->lambda * PetscExpScalar(u);
 }
 
@@ -255,22 +255,16 @@ PetscErrorCode FormFunctionLocalFD(DMDALocalInfo *info, PetscReal **au,
 
 // using Q1 finite elements, evaluate the integrand of the residual on
 // the reference element
-// FLOPS: 5 + (16 + 7 + 5 + 7) = 40
-PetscReal IntegrandRef(PetscInt L, const PetscReal uu[4], const PetscReal ff[4],
-                       PetscInt r, PetscInt s, BratuCtx *user) {
-//FIXME
-//PetscReal IntegrandRef(PetscInt L, const PetscReal uu[4], const PetscReal ff[4],
-//                       const PetscReal expu, PetscInt r, PetscInt s, BratuCtx *user) {
-    const Q1GradRef  du    = Q1DEval(uu,r,s),
-                     dchiL = Q1dchi[L][r][s];
-// FIXME next value does not depend on L, so reorder l,r,s loops so l is inner-most, and refactor to pull out this value as it depends on r,s only, so it is not recomputed 4 times
-    return Q1GradInnerProd(du,dchiL)
-           - (user->R_fcn(Q1Eval(uu,r,s),user) + Q1Eval(ff,r,s)) * Q1chi[L][r][s];
+// FLOPS: 3 + (5) = 8
+PetscReal IntegrandRef(PetscInt L, PetscInt r, PetscInt s,
+                       const PetscReal Ru, const Q1GradRef du,
+                       const PetscReal f, BratuCtx *user) {
+    return Q1GradInnerProd(du,Q1dchi[L][r][s]) - (Ru + f) * Q1chi[L][r][s];
 }
 
 // using Q1 finite elements, compute F(u), the residual of the discretized
 // PDE on the given grid,
-//     F(u)[v] = int_Omega grad u . grad v - lambda e^u v - f v
+//     F(u)[v] = int_Omega grad u . grad v - R(u) v - f v
 // this method computes the vector
 //     F_ij = F(u)[psi_ij]
 // where i,j is a node and psi_ij is the hat function there
@@ -285,7 +279,8 @@ PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
                     hy = 1.0 / (PetscReal)(info->my - 1),
                     detj = 0.25 * hx * hy;
     PetscInt   i, j, l, PP, QQ, r, s;
-    PetscReal  uu[4], ff[4];
+    PetscReal  uu[4], ff[4], Rurs, frs, crs;
+    Q1GradRef  durs;
 
     // set up Q1 FEM tools for this grid
     PetscCall(Q1Setup(user->quadpts,info->da,0.0,1.0,0.0,1.0));
@@ -323,31 +318,33 @@ PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
                     ? user->g_bdry((i-1)*hx,(j-1)*hy,user) : au[j-1][i-1];
             uu[3] = NodeOnBdry(info,i,  j-1)
                     ? user->g_bdry(i*hx,(j-1)*hy,user)     : au[j-1][i];
-            // loop over corners of element i,j; l is local (elementwise)
-            // index of the corner and PP,QQ are global indices of same corner
-            for (l = 0; l < 4; l++) {
-                PP = i + li[l];
-                QQ = j + lj[l];
-                // only update residual if we own node and it is not boundary
-                if (PP >= info->xs && PP < info->xs + info->xm
-                    && QQ >= info->ys && QQ < info->ys + info->ym
-                    && !NodeOnBdry(info,PP,QQ)) {
-                    // loop over quadrature points to contribute to residual
-                    // for this l corner of this i,j element
-                    for (r = 0; r < q.n; r++) {
-                        for (s = 0; s < q.n; s++) {
-                            FF[QQ][PP] += detj * q.w[r] * q.w[s]
-                                          * IntegrandRef(l,uu,ff,r,s,user);
-                        }
+            // loop over quadrature points of this i,j element
+            for (r = 0; r < q.n; r++) {
+                for (s = 0; s < q.n; s++) {
+                    // compute quantities that depend on r,s but not l (= test function)
+                    Rurs = user->R_fcn(Q1Eval(uu,r,s),user);
+                    durs = Q1DEval(uu,r,s);
+                    frs = Q1Eval(ff,r,s);
+                    crs = detj * q.w[r] * q.w[s];
+                    // loop over corners of element; l is local (elementwise)
+                    // index of the corner and PP,QQ are global indices of same corner
+                    for (l = 0; l < 4; l++) {
+                        PP = i + li[l];
+                        QQ = j + lj[l];
+                        // only update residual if we own node and it is not boundary
+                        if (PP >= info->xs && PP < info->xs + info->xm
+                                && QQ >= info->ys && QQ < info->ys + info->ym
+                                && !NodeOnBdry(info,PP,QQ))
+                            FF[QQ][PP] += crs * IntegrandRef(l,r,s,Rurs,durs,frs,user);
                     }
                 }
             }
         }
     }
-    // estimated FLOPS: only counting quadrature-point residual computations:
-    //     4 + 40 = 44 flops per quadrature point
+    // estimated FLOPS: only counting quadrature-point float computations:
     //     q.n^2 quadrature points per element
-    PetscCall(PetscLogFlops(44.0 * q.n * q.n * info->xm * info->ym));
+    //     2 + 7 + 16 + 7 + 2 + 4 * (2 + 8) = 74 flops per quadrature point
+    PetscCall(PetscLogFlops(74.0 * q.n * q.n * (info->xm + 1.0) * (info->ym + 1.0)));
     (user->residualcount)++;
     return 0;
 }

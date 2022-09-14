@@ -19,9 +19,9 @@ microseconds per degree of freedom:
 
     $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fd -da_grid_x 5 -da_grid_y 5 -lb_exact -snes_rtol 1.0e-12 -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 2 -fas_coarse_snes_max_it 4 -da_refine 12
     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
-    flops = 2.152e+11,  residual calls = 855,  NGS calls = 428
+    flops = 2.152e+11,  exps = 5.143e+08,  residual calls = 855,  NGS calls = 428
     done on 16385 x 16385 grid:   error |u-uexact|_inf = 7.761e-11
-    real 32.66
+    real 31.99
 
 This uses 70% of the 128 Gb memory of my Thelio massive machine.  Note the
 tight -snes_rtol tolerance, that NGS is used for the coarse solve, and that
@@ -38,49 +38,38 @@ freedom.
 
     $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fem -da_grid_x 5 -da_grid_y 5 -lb_exact -snes_rtol 1.0e-12 -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 2 -fas_coarse_snes_max_it 4 -da_refine 11
     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
-    flops = 4.173e+12,  residual calls = 1479,  NGS calls = 753
+    flops = 4.502e+12,  exps = 3.512e+09,  residual calls = 1479,  NGS calls = 753
     done on 8193 x 8193 grid:   error |u-uexact|_inf = 8.366e-11
-    real 207.49
+    real 178.62
 
-Here is the FAS+NGS Q1 FEM run on the same grid as the highest-resolution FD run above:
-
-    timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fem -da_grid_x 5 -da_grid_y 5 -lb_exact -snes_rtol 1.0e-12 -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 2 -fas_coarse_snes_max_it 4 -da_refine 12
-    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
-    flops = 1.629e+13,  residual calls = 1733,  NGS calls = 868
-    done on 16385 x 16385 grid:   error |u-uexact|_inf = 2.091e-11
-    real 824.33
-
-This did about 61000 flops per degree of freedom, illustrating optimal
-complexity, and about 61 processor-microseconds per degree of freedom.
-
-Consider Newton-Krylov-multigrid runs, which do not use NGS.  These use
+Now consider Newton-Krylov-multigrid runs, which do not use NGS.  These use
  `-snes_fd_color`, the default, and the FEM method has a 9 point stencil
 versus the 5 point stencil of FD, so FEM already does more residual calls
 on a given mesh.
 
-The following comparison different resolutions but they generate nearly
-the same accuracy; Q1 FEM is more accurate in L^inf.  The comparison shows
+The following comparison uses different resolutions but they give nearly
+the same accuracy as Q1 FEM is more accurate in L^inf.  The comparison shows
 that in the above FD-versus-FEM comparison for FAS-multigrid it is the
 Q1 FEM NGS that causes most of the performance hit.
 
-    $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fd -lb_exact -da_grid_x 5 -da_grid_y 5 -snes_converged_reason -lb_counts -ksp_converged_reason -pc_type mg -snes_rtol 1.0e-12 -da_refine 11
-      Linear solve converged due to CONVERGED_RTOL iterations 5
+    $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fd -lb_exact -da_grid_x 5 -da_grid_y 5 -snes_converged_reason -lb_counts -ksp_converged_reason -pc_type mg -snes_rtol 1.0e-12 -da_refine 10
+      Linear solve converged due to CONVERGED_RTOL iterations 6
       Linear solve converged due to CONVERGED_RTOL iterations 4
       Linear solve converged due to CONVERGED_RTOL iterations 6
       Linear solve converged due to CONVERGED_RTOL iterations 8
     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
-    flops = 5.087e+11,  residual calls = 293,  NGS calls = 0
-    done on 8193 x 8193 grid:   error |u-uexact|_inf = 3.104e-10
-    real 91.04
-    $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fem -lb_exact -da_grid_x 5 -da_grid_y 5 -snes_converged_reason -lb_counts -ksp_converged_reason -pc_type mg -snes_rtol 1.0e-12 -da_refine 10
+    flops = 1.301e+11,  exps = 3.102e+07,  residual calls = 269,  NGS calls = 0
+    done on 4097 x 4097 grid:   error |u-uexact|_inf = 1.242e-09
+    real 22.41
+    $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fem -lb_exact -da_grid_x 5 -da_grid_y 5 -snes_converged_reason -lb_counts -ksp_converged_reason -pc_type mg -snes_rtol 1.0e-12 -da_refine 9
       Linear solve converged due to CONVERGED_RTOL iterations 5
       Linear solve converged due to CONVERGED_RTOL iterations 3
       Linear solve converged due to CONVERGED_RTOL iterations 6
       Linear solve converged due to CONVERGED_RTOL iterations 8
     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
-    flops = 3.444e+11,  residual calls = 445,  NGS calls = 0
-    done on 4097 x 4097 grid:   error |u-uexact|_inf = 3.346e-10
-    real 53.79
+    flops = 1.160e+11,  exps = 4.914e+07,  residual calls = 405,  NGS calls = 0
+    done on 2049 x 2049 grid:   error |u-uexact|_inf = 1.339e-09
+    real 10.77
 
 The number of quadrature points is important in the performance of
 `bratu.c -lb_fem`.  With `-lb_quadpts 1` there seem to be convergence
