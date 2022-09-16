@@ -79,7 +79,7 @@ int main(int argc,char **argv) {
     BratuCtx       bctx;
     DMDALocalInfo  info;
     PetscBool      exact = PETSC_FALSE, mms = PETSC_FALSE, counts = PETSC_FALSE,
-                   fd = PETSC_FALSE, fem = PETSC_FALSE;
+                   fd = PETSC_FALSE, fem = PETSC_FALSE, ngsisnjac;
     PetscLogDouble lflops, flops;
     PetscReal      errinf;
 
@@ -104,6 +104,8 @@ int main(int argc,char **argv) {
                             "bratu.c",bctx.lambda,&(bctx.lambda),NULL));
     PetscCall(PetscOptionsBool("-mms","use MMS exact solution",
                             "bratu.c",mms,&mms,NULL));
+    PetscCall(PetscOptionsBool("-ngs_is_njac","use nonlinear Jacobi iteration (njac) as the NGS",
+                            "bratu.c",ngsisnjac,&ngsisnjac,NULL));
     // WARNING: coarse problems are badly solved with -lb_quadpts 1, so avoid in MG
     PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only; for Q1 FEM case only)",
                             "bratu.c",bctx.quadpts,&(bctx.quadpts),NULL));
@@ -144,6 +146,7 @@ int main(int argc,char **argv) {
     PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
     PetscCall(SNESSetApplicationContext(snes,&bctx));
     PetscCall(SNESSetDM(snes,da));
+    // FIXME set NGS according to -lb_ngs_is_njac
     if (fd) {
         PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,
                    (DMDASNESFunction)FormFunctionLocalFD,&bctx));
