@@ -74,7 +74,8 @@ extern PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo*, PetscReal **,
 
 extern PetscErrorCode NGSFD(SNES, Vec, Vec, void*);
 extern PetscErrorCode NJacFD(SNES, Vec, Vec, void*);
-extern PetscErrorCode NGSFEM(SNES, Vec, Vec, void*);   // FIXME NJacFEM() too
+extern PetscErrorCode NGSFEM(SNES, Vec, Vec, void*);
+extern PetscErrorCode NJacFEM(SNES, Vec, Vec, void*);
 
 int main(int argc,char **argv) {
     DM             da;
@@ -163,9 +164,8 @@ int main(int argc,char **argv) {
     } else {
         PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,
                    (DMDASNESFunction)FormFunctionLocalFEM,&bctx));
-        // FIXME njac
         if (njac)
-            SETERRQ(PETSC_COMM_SELF,99,"nonlinear Jacobi not implemented for FEM\n");
+            PetscCall(SNESSetNGS(snes,NJacFEM,&bctx));
         else
             PetscCall(SNESSetNGS(snes,NGSFEM,&bctx));
     }
@@ -666,5 +666,14 @@ PetscErrorCode NGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
     // add flops for Newton iteration arithmetic; note rhoFcn() already counts flops
     PetscCall(PetscLogFlops(6 * totalits));
     (user->ngscount)++;
+    return 0;
+}
+
+PetscErrorCode NJacFEM(SNES snes, Vec u, Vec b, void *ctx) {
+    //FIXME totally refactor NGSFEM() to do one sweep over all elements and compute
+    // rho and drhodc for all points, then take the one Newton step of weighted
+    // nonlinear jacobi; only functional when SNESNGSGetTolerances() returns
+    // maxits=1
+    SETERRQ(PETSC_COMM_SELF,99,"nonlinear Jacobi not implemented for FEM\n");
     return 0;
 }
