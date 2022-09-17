@@ -2,16 +2,14 @@ static char help[] =
 "Solve nonlinear Liouville-Bratu, a semilinear elliptic equation\n"
 "  - nabla^2 u - R(u) = f(x,y)\n"
 "on the 2D square (0,1)^2, subject to Dirichlet boundary conditions u=g,\n"
-"where R(u) = lambda e^u.  Grid is structured and equally-spaced.\n"
-"Option prefix is lb_.  Choose either method:\n"
+"with reaction term R(u) = lambda e^u.  Grid is structured and equally-spaced.\n"
+"Option prefix is lb_.  Choose either discretization method:\n"
 "  * finite differences (-lb_fd)\n"
 "  * Q1 finite elements (-lb_fem)\n"
 "For f=0 and g=0 the critical value occurs about at lambda = 6.808.\n"
 "Optional exact solutions are from Liouville (1853) (for lambda=1.0;\n"
 "-lb_exact), or from method of manufactured solutions (arbitrary lambda;\n"
 "-lb_mms).\n\n";
-
-// FIXME write _SmootherFEM(), NGSFEM(), NJacFEM()
 
 #include <petsc.h>
 #include "src/q1fem.h"
@@ -123,10 +121,10 @@ int main(int argc,char **argv) {
 
     // options consistency checking
     if (fd && fem) {
-        SETERRQ(PETSC_COMM_SELF,1,"invalid option combination -lb_fd -lb_fem; choose one\n");
+        SETERRQ(PETSC_COMM_SELF,1,"invalid option combination -lb_fd -lb_fem; choose one!\n");
     }
     if (!fd && !fem) {
-        SETERRQ(PETSC_COMM_SELF,2,"invalid option combination; choose either -lb_fd or -lb_fem\n");
+        SETERRQ(PETSC_COMM_SELF,2,"invalid option combination; choose at least one of -lb_fd or -lb_fem\n");
     }
     if (exact && mms) {
         SETERRQ(PETSC_COMM_SELF,3,"invalid option combination -lb_exact -lb_mms; choose one or neither\n");
@@ -135,10 +133,10 @@ int main(int argc,char **argv) {
         if (bctx.lambda != 1.0) {
             SETERRQ(PETSC_COMM_SELF,4,"Liouville exact solution only implemented for lambda = 1.0\n");
         }
-        bctx.g_bdry = &g_liouville;  // and zero for f_rhs()
+        bctx.g_bdry = &g_liouville;  // and keep zero for f_rhs()
     }
     if (mms)
-        bctx.f_rhs = &f_mms;  // and zero for g_bdry()
+        bctx.f_rhs = &f_mms;  // and keep zero for g_bdry()
     if (bctx.quadpts < 1 || bctx.quadpts > 3) {
         SETERRQ(PETSC_COMM_SELF,5,"quadrature points n=1,2,3 only");
     }
@@ -157,17 +155,11 @@ int main(int argc,char **argv) {
     if (fd) {
         PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,
                    (DMDASNESFunction)FormFunctionLocalFD,&bctx));
-        if (njac)
-            PetscCall(SNESSetNGS(snes,NJacFD,&bctx));
-        else
-            PetscCall(SNESSetNGS(snes,NGSFD,&bctx));
+        PetscCall(SNESSetNGS(snes,njac ? NJacFD : NGSFD,&bctx));
     } else {
         PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,
                    (DMDASNESFunction)FormFunctionLocalFEM,&bctx));
-        if (njac)
-            PetscCall(SNESSetNGS(snes,NJacFEM,&bctx));
-        else
-            PetscCall(SNESSetNGS(snes,NGSFEM,&bctx));
+        PetscCall(SNESSetNGS(snes,njac ? NJacFEM : NGSFEM,&bctx));
     }
     PetscCall(SNESSetFromOptions(snes));
 
@@ -189,6 +181,8 @@ int main(int argc,char **argv) {
 
     PetscCall(SNESGetDM(snes,&da));
     PetscCall(DMDAGetLocalInfo(da,&info));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"done on %d x %d grid",
+                          info.mx,info.my));
     if (exact || mms) {
         PetscCall(SNESGetSolution(snes,&u));  // SNES owns u; we do not destroy it
         PetscCall(DMCreateGlobalVector(da,&uexact));
@@ -200,12 +194,9 @@ int main(int argc,char **argv) {
         PetscCall(VecDestroy(&uexact));
         PetscCall(VecNorm(u,NORM_INFINITY,&errinf));
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-                              "done on %d x %d grid:   error |u-uexact|_inf = %.3e\n",
-                              info.mx,info.my,errinf));
-    } else {
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"done on %d x %d grid ...\n",
-                              info.mx,info.my));
-    }
+                              ":   error |u-uexact|_inf = %.3e\n",errinf));
+    } else
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n"));
 
     PetscCall(SNESDestroy(&snes));
     PetscCall(PetscFinalize());
@@ -231,7 +222,7 @@ PetscErrorCode FormExact(PetscReal (*ufcn)(PetscReal,PetscReal,void*),
 }
 
 PetscBool NodeOnBdry(DMDALocalInfo *info, PetscInt i, PetscInt j) {
-    return ((i == 0 || i == info->mx-1 || j == 0 || j == info->my-1));
+    return (i == 0 || i == info->mx-1 || j == 0 || j == info->my-1);
 }
 
 // compute F(u), the residual of the discretized PDE on the given grid,
@@ -270,7 +261,7 @@ PetscErrorCode FormFunctionLocalFD(DMDALocalInfo *info, PetscReal **au,
 }
 
 // using Q1 finite elements, evaluate the integrand of the residual on
-// the reference element
+// the reference element; L for vertex, r,s for quadrature point
 // FLOPS: 3 + (5) = 8
 PetscReal IntegrandRef(PetscInt L, PetscInt r, PetscInt s,
                        const PetscReal Ru, const Q1GradRef du,
@@ -279,14 +270,13 @@ PetscReal IntegrandRef(PetscInt L, PetscInt r, PetscInt s,
 }
 
 // using Q1 finite elements, compute F(u), the residual of the discretized
-// PDE on the given grid,
+// PDE on the given grid:
 //     F(u)[v] = int_Omega grad u . grad v - R(u) v - f v
-// this method computes the vector
+// this method computes the Vec local pointer FF:
 //     F_ij = F(u)[psi_ij]
-// where i,j is a node and psi_ij is the hat function there
-// note that at boundary nodes we have
+// where i,j is a node and psi_ij is the corresponding hat function;
+// at boundary nodes:
 //     F_ij = u_ij - g(x_i,y_j)
-// where g(x,y) is the boundary value
 PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
                                     PetscReal **FF, BratuCtx *user) {
     const Q1Quad1D  q = Q1gausslegendre[user->quadpts-1];
@@ -310,22 +300,22 @@ PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
 
     // sum over elements to compute F for interior nodes
     // we own elements down or left of owned nodes, but in parallel the integral
-    // needs to include elements up or right of owned nodes (i.e. halo elements)
+    // needs to include elements up or right of owned nodes (halo elements)
     for (j = info->ys; j <= info->ys + info->ym; j++) {
         if (j == 0 || j > info->my-1)
             continue;
         for (i = info->xs; i <= info->xs + info->xm; i++) {
             if (i == 0 || i > info->mx-1)
                 continue;
-            // this element, down-or-left of node i,j, is adjacent to an owned
+            // this element, down-and-left of node i,j, is adjacent to an owned
             // and interior node
             // values of rhs f at corners of element
             ff[0] = user->f_rhs(i*hx,j*hy,user);
             ff[1] = user->f_rhs((i-1)*hx,j*hy,user);
             ff[2] = user->f_rhs((i-1)*hx,(j-1)*hy,user);
             ff[3] = user->f_rhs(i*hx,(j-1)*hy,user);
-            // values of iterate u at corners of element, using Dirichlet
-            // value if known (for symmetry of Jacobian)
+            // values of iterate u at corners of this element, using Dirichlet
+            // value for symmetry of Jacobian
             uu[0] = NodeOnBdry(info,i,  j)
                     ? user->g_bdry(i*hx,j*hy,user)         : au[j][i];
             uu[1] = NodeOnBdry(info,i-1,j)
@@ -334,7 +324,7 @@ PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
                     ? user->g_bdry((i-1)*hx,(j-1)*hy,user) : au[j-1][i-1];
             uu[3] = NodeOnBdry(info,i,  j-1)
                     ? user->g_bdry(i*hx,(j-1)*hy,user)     : au[j-1][i];
-            // loop over quadrature points of this i,j element
+            // loop over quadrature points of this element
             for (r = 0; r < q.n; r++) {
                 for (s = 0; s < q.n; s++) {
                     // compute quantities that depend on r,s but not l (= test function)
@@ -343,7 +333,8 @@ PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
                     frs = Q1Eval(ff,r,s);
                     crs = detj * q.w[r] * q.w[s];
                     // loop over corners of element; l is local (elementwise)
-                    // index of the corner and PP,QQ are global indices of same corner
+                    // index of the corner, i.e. test function, and PP,QQ are
+                    // global indices of same corner
                     for (l = 0; l < 4; l++) {
                         PP = i + li[l];
                         QQ = j + lj[l];
@@ -366,12 +357,11 @@ PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
 }
 
 // next method is private and called by NGSFD() and NJacFD()
-// using finite differences, do processor-block sweeps on equation F(u)=b
-// using
+// using finite differences, do processor-block sweeps on equation F(u)=b:
 //     njac = PETSC_TRUE:   nonlinear Jacobi
 //     njac = PETSC_FALSE:  nonlinear Gauss-Seidel
 PetscErrorCode _SmootherFD(PetscBool njac, SNES snes, Vec u, Vec b, void *ctx) {
-    PetscInt       i, j, k, maxits, totalits=0, sweeps, l;
+    PetscInt       i, j, k, l, sweeps, maxits, totalits=0;
     PetscReal      atol, rtol, stol, hx, hy, darea, hxhy, hyhx,
                    **au, **aunew, **ab, bij, uu, Ru, dRdu, phi0, phi, dphidu, s;
     DM             da;
@@ -397,29 +387,27 @@ PetscErrorCode _SmootherFD(PetscBool njac, SNES snes, Vec u, Vec b, void *ctx) {
     for (l=0; l<sweeps; l++) {
         PetscCall(DMGlobalToLocal(da,u,INSERT_VALUES,uloc));
         PetscCall(DMDAVecGetArray(da,uloc,&au));
-        if (njac) {
-            // uloc is old values with stencil width; Vec unew is created;
-            // pointer aunew is different from au
+        if (njac) { // nonlinear Jacobi
+            // uloc and au are old values with stencil width;
+            // Vec unew is created; pointer aunew is different from au
             PetscCall(DMGetGlobalVector(da,&unew));
             PetscCall(DMDAVecGetArray(da,unew,&aunew));
-        } else {
-            // uloc is current and updating values with stencil width;
+        } else { // nonlinear Gauss-Seidel
+            // uloc and au are current and updating values with stencil width;
             // Vec unew is not created; pointer aunew is same as au
             aunew = au;
         }
         for (j = info.ys; j < info.ys + info.ym; j++) {
             for (i = info.xs; i < info.xs + info.xm; i++) {
-                if (j==0 || i==0 || i==info.mx-1 || j==info.my-1) {
+                if (NodeOnBdry(&info,i,j)) {
                     aunew[j][i] = user->g_bdry(i*hx,j*hy,user);
                 } else {
                     if (b)
                         bij = ab[j][i];
                     else
                         bij = 0.0;
-                    // do pointwise Newton iterations on scalar function
-                    //   phi(u) =   hyhx * (2 u - au[j][i-1] - au[j][i+1])
-                    //            + hxhy * (2 u - au[j-1][i] - au[j+1][i])
-                    //            - darea * (R(u) + f(x,y)) - bij
+                    // do pointwise Newton iterations:
+                    //   u_k+1 = u_k - phi(u_k) / phi'(u_k)
                     uu = au[j][i];
                     for (k = 0; k < maxits; k++) {
                         Ru = user->R_fcn(uu,user);
@@ -435,16 +423,16 @@ PetscErrorCode _SmootherFD(PetscBool njac, SNES snes, Vec u, Vec b, void *ctx) {
                         s = - phi / dphidu;     // Newton step
                         uu += s;
                         totalits++;
-                        if (   atol > PetscAbsReal(phi)
-                            || rtol*PetscAbsReal(phi0) > PetscAbsReal(phi)
-                            || stol*PetscAbsReal(uu) > PetscAbsReal(s)    ) {
+                        if (                        atol > PetscAbsReal(phi)
+                            || rtol * PetscAbsReal(phi0) > PetscAbsReal(phi)
+                            ||   stol * PetscAbsReal(uu) > PetscAbsReal(s)  ) {
                             break;
                         }
                     }
                     if (njac)
                         aunew[j][i] = (1.0 - user->njacalpha) * au[j][i] + user->njacalpha * uu;
                     else
-                        aunew[j][i] = uu;
+                        aunew[j][i] = uu; // NGS does not use njacalpha
                 }
             }
         }
@@ -476,16 +464,15 @@ PetscErrorCode NJacFD(SNES snes, Vec u, Vec b, void *ctx) {
     return 0;
 }
 
-// using Q1 finite elements, for owned, interior nodes i,j, we define the
-// pointwise residual corresponding to the hat function psi_ij:
+// using Q1 finite elements, for owned, interior nodes i,j, we define a
+// pointwise residual corresponding to hat function psi_ij perturbations:
 //     rho(c) = F(u + c psi_ij)[psi_ij] - b_ij
 //            = int_Omega (grad u + c grad psi_ij) . grad psi_ij
 //                        - (lambda exp(u + c psi_ij) + f) psi_ij
 //              - b_ij
 // note b_ij is outside the integral
-// note the integral is over four elements, each with four quadrature
-// points "+" (in the default -lb_quadpts 2 case), which we traverse in the
-// order 0,1,2,3 given:
+// the integral is over four elements, each with four quadrature points "+"
+// (in the default -lb_quadpts 2 case), which we traverse in the order 0,1,2,3:
 //     j+1  *-------*-------*
 //          | +   + | +   + |
 //          |   1   |   0   |
@@ -496,20 +483,17 @@ PetscErrorCode NJacFD(SNES snes, Vec u, Vec b, void *ctx) {
 //          | +   + | +   + |
 //     j-1  *-------*-------*
 //         i-1      i      i+1
-// and each of the four elements has nodes with local (reference element)
-// indices:
-//        1 *-------* 0
-//          |       |
-//          |       |
-//          |       |
-//        2 *-------* 3
+// each of the four elements has nodes with local (reference element) indices:
+//              1 *---* 0
+//                |   |
+//              2 *---* 3
 
 // evaluate integrand of rho(c) at a point xi,eta in the reference element,
-// for the hat function at corner L (i.e. chi_L = psi_ij from caller)
+// for the hat function at corner L (i.e. chi_L = psi_ij from caller),
+// returning rho and drhodc integrands
 // FLOPS:  9 + (16 + 7 + 5 + 4 + 7 + 5) = 53
-PetscErrorCode rhoIntegrandRef(PetscInt L,
+PetscErrorCode rhoIntegrandRef(PetscInt L, PetscInt r, PetscInt s,
                  PetscReal c, const PetscReal uu[4], const PetscReal ff[4],
-                 PetscInt r, PetscInt s,
                  PetscReal *rho, PetscReal *drhodc, BratuCtx *user) {
     const Q1GradRef du     = Q1DEval(uu,r,s),
                     dchiL  = Q1dchi[L][r][s];
@@ -527,7 +511,8 @@ PetscErrorCode rhoIntegrandRef(PetscInt L,
 // using Q1 finite elements, for owned, interior nodes i,j, evaluate
 // rho(c) and
 //   rho'(c) = int_Omega grad psi_ij . grad psi_ij
-//                       - lambda e^(u + c psi_ij) psi_ij
+//                       - R(u + c psi_ij) psi_ij
+// this is slow because we loop over 4 elements adjacent to the node
 PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
                       PetscReal c, PetscReal **au,
                       PetscReal *rho, PetscReal *drhodc, BratuCtx *user) {
@@ -540,17 +525,17 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
                     hy = 1.0 / (PetscReal)(info->my - 1),
                     detj = 0.25 * hx * hy;
     const Q1Quad1D  q = Q1gausslegendre[user->quadpts-1];
-    PetscInt  k, ii, jj, r, s;
-    PetscReal uu[4], ff[4], prho, pdrhodc, tmp;
+    PetscInt        k, ii, jj, r, s;
+    PetscReal       uu[4], ff[4], prho, pdrhodc, cc;
 
     *rho = 0.0;
     *drhodc = 0.0;
-    // loop around 4 elements adjacent to global index node i,j
+    // loop over 4 elements adjacent to global index node i,j
     for (k=0; k < 4; k++) {
-        // global index of this element
+        // ii,jj = global index of upper-right corner of this element
         ii = i + oi[k];
         jj = j + oj[k];
-        // field values for f, b, and u on this element
+        // field values for f and u on this element
         ff[0] = user->f_rhs(ii*hx,jj*hy,user);
         ff[1] = user->f_rhs((ii-1)*hx,jj*hy,user);
         ff[2] = user->f_rhs((ii-1)*hx,(jj-1)*hy,user);
@@ -567,10 +552,10 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
         for (r = 0; r < q.n; r++) {
             for (s = 0; s < q.n; s++) {
                 // ll[k] is local (elementwise) index of the corner (= i,j)
-                rhoIntegrandRef(ll[k],c,uu,ff,r,s,&prho,&pdrhodc,user);
-                tmp = detj * q.w[r] * q.w[s];
-                *rho += tmp * prho;
-                *drhodc += tmp * pdrhodc;
+                rhoIntegrandRef(ll[k],r,s,c,uu,ff,&prho,&pdrhodc,user);
+                cc = detj * q.w[r] * q.w[s];
+                *rho += cc * prho;
+                *drhodc += cc * pdrhodc;
             }
         }
     }
@@ -579,25 +564,21 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
     return 0;
 }
 
-// using Q1 finite elements, do nonlinear Gauss-Seidel (processor-block)
-// sweeps on equation
+// using Q1 finite elements, do parallel (processor-block) nonlinear
+// Gauss-Seidel sweeps on equation
 //     F(u)[psi_ij] = b_ij   for all nodes i,j
 // where psi_ij is the hat function and
-//     F(u)[v] = int_Omega grad u . grad v - (lambda e^u + f) v
+//     F(u)[v] = int_Omega grad u . grad v - (R(u) + f) v
 // and b is a nodal field provided by the call-back
 // for each interior node i,j we define
 //     rho(c) = F(u + c psi_ij)[psi_ij] - b_ij
 // and do Newton iterations
-//     c <-- c + rho(c) / rho'(c)
-// note
-//     rho'(c) = int_Omega grad psi_ij . grad psi_ij
-//                         - lambda e^(u + c psi_ij) psi_ij
-// for boundary nodes we set
+//     c_k+1 = c_k + rho(c_k) / rho'(c_k)
+// for boundary nodes we instead set
 //     u_ij = g(x_i,y_j)
-// and we do not iterate
 PetscErrorCode NGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
     BratuCtx*      user = (BratuCtx*)ctx;
-    PetscInt       i, j, k, maxits, totalits=0, sweeps, l;
+    PetscInt       i, j, k, l, sweeps, maxits, totalits=0;
     PetscReal      atol, rtol, stol, hx, hy, **au, **ab,
                    c, rho, rho0, drhodc, s;
     DM             da;
@@ -633,7 +614,8 @@ PetscErrorCode NGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
         for (j = info.ys; j < info.ys + info.ym; j++) {
             for (i = info.xs; i < info.xs + info.xm; i++) {
                 if (!NodeOnBdry(&info,i,j)) { // i,j is an owned interior node
-                    // do pointwise Newton iterations
+                    // do pointwise Newton iterations:
+                    //   c_k+1 = c_k - rho(c_k) / rho'(c_k)
                     c = 0.0;
                     for (k = 0; k < maxits; k++) {
                         // evaluate rho(c) and rho'(c) for current c
@@ -645,9 +627,9 @@ PetscErrorCode NGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
                         s = - rho / drhodc;  // Newton step
                         c += s;
                         totalits++;
-                        if (   atol > PetscAbsReal(rho)
-                            || rtol*PetscAbsReal(rho0) > PetscAbsReal(rho)
-                            || stol*PetscAbsReal(c) > PetscAbsReal(s)    ) {
+                        if (                        atol > PetscAbsReal(rho)
+                            || rtol * PetscAbsReal(rho0) > PetscAbsReal(rho)
+                            ||    stol * PetscAbsReal(c) > PetscAbsReal(s)  ) {
                             break;
                         }
                     }
