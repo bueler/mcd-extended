@@ -11,7 +11,7 @@ static char help[] =
 "-lb_exact), or from method of manufactured solutions (arbitrary lambda;\n"
 "-lb_mms).\n\n";
 
-// FIXME write njacobi()
+// FIXME write _SmootherFEM(), NGSFEM(), NJacFEM()
 
 #include <petsc.h>
 #include "src/q1fem.h"
@@ -25,9 +25,12 @@ typedef struct {
   PetscReal       (*f_rhs)(PetscReal x, PetscReal y, void *ctx);
   // Dirichlet boundary condition g(x,y)
   PetscReal       (*g_bdry)(PetscReal x, PetscReal y, void *ctx);
-  PetscReal       lambda;
-  PetscInt        residualcount, ngscount, quadpts;
-  PetscLogDouble  expcount;  // same as PetscLogFlops(); exact integers up to 2^53=10^16
+  PetscReal       lambda,         // parameter in Bratu PDE
+                  njacalpha;      // alpha in nonlinear Jacobi (ignored in NGS)
+  PetscInt        residualcount,  // count of FormFunctionLocalX() calls
+                  ngscount,       // count of N{GS|Jac}X() calls
+                  quadpts;        // number of quadrature points in each dim in FEM
+  PetscLogDouble  expcount;       // same as PetscLogFlops(); exact integers to 2^53=10^16
 } BratuCtx;
 
 static PetscReal R_bratu(PetscReal u, void *ctx) {
@@ -69,8 +72,9 @@ extern PetscErrorCode FormFunctionLocalFD(DMDALocalInfo*, PetscReal **,
 extern PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo*, PetscReal **,
                                            PetscReal**, BratuCtx*);
 
-extern PetscErrorCode NonlinearGSFD(SNES, Vec, Vec, void*);
-extern PetscErrorCode NonlinearGSFEM(SNES, Vec, Vec, void*);
+extern PetscErrorCode NGSFD(SNES, Vec, Vec, void*);
+extern PetscErrorCode NJacFD(SNES, Vec, Vec, void*);
+extern PetscErrorCode NGSFEM(SNES, Vec, Vec, void*);   // FIXME NJacFEM() too
 
 int main(int argc,char **argv) {
     DM             da;
@@ -79,7 +83,7 @@ int main(int argc,char **argv) {
     BratuCtx       bctx;
     DMDALocalInfo  info;
     PetscBool      exact = PETSC_FALSE, mms = PETSC_FALSE, counts = PETSC_FALSE,
-                   fd = PETSC_FALSE, fem = PETSC_FALSE, ngsisnjac;
+                   fd = PETSC_FALSE, fem = PETSC_FALSE, njac = PETSC_FALSE;
     PetscLogDouble lflops, flops;
     PetscReal      errinf;
 
@@ -89,6 +93,7 @@ int main(int argc,char **argv) {
     bctx.f_rhs = &fg_zero;
     bctx.g_bdry = &fg_zero;
     bctx.lambda = 1.0;
+    bctx.njacalpha = 0.8;    // standard choice for Jacobi as smoother in 2D
     bctx.expcount = 0;
     bctx.residualcount = 0;
     bctx.ngscount = 0;
@@ -104,8 +109,10 @@ int main(int argc,char **argv) {
                             "bratu.c",bctx.lambda,&(bctx.lambda),NULL));
     PetscCall(PetscOptionsBool("-mms","use MMS exact solution",
                             "bratu.c",mms,&mms,NULL));
-    PetscCall(PetscOptionsBool("-ngs_is_njac","use nonlinear Jacobi iteration (njac) as the NGS",
-                            "bratu.c",ngsisnjac,&ngsisnjac,NULL));
+    PetscCall(PetscOptionsBool("-njac","use nonlinear Jacobi iteration as the NGS (smoother)",
+                            "bratu.c",njac,&njac,NULL));
+    PetscCall(PetscOptionsReal("-njac_alpha","weight used in nonlinear Jacobi iteration (smoother)",
+                            "bratu.c",bctx.njacalpha,&(bctx.njacalpha),NULL));
     // WARNING: coarse problems are badly solved with -lb_quadpts 1, so avoid in MG
     PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only; for Q1 FEM case only)",
                             "bratu.c",bctx.quadpts,&(bctx.quadpts),NULL));
@@ -146,15 +153,21 @@ int main(int argc,char **argv) {
     PetscCall(SNESCreate(PETSC_COMM_WORLD,&snes));
     PetscCall(SNESSetApplicationContext(snes,&bctx));
     PetscCall(SNESSetDM(snes,da));
-    // FIXME set NGS according to -lb_ngs_is_njac
     if (fd) {
         PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,
                    (DMDASNESFunction)FormFunctionLocalFD,&bctx));
-        PetscCall(SNESSetNGS(snes,NonlinearGSFD,&bctx));
+        if (njac)
+            PetscCall(SNESSetNGS(snes,NJacFD,&bctx));
+        else
+            PetscCall(SNESSetNGS(snes,NGSFD,&bctx));
     } else {
         PetscCall(DMDASNESSetFunctionLocal(da,INSERT_VALUES,
                    (DMDASNESFunction)FormFunctionLocalFEM,&bctx));
-        PetscCall(SNESSetNGS(snes,NonlinearGSFEM,&bctx));
+        // FIXME njac
+        if (njac)
+            SETERRQ(PETSC_COMM_SELF,99,"nonlinear Jacobi not implemented for FEM\n");
+        else
+            PetscCall(SNESSetNGS(snes,NGSFEM,&bctx));
     }
     PetscCall(SNESSetFromOptions(snes));
 
@@ -352,16 +365,18 @@ PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
     return 0;
 }
 
-// using finite differences, do nonlinear Gauss-Seidel (processor-block)
-// sweeps on equation
-//     F(u) = b
-PetscErrorCode NonlinearGSFD(SNES snes, Vec u, Vec b, void *ctx) {
+// next method is private and called by NGSFD() and NJacFD()
+// using finite differences, do processor-block sweeps on equation F(u)=b
+// using
+//     njac = PETSC_TRUE:   nonlinear Jacobi
+//     njac = PETSC_FALSE:  nonlinear Gauss-Seidel
+PetscErrorCode _SmootherFD(PetscBool njac, SNES snes, Vec u, Vec b, void *ctx) {
     PetscInt       i, j, k, maxits, totalits=0, sweeps, l;
     PetscReal      atol, rtol, stol, hx, hy, darea, hxhy, hyhx,
-                   **au, **ab, bij, uu, Ru, dRdu, phi0, phi, dphidu, s;
+                   **au, **aunew, **ab, bij, uu, Ru, dRdu, phi0, phi, dphidu, s;
     DM             da;
     DMDALocalInfo  info;
-    Vec            uloc;
+    Vec            uloc, unew;
     BratuCtx*      user = (BratuCtx*)ctx;
 
     PetscCall(SNESNGSGetSweeps(snes,&sweeps));
@@ -382,10 +397,20 @@ PetscErrorCode NonlinearGSFD(SNES snes, Vec u, Vec b, void *ctx) {
     for (l=0; l<sweeps; l++) {
         PetscCall(DMGlobalToLocal(da,u,INSERT_VALUES,uloc));
         PetscCall(DMDAVecGetArray(da,uloc,&au));
+        if (njac) {
+            // uloc is old values with stencil width; Vec unew is created;
+            // pointer aunew is different from au
+            PetscCall(DMGetGlobalVector(da,&unew));
+            PetscCall(DMDAVecGetArray(da,unew,&aunew));
+        } else {
+            // uloc is current and updating values with stencil width;
+            // Vec unew is not created; pointer aunew is same as au
+            aunew = au;
+        }
         for (j = info.ys; j < info.ys + info.ym; j++) {
             for (i = info.xs; i < info.xs + info.xm; i++) {
                 if (j==0 || i==0 || i==info.mx-1 || j==info.my-1) {
-                    au[j][i] = user->g_bdry(i*hx,j*hy,user);
+                    aunew[j][i] = user->g_bdry(i*hx,j*hy,user);
                 } else {
                     if (b)
                         bij = ab[j][i];
@@ -416,12 +441,21 @@ PetscErrorCode NonlinearGSFD(SNES snes, Vec u, Vec b, void *ctx) {
                             break;
                         }
                     }
-                    au[j][i] = uu;
+                    if (njac)
+                        aunew[j][i] = (1.0 - user->njacalpha) * au[j][i] + user->njacalpha * uu;
+                    else
+                        aunew[j][i] = uu;
                 }
             }
         }
         PetscCall(DMDAVecRestoreArray(da,uloc,&au));
-        PetscCall(DMLocalToGlobal(da,uloc,INSERT_VALUES,u));
+        if (njac) {
+            PetscCall(DMDAVecRestoreArray(da,unew,&aunew));
+            PetscCall(VecCopy(unew,u));
+            PetscCall(DMRestoreGlobalVector(da,&unew));
+        } else {
+            PetscCall(DMLocalToGlobal(da,uloc,INSERT_VALUES,u));
+        }
     }
     PetscCall(DMRestoreLocalVector(da,&uloc));
     if (b) {
@@ -429,6 +463,16 @@ PetscErrorCode NonlinearGSFD(SNES snes, Vec u, Vec b, void *ctx) {
     }
     PetscCall(PetscLogFlops(22.0 * totalits));
     (user->ngscount)++;
+    return 0;
+}
+
+PetscErrorCode NGSFD(SNES snes, Vec u, Vec b, void *ctx) {
+    PetscCall(_SmootherFD(PETSC_FALSE, snes, u, b, ctx));
+    return 0;
+}
+
+PetscErrorCode NJacFD(SNES snes, Vec u, Vec b, void *ctx) {
+    PetscCall(_SmootherFD(PETSC_TRUE, snes, u, b, ctx));
     return 0;
 }
 
@@ -551,7 +595,7 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
 // for boundary nodes we set
 //     u_ij = g(x_i,y_j)
 // and we do not iterate
-PetscErrorCode NonlinearGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
+PetscErrorCode NGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
     BratuCtx*      user = (BratuCtx*)ctx;
     PetscInt       i, j, k, maxits, totalits=0, sweeps, l;
     PetscReal      atol, rtol, stol, hx, hy, **au, **ab,

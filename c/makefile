@@ -46,6 +46,8 @@ runbratu_7:
 runbratu_8:
 	-@./testit.sh bratu "-lb_fem -lb_exact -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 2 -fas_coarse_snes_max_it 4 -da_refine 2 -snes_monitor_short" 1 8
 
+# FIXME once -lb_njac -lb_fem works, add such a run as regression
+
 test_bratu: runbratu_1 runbratu_2 runbratu_3 runbratu_4 runbratu_5 runbratu_6 runbratu_7 runbratu_8
 
 runobstaclesl_1:
