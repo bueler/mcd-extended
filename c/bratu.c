@@ -468,8 +468,10 @@ PetscErrorCode NJacFD(SNES snes, Vec u, Vec b, void *ctx) {
 // pointwise residual corresponding to hat function psi_ij perturbations:
 //     rho(c) = F(u + c psi_ij)[psi_ij] - b_ij
 //            = int_Omega (grad u + c grad psi_ij) . grad psi_ij
-//                        - (lambda exp(u + c psi_ij) + f) psi_ij
+//                        - (R(u + c psi_ij) + f) psi_ij
 //              - b_ij
+// and
+//     rho'(c) = int_Omega grad psi_ij . grad psi_ij - dRdu(u + c psi_ij) psi_ij^2
 // note b_ij is outside the integral
 // the integral is over four elements, each with four quadrature points "+"
 // (in the default -lb_quadpts 2 case), which we traverse in the order 0,1,2,3:
@@ -488,9 +490,9 @@ PetscErrorCode NJacFD(SNES snes, Vec u, Vec b, void *ctx) {
 //                |   |
 //              2 *---* 3
 
-// evaluate integrand of rho(c) at a point xi,eta in the reference element,
-// for the hat function at corner L (i.e. chi_L = psi_ij from caller),
-// returning rho and drhodc integrands
+// evaluate integrand of rho(c), drhodc(c) at a point xi,eta in the
+// reference element, for the hat function at corner L (i.e. chi_L = psi_ij
+// from caller), returning rho and drhodc
 // FLOPS:  9 + (16 + 7 + 5 + 4 + 7 + 5) = 53
 PetscErrorCode rhoIntegrandRef(PetscInt L, PetscInt r, PetscInt s,
                  PetscReal c, const PetscReal uu[4], const PetscReal ff[4],
@@ -504,15 +506,12 @@ PetscErrorCode rhoIntegrandRef(PetscInt L, PetscInt r, PetscInt s,
            - (RuL + Q1Eval(ff,r,s)) * chiL;
     // NOTE: next line uses special optimization for Bratu
     //       generally apply user->dRdu_fcn()
-    *drhodc = Q1GradInnerProd(dchiL,dchiL) - RuL * chiL;
+    *drhodc = Q1GradInnerProd(dchiL,dchiL) - RuL * chiL * chiL;
     return 0;
 }
 
 // using Q1 finite elements, for owned, interior nodes i,j, evaluate
-// rho(c) and
-//   rho'(c) = int_Omega grad psi_ij . grad psi_ij
-//                       - R(u + c psi_ij) psi_ij
-// this is slow because we loop over 4 elements adjacent to the node
+// rho(c) and rho'(c); slow because we loop over 4 node-adjacent elements
 PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
                       PetscReal c, PetscReal **au,
                       PetscReal *rho, PetscReal *drhodc, BratuCtx *user) {
