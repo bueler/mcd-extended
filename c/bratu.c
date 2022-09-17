@@ -361,7 +361,7 @@ PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
 //     njac = PETSC_TRUE:   nonlinear Jacobi
 //     njac = PETSC_FALSE:  nonlinear Gauss-Seidel
 PetscErrorCode _SmootherFD(PetscBool njac, SNES snes, Vec u, Vec b, void *ctx) {
-    PetscInt       i, j, k, l, sweeps, maxits, totalits=0;
+    PetscInt       i, j, k, m, sweeps, maxits, totalits=0;
     PetscReal      atol, rtol, stol, hx, hy, darea, hxhy, hyhx,
                    **au, **aunew, **ab, bij, uu, Ru, dRdu, phi0, phi, dphidu, s;
     DM             da;
@@ -384,7 +384,7 @@ PetscErrorCode _SmootherFD(PetscBool njac, SNES snes, Vec u, Vec b, void *ctx) {
         PetscCall(DMDAVecGetArrayRead(da,b,&ab));
     }
     PetscCall(DMGetLocalVector(da,&uloc));
-    for (l=0; l<sweeps; l++) {
+    for (m=0; m<sweeps; m++) {
         PetscCall(DMGlobalToLocal(da,u,INSERT_VALUES,uloc));
         PetscCall(DMDAVecGetArray(da,uloc,&au));
         if (njac) { // nonlinear Jacobi
@@ -577,7 +577,7 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
 //     u_ij = g(x_i,y_j)
 PetscErrorCode NGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
     BratuCtx*      user = (BratuCtx*)ctx;
-    PetscInt       i, j, k, l, sweeps, maxits, totalits=0;
+    PetscInt       i, j, k, m, sweeps, maxits, totalits=0;
     PetscReal      atol, rtol, stol, hx, hy, **au, **ab,
                    c, rho, rho0, drhodc, s;
     DM             da;
@@ -587,10 +587,10 @@ PetscErrorCode NGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
     PetscCall(SNESNGSGetSweeps(snes,&sweeps));
     PetscCall(SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&maxits));
     PetscCall(SNESGetDM(snes,&da));
+    PetscCall(DMDAGetLocalInfo(da,&info));
     PetscCall(Q1Setup(user->quadpts,da,0.0,1.0,0.0,1.0));
 
     // for Dirichlet nodes assign boundary value once
-    PetscCall(DMDAGetLocalInfo(da,&info));
     hx = 1.0 / (PetscReal)(info.mx - 1);
     hy = 1.0 / (PetscReal)(info.my - 1);
     PetscCall(DMDAVecGetArray(da,u,&au));
@@ -606,7 +606,7 @@ PetscErrorCode NGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
     PetscCall(DMGetLocalVector(da,&uloc));
 
     // NGS sweeps over interior nodes
-    for (l=0; l<sweeps; l++) {
+    for (m=0; m<sweeps; m++) {
         // update ghosts
         PetscCall(DMGlobalToLocal(da,u,INSERT_VALUES,uloc));
         PetscCall(DMDAVecGetArray(da,uloc,&au));
