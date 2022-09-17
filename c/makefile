@@ -22,29 +22,29 @@ transfers: transfers.o src/utilities.o src/q1transfers.o src/ldc.o
 	${RM} transfers.o src/utilities.o src/q1transfers.o src/ldc.o
 
 # testing
-runbratu_1:
+runbratu_1: # FD, Newton-Krlov-multigrid
 	-@./testit.sh bratu "-lb_fd  -lb_exact -snes_converged_reason -lb_counts -ksp_converged_reason -da_refine 1 -pc_type mg" 1 1
 
-runbratu_2:
+runbratu_2: # FEM, Newton-Krlov-multigrid
 	-@./testit.sh bratu "-lb_fem -lb_exact -snes_converged_reason -lb_counts -ksp_converged_reason -da_refine 1 -pc_type mg" 1 2
 
-runbratu_3:
-	-@./testit.sh bratu "-lb_fd  -lb_exact -snes_converged_reason -lb_counts -snes_type nrichardson -npc_snes_type ngs -npc_snes_max_it 4 -npc_snes_ngs_sweeps 2 -da_refine 1" 1 3
+runbratu_3: # FD, NGS sweeps as solver
+	-@./testit.sh bratu "-lb_fd  -lb_exact -snes_converged_reason -lb_counts -snes_type nrichardson -npc_snes_type ngs -npc_snes_ngs_max_it 4 -npc_snes_ngs_sweeps 2 -da_refine 1" 1 3
 
-runbratu_4:
-	-@./testit.sh bratu "-lb_fem -lb_exact -snes_converged_reason -lb_counts -snes_type nrichardson -npc_snes_type ngs -npc_snes_max_it 4 -npc_snes_ngs_sweeps 2 -da_refine 1" 1 4
+runbratu_4: # FEM, NGS sweeps as solver
+	-@./testit.sh bratu "-lb_fem -lb_exact -snes_converged_reason -lb_counts -snes_type nrichardson -npc_snes_type ngs -npc_snes_ngs_max_it 4 -npc_snes_ngs_sweeps 2 -da_refine 1" 1 4
 
-runbratu_5:
-	-@./testit.sh bratu "-lb_fd  -lb_mms -snes_converged_reason -lb_counts -snes_type fas -fas_levels_snes_type ngs -fas_levels_snes_max_it 1 -fas_coarse_snes_type newtonls -fas_coarse_snes_fd_color -fas_coarse_ksp_type cg -fas_coarse_pc_type icc -snes_rtol 1.0e-3 -da_refine 2" 1 5
+runbratu_5: # FD, FAS-multigrid V-cycles, NGS smoother, Newton-Krylov-CGICC coarse solver
+	-@./testit.sh bratu "-lb_fd  -lb_mms -snes_converged_reason -lb_counts -snes_type fas -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 1 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type newtonls -fas_coarse_snes_fd_color -fas_coarse_ksp_type cg -fas_coarse_pc_type icc -snes_rtol 1.0e-3 -da_refine 2" 1 5
 
-runbratu_6:
-	-@./testit.sh bratu "-lb_fem -lb_mms -snes_converged_reason -lb_counts -snes_type fas -fas_levels_snes_type ngs -fas_levels_snes_max_it 1 -fas_coarse_snes_type newtonls -fas_coarse_snes_fd_color -fas_coarse_ksp_type cg -fas_coarse_pc_type icc -snes_rtol 1.0e-3 -da_refine 2" 1 6
+runbratu_6: # FEM, FAS-multigrid V-cycles, NGS smoother, Newton-Krylov-CGICC coarse solver
+	-@./testit.sh bratu "-lb_fem -lb_mms -snes_converged_reason -lb_counts -snes_type fas -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 1 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type newtonls -fas_coarse_snes_fd_color -fas_coarse_ksp_type cg -fas_coarse_pc_type icc -snes_rtol 1.0e-3 -da_refine 2" 1 6
 
-runbratu_7:
-	-@./testit.sh bratu "-lb_fd  -lb_exact -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 2 -fas_coarse_snes_max_it 4 -da_refine 2 -snes_monitor_short" 1 7
+runbratu_7: # FD, FAS-multigrid full cycles, NGS smoother, Richardson with NGS as NPC coarse solver
+	-@./testit.sh bratu "-lb_fd  -lb_exact -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type nrichardson -fas_coarse_snes_linesearch basic -fas_coarse_npc_snes_type ngs -fas_coarse_npc_snes_ngs_sweeps 2 -fas_coarse_npc_snes_ngs_max_it 4 -da_refine 2 -snes_monitor_short" 1 7
 
-runbratu_8:
-	-@./testit.sh bratu "-lb_fem -lb_exact -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 2 -fas_coarse_snes_max_it 4 -da_refine 2 -snes_monitor_short" 1 8
+runbratu_8: # FEM, FAS-multigrid full cycles, NGS smoother, Richardson with NGS as NPC coarse solver
+	-@./testit.sh bratu "-lb_fem -lb_exact -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type nrichardson -fas_coarse_snes_linesearch basic -fas_coarse_npc_snes_type ngs -fas_coarse_npc_snes_ngs_sweeps 2 -fas_coarse_npc_snes_ngs_max_it 4 -da_refine 2 -snes_monitor_short" 1 8
 
 # FIXME once -lb_njac -lb_fem works, add such a run as regression
 
