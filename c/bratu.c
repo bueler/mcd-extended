@@ -563,18 +563,26 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
     return 0;
 }
 
-// using Q1 finite elements, do parallel (processor-block) nonlinear
-// Gauss-Seidel sweeps on equation
+// the next two functions use Q1 finite elements to do parallel
+// (processor-block) nonlinear Gauss-Seidel sweeps, either as a solver
+// (e.g. -snes_type nrichardson) or as a smoother (e.g. -snes_type fas)
+// we do sweeps by updating u pointwise on equation
 //     F(u)[psi_ij] = b_ij   for all nodes i,j
 // where psi_ij is the hat function and
 //     F(u)[v] = int_Omega grad u . grad v - (R(u) + f) v
 // and b is a nodal field provided by the call-back
-// for each interior node i,j we define
+// for each interior node i,j we define the pointwise residual with
+// respect to a pointwise perturbation:
 //     rho(c) = F(u + c psi_ij)[psi_ij] - b_ij
 // and do Newton iterations
 //     c_k+1 = c_k + rho(c_k) / rho'(c_k)
+// and then
+//     u_ij <-- u_ij + c
 // for boundary nodes we instead set
 //     u_ij = g(x_i,y_j)
+
+// nonlinear Gauss-Seidel: do maxits pointwise Newton iterations,
+// and check tolerances
 PetscErrorCode NGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
     BratuCtx*      user = (BratuCtx*)ctx;
     PetscInt       i, j, k, m, sweeps, maxits, totalits=0;
