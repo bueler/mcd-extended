@@ -40,12 +40,11 @@ runbratu_5: # FD, FAS-multigrid V-cycles, NGS smoother, Newton-Krylov-CGICC coar
 runbratu_6: # FEM, FAS-multigrid V-cycles, NGS smoother, Newton-Krylov-CGICC coarse solver
 	-@./testit.sh bratu "-lb_fem -lb_mms -snes_converged_reason -lb_counts -snes_type fas -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 1 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type newtonls -fas_coarse_snes_fd_color -fas_coarse_ksp_type cg -fas_coarse_pc_type icc -snes_rtol 1.0e-3 -da_refine 2" 1 6
 
-# FIXME -fas_coarse_snes_linesearch_type in tests 7 and 8
 runbratu_7: # FD, FAS-multigrid full cycles, NGS smoother, Richardson with NGS as NPC coarse solver
-	-@./testit.sh bratu "-lb_fd  -lb_exact -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type nrichardson -fas_coarse_snes_linesearch basic -fas_coarse_npc_snes_type ngs -fas_coarse_npc_snes_ngs_sweeps 2 -fas_coarse_npc_snes_ngs_max_it 4 -da_refine 2 -snes_monitor_short" 1 7
+	-@./testit.sh bratu "-lb_fd  -lb_exact -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type nrichardson -fas_coarse_snes_linesearch_type basic -fas_coarse_npc_snes_type ngs -fas_coarse_npc_snes_ngs_sweeps 2 -fas_coarse_npc_snes_ngs_max_it 4 -da_refine 2 -snes_monitor_short" 1 7
 
 runbratu_8: # FEM, FAS-multigrid full cycles, NGS smoother, Richardson with NGS as NPC coarse solver
-	-@./testit.sh bratu "-lb_fem -lb_exact -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type nrichardson -fas_coarse_snes_linesearch basic -fas_coarse_npc_snes_type ngs -fas_coarse_npc_snes_ngs_sweeps 2 -fas_coarse_npc_snes_ngs_max_it 4 -da_refine 2 -snes_monitor_short" 1 8
+	-@./testit.sh bratu "-lb_fem -lb_exact -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type nrichardson -fas_coarse_snes_linesearch_type basic -fas_coarse_npc_snes_type ngs -fas_coarse_npc_snes_ngs_sweeps 2 -fas_coarse_npc_snes_ngs_max_it 4 -da_refine 2 -snes_monitor_short" 1 8
 
 runbratu_9: # FEM, FAS-multigrid V-cycles, NJacobi smoother, Newton-Krylov-CGICC coarse solver
 	-@./testit.sh bratu "-lb_fem -lb_mms -snes_converged_reason -lb_counts -snes_type fas -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 1 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type newtonls -fas_coarse_snes_fd_color -fas_coarse_ksp_type cg -fas_coarse_pc_type icc -snes_rtol 1.0e-3 -da_refine 2 -lb_njac" 1 9

@@ -17,6 +17,9 @@ NGS smoothing suffices to give 10-digit accuracy on a problem with 270 million
 degrees of freedom.  Expenses per degree of freedom: 765 flops, 1.8 exponentials,
 and 2.2 processor-microseconds:
 
+    FIXME why is nrichardson for coarse o.k. here ... despite all the trouble i had?
+    $ timer mpiexec -n 20 --map-by core --bind-to hwthread  ./bratu -lb_fd -lb_exact -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type nrichardson -fas_coarse_snes_linesearch_type basic -fas_coarse_npc_snes_type ngs -fas_coarse_npc_snes_ngs_sweeps 2 -fas_coarse_npc_snes_ngs_max_it 4 -snes_monitor_short -da_refine 12 -da_grid_x 5 -da_grid_y 5 -snes_rtol 1.0e-12
+
     $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fd -da_grid_x 5 -da_grid_y 5 -lb_exact -snes_rtol 1.0e-12 -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_max_it 1 -fas_coarse_snes_ngs_sweeps 4 -fas_coarse_snes_ngs_max_it 1 -da_refine 12
     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
     flops = 2.053e+11,  exps = 4.875e+08,  residual calls = 855,  NGS calls = 350

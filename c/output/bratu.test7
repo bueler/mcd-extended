@@ -3,5 +3,5 @@
   2 SNES Function norm 2.19172e-06 
   3 SNES Function norm 1.25164e-08 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-flops = 9.666e+04,  exps = 2.491e+03,  residual calls = 189,  NGS calls = 65
+flops = 7.266e+04,  exps = 2.246e+03,  residual calls = 76,  NGS calls = 38
 done on 9 x 9 grid:   error |u-uexact|_inf = 3.169e-04
