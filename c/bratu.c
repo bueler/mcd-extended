@@ -361,7 +361,8 @@ PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo *info, PetscReal **au,
 //     njac = PETSC_TRUE:   nonlinear Jacobi
 //     njac = PETSC_FALSE:  nonlinear Gauss-Seidel
 PetscErrorCode _SmootherFD(PetscBool njac, SNES snes, Vec u, Vec b, void *ctx) {
-    PetscInt       i, j, k, m, sweeps, maxits, totalits=0;
+    PetscInt       i, j, k, m, sweeps, maxits;
+    PetscLogDouble totalits = 0.0;
     PetscReal      atol, rtol, stol, hx, hy, darea, hxhy, hyhx,
                    **au, **aunew, **ab, bij, uu, Ru, dRdu, phi0, phi, dphidu, s;
     DM             da;
@@ -422,7 +423,7 @@ PetscErrorCode _SmootherFD(PetscBool njac, SNES snes, Vec u, Vec b, void *ctx) {
                         dphidu = 2.0 * (hyhx + hxhy) - darea * dRdu;
                         s = - phi / dphidu;     // Newton step
                         uu += s;
-                        totalits++;
+                        totalits += 1.0;
                         if (                        atol > PetscAbsReal(phi)
                             || rtol * PetscAbsReal(phi0) > PetscAbsReal(phi)
                             ||   stol * PetscAbsReal(uu) > PetscAbsReal(s)  ) {
@@ -511,7 +512,8 @@ PetscErrorCode rhoIntegrandRef(PetscInt L, PetscInt r, PetscInt s,
 }
 
 // using Q1 finite elements, for owned, interior nodes i,j, evaluate
-// rho(c) and rho'(c); slow because we loop over 4 node-adjacent elements
+// rho(c) and rho'(c); we loop over 4 node-adjacent elements, but then only
+// evaluate once at each quadrature points inside the element
 PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
                       PetscReal c, PetscReal **au,
                       PetscReal *rho, PetscReal *drhodc, BratuCtx *user) {
@@ -585,7 +587,8 @@ PetscErrorCode rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
 // and check tolerances
 PetscErrorCode NGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
     BratuCtx*      user = (BratuCtx*)ctx;
-    PetscInt       i, j, k, m, sweeps, maxits, totalits=0;
+    PetscInt       i, j, k, m, sweeps, maxits;
+    PetscLogDouble totalits = 0.0;
     PetscReal      atol, rtol, stol, hx, hy, **au, **ab,
                    c, rho, rho0, drhodc, s;
     DM             da;
@@ -633,7 +636,7 @@ PetscErrorCode NGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
                             rho0 = rho;
                         s = - rho / drhodc;  // Newton step
                         c += s;
-                        totalits++;
+                        totalits += 1.0;
                         if (                        atol > PetscAbsReal(rho)
                             || rtol * PetscAbsReal(rho0) > PetscAbsReal(rho)
                             ||    stol * PetscAbsReal(c) > PetscAbsReal(s)  ) {
@@ -653,7 +656,7 @@ PetscErrorCode NGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
         PetscCall(DMDAVecRestoreArrayRead(da,b,&ab));
 
     // add flops for Newton iteration arithmetic; note rhoFcn() already counts flops
-    PetscCall(PetscLogFlops(6 * totalits));
+    PetscCall(PetscLogFlops(6.0 * totalits));
     (user->ngscount)++;
     return 0;
 }
