@@ -661,10 +661,21 @@ PetscErrorCode NGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
     return 0;
 }
 
-// FIXME to get the performance benefit of element-wise assembly, *must*
-// factor out from  rhoIntegrandRef()  the actions that only depend on r,s;
-// compare this aspect of FormFunctionFEM()
-
+// evaluate integrand of rho(0), drhodc(0) at a quadrature point r,s in the
+// reference element, for the hat function at corner L (i.e. chi_L = psi_ij
+// from caller), returning rho and drhodc
+// FLOPS:  5 + 3 + 5 + 3 = 16
+PetscErrorCode rhoIntegrandRef_NJac(PetscInt L, PetscInt r, PetscInt s,
+                   const PetscReal Ru, const Q1GradRef du, const PetscReal f,
+                   PetscReal *rho, PetscReal *drhodc, BratuCtx *user) {
+    const Q1GradRef dchiL  = Q1dchi[L][r][s];
+    const PetscReal chiL   = Q1chi[L][r][s];
+    *rho = Q1GradInnerProd(du,dchiL) - (Ru + f) * chiL;
+    // NOTE: next line uses special optimization for Bratu
+    //       generally apply user->dRdu_fcn()
+    *drhodc = Q1GradInnerProd(dchiL,dchiL) - Ru * chiL * chiL;
+    return 0;
+}
 // nonlinear weighted Jacobi: do a single pointwise Newton iteration
 // (require maxits=1, and ignores tolerances)
 // we compute rho and drhodc across all nodes using element-wise assembly
@@ -673,10 +684,10 @@ PetscErrorCode NJacFEM(SNES snes, Vec u, Vec b, void *ctx) {
     BratuCtx*      user = (BratuCtx*)ctx;
     const PetscInt li[4] = {0,-1,-1,0}, lj[4] = {0,0,-1,-1};
     PetscInt       i, j, l, m, r, s, PP, QQ, sweeps, maxits;
-    PetscReal      hx, hy, detj, crs, prho, pdrhodc,
-                   uu[4], ff[4],
-                   **au, **arho, **adrhodc;
+    PetscReal      hx, hy, detj, Rurs, frs, crs, prho, pdrhodc,
+                   uu[4], ff[4], **au, **arho, **adrhodc;
     const PetscReal **ab, **auloc;
+    Q1GradRef      durs;
     DM             da;
     DMDALocalInfo  info;
     Vec            uloc, rho, drhodc;
@@ -753,8 +764,10 @@ PetscErrorCode NJacFEM(SNES snes, Vec u, Vec b, void *ctx) {
                 // loop over quadrature points of this element
                 for (r = 0; r < q.n; r++) {
                     for (s = 0; s < q.n; s++) {
+                        Rurs = user->R_fcn(Q1Eval(uu,r,s),user);
+                        durs = Q1DEval(uu,r,s);
+                        frs = Q1Eval(ff,r,s);
                         crs = detj * q.w[r] * q.w[s];
-                        // FIXME more actions need to go here!
                         // loop over corners of element; l is local (elementwise)
                         // index of the corner, i.e. test function, and PP,QQ are
                         // global indices of same corner
@@ -765,7 +778,7 @@ PetscErrorCode NJacFEM(SNES snes, Vec u, Vec b, void *ctx) {
                             if (PP >= info.xs && PP < info.xs + info.xm
                                     && QQ >= info.ys && QQ < info.ys + info.ym
                                     && !NodeOnBdry(&info,PP,QQ)) {
-                                rhoIntegrandRef(l,r,s,0.0,uu,ff,&prho,&pdrhodc,user);
+                                rhoIntegrandRef_NJac(l,r,s,Rurs,durs,frs,&prho,&pdrhodc,user);
                                 arho[QQ][PP] += crs * prho;
                                 adrhodc[QQ][PP] += crs * pdrhodc;
                             }
@@ -777,8 +790,8 @@ PetscErrorCode NJacFEM(SNES snes, Vec u, Vec b, void *ctx) {
         PetscCall(DMDAVecRestoreArrayRead(da,uloc,&auloc));
         // estimated FLOPS: only counting quadrature-point float computations:
         //     q.n^2 quadrature points per element
-        //     2 + 4 * (53 + 4) = 230.0 flops per quadrature point
-        PetscCall(PetscLogFlops(230.0 * q.n * q.n * (info.xm + 1) * (info.ym + 1)));
+        //     7 + 16 + 7 + 2 + 4 * (16 + 4) = 112.0 flops per quadrature point
+        PetscCall(PetscLogFlops(112.0 * q.n * q.n * (info.xm + 1) * (info.ym + 1)));
 
         // loop over nodes to take the single Newton step
         PetscCall(DMDAVecGetArray(da,u,&au));  // will update u

@@ -14,14 +14,14 @@ Q1 finite elements.
 
 With finite differences, two matrix-free, FAS full cycles with
 NGS smoothing suffices to give 10-digit accuracy on a problem with 270 million
-degrees of freedom, at only 802 flops per degree of freedom, and 2.4 processor-
-microseconds per degree of freedom:
+degrees of freedom.  Expenses per degree of freedom: 765 flops, 1.8 exponentials,
+and 2.2 processor-microseconds:
 
-    $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fd -da_grid_x 5 -da_grid_y 5 -lb_exact -snes_rtol 1.0e-12 -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 2 -fas_coarse_snes_max_it 4 -da_refine 12
+    $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fd -da_grid_x 5 -da_grid_y 5 -lb_exact -snes_rtol 1.0e-12 -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_max_it 1 -fas_coarse_snes_ngs_sweeps 4 -fas_coarse_snes_ngs_max_it 1 -da_refine 12
     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
-    flops = 2.152e+11,  exps = 5.143e+08,  residual calls = 855,  NGS calls = 428
-    done on 16385 x 16385 grid:   error |u-uexact|_inf = 7.761e-11
-    real 31.99
+    flops = 2.053e+11,  exps = 4.875e+08,  residual calls = 855,  NGS calls = 350
+    done on 16385 x 16385 grid:   error |u-uexact|_inf = 7.760e-11
+    real 29.52
 
 This uses 70% of the 128 Gb memory of my Thelio massive machine.  Note the
 tight -snes_rtol tolerance, that NGS is used for the coarse solve, and that
@@ -31,20 +31,31 @@ build is used.  This is extraordinary performance.
 The Q1 finite element implementation is slower.  It is built starting from the
 basic quadrature and FE tools from `c/ch9/phelm.c` in `p4pdes`; here they are
 in `q1fem.{h|c}`.  The following FAS+NGS run gets comparable error to above on
-a grid with 4 times fewer degrees of freedom (67 million), but it costs 62000
-flops per degree of freedom.  This is almost 100 times more work per degree
-of freedom.  The reason is that NGS is much more expensive per degree of
-freedom.
+a grid with 4 times fewer degrees of freedom (67 million).  Expenses per degree
+of freedom: 47000 flops, 37.3 exponentials, 34.7 processor-microseconds.
+This is about 60 times more flops per degree of freedom, though only 16 times
+more time.
 
-    $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fem -da_grid_x 5 -da_grid_y 5 -lb_exact -snes_rtol 1.0e-12 -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 2 -fas_coarse_snes_max_it 4 -da_refine 11
+    $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fem -da_grid_x 5 -da_grid_y 5 -lb_exact -snes_rtol 1.0e-12 -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_max_it 1 -fas_coarse_snes_ngs_sweeps 4 -fas_coarse_snes_ngs_max_it 1 -da_refine 11
     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
-    flops = 4.502e+12,  exps = 3.512e+09,  residual calls = 1479,  NGS calls = 753
+    flops = 3.146e+12,  exps = 2.501e+09,  residual calls = 1479,  NGS calls = 609
     done on 8193 x 8193 grid:   error |u-uexact|_inf = 8.366e-11
-    real 178.62
+    real 116.45
+
+Clearly FEM NGS is much more expensive per degree of freedom.  One can get a bit
+better performance by switching to a nonlinear Jacobi smoother.  Expenses per
+degree of freedom: 44000 flops, 23.6 exponentials, 32.8 processor-microseconds.
+
+    $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fem -da_grid_x 5 -da_grid_y 5 -lb_exact -snes_rtol 1.0e-12 -snes_converged_reason -lb_counts -snes_type fas -snes_fas_type full -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 2 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_max_it 1 -fas_coarse_snes_ngs_sweeps 4 -fas_coarse_snes_ngs_max_it 1 -da_refine 11 -lb_njac
+    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 6
+    flops = 2.949e+12,  exps = 1.582e+09,  residual calls = 2229,  NGS calls = 919
+    done on 8193 x 8193 grid:   error |u-uexact|_inf = 8.366e-11
+    real 110.12
 
 One can use FAS with nonlinear Richardson, thereby avoiding the calling NGS.  However, this requires tuning, here through linesearch and its initial damping parameter `-fas_levels_snes_linesearch_damping`.  For clarity we solve the coarse problem quite exactly with Newton, and we do 4 `nrichardson` iterations as the smoother.  Note these are FAS V-cycles:
 
     $ timer mpiexec -n 20 --map-by core --bind-to hwthread ./bratu -lb_fem -da_grid_x 5 -da_grid_y 5 -lb_exact -snes_converged_reason -lb_counts -snes_type fas -fas_levels_snes_type nrichardson -fas_levels_snes_linesearch_type l2 -fas_levels_snes_linesearch_damping 1.0 -fas_levels_snes_max_it 4 -fas_coarse_snes_type newtonls -da_refine 10 -fas_coarse_snes_converged_reason
+FIXME update results from here
                           Nonlinear fas_coarse_ solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
                           Nonlinear fas_coarse_ solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
                           Nonlinear fas_coarse_ solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
