@@ -83,7 +83,7 @@ int main(int argc,char **argv) {
     DMDALocalInfo  info;
     PetscBool      exact = PETSC_FALSE, mms = PETSC_FALSE, counts = PETSC_FALSE,
                    fd = PETSC_FALSE, fem = PETSC_FALSE, njac = PETSC_FALSE;
-    PetscLogDouble lflops, flops;
+    PetscLogDouble lflops, flops, gexpcount;
     PetscReal      errinf;
 
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
@@ -174,10 +174,11 @@ int main(int argc,char **argv) {
         PetscCall(PetscGetFlops(&lflops));
         PetscCall(MPI_Allreduce(&lflops,&flops,1,MPIU_REAL,MPIU_SUM,
                                 PetscObjectComm((PetscObject)snes)));
-// FIXME also MPI_Allreduce() on expcount
+        PetscCall(MPI_Allreduce(&(bctx.expcount),&gexpcount,1,MPIU_REAL,MPIU_SUM,
+                                PetscObjectComm((PetscObject)snes)));
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
                               "flops = %.3e,  exps = %.3e,  residual calls = %d,  NGS calls = %d\n",
-                              flops,(PetscReal)(bctx.expcount),bctx.residualcount,bctx.ngscount));
+                              flops,gexpcount,bctx.residualcount,bctx.ngscount));
     }
 
     PetscCall(SNESGetDM(snes,&da));

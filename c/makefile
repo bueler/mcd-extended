@@ -28,11 +28,11 @@ runbratu_1: # FD, Newton-Krlov-multigrid
 runbratu_2: # FEM, Newton-Krlov-multigrid
 	-@./testit.sh bratu "-lb_fem -lb_exact -snes_converged_reason -lb_counts -ksp_converged_reason -da_refine 1 -pc_type mg" 1 2
 
-runbratu_3: # FD, NGS sweeps as solver
-	-@./testit.sh bratu "-lb_fd  -lb_exact -snes_converged_reason -lb_counts -snes_type nrichardson -npc_snes_type ngs -npc_snes_ngs_max_it 4 -npc_snes_ngs_sweeps 2 -da_refine 1" 1 3
+runbratu_3: # FD, NGS sweeps as solver, parallel
+	-@./testit.sh bratu "-lb_fd  -lb_exact -snes_converged_reason -lb_counts -snes_type nrichardson -npc_snes_type ngs -npc_snes_ngs_max_it 4 -npc_snes_ngs_sweeps 2 -da_refine 1" 2 3
 
-runbratu_4: # FEM, NGS sweeps as solver
-	-@./testit.sh bratu "-lb_fem -lb_exact -snes_converged_reason -lb_counts -snes_type nrichardson -npc_snes_type ngs -npc_snes_ngs_max_it 4 -npc_snes_ngs_sweeps 2 -da_refine 1" 1 4
+runbratu_4: # FEM, NGS sweeps as solver, parallel
+	-@./testit.sh bratu "-lb_fem -lb_exact -snes_converged_reason -lb_counts -snes_type nrichardson -npc_snes_type ngs -npc_snes_ngs_max_it 4 -npc_snes_ngs_sweeps 2 -da_refine 1" 2 4
 
 runbratu_5: # FD, FAS-multigrid V-cycles, NGS smoother, Newton-Krylov-CGICC coarse solver
 	-@./testit.sh bratu "-lb_fd  -lb_mms -snes_converged_reason -lb_counts -snes_type fas -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 1 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type newtonls -fas_coarse_snes_fd_color -fas_coarse_ksp_type cg -fas_coarse_pc_type icc -snes_rtol 1.0e-3 -da_refine 2" 1 5
