@@ -93,7 +93,7 @@ int main(int argc,char **argv) {
     bctx.g_bdry = &fg_zero;
     bctx.lambda = 1.0;
     bctx.njacalpha = 0.8;    // standard choice for Jacobi as smoother in 2D
-    bctx.expcount = 0;
+    bctx.expcount = 0.0;
     bctx.residualcount = 0;
     bctx.ngscount = 0;
     bctx.quadpts = 2;
@@ -174,6 +174,7 @@ int main(int argc,char **argv) {
         PetscCall(PetscGetFlops(&lflops));
         PetscCall(MPI_Allreduce(&lflops,&flops,1,MPIU_REAL,MPIU_SUM,
                                 PetscObjectComm((PetscObject)snes)));
+// FIXME also MPI_Allreduce() on expcount
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
                               "flops = %.3e,  exps = %.3e,  residual calls = %d,  NGS calls = %d\n",
                               flops,(PetscReal)(bctx.expcount),bctx.residualcount,bctx.ngscount));
