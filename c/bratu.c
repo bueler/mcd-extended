@@ -661,11 +661,152 @@ PetscErrorCode NGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
     return 0;
 }
 
+// FIXME to get the performance benefit of element-wise assembly, *must*
+// factor out from  rhoIntegrandRef()  the actions that only depend on r,s;
+// compare this aspect of FormFunctionFEM()
+
+// nonlinear weighted Jacobi: do a single pointwise Newton iteration
+// (require maxits=1, and ignores tolerances)
+// we compute rho and drhodc across all nodes using element-wise assembly
+// (just like FormFunctionLocalFEM()) before doing the nodal-wise Newton step
 PetscErrorCode NJacFEM(SNES snes, Vec u, Vec b, void *ctx) {
-    //FIXME totally refactor NGSFEM() to do one sweep over all elements and compute
-    // rho and drhodc for all points, then take the one Newton step of weighted
-    // nonlinear jacobi; only functional when SNESNGSGetTolerances() returns
-    // maxits=1
-    SETERRQ(PETSC_COMM_SELF,99,"nonlinear Jacobi not implemented for FEM\n");
+    BratuCtx*      user = (BratuCtx*)ctx;
+    const PetscInt li[4] = {0,-1,-1,0}, lj[4] = {0,0,-1,-1};
+    PetscInt       i, j, l, m, r, s, PP, QQ, sweeps, maxits;
+    PetscReal      hx, hy, detj, crs, prho, pdrhodc,
+                   uu[4], ff[4],
+                   **au, **arho, **adrhodc;
+    const PetscReal **ab, **auloc;
+    DM             da;
+    DMDALocalInfo  info;
+    Vec            uloc, rho, drhodc;
+    Q1Quad1D       q;
+
+    PetscCall(SNESNGSGetSweeps(snes,&sweeps));
+    PetscCall(SNESNGSGetTolerances(snes,NULL,NULL,NULL,&maxits));
+    if (maxits != 1)
+        SETERRQ(PETSC_COMM_SELF,1,"FEM nonlinear Jacobi only allows maxits==1\n");
+    PetscCall(SNESGetDM(snes,&da));
+    PetscCall(DMDAGetLocalInfo(da,&info));
+    PetscCall(Q1Setup(user->quadpts,da,0.0,1.0,0.0,1.0));
+    q = Q1gausslegendre[user->quadpts-1];
+    hx = 1.0 / (PetscReal)(info.mx - 1);
+    hy = 1.0 / (PetscReal)(info.my - 1);
+    detj = 0.25 * hx * hy;
+
+    // for Dirichlet nodes assign boundary value once
+    PetscCall(DMDAVecGetArray(da,u,&au));
+    for (j = info.ys; j < info.ys + info.ym; j++)
+        for (i = info.xs; i < info.xs + info.xm; i++)
+            if (NodeOnBdry(&info,i,j))
+                au[j][i] = user->g_bdry(i*hx,j*hy,user);
+    PetscCall(DMDAVecRestoreArray(da,u,&au));
+
+    // need local vector for stencil width in parallel
+    PetscCall(DMGetLocalVector(da,&uloc));
+    // need global vectors for for element-wise assembly of pointwise
+    // residuals, and derivatives thereof, which are integrals
+    PetscCall(DMGetGlobalVector(da,&rho));
+    PetscCall(DMGetGlobalVector(da,&drhodc));
+    if (b)
+        PetscCall(DMDAVecGetArrayRead(da,b,&ab));
+
+    // sweeps over interior nodes
+    for (m=0; m<sweeps; m++) {
+        // update u values, with ghosts, for next sweep
+        PetscCall(DMGlobalToLocal(da,u,INSERT_VALUES,uloc));
+        PetscCall(DMDAVecGetArrayRead(da,uloc,&auloc));
+
+        // compute Vec rho with pointwise residual, and Vec drhodc with
+        // derivative-of-pointwise-residual, from element-wise assembly
+        PetscCall(VecSet(rho,0.0));
+        PetscCall(VecSet(drhodc,0.0));
+        PetscCall(DMDAVecGetArray(da,rho,&arho));
+        PetscCall(DMDAVecGetArray(da,drhodc,&adrhodc));
+        // sum over *elements* to compute arrays with rho(0), drhodc(0) values,
+        // for interior nodes; we own elements down or left of owned nodes;
+        // in parallel the integral needs to include elements up or right of
+        // owned nodes (halo elements)
+        for (j = info.ys; j <= info.ys + info.ym; j++) {
+            if (j == 0 || j > info.my-1)
+                continue;
+            for (i = info.xs; i <= info.xs + info.xm; i++) {
+                if (i == 0 || i > info.mx-1)
+                    continue;
+                // this element, down-and-left of node i,j, is adjacent to an
+                // owned and interior node
+                // get values of rhs f at corners of element
+                ff[0] = user->f_rhs(i*hx,j*hy,user);
+                ff[1] = user->f_rhs((i-1)*hx,j*hy,user);
+                ff[2] = user->f_rhs((i-1)*hx,(j-1)*hy,user);
+                ff[3] = user->f_rhs(i*hx,(j-1)*hy,user);
+                // values of iterate u at corners of this element, using Dirichlet
+                // value for symmetry of Jacobian
+                uu[0] = NodeOnBdry(&info,i,  j)
+                        ? user->g_bdry(i*hx,j*hy,user)         : auloc[j][i];
+                uu[1] = NodeOnBdry(&info,i-1,j)
+                        ? user->g_bdry((i-1)*hx,j*hy,user)     : auloc[j][i-1];
+                uu[2] = NodeOnBdry(&info,i-1,j-1)
+                        ? user->g_bdry((i-1)*hx,(j-1)*hy,user) : auloc[j-1][i-1];
+                uu[3] = NodeOnBdry(&info,i,  j-1)
+                        ? user->g_bdry(i*hx,(j-1)*hy,user)     : auloc[j-1][i];
+                // loop over quadrature points of this element
+                for (r = 0; r < q.n; r++) {
+                    for (s = 0; s < q.n; s++) {
+                        crs = detj * q.w[r] * q.w[s];
+                        // FIXME more actions need to go here!
+                        // loop over corners of element; l is local (elementwise)
+                        // index of the corner, i.e. test function, and PP,QQ are
+                        // global indices of same corner
+                        for (l = 0; l < 4; l++) {
+                            PP = i + li[l];
+                            QQ = j + lj[l];
+                            // only compute rho if we own node and it is not boundary
+                            if (PP >= info.xs && PP < info.xs + info.xm
+                                    && QQ >= info.ys && QQ < info.ys + info.ym
+                                    && !NodeOnBdry(&info,PP,QQ)) {
+                                rhoIntegrandRef(l,r,s,0.0,uu,ff,&prho,&pdrhodc,user);
+                                arho[QQ][PP] += crs * prho;
+                                adrhodc[QQ][PP] += crs * pdrhodc;
+                            }
+                        }
+                    }
+                }
+            } // for i
+        } // for j
+        PetscCall(DMDAVecRestoreArrayRead(da,uloc,&auloc));
+        // estimated FLOPS: only counting quadrature-point float computations:
+        //     q.n^2 quadrature points per element
+        //     2 + 4 * (53 + 4) = 230.0 flops per quadrature point
+        PetscCall(PetscLogFlops(230.0 * q.n * q.n * (info.xm + 1) * (info.ym + 1)));
+
+        // loop over nodes to take the single Newton step
+        PetscCall(DMDAVecGetArray(da,u,&au));  // will update u
+        for (j = info.ys; j < info.ys + info.ym; j++) {
+            for (i = info.xs; i < info.xs + info.xm; i++) {
+                if (!NodeOnBdry(&info,i,j)) { // i,j is an owned interior node
+                    // do single (unconditional) pointwise Newton iteration
+                    // from c_0 = 0:
+                    //   c_1 = c_0 - rho(c_0) / rho'(c_0) = - rho(0) / rho'(0)
+                    if (b)
+                        arho[j][i] -= ab[j][i];
+                    au[j][i] -= arho[j][i] / adrhodc[j][i];  // Newton step
+                }
+            }
+        }
+        PetscCall(DMDAVecRestoreArray(da,u,&au));
+        PetscCall(DMDAVecRestoreArray(da,rho,&arho));
+        PetscCall(DMDAVecRestoreArray(da,drhodc,&adrhodc));
+        PetscCall(PetscLogFlops(2.0 * info.xm * info.ym));
+    } // for m (sweeps)
+
+    if (b) {
+        PetscCall(DMDAVecRestoreArrayRead(da,b,&ab));
+    }
+    PetscCall(DMRestoreGlobalVector(da,&rho));
+    PetscCall(DMRestoreGlobalVector(da,&drhodc));
+    PetscCall(DMRestoreLocalVector(da,&uloc));
+
+    (user->ngscount)++;
     return 0;
 }
