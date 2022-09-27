@@ -160,14 +160,9 @@ urlcolor=black    % ...
 
 We extend the constraint decomposition (CD) method of X.-C.~Tai \cite{Tai2003} to nonlinear variational inequality (VI) problems to which it has not been applied.  The convergence of this method, for several types of decompositions, was proven by Tai for coercive VI problems which arise from minimization of a convex functional over a convex set.  In its multilevel form the method has been shown to have optimal complexity for elliptic, linear obstacle problems \cite[Subsection 5.4]{Tai2003}; see also \cite[Theorem 4.6 and Algorithm 4.7]{GraeserKornhuber2009}.
 
-The theory presented in \cite{Tai2003} is extended as follows:
+The multilevel CD algorithms in \cite{GraeserKornhuber2009} and \cite{Tai2003} are extended in three practical ways:
 \renewcommand{\labelenumi}{\emph{(\roman{enumi})}}
 \begin{enumerate}
-\item We do not assume that the continuum VI problem arises from optimization of a scalar objective---examples are explored in Sections \ref{sec:vi} and \ref{sec:results}---but we prove convergence in norm at the same rate as the original method converges in energy (Section \ref{sec:convergence}). % THIS IS THE HOPE
-\end{enumerate}
-Furthermore the multilevel CD algorithms in \cite{GraeserKornhuber2009} and \cite{Tai2003} are extended in three practical ways:
-\begin{enumerate}
-\setcounter{enumi}{1} % resume at (ii)
 \item We make finite element (FE) implementations of multilevel CD algorithm more effective for nonlinear problems by applying a full approximation storage (FAS; see \cite{Brandt1977,Bruneetal2015}) approach.  Results from the resulting \emph{nonlinear multilevel constraint decomposition} (NMCD) algorithm, which avoids global (Newton) linearization (compare \cite{GraeserKornhuber2009}), are shown in Section \ref{sec:results} for several nonlinear problems.
 \item Our implementation permits ``box'' constraints, namely upper and lower obstacles.
 \item In Sections \ref{sec:multilevel} and \ref{sec:vcycle} we explain why, given the manner in which constraint sets are decomposed in the multilevel context \cite{GraeserKornhuber2009}, multilevel ``up-smoothing'' is more efficient than ``down-smoothing''.  This observation seems to be new; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}.  A strong preference for up-smoothing is special to multilevel CD methods and does not arise in unconstrained problems.
@@ -177,9 +172,7 @@ The iterates from a CD method are always admissible, and thus the operator can b
 
 One of our examples demonstrates the application of the NMCD method to a problem of porous-media type, to which the extended convergence theory, \emph{(i)} above, does not apply because the nonlinear operator is not known to be coercive.  By ``freezing' the solution-dependent coefficient, the operator is approximated by a coercive operator for the duration of the V-cycle.  The resulting scheme is highly-effective for doubly-nonlinear diffusion operators, another type of problem to which the extended theory does not apply (Section \ref{sec:results}).
 
-For the classical obstacle problem with a Laplacian operator, certain multilevel techniques are known to improve performance relative to the multilevel CD method \cite{GraeserKornhuber2009}, such as the truncated monotone multigrid method \cite{Kornhuber1994}.  These improved methods either track the active set in the discretization or modify the nodal basis functions, and in this sense they are discrete algorithms, while by contrast the CD method applies at the level of the continuum problem (Sections \ref{sec:cd} and \ref{sec:convergence}).  Acceleration of our NMCD method via active-set and/or basis-level manipulations represents a potential extension of the method here, and is a topic for future research.
-
-% A BRIDGE TOO FAR:  In one example at the end of this paper (Section \ref{sec:resultsnonlocal}) we consider a nonlocal residual functional, that is, one which is not a partial differential operator.  Each evaluation of this functional requires the solution of a Stokes problem for a layer of fluid \nocite{SayagWorster2013} on a substrate (which forms the obstacle), and thus the corresponding FE operator discretization is also not sparse.  In this case we cannot prove coercivity but we nonetheless succeed in demonstrating near-optimal complexity of the Section \ref{sec:multilevel} multilevel CD algorithm in practice.
+For the classical obstacle problem with a Laplacian operator, certain multilevel techniques are known to improve performance relative to the multilevel CD method \cite{GraeserKornhuber2009}, such as the truncated monotone multigrid method \cite{Kornhuber1994}.  These improved methods either track the active set in the discretization or modify the nodal basis functions, and in this sense they are discrete algorithms, while by contrast the CD method applies essentially at the level of the continuum problem; see Section \ref{sec:cd}.  Acceleration of our NMCD method via active-set and/or basis-level manipulations represents a potential extension of the method here, and is a topic for future research.
 
 
 \section{Coercive variational inequalities} \label{sec:vi}
@@ -356,10 +349,7 @@ For either Algorithm we define
 \begin{equation}
 e_i = \hat w_i - \Pi_i u \in \cV_i, \label{eq:ithupdate}
 \end{equation}
-the $i$th \emph{subset update}.  As the reader may check, $\hat w = u + \sum_{i} e_i$ and $w = u + \alpha \sum_i e_i$.  Note $\hat w = u^* + \sum_i \hat w_i - \Pi_i u^*$ also holds.  We will use these identities in Section \ref{sec:convergence}.
-
-% FOLLOWING CONTAINS ASPIRATIONS
-The convergence results in Section \ref{sec:convergence} require substantial damping when applying additive Algorithm \ref{alg:basiccd-add}, namely we require $\alpha \le 1/m$ as in \cite{Tai2003}.  By constrast, Algorithm \ref{alg:basiccd-mult} can be shown to converge without damping ($\alpha\le 1$).  In Section \ref{sec:results} we demonstrate practical convergence for larger ranges of $\alpha$ than suggested by the theory.
+the $i$th \emph{subset update}.  As the reader may check, $\hat w = u + \sum_{i} e_i$ and $w = u + \alpha \sum_i e_i$.  Note $\hat w = u^* + \sum_i \hat w_i - \Pi_i u^*$ also holds.
 
 We refer to Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} as the \emph{basic CD iterations}.  These basic iterations are meaningful even when $f$ is nonlinear, non-local, or defined only on $\cK$.  However, practical and efficient FE implementation for such general problems seems not to have been addressed in the literature, and will need additional notions.  In particular, references \cite{GraeserKornhuber2009,Tai2003} only apply the CD method to the classical obstacle problem for which $f$ is linear, local, and defined for all inputs.  The following example exposes the implementation simplifications available in that case.
 
@@ -373,101 +363,6 @@ for all $v_i \in \mathcal{K_i}$, where $\tilde\ell = \ell - f(u)$.  Note $e_i = 
 When $f$ has all the nice properties listed in Example \ref{ex:fnice} then a solver can take advantage of implementation efficiencies which are unavailable in general.  The FE approximation of VI \eqref{eq:vi}---see Sections \ref{sec:multilevel} and \ref{sec:vcycle}---can be solved in any incremental and efficient manner following the techniques in \cite{GraeserKornhuber2009,Tai2003}, namely by computations over hat function supports.  The actual solution process for VI \eqref{eq:linearlocalvi} is not really the concern here; we are observing that the storage needed for problem \eqref{eq:linearlocalvi}, and the cost of residual evaluation, are smaller than in the general case.  For more difficult problems certain additional ideas, illustrated in Section \ref{sec:vcycle}, are needed for practical implementation.  Specifically, we will extend a multilevel CD iteration to a method for nonlinear functions $f:\cK\to\cV'$, i.e.~defined only on the constraint set $\cK$, by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}.
 
 One may also contrast Example \ref{ex:fnice} with the case of a non-local integral operator $f$ \cite{Bueler2021conservation}, where $\ip{f(\phi)}{z}$ requires an integral over $\Omega$ even if $\phi$ is a function with small support such as a hat function.  Extension of the multilevel CD method to such non-local functionals $f$ is a topic for future research.
-
-
-\section{Convergence of a basic CD iteration} \label{sec:convergence}
-
-We now prove the convergence of the basic additive CD iteration, Algorithm \ref{alg:basiccd-add}. % ASPIRATION
-A convergence proof becomes possible if we restrict to $2$-coercive operators, require substantial damping, and make certain other assumptions as in \cite{Tai2003}.  However, our proof applies to VI problems which are not optimizations, thus extending the theory in \cite{Tai2003}.
-
-First we define a new form related to VI problem \eqref{eq:vi}.
-
-\begin{definition} Suppose $f:\cK \to \cV'$ and $\ell \in \cV'$.  For $v,w \in \cK$ let
-\begin{equation}
-  E(v,w) = \ip{f(v)-\ell}{v-w}.  \label{eq:normlikedefn}
-\end{equation}
-\end{definition}
-
-If $u^*$ solves \eqref{eq:vi} then $E(v,u^*)$ is a ``merit function'' for an iterate $v$, a concept used in solving nonlinear equations \cite{NocedalWright2006}, except that $u^*$ is not generally known so this meaning is only theoretical.  In any case, our use of $E(v,u^*)$ replaces the scalar objective ``$F(v)$'' used in \cite{Tai2003}.  The next lemma shows $E(v,u^*)$ is bounded below by a norm.
-
-\begin{lemma} \label{lem:normlike}  Suppose $f:\mathcal{K} \to \mathcal{V}'$ is $p$-coercive with constant $\kappa>0$, and $u^* \in \mathcal{K}$ solves \eqref{eq:vi}.  For  all $v \in \mathcal{K}$,
-\begin{equation}
-  E(v,u^*) \ge \kappa \|v-u^*\|^p.  \label{eq:normlikebound}
-\end{equation}
-\end{lemma}
-
-\begin{proof}
-\begin{align*}
-E(v,u^*) &= \ip{f(v)}{v-u^*} - \ip{f(u^*)}{v-u^*} + \ip{f(u^*)}{v-u^*} - \ip{\ell}{v-u^*} \\
-   &\ge \ip{f(v)-f(u^*)}{v-u^*} + 0 \ge \kappa \|v-u^*\|^p.  \qedhere
-\end{align*}
-\end{proof}
-
-Next we make two assumptions which are essentially the same as (7) and (8) in \cite{Tai2003}.  These inequalities might be described as ``totally Lipschitz'' requirements, over the CD defined by \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum}, for the maps $\Pi_i$ and $f$, respectively.
-
-\begin{assumptions*}  There exists a constant $C_1>0$ so that
-\begin{equation}
-\left(\sum_{i=0}^{m-1} \|\Pi_i u - \Pi_i v\|^2\right)^{1/2} \le C_1 \|u-v\| \label{as:lipschitzrestrictions}
-\end{equation}
-for all $u,v\in\cK$.  There exists another constant $C_2>0$ so that for all $v_i \in \cV_i$ and $y_j \in \cV_j$, and all $w_{ij} \in \cK$ such that $w_{ij} + v_i \in \cK$, it holds that
-\begin{equation}
-\sum_{i=0}^{m-1} \sum_{j=0}^{m-1} \left|\ip{f(w_{ij} + v_i) - f(w_{ij})}{y_j}\right| \le C_2 \left(\sum_{i=0}^{m-1} \|v_i\|^2\right)^{1/2} \left(\sum_{j=0}^{m-1} \|y_j\|^2\right)^{1/2}. \label{as:lipschitzresidual}
-\end{equation}
-\end{assumptions*}
-
-We make the following observations:
-\begin{itemize}
-\item The constants $C_1,C_2$ generally depend on $m$, the number of sets in the CD.  In a multilevel CD method (Sections \ref{sec:multilevel} and \ref{sec:vcycle}) this number is logarithmic in the number of degrees of freedom (nodes) in the fine-level mesh.
-\item Regarding the convergence proof below, if the iterates from Algorithm \ref{alg:basiccd-add} are bounded in $\mathcal{K}$ then constants $C_1,C_2$ are permitted to depend continuously on $u,v,w_{ij},v_i,y_i$ \cite{Tai2003}.
-\item Bound \eqref{as:lipschitzrestrictions} addresses only the CD, and not the nonlinear operator $f$.  Tai \cite{Tai2003} gives a value of $C_1$ for certain obstacle problem CDs using $P_1$ FE spaces over shape-regular and quasi-uniform triangulations.  In particular, $C_1$ is known for the standard multilevel hierarchy, so the cases demonstrated in Section \ref{sec:results} are covered.
-\item If $f$ is defined on all of $\mathcal{V}$ then one may verify \eqref{as:lipschitzresidual} over a subspace, versus constraint, decomposition.  For example, \eqref{as:lipschitzresidual} is verified for the classical obstacle problem over arbitrary $w_{ij} \in \cV$.  (Unconstrained versions of \eqref{as:lipschitzrestrictions}, \eqref{as:lipschitzresidual} are (13), (14) in \cite{TaiXu2002}, respectively.)
-\item If $f$ is Lipschitz then the existence of $C_2$ is clear \cite{TaiXu2002}.  However, our convergence rate bound is improved by taking the smallest $C_2$ for which \eqref{as:lipschitzresidual} holds.
-\end{itemize}
-
-From the above definitions and assumptions we have the following estimate for Algorithm \ref{alg:basiccd-add}.  Our proof roughly follows that of Theorem 1 in \cite{Tai2003}.
-
-\begin{lemma} \label{lem:core}  Suppose $f$ is $2$-coercive with constant $\kappa>0$, and that $u^* \in \mathcal{K}$ solves \eqref{eq:vi}.  Assume $\mathcal{V}_i$, $\mathcal{K}_i$, $\Pi_i$ form a CD satisfying \eqref{as:lipschitzrestrictions}, and that \eqref{as:lipschitzresidual} is satisfied.  If $\hat w$ is computed from $u \in \mathcal{K}$ by Algorithm \ref{alg:basiccd-add} then
-\begin{equation}
-   E(\hat w,u^*) \le C_2 \sum_{i=0}^{m-1} \|e_i\|^2 + \kappa^{-1} C_1 C_2 \left(\sum_{i=0}^{m-1} \|e_i\|^2\right)^{1/2} E(u,u^*)^{1/2} \label{eq:core}
-\end{equation}
-where again $e_i=\hat w_i - \Pi_i u$ (equation \eqref{eq:ithupdate}).
-\end{lemma}
-
-\begin{proof}  Recall that $\hat w = u^* + \sum_i \hat w_i - \Pi_i u^*$.  Expand $E(\hat w,u^*)$ and substitute $v_i = \Pi_i u^*$ into the boxed VI in Algorithm \ref{alg:basiccd-add} to find
-\begin{align}
-E(\hat w,u^*) &= \sum_{i=0}^{m-1} \ip{f(\hat w)}{\hat w_i - \Pi_i u^*} - \ip{\ell}{\hat w_i - \Pi_i u^*} \notag \\
-    &\le \sum_{i=0}^{m-1} \ip{f(\hat w)}{\hat w_i - \Pi_i u^*} + \ip{f(u + e_i)}{\Pi_i u^* - \hat w_i} \notag \\
-    &= \sum_{i=0}^{m-1} \ip{f(\hat w) - f(u + e_i)}{\hat w_i - \Pi_i u^*}. \label{eq:startcore}
-\end{align}
-
-For $i\in \{0,1,\dots,m-1\}$ we now use wrapped indices to define progressive states $\phi_{i,j}$:
-\begin{align}
-\phi_{i,0} &= u + e_i, \label{eq:gridcore} \\
-\phi_{i,1} &= u + e_i + e_{i+1}, \notag \\
-  &\vdots \notag \\
-\phi_{i,m-1} &= u + e_i + e_{i+1} + \dots + e_{m-1} + e_0 + \dots + e_{i-1}. \notag
-\end{align}
-Observe that $\phi_{i,j} \in \cK$ by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum}, and that $\phi_{i,m-1} = u + \sum_i e_i = \hat w$, thus that \eqref{eq:startcore} can be written
-\begin{equation}
-E(\hat w,u^*) = \sum_{i=0}^{m-1} \ip{f(\phi_{i,m-1}) - f(\phi_{i,0})}{\hat w_i - \Pi_i u^*}. \label{eq:startcoreclean}
-\end{equation}
-From \eqref{eq:startcoreclean}, telescope into a sum over $j=1,\dots,m-1$, and then apply the triangle inequality:
-\begin{align}
-E(\hat w,u^*) &\le \sum_{i=0}^{m-1} \sum_{j=1}^{m-1} \ip{f(\phi_{i,j}) - f(\phi_{i,j-1})}{\hat w_i - \Pi_i u^*} \label{eq:nextcore} \\
-  &\le \sum_{i=0}^{m-1} \sum_{j=1}^{m-1} \left|\ip{f(\phi_{i,j}) - f(\phi_{i,j-1})}{\hat w_i - \Pi_i u^*}\right|. \notag
-\end{align}
-
-Let $Z=\left(\sum_{i=0}^{m-1} \|e_i\|^2\right)^{1/2}$.  FIXME: MAKE THE RENUMBERING EXPLICIT AND NOTE $v_0=0$ IN APPLYING \eqref{as:lipschitzresidual}
-
-renumbering the indices $i,j$ we may apply assumption \eqref{as:lipschitzresidual}, then the triangle inequality, and then assumption \eqref{as:lipschitzrestrictions}:
-\begin{align}
-E(\hat w,u^*) &\le C_2 Z \left(\sum_{i=0}^{m-1} \|\hat w_i - \Pi_i u^*\|^2\right)^{1/2} = C_2 Z \left(\sum_{i=0}^{m-1} \|\hat w_i - \Pi_i u + \Pi_i u - \Pi_i u^*\|^2\right)^{1/2} \label{eq:nextnextcore} \\
-  &\le C_2 Z \left(Z + \left(\sum_{i=0}^{m-1} \|\Pi_i u - \Pi_i u^*\|^2\right)^{1/2}\right) \le C_2 Z \left(Z + C_1 \|u-u^*\|\right). \notag
-\end{align}
-Finally apply Lemma \ref{lem:normlike} to give \eqref{eq:core}.
-\end{proof}
-
-FIXME NOW THE ENTIRE BATTLE IS TO GET A CONVEXITY RESULT $E(w,u) \ge C \sum_{j=0}^{m-1} \|e_j\|^2$ for some reasonable $C$
 
 
 \section{Multilevel finite element CDs} \label{sec:multilevel}
@@ -531,7 +426,7 @@ Finally, the monotone restrictions $\maxR,\minR$ are nonlinear maps which maximi
 \end{align}
 with the result in $\tilde{\mathcal{V}}^{j-1}$.  The usual ordering rules for the extended real line $\tilde\RR$ are applied.  Note that if $z\in\tilde{\mathcal{V}}^j$ then $\minR z \le z \le \maxR z$.
 
-To define the constraint subsets, the sets generically denoted $\cK_i$ in Sections \ref{sec:cd}--\ref{sec:convergence}, in the current multilevel FE context, suppose $w^J \in \cK^J$ is an admissible fine-level iterate which approximates the solution $u^J$ of VI \eqref{eq:fe:vi}.  From this iterate we define the finest-level \emph{lower and upper defect constraints} \cite{GraeserKornhuber2009}
+To define the constraint subsets, the sets generically denoted $\cK_i$ in Section \ref{sec:cd}, in the current multilevel FE context, suppose $w^J \in \cK^J$ is an admissible fine-level iterate which approximates the solution $u^J$ of VI \eqref{eq:fe:vi}.  From this iterate we define the finest-level \emph{lower and upper defect constraints} \cite{GraeserKornhuber2009}
 \begin{equation}
 \underline{\chi}^J = \underline{\gamma}^J - w^J, \qquad \overline{\chi}^J = \overline{\gamma}^J - w^J, \label{eq:fe:defectconstraints}
 \end{equation}

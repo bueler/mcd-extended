@@ -1,0 +1,101 @@
+FIXME this fragment is an attempt to re-prove convergence a la Tai, but without using the objective function
+
+We do not assume that the continuum VI problem arises from optimization of a scalar objective---examples are explored in Sections \ref{sec:vi} and \ref{sec:results}---but we prove convergence in norm at the same rate as the original method converges in energy (Section \ref{sec:convergence}). % THIS IS THE HOPE
+
+The convergence results in Section \ref{sec:convergence} require substantial damping when applying additive Algorithm \ref{alg:basiccd-add}, namely we require $\alpha \le 1/m$ as in \cite{Tai2003}.  By constrast, Algorithm \ref{alg:basiccd-mult} can be shown to converge without damping ($\alpha\le 1$).  In Section \ref{sec:results} we demonstrate practical convergence for larger ranges of $\alpha$ than suggested by the theory.
+
+
+
+\section{Convergence of a basic CD iteration} \label{sec:convergence}
+
+We now prove the convergence of the basic additive CD iteration, Algorithm \ref{alg:basiccd-add}. % ASPIRATION
+A convergence proof becomes possible if we restrict to $2$-coercive operators, require substantial damping, and make certain other assumptions as in \cite{Tai2003}.  However, our proof applies to VI problems which are not optimizations, thus extending the theory in \cite{Tai2003}.
+
+First we define a new form related to VI problem \eqref{eq:vi}.
+
+\begin{definition} Suppose $f:\cK \to \cV'$ and $\ell \in \cV'$.  For $v,w \in \cK$ let
+\begin{equation}
+  E(v,w) = \ip{f(v)-\ell}{v-w}.  \label{eq:normlikedefn}
+\end{equation}
+\end{definition}
+
+If $u^*$ solves \eqref{eq:vi} then $E(v,u^*)$ is a ``merit function'' for an iterate $v$, a concept used in solving nonlinear equations \cite{NocedalWright2006}, except that $u^*$ is not generally known so this meaning is only theoretical.  In any case, our use of $E(v,u^*)$ replaces the scalar objective ``$F(v)$'' used in \cite{Tai2003}.  The next lemma shows $E(v,u^*)$ is bounded below by a norm.
+
+\begin{lemma} \label{lem:normlike}  Suppose $f:\mathcal{K} \to \mathcal{V}'$ is $p$-coercive with constant $\kappa>0$, and $u^* \in \mathcal{K}$ solves \eqref{eq:vi}.  For  all $v \in \mathcal{K}$,
+\begin{equation}
+  E(v,u^*) \ge \kappa \|v-u^*\|^p.  \label{eq:normlikebound}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+\begin{align*}
+E(v,u^*) &= \ip{f(v)}{v-u^*} - \ip{f(u^*)}{v-u^*} + \ip{f(u^*)}{v-u^*} - \ip{\ell}{v-u^*} \\
+   &\ge \ip{f(v)-f(u^*)}{v-u^*} + 0 \ge \kappa \|v-u^*\|^p.  \qedhere
+\end{align*}
+\end{proof}
+
+Next we make two assumptions which are essentially the same as (7) and (8) in \cite{Tai2003}.  These inequalities might be described as ``totally Lipschitz'' requirements, over the CD defined by \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum}, for the maps $\Pi_i$ and $f$, respectively.
+
+\begin{assumptions*}  There exists a constant $C_1>0$ so that
+\begin{equation}
+\left(\sum_{i=0}^{m-1} \|\Pi_i u - \Pi_i v\|^2\right)^{1/2} \le C_1 \|u-v\| \label{as:lipschitzrestrictions}
+\end{equation}
+for all $u,v\in\cK$.  There exists another constant $C_2>0$ so that for all $v_i \in \cV_i$ and $y_j \in \cV_j$, and all $w_{ij} \in \cK$ such that $w_{ij} + v_i \in \cK$, it holds that
+\begin{equation}
+\sum_{i=0}^{m-1} \sum_{j=0}^{m-1} \left|\ip{f(w_{ij} + v_i) - f(w_{ij})}{y_j}\right| \le C_2 \left(\sum_{i=0}^{m-1} \|v_i\|^2\right)^{1/2} \left(\sum_{j=0}^{m-1} \|y_j\|^2\right)^{1/2}. \label{as:lipschitzresidual}
+\end{equation}
+\end{assumptions*}
+
+We make the following observations:
+\begin{itemize}
+\item The constants $C_1,C_2$ generally depend on $m$, the number of sets in the CD.  In a multilevel CD method (Sections \ref{sec:multilevel} and \ref{sec:vcycle}) this number is logarithmic in the number of degrees of freedom (nodes) in the fine-level mesh.
+\item Regarding the convergence proof below, if the iterates from Algorithm \ref{alg:basiccd-add} are bounded in $\mathcal{K}$ then constants $C_1,C_2$ are permitted to depend continuously on $u,v,w_{ij},v_i,y_i$ \cite{Tai2003}.
+\item Bound \eqref{as:lipschitzrestrictions} addresses only the CD, and not the nonlinear operator $f$.  Tai \cite{Tai2003} gives a value of $C_1$ for certain obstacle problem CDs using $P_1$ FE spaces over shape-regular and quasi-uniform triangulations.  In particular, $C_1$ is known for the standard multilevel hierarchy, so the cases demonstrated in Section \ref{sec:results} are covered.
+\item If $f$ is defined on all of $\mathcal{V}$ then one may verify \eqref{as:lipschitzresidual} over a subspace, versus constraint, decomposition.  For example, \eqref{as:lipschitzresidual} is verified for the classical obstacle problem over arbitrary $w_{ij} \in \cV$.  (Unconstrained versions of \eqref{as:lipschitzrestrictions}, \eqref{as:lipschitzresidual} are (13), (14) in \cite{TaiXu2002}, respectively.)
+\item If $f$ is Lipschitz then the existence of $C_2$ is clear \cite{TaiXu2002}.  However, our convergence rate bound is improved by taking the smallest $C_2$ for which \eqref{as:lipschitzresidual} holds.
+\end{itemize}
+
+From the above definitions and assumptions we have the following estimate for Algorithm \ref{alg:basiccd-add}.  Our proof roughly follows that of Theorem 1 in \cite{Tai2003}.
+
+\begin{lemma} \label{lem:core}  Suppose $f$ is $2$-coercive with constant $\kappa>0$, and that $u^* \in \mathcal{K}$ solves \eqref{eq:vi}.  Assume $\mathcal{V}_i$, $\mathcal{K}_i$, $\Pi_i$ form a CD satisfying \eqref{as:lipschitzrestrictions}, and that \eqref{as:lipschitzresidual} is satisfied.  If $\hat w$ is computed from $u \in \mathcal{K}$ by Algorithm \ref{alg:basiccd-add} then
+\begin{equation}
+   E(\hat w,u^*) \le C_2 \sum_{i=0}^{m-1} \|e_i\|^2 + \kappa^{-1} C_1 C_2 \left(\sum_{i=0}^{m-1} \|e_i\|^2\right)^{1/2} E(u,u^*)^{1/2} \label{eq:core}
+\end{equation}
+where again $e_i=\hat w_i - \Pi_i u$ (equation \eqref{eq:ithupdate}).
+\end{lemma}
+
+\begin{proof}  Recall that $\hat w = u^* + \sum_i \hat w_i - \Pi_i u^*$.  Expand $E(\hat w,u^*)$ and substitute $v_i = \Pi_i u^*$ into the boxed VI in Algorithm \ref{alg:basiccd-add} to find
+\begin{align}
+E(\hat w,u^*) &= \sum_{i=0}^{m-1} \ip{f(\hat w)}{\hat w_i - \Pi_i u^*} - \ip{\ell}{\hat w_i - \Pi_i u^*} \notag \\
+    &\le \sum_{i=0}^{m-1} \ip{f(\hat w)}{\hat w_i - \Pi_i u^*} + \ip{f(u + e_i)}{\Pi_i u^* - \hat w_i} \notag \\
+    &= \sum_{i=0}^{m-1} \ip{f(\hat w) - f(u + e_i)}{\hat w_i - \Pi_i u^*}. \label{eq:startcore}
+\end{align}
+
+For $i\in \{0,1,\dots,m-1\}$ we now use wrapped indices to define progressive states $\phi_{i,j}$:
+\begin{align}
+\phi_{i,0} &= u + e_i, \label{eq:gridcore} \\
+\phi_{i,1} &= u + e_i + e_{i+1}, \notag \\
+  &\vdots \notag \\
+\phi_{i,m-1} &= u + e_i + e_{i+1} + \dots + e_{m-1} + e_0 + \dots + e_{i-1}. \notag
+\end{align}
+Observe that $\phi_{i,j} \in \cK$ by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum}, and that $\phi_{i,m-1} = u + \sum_i e_i = \hat w$, thus that \eqref{eq:startcore} can be written
+\begin{equation}
+E(\hat w,u^*) = \sum_{i=0}^{m-1} \ip{f(\phi_{i,m-1}) - f(\phi_{i,0})}{\hat w_i - \Pi_i u^*}. \label{eq:startcoreclean}
+\end{equation}
+From \eqref{eq:startcoreclean}, telescope into a sum over $j=1,\dots,m-1$, and then apply the triangle inequality:
+\begin{align}
+E(\hat w,u^*) &\le \sum_{i=0}^{m-1} \sum_{j=1}^{m-1} \ip{f(\phi_{i,j}) - f(\phi_{i,j-1})}{\hat w_i - \Pi_i u^*} \label{eq:nextcore} \\
+  &\le \sum_{i=0}^{m-1} \sum_{j=1}^{m-1} \left|\ip{f(\phi_{i,j}) - f(\phi_{i,j-1})}{\hat w_i - \Pi_i u^*}\right|. \notag
+\end{align}
+
+Let $Z=\left(\sum_{i=0}^{m-1} \|e_i\|^2\right)^{1/2}$.  FIXME: MAKE THE RENUMBERING EXPLICIT AND NOTE $v_0=0$ IN APPLYING \eqref{as:lipschitzresidual}
+
+renumbering the indices $i,j$ we may apply assumption \eqref{as:lipschitzresidual}, then the triangle inequality, and then assumption \eqref{as:lipschitzrestrictions}:
+\begin{align}
+E(\hat w,u^*) &\le C_2 Z \left(\sum_{i=0}^{m-1} \|\hat w_i - \Pi_i u^*\|^2\right)^{1/2} = C_2 Z \left(\sum_{i=0}^{m-1} \|\hat w_i - \Pi_i u + \Pi_i u - \Pi_i u^*\|^2\right)^{1/2} \label{eq:nextnextcore} \\
+  &\le C_2 Z \left(Z + \left(\sum_{i=0}^{m-1} \|\Pi_i u - \Pi_i u^*\|^2\right)^{1/2}\right) \le C_2 Z \left(Z + C_1 \|u-u^*\|\right). \notag
+\end{align}
+Finally apply Lemma \ref{lem:normlike} to give \eqref{eq:core}.
+\end{proof}
+
+FIXME NOW THE ENTIRE BATTLE IS TO GET A CONVEXITY RESULT $E(w,u) \ge C \sum_{j=0}^{m-1} \|e_j\|^2$ for some reasonable $C$
