@@ -158,26 +158,26 @@ PetscErrorCode LDCFinestUpDCsFromFormulas(Vec w,
     if (fgamupp) {
         if (ldc->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "  LDC info: using formula gamupp at level %d\n",
+            "  LDC info: using formula for gamupp at level %d\n",
             ldc->_level));
         PetscCall(DMCreateGlobalVector(ldc->dal,&vgamupp));
         PetscCall(LDCVecFromFormula(*ldc,fgamupp,vgamupp,ctx));
     } else
         if (ldc->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "  LDC info: formula gamupp=NULL at level %d\n",
+            "  LDC info: gamupp=NULL is +infty at level %d\n",
             ldc->_level));
     if (fgamlow) {
         if (ldc->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "  LDC info: using formula gamlow at level %d\n",
+            "  LDC info: using formula for gamlow at level %d\n",
             ldc->_level));
         PetscCall(DMCreateGlobalVector(ldc->dal,&vgamlow));
         PetscCall(LDCVecFromFormula(*ldc,fgamlow,vgamlow,ctx));
     } else
         if (ldc->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "  LDC info: formula gamlow=NULL at level %d\n",
+            "  LDC info: gamlow=NULL is -infty at level %d\n",
             ldc->_level));
     PetscCall(LDCFinestUpDCsFromVecs(w,vgamupp,vgamlow,ldc));
     if (vgamupp)

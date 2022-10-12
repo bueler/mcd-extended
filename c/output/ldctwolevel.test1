@@ -9,8 +9,8 @@ DM Object: ldc[1].dal 1 MPI process
 Processor [0] M 5 N 5 m 1 n 1 w 1 s 1
 X range of indices: 0 5, Y range of indices: 0 5
 using iterate w=2 to generate finest-level up defect constraints
-  LDC info: formula gamupp=NULL at level 1
-  LDC info: using formula gamlow at level 1
+  LDC info: gamupp=NULL is +infty at level 1
+  LDC info: using formula for gamlow at level 1
   LDC info: chiupp=NULL because gamupp=NULL is +infty at level 1
   LDC info: creating chilow and setting chilow=gamlow-w at level 1
 generating defect constraints for V-cycle
