@@ -118,28 +118,31 @@ int main(int argc,char **argv) {
     // create LDC stack: create coarsest, then refine levels-1 times
     PetscCall(PetscMalloc1(levels,&ldc));
     PetscCall(LDCCreateCoarsest(ldcinfo,3,3,-2.0,2.0,-2.0,2.0,&(ldc[0])));
-    for (j=1; j<levels; j++)
+    for (j=1; j<levels; j++) {
         PetscCall(LDCRefine(&(ldc[j-1]),&(ldc[j])));
-    for (j=0; j<levels; j++)
         PetscCall(DMSetApplicationContext(ldc[j].dal,&ctx));
+    }
 
-    // check finest-level boundary admissiblity
+    // check admissibility of the finest-level boundary condition;
+    // checks ctx->g_bdry() >= ctx->gamma_lower() along boundary
     PetscCall(AssertBoundaryAdmissible(ldc[levels-1].dal,&ctx));
 
-    // generate finest-level obstacle as Vec
+    // generate finest-level obstacle gamlow as Vec
     PetscCall(DMCreateGlobalVector(ldc[levels-1].dal,&gamlow));
     PetscCall(LDCVecFromFormula(ldc[levels-1],gamma_lower,gamlow,&ctx));
 
-    // initial iterate
+    // initial iterate u
     PetscCall(DMCreateGlobalVector(ldc[levels-1].dal,&u));
     PetscCall(FormExact(ldc[levels-1].dal,u,&ctx));  // FIXME initializing with exact solution
     //PetscCall(VecSet(u,0.0));
+
+    // check admissibility of initial iterate u on finest level
     PetscCall(VecLessThanOrEqual(ldc[levels-1].dal,gamlow,u,&admis));
     if (!admis) {
         SETERRQ(PETSC_COMM_SELF,3,"initial iterate u is not admissible\n");
     }
 
-    // complete set-up of LDC stack for initial iterate
+    // complete set-up of LDC stack for initial iterate u
     PetscCall(LDCFinestUpDCsFromVecs(u,NULL,gamlow,&(ldc[levels-1])));
     PetscCall(LDCGenerateDCsVCycle(&(ldc[levels-1])));
 
@@ -147,8 +150,8 @@ int main(int argc,char **argv) {
     PetscCall(VecPrintRange(u,"initial iterate u",""));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"*NOT YET* SOLVING PROBLEM BY %d V-CYCLES\n",cycles));
 
+    // one NMCD V-cycle with one smoother iteration at each j>0 level
 #if 0
-    // FIXME one NMCD V-cycle with one smoother iteration at each j>0 level
     PetscCall(VecCopy(u,ldc[levels-1].g));
     // FIXME fill ldc[j].ell
     for (j=levels-1; j>0; j--) {
