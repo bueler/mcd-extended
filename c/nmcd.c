@@ -24,6 +24,14 @@ typedef struct {
             residualcount, ngscount;
 } ObsCtx;
 
+typedef struct {
+  PetscInt  _level;  // =0 in single-level usage; otherwise 0 is coarsest
+  LDC       ldc;     // object which holds/manages constraints at each level
+  DM        dmda;    // DMDA (structured grid) for this level
+  Vec       g,       // iterate on the level
+            ell;     // right-hand side linear functional on level
+} Level;
+
 // z = gamma_lower(x,y) is the hemispherical obstacle, but made C^1 with "skirt" at r=r0
 PetscReal gamma_lower(PetscReal x, PetscReal y, void *ctx) {
     const PetscReal  r = PetscSqrtReal(x * x + y * y),
