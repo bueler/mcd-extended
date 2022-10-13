@@ -19,12 +19,23 @@ extern PetscErrorCode VecViewMatlabStdout(Vec);
 int main(int argc,char **argv) {
     Vec            w, v;
     PetscBool      admis;
+    DM             cdmda;
     LDC            ldc[2];
 
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
 
+    // create DMDA for coarsest level: 3x3 grid on on Omega = (0,1)x(0,1)
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
+                           DMDA_STENCIL_BOX,
+                           3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&cdmda));
+    PetscCall(DMSetFromOptions(cdmda));  // allows -da_grid_x mx -da_grid_y my etc.
+    PetscCall(DMDASetInterpolationType(cdmda,DMDA_Q1));
+    PetscCall(DMDASetRefinementFactor(cdmda,2,2,2));
+    PetscCall(DMSetUp(cdmda));  // must be called BEFORE SetUniformCoordinates
+    PetscCall(DMDASetUniformCoordinates(cdmda,0.0,1.0,0.0,1.0,0.0,0.0));
+
     // create LDC stack
-    PetscCall(LDCCreateCoarsest(PETSC_TRUE,3,3,0.0,1.0,0.0,1.0,&(ldc[0])));
+    PetscCall(LDCCreateCoarsest(PETSC_TRUE,cdmda,&(ldc[0])));
     PetscCall(LDCRefine(&(ldc[0]),&(ldc[1])));
 
     // view DMDA at each level
@@ -90,7 +101,7 @@ int main(int argc,char **argv) {
 
     // destroy
     PetscCall(LDCDestroy(&(ldc[1])));
-    PetscCall(LDCDestroy(&(ldc[0])));
+    PetscCall(LDCDestroy(&(ldc[0])));  // destroys cdmda
     PetscCall(PetscFinalize());
     return 0;
 }

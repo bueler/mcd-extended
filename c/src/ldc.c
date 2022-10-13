@@ -3,32 +3,25 @@
 #include "q1transfers.h"
 #include "ldc.h"
 
-PetscErrorCode LDCCreateCoarsest(PetscBool verbose, PetscInt mx, PetscInt my,
-                                 PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax,
-                                 LDC *ldc) {
+PetscErrorCode LDCCreateCoarsest(PetscBool verbose, DM cdmda, LDC *ldc) {
     DMDALocalInfo  info;
+    PetscReal      xymin[2], xymax[2];
     ldc->_level = 0;
     ldc->_printinfo = verbose;
     if (ldc->_printinfo)
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
         "  LDC info: creating LDC at level %d",ldc->_level));
-    PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
-                           DMDA_STENCIL_BOX,
-                           mx,my,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&(ldc->dal)));
-    PetscCall(DMSetFromOptions(ldc->dal));  // allows -da_grid_x mx -da_grid_y my etc.
-    PetscCall(DMDAGetLocalInfo(ldc->dal,&info));
-    if (ldc->_printinfo)
+    ldc->dal = cdmda;
+    if (ldc->_printinfo) {
+        PetscCall(DMDAGetLocalInfo(ldc->dal,&info));
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
         " based on %d x %d DMDA\n",info.mx,info.my));
-    // force these defaults:
-    PetscCall(DMDASetInterpolationType(ldc->dal,DMDA_Q1));
-    PetscCall(DMDASetRefinementFactor(ldc->dal,2,2,2));
-    PetscCall(DMSetUp(ldc->dal));  // this must be called BEFORE SetUniformCoordinates
-    PetscCall(DMDASetUniformCoordinates(ldc->dal,xmin,xmax,ymin,ymax,0.0,0.0));
-    ldc->_xmin = xmin;
-    ldc->_xmax = xmax;
-    ldc->_ymin = ymin;
-    ldc->_ymax = ymax;
+    }
+    PetscCall(DMGetBoundingBox(ldc->dal,xymin,xymax));
+    ldc->_xmin = xymin[0];
+    ldc->_xmax = xymax[0];
+    ldc->_ymin = xymin[1];
+    ldc->_ymax = xymax[1];
     ldc->chiupp = NULL;
     ldc->chilow = NULL;
     ldc->phiupp = NULL;
@@ -49,8 +42,10 @@ PetscErrorCode LDCDestroy(LDC *ldc) {
         PetscCall(VecDestroy(&(ldc->phiupp)));
     if (ldc->philow)
         PetscCall(VecDestroy(&(ldc->philow)));
-    if (ldc->dal)
+    if (ldc->dal) {
         PetscCall(DMDestroy(&(ldc->dal)));
+        ldc->dal = NULL;
+    }
     return 0;
 }
 
