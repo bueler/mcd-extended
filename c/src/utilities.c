@@ -14,29 +14,17 @@ PetscErrorCode VecPrintRange(Vec X, const char *name, const char *infcase) {
 }
 
 PetscErrorCode VecLessThanOrEqual(DM da, Vec u, Vec v, PetscBool *flg) {
-    PetscInt         i, j;
-    const PetscReal  **au, **av;
-    DMDALocalInfo info;
-    if ((!u) || (!v)) {
+    Vec       w;
+    PetscReal wmin;
+    if (u == NULL || v == NULL)
         *flg = PETSC_TRUE;
-        return 0;
+    else {
+        PetscCall(DMGetGlobalVector(da,&w));
+        PetscCall(VecWAXPY(w,-1.0,u,v));   // w = v - u  (should be nonnegative)
+        PetscCall(VecMin(w,NULL,&wmin));
+        PetscCall(DMRestoreGlobalVector(da,&w));
+        *flg = (wmin >= 0.0);
     }
-    PetscCall(DMDAGetLocalInfo(da,&info));
-    PetscCall(DMDAVecGetArrayRead(da, u, &au));
-    PetscCall(DMDAVecGetArrayRead(da, v, &av));
-    for (j=info.ys; j<info.ys+info.ym; j++) {
-        for (i=info.xs; i<info.xs+info.xm; i++) {
-            if (au[j][i] > av[j][i]) {
-                PetscCall(DMDAVecRestoreArrayRead(da, u, &au));
-                PetscCall(DMDAVecRestoreArrayRead(da, v, &av));
-                *flg = PETSC_FALSE;
-                return 0;
-            }
-        }
-    }
-    PetscCall(DMDAVecRestoreArrayRead(da, u, &au));
-    PetscCall(DMDAVecRestoreArrayRead(da, v, &av));
-    *flg = PETSC_TRUE;
     return 0;
 }
 

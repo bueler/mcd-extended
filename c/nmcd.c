@@ -193,7 +193,8 @@ int main(int argc,char **argv) {
     if (cycles != 1) {
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,"IGNORING cycles=%d\n",cycles)); // FIXME
     }
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"solving with 1 V-cycle ...\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"solving using 1 V-cycle with %d levels ...\n",
+                          totlevs));
     PetscCall(VecCopy(w,levs[jtop].g));
     PetscCall(VecSet(levs[jtop].ell,0.0));
     // downward direction
@@ -412,6 +413,7 @@ PetscReal _IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
 //     F_ij = u_ij - g(x_i,y_j)
 PetscErrorCode ApplyOperatorF(DM da, Vec u, Vec F, ObsCtx *user) {
     DMDALocalInfo    info;
+    Vec              uloc;
     const Q1Quad1D   q = Q1gausslegendre[user->quadpts-1];
     const PetscInt   li[4] = {0,-1,-1,0},  lj[4] = {0,0,-1,-1};
     PetscInt         i, j, l, PP, QQ, r, s;
@@ -423,7 +425,9 @@ PetscErrorCode ApplyOperatorF(DM da, Vec u, Vec F, ObsCtx *user) {
     hx = 4.0 / (PetscReal)(info.mx - 1),
     hy = 4.0 / (PetscReal)(info.my - 1),
     detj = 0.25 * hx * hy;
-    PetscCall(DMDAVecGetArrayRead(da, u, &au));
+    PetscCall(DMGetLocalVector(da,&uloc));
+    PetscCall(DMGlobalToLocal(da,u,INSERT_VALUES,uloc));
+    PetscCall(DMDAVecGetArrayRead(da, uloc, &au));
     PetscCall(DMDAVecGetArray(da, F, &FF));
 
     // set up Q1 FEM tools for this grid
@@ -491,8 +495,9 @@ PetscErrorCode ApplyOperatorF(DM da, Vec u, Vec F, ObsCtx *user) {
         }
     }
 
-    PetscCall(DMDAVecRestoreArrayRead(da, u, &au));
+    PetscCall(DMDAVecRestoreArrayRead(da, uloc, &au));
     PetscCall(DMDAVecRestoreArray(da, F, &FF));
+    PetscCall(DMRestoreLocalVector(da,&uloc));
 
     // FLOPS: only count flops per quadrature point in residual computations:
     //   4 + 30 = 34

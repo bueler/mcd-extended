@@ -15,10 +15,10 @@
   LDC info: creating and setting philow=chilow (coarsest case) at level 0
   -0.235760 <= initial iterate w <=  1.000000
   -0.002833 <= initial residual f^J(w) <=  0.274846
-solving with 1 V-cycle ...
+solving using 1 V-cycle with 3 levels ...
   -0.235760 <= final iterate w <=  1.000000
   -0.002833 <= final residual f^J(w) <=  0.274846
-flops = 3.448e+05,  residual calls = 6,  PNGS calls = 4
+flops = 3.450e+05,  residual calls = 6,  PNGS calls = 4
 done on 13 x 13 grid:   error |u-uexact|_inf = 0.000e+00
   LDC info: destroying LDC at level 0
   LDC info: destroying LDC at level 1
