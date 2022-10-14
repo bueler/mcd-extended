@@ -8,14 +8,12 @@ PetscErrorCode LDCCreateCoarsest(PetscBool verbose, DM cdmda, LDC *ldc) {
     PetscReal      xymin[2], xymax[2];
     ldc->_level = 0;
     ldc->_printinfo = verbose;
-    if (ldc->_printinfo)
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-        "  LDC info: creating LDC at level %d",ldc->_level));
     ldc->dal = cdmda;
     if (ldc->_printinfo) {
         PetscCall(DMDAGetLocalInfo(ldc->dal,&info));
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-        " based on %d x %d DMDA\n",info.mx,info.my));
+        "  LDC info: creating LDC at level %d based on provided %d x %d coarse DMDA\n",
+        ldc->_level,info.mx,info.my));
     }
     PetscCall(DMGetBoundingBox(ldc->dal,xymin,xymax));
     ldc->_xmin = xymin[0];
