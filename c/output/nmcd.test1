@@ -1,4 +1,4 @@
-  LDC info: creating LDC at level 0 based on 4 x 4 DMDA
+  LDC info: creating LDC at level 0 based on provided 4 x 4 coarse DMDA
   LDC info: refining level 0 LDC, yielding LDC with 7 x 7 DMDA at level 1
   LDC info: refining level 1 LDC, yielding LDC with 13 x 13 DMDA at level 2
   LDC info: chiupp=NULL because gamupp=NULL is +infty at level 2
@@ -16,7 +16,7 @@
   -0.235760 <= initial iterate w <=  1.000000
 *NOT YET* SOLVING PROBLEM BY 1 V-CYCLES
   -0.002833 <= residual F[u] <=  0.274846
-flops = 2.570e+04,  residual calls = 1,  PNGS calls = 0
+flops = 6.703e+04,  residual calls = 5,  PNGS calls = 0
 done on 13 x 13 grid:   error |u-uexact|_inf = 0.000e+00
   LDC info: destroying LDC at level 0
   LDC info: destroying LDC at level 1

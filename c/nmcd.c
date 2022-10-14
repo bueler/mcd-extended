@@ -78,7 +78,8 @@ extern PetscErrorCode ProjectedNGS(LDC*, PetscBool, Vec, Vec, ObsCtx*);
 
 int main(int argc,char **argv) {
     Level          *levs;
-    Vec            gamlow, w, tmp, uexact, F;
+    Vec            gamlow, w, uexact, F,
+                   gplusy, tmpfine, tmpcoarse;
     ObsCtx         ctx;
     DMDALocalInfo  finfo;
     PetscInt       totlevs=2, cycles=1, jtop, j;
@@ -149,10 +150,11 @@ int main(int argc,char **argv) {
             levs[j].dmda = levs[j].ldc.dal;
         }
         PetscCall(DMSetApplicationContext(levs[j].dmda,&ctx));
-        PetscCall(DMCreateGlobalVector(levs[j].dmda,&(levs[j].g)));
-        PetscCall(VecDuplicate(levs[j].g,&(levs[j].ell)));
-        PetscCall(VecDuplicate(levs[j].g,&(levs[j].y)));
-        PetscCall(VecDuplicate(levs[j].g,&(levs[j].z)));
+        PetscCall(DMGetGlobalVector(levs[j].dmda,&(levs[j].g)));
+        PetscCall(DMGetGlobalVector(levs[j].dmda,&(levs[j].ell)));
+        PetscCall(DMGetGlobalVector(levs[j].dmda,&(levs[j].z)));
+        if (j > 0)
+            PetscCall(DMGetGlobalVector(levs[j].dmda,&(levs[j].y)));
     }
     jtop = totlevs - 1;
 
@@ -161,7 +163,7 @@ int main(int argc,char **argv) {
     PetscCall(AssertBoundaryAdmissible(levs[jtop].dmda,&ctx));
 
     // generate finest-level obstacle gamlow as Vec
-    PetscCall(DMCreateGlobalVector(levs[jtop].dmda,&gamlow));
+    PetscCall(DMGetGlobalVector(levs[jtop].dmda,&gamlow));
     PetscCall(LDCVecFromFormula(levs[jtop].ldc,gamma_lower,gamlow,&ctx));
 
     // create initial iterate w on finest level
@@ -177,6 +179,7 @@ int main(int argc,char **argv) {
 
     // complete set-up of LDC stack for initial iterate u
     PetscCall(LDCFinestUpDCsFromVecs(w,NULL,gamlow,&(levs[jtop].ldc)));
+    PetscCall(DMRestoreGlobalVector(levs[jtop].dmda,&gamlow));
     PetscCall(LDCGenerateDCsVCycle(&(levs[jtop].ldc)));
 
     // solve the problem
@@ -188,31 +191,57 @@ int main(int argc,char **argv) {
     PetscCall(VecSet(levs[jtop].ell,0.0));
     // downward direction
     for (j=jtop; j>0; j--) {
+        // get allocated temporaries
+        PetscCall(DMGetGlobalVector(levs[j].dmda,&gplusy));
+        PetscCall(DMGetGlobalVector(levs[j].dmda,&tmpfine));
+        PetscCall(DMGetGlobalVector(levs[j-1].dmda,&tmpcoarse));
+        // smooth in D^j to compute y^j
         PetscCall(VecSet(levs[j].y,0.0));
-        // FIXME modify NGS to take g,y separately (not u together)
+        // FIXME modify PNGS to take g,y separately (not u together)
         //PetscCall(ProjectedNGS(&(levs[j].ldc),PETSC_FALSE,levs[j].ell,
         //                       levs[j].g,levs[j].y,&ctx));
-        PetscCall(VecDuplicate(levs[j].g,&tmp));
-        PetscCall(VecWAXPY(tmp,1.0,levs[j].g,levs[j].y));
-        PetscCall(Q1Inject(levs[j].dmda,levs[j-1].dmda,tmp,&(levs[j-1].g)));
-        PetscCall(VecDestroy(&tmp));
-        // FIXME construct ell on j-1
-        //PetscCall(ApplyOperatorF(levs[j].dmda,u,F,&ctx));
-        //PetscCall(VecWAXPY(levs[j-1].ell,ldc[j-1].
+        // compute g^j-1 using injection:
+        //   g^j-1 = R^dot(g^j + y^j)
+        PetscCall(VecWAXPY(gplusy,1.0,levs[j].g,levs[j].y));
+        PetscCall(Q1Inject(levs[j].dmda,levs[j-1].dmda,gplusy,&(levs[j-1].g)));
+        // construct ell^j-1:
+        //   ell^j-1 = f^j-1(g^j-1) + R (ell^j - f^j(g^j + y^j))
+        PetscCall(ApplyOperatorF(levs[j-1].dmda,levs[j-1].g,levs[j-1].ell,&ctx));
+        PetscCall(ApplyOperatorF(levs[j].dmda,gplusy,tmpfine,&ctx));
+        PetscCall(VecAYPX(tmpfine,-1.0,levs[j].ell));
+        PetscCall(Q1Restrict(levs[j].dmda,levs[j-1].dmda,tmpfine,&tmpcoarse));
+        PetscCall(VecAXPY(levs[j-1].ell,1.0,tmpcoarse));
+        // restore temporaries
+        PetscCall(DMRestoreGlobalVector(levs[j].dmda,&gplusy));
+        PetscCall(DMRestoreGlobalVector(levs[j].dmda,&tmpfine));
+        PetscCall(DMRestoreGlobalVector(levs[j-1].dmda,&tmpcoarse));
     }
-    // coarse solve
-    // FIXME
+    // coarse solve in U^0 to compute z^0
+    PetscCall(VecSet(levs[0].z,0.0));
+    // FIXME modify PNGS to take g,z separately (not u together)
+    //PetscCall(ProjectedNGS(&(levs[0].ldc),PETSC_TRUE,levs[0].ell,
+    //                       levs[0].g,levs[0].z,&ctx));
     // upward direction
     for (j=1; j<jtop; j++) {
-        // FIXME
+        // compute z^j using prolongation:
+        //   z^j = P z^j-1 + y^j
+        PetscCall(Q1Interpolate(levs[j-1].dmda,levs[j].dmda,levs[j-1].z,&(levs[j].z)));
+        PetscCall(VecAXPY(levs[j].z,1.0,levs[j].y));
+        // smooth in U^j to compute z^j
+        // FIXME modify PNGS to take g,z separately (not u together)
+        //PetscCall(ProjectedNGS(&(levs[j].ldc),PETSC_TRUE,levs[j].ell,
+        //                       levs[j].g,levs[j].z,&ctx));
     }
+    // update fine-level iterate:
+    //   w <- w + z^J
+    PetscCall(VecAXPY(w,1.0,levs[jtop].z));
 
     // FIXME not needed for run
     // compute and report residual for initial iterate
-    PetscCall(DMCreateGlobalVector(levs[jtop].dmda,&F));
+    PetscCall(DMGetGlobalVector(levs[jtop].dmda,&F));
     PetscCall(ApplyOperatorF(levs[jtop].dmda,w,F,&ctx));
     PetscCall(VecPrintRange(F,"residual F[u]",""));
-    PetscCall(VecDestroy(&F));
+    PetscCall(DMRestoreGlobalVector(levs[jtop].dmda,&F));
 
     if (counts) {
         // note calls to FormResidualOrCRLocal() and ProjectedNGS() are
@@ -260,24 +289,24 @@ int main(int argc,char **argv) {
 #endif
 
     // report on numerical error
-    PetscCall(DMCreateGlobalVector(levs[jtop].dmda,&uexact));
+    PetscCall(DMGetGlobalVector(levs[jtop].dmda,&uexact));
     PetscCall(FormExact(levs[jtop].dmda,uexact,&ctx));
     PetscCall(VecAXPY(w,-1.0,uexact));    // u <- u + (-1.0) uexact
     PetscCall(VecNorm(w,NORM_INFINITY,&errinf));
+    PetscCall(DMRestoreGlobalVector(levs[jtop].dmda,&uexact));
     PetscCall(DMDAGetLocalInfo(levs[jtop].dmda,&finfo));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,
                           "done on %d x %d grid:   error |u-uexact|_inf = %.3e\n",
                           finfo.mx,finfo.my,errinf));
 
-    // destroy it all
-    PetscCall(VecDestroy(&uexact));
-    PetscCall(VecDestroy(&gamlow));
+    // destroy (or restore) it all
     PetscCall(VecDestroy(&w));
     for (j=0; j<totlevs; j++) {
-        PetscCall(VecDestroy(&(levs[j].g)));
-        PetscCall(VecDestroy(&(levs[j].ell)));
-        PetscCall(VecDestroy(&(levs[j].y)));
-        PetscCall(VecDestroy(&(levs[j].z)));
+        PetscCall(DMRestoreGlobalVector(levs[j].dmda,&(levs[j].g)));
+        PetscCall(DMRestoreGlobalVector(levs[j].dmda,&(levs[j].ell)));
+        PetscCall(DMRestoreGlobalVector(levs[j].dmda,&(levs[j].z)));
+        if (j > 0)
+            PetscCall(DMRestoreGlobalVector(levs[j].dmda,&(levs[j].y)));
         PetscCall(LDCDestroy(&(levs[j].ldc))); // destroys levs[j].dmda
     }
     PetscCall(PetscFree(levs));
