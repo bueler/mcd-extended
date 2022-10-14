@@ -14,9 +14,11 @@
   LDC info: phiupp=NULL is +infty at level 0
   LDC info: creating and setting philow=chilow (coarsest case) at level 0
   -0.235760 <= initial iterate w <=  1.000000
-*NOT YET* SOLVING PROBLEM BY 1 V-CYCLES
-  -0.002833 <= residual F[u] <=  0.274846
-flops = 6.703e+04,  residual calls = 5,  PNGS calls = 0
+  -0.002833 <= initial residual f^J(w) <=  0.274846
+solving with 1 V-cycle ...
+  -0.235760 <= final iterate w <=  1.000000
+  -0.002833 <= final residual f^J(w) <=  0.274846
+flops = 3.448e+05,  residual calls = 6,  PNGS calls = 4
 done on 13 x 13 grid:   error |u-uexact|_inf = 0.000e+00
   LDC info: destroying LDC at level 0
   LDC info: destroying LDC at level 1
