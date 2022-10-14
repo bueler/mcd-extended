@@ -27,12 +27,13 @@
 // ldc[0] is coarse while ldc[N] is finest:
 //
 //     LDC       ldc[N+1];
+//     DMDA      cdmda
 //     PetscInt  k;
-//     LDCCreateCoarsest(PETSC_TRUE,0,mx,my,xmin,xmax,ymin,ymax,&(ldc[0]));
+//     [  use DMDACreate2d() to create cdmda, and then fully configure it  ]
+//     LDCCreateCoarsest(PETSC_TRUE,cdmda,&(ldc[0]));
 //     for (k=0; k<N; k++)
 //         LDCRefine(ldc[k],&(ldc[k+1]));
-//     [  start a box-constrained solver on the finest level, and get a
-//        fine-level iterate w  ]
+//     [  a box-constrained solver on finest level returns fine-level iterate w  ]
 //     LDCFinestUpDCsFromVecs(w,vgamupp,vgamlow,&(ldc[N]));
 //     LDCGenerateDCsVCycle(&(ldc[N]));
 //     [  continue with the solver  ]
