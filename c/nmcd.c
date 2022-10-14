@@ -229,7 +229,7 @@ int main(int argc,char **argv) {
     PetscCall(ProjectedNGS(&(levs[0].ldc),PETSC_TRUE,levs[0].ell,
                            levs[0].g,levs[0].z,&ctx));
     // upward direction
-    for (j=1; j<jtop; j++) {
+    for (j=1; j<=jtop; j++) {
         // compute z^j using prolongation:
         //   z^j = P z^j-1 + y^j
         PetscCall(Q1Interpolate(levs[j-1].dmda,levs[j].dmda,levs[j-1].z,&(levs[j].z)));
