@@ -308,7 +308,9 @@ Again note that $\cK_i \not\subset \cK$ in these cases; the important inclusion 
 
 \section{Basic CD iterations} \label{sec:cditers}
 
-Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below record basic CD iterative methods as functions which improve a current iterate $u \in \cK$ by solving ``smaller'' VI problems over each subset $\cK_i$.   Their outputs $w\in\cK$ should be closer to the solution $u^* \in \cK$ of \eqref{eq:vi}.
+Associated to a constraint decomposition (CD) are certain basic iterative methods.  Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below are functions which improve a current iterate $u \in \cK$ by solving smaller VI problems over each subset $\cK_i$ in the CD.   The output $w\in\cK$ from either Algorithm should be closer to the solution $u^* \in \cK$ of \eqref{eq:vi}.  Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} generalize the Jacobi and Gauss-Seidel iterations, respectively.
+
+In Algorithm \ref{alg:basiccd-add}, the additive or parallel CD method, ``\textbf{for all}'' can be computed in any order.  Note that the expression ``$u-\Pi_iu+\hat w_i$'' removes the part of $u$ which lies in $\mathcal{K}_i$ before adding-back the improved subset solution $\hat w_i \in \mathcal{K}_i$.  In the multiplicative (successive) version, Algorithm \ref{alg:basiccd-mult}, each $\mathcal{K}_i$ solution corrects the global iterate immediately, and the $\mathcal{K}_i$ are addressed in a fixed order.  The sum ``$\sum_{j>i} \Pi_j u$'' should be read as keeping the parts of the input $u$ which have not yet improved.  Both Algorithms allow a damping parameter $0<\alpha\le 1$.  In Algorithm \ref{alg:basiccd-mult} we must update the subset iterate $w_i$ using the same damping that is applied to the final output $w$.
 
 \begin{pseudofloat}[H]
 \begin{pseudo*}
@@ -323,9 +325,7 @@ Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below record basic C
 \label{alg:basiccd-add}
 \end{pseudofloat}
 
-In Algorithm \ref{alg:basiccd-add}, the additive or parallel CD method, the \textbf{for all} can be computed in any order.  Note that $u-\Pi_iu+\hat w_i$ removes the part of $u$ which lies in $\mathcal{K}_i$ before adding-back the improved subset solution $\hat w_i$, also from $\mathcal{K}_i$.  By contrast, in the following multiplicative (successive) Algorithm \ref{alg:basiccd-mult} each subset solution updates the global iterate before proceeding to the next subset.  The sets $\mathcal{K}_i$ are addressed in a fixed order, and the sum $\sum_{j>i} \Pi_j u$ should be read as ``keep those parts of the input $u$ which we have not yet improved.''
-
-\begin{pseudofloat}[H]
+\begin{pseudofloat}
 \begin{pseudo*}
 \pr{cd-mult}(u)\text{:} \\+
     for $i = 0,\dots,m-1$: \\+
@@ -339,39 +339,56 @@ In Algorithm \ref{alg:basiccd-add}, the additive or parallel CD method, the \tex
 \label{alg:basiccd-mult}
 \end{pseudofloat}
 
-While Algorithm \ref{alg:basiccd-add} generalizes a Jacobi iteration, Algorithm \ref{alg:basiccd-mult} generalizes Gauss-Seidel.  Note the use of a damping parameter $0<\alpha\le 1$ in both Algorithms.  In Algorithm \ref{alg:basiccd-mult} we must update the in-progress iterate $w_i$ using the same damping that is applied to the final output $w$.
-
 In each boxed VI the argument of $f$ is an element of $\cK$, as the reader should confirm.  On the other hand, by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may also write the test vector $v_i - \hat w_i \in \cV_i$ as a difference of admissible vectors from $\cK$.  For the two Algorithms respectively:
 \begin{align*}
 [u - \Pi_i u + v_i] - [u - \Pi_i u + \hat w_i] &= v_i - \hat w_i, \label{eq:admissibledifference} \\
 \left[\sum_{j<i} w_j + v_i + \sum_{j>i} \Pi_j u\right] - \left[\sum_{j<i} w_j + \hat w_i + \sum_{j>i} \Pi_j u\right] &= v_i - \hat w_i.  \notag
 \end{align*}
+In this sense the boxed VIs are the same problem as the original VI \eqref{eq:vi}.
 
-For either Algorithm we define
+For either Algorithm we define the $i$th \emph{subset update} as
 \begin{equation}
-e_i = \hat w_i - \Pi_i u \in \cV_i, \label{eq:ithupdate}
+e_i = \hat w_i - \Pi_i u \in \cV_i. \label{eq:ithupdate}
 \end{equation}
-the $i$th \emph{subset update}.  As the reader may check, $\hat w = u + \sum_{i} e_i$ and $w = u + \alpha \sum_i e_i$.  Note $\hat w = u^* + \sum_i \hat w_i - \Pi_i u^*$ also holds.
+The reader may check that $\hat w = u + \sum_{i} e_i$ and $w = u + \alpha \sum_i e_i$.  Trivially, $\hat w = u^* + \sum_i \hat w_i - \Pi_i u^*$ also holds.
 
-We refer to Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} as the \emph{basic CD iterations}.  These basic iterations are meaningful even when $f$ is nonlinear, non-local, or defined only on $\cK$.  However, practical and efficient FE implementation for such general problems seems not to have been addressed in the literature, and will need additional notions.  In particular, references \cite{GraeserKornhuber2009,Tai2003} only apply the CD method to the classical obstacle problem for which $f$ is linear, local, and defined for all inputs.  The following example exposes the implementation simplifications available in that case.
+We will refer to Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} as the \emph{basic CD iterations}.  These iterations are meaningful even when $f$ is nonlinear, non-local, or defined only on $\cK$.  However, practical and efficient FE implementation for such general operators $f$ seems not to have been addressed in the literature, and doing so will require new notions.  In particular, references \cite{GraeserKornhuber2009,Tai2003} only apply the CD method to the classical obstacle problem for which $f$ is linear, local, and defined for all inputs (over $\mathcal{V}$).  The following example exposes the implementation simplifications available in that easier case.
 
-\begin{example}  \label{ex:fnice} Suppose $f:\cV \to \cV'$ is linear and defined on all of $\cV$.  Furthermore suppose $f$ is a differential operator, thus local in the sense that for any $z\in\mathcal{V}$ the value $\ip{f(\phi)}{z}$ can be computed by an integral only over the support of $\phi \in \mathcal{V}$.  Considering additive Algorithm \ref{alg:basiccd-add} for concreteness, by linearity the boxed VI can be written as
+\begin{example}  \label{ex:fnice} Suppose $f:\cV \to \cV'$ is linear and defined on all of $\cV$.  Furthermore suppose $f$ is a differential operator, thus local in the sense that for any $z\in\mathcal{V}$ the value $\ip{f(\phi)}{z}$ can be computed by an integral over the support of $\phi \in \mathcal{V}$.  Considering additive Algorithm \ref{alg:basiccd-add} for concreteness, by linearity the boxed VI can be written as
 \begin{equation}
 \ip{f(e_i)}{v_i-\hat w_i} \ge \ip{\tilde\ell}{v_i-\hat w_i}, \label{eq:linearlocalvi}
 \end{equation}
-for all $v_i \in \mathcal{K_i}$, where $\tilde\ell = \ell - f(u)$.  Note $e_i = \hat w_i - \Pi_i u \in \cV_i$ is not generally admissible ($e_i \notin \cK$), but VIs \eqref{eq:linearlocalvi} make sense because $f$ is defined over $\cV$.  Each problem \eqref{eq:linearlocalvi} can be solved using a stored residual $f(u)$, here included into a source term.  If a hat function basis exists for $\cV_i$, namely of small-support functions, then by linearity of $f$ a solver for VI \eqref{eq:linearlocalvi} can be implemented using only integrals over the hat function supports.
+for all $v_i \in \mathcal{K}_i$, where $\tilde\ell = \ell - f(u)$.  Note $e_i = \hat w_i - \Pi_i u \in \cV_i$ is not generally admissible ($e_i \notin \cK$), but VIs \eqref{eq:linearlocalvi} make sense because $f$ is defined over $\cV$.  Each problem \eqref{eq:linearlocalvi} can be solved using a stored residual $f(u)$, here included into the source term $\tilde\ell$.  If a hat function basis exists for $\cV_i$, namely a basis of small-support functions, then by linearity of $f$ a solver for VI \eqref{eq:linearlocalvi} can be implemented using only integrals over the hat function supports; cf.~equations(2.31) and (2.32) in \cite{Farrelletal2021}.
 \end{example}
 
-When $f$ has all the nice properties listed in Example \ref{ex:fnice} then a solver can take advantage of implementation efficiencies which are unavailable in general.  The FE approximation of VI \eqref{eq:vi}---see Sections \ref{sec:multilevel} and \ref{sec:vcycle}---can be solved in any incremental and efficient manner following the techniques in \cite{GraeserKornhuber2009,Tai2003}, namely by computations over hat function supports.  The actual solution process for VI \eqref{eq:linearlocalvi} is not really the concern here; we are observing that the storage needed for problem \eqref{eq:linearlocalvi}, and the cost of residual evaluation, are smaller than in the general case.  For more difficult problems certain additional ideas, illustrated in Section \ref{sec:vcycle}, are needed for practical implementation.  Specifically, we will extend a multilevel CD iteration to a method for nonlinear functions $f:\cK\to\cV'$, i.e.~defined only on the constraint set $\cK$, by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}.
+When $f$ has all the nice properties listed in Example \ref{ex:fnice} then a solver can take advantage of implementation efficiencies which are unavailable in general.  An FE approximation of VI \eqref{eq:vi}---see Sections \ref{sec:multilevel} and \ref{sec:vcycle}---can then be solved in any incremental and efficient manner following the techniques in \cite{GraeserKornhuber2009,Tai2003}, namely by computations over hat function supports.  The actual solution process for VI \eqref{eq:linearlocalvi} is not really the concern here; we are observing that the storage needed for problem \eqref{eq:linearlocalvi}, and the cost of residual evaluation, are substantially smaller than in the general case.  For those general problems certain additional ideas, like those in Section \ref{sec:vcycle}, are needed for practical implementation.  Specifically, we will construct a multilevel CD iteration for functions $f:\cK\to\cV'$, i.e.~defined only on the constraint set $\cK$, assuming neither linearity nor locality, by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}.
 
-One may also contrast Example \ref{ex:fnice} with the case of a non-local integral operator $f$ \cite{Bueler2021conservation}, where $\ip{f(\phi)}{z}$ requires an integral over $\Omega$ even if $\phi$ is a function with small support such as a hat function.  Extension of the multilevel CD method to such non-local functionals $f$ is a topic for future research.
+In contrast with Example \ref{ex:fnice}, in the case of a non-local integral operator $f$ the expression $\ip{f(\phi)}{z}$ requires an integral over $\Omega$ even if $\phi$ is a function with small support (such as a hat function).  While the algorithm proposed in Section \ref{sec:vcycle} applies as stated to such $f$, practical extension of multilevel CD methods to such non-local functionals $f$ is a topic for future research (cf.~subsection 4.5 in \cite{Bueler2021conservation}), and we will not demonstrate such a case here.
 
 
 \section{Multilevel finite element CDs} \label{sec:multilevel}
 
-We will approximately solve VI \eqref{eq:vi} for certain nonlinear obstacle problems, over two-dimensional computational domains $\Omega \subset \RR^2$, and the Sobolev space $\mathcal{V}=W_0^{1,p}(\Omega)$, using piecewise-linear finite element (FE) spaces over triangular meshes.  The targeted mesh will be the finest level in a hierarchy of meshes constructed by refinement of a coarsest mesh.  In this Section we construct the corresponding multilevel CD.  Its constraint sets are designed to allow multigrid coarser-level corrections (next Section) in a manner which does not violate the inequality constraints, and which also does not introduce unnecessary high frequencies into the coarser-level problems.
+From now on we are concerned with the approximate solution of certain nonlinear obstacle problems over 2D computational domains.  Suppose $\Omega \subset \RR^2$ is a (open) bounded polygon and that $\mathcal{V}=W^{1,p}(\Omega)$ is a Sobolev space of once-differentiable functions.
 
-The mesh hierarchy and FE spaces are constructed in a standard manner \cite{Elmanetal2014}.  Suppose $\Omega$ is polygonal and triangulated by $\mathcal{T}^0$, the \emph{coarsest mesh}, a finite set of non-overlapping triangles with union $\overline{\Omega}$ and characteristic size (e.g.~maximum edge length) $h_0>0$.  Starting with $j=1$, let $\mathcal{T}^j$ be the uniform refinement of $\mathcal{T}^{j-1}$ by edge bisection, thus each $\mathcal{T}^{j-1}$ triangle becomes four similar triangles in $\mathcal{T}^j$ with characteristic size $h_j = 2^{-j} h_0$.  Refinement proceeds to level $J\ge 0$, the \emph{depth} of the hierarchy, giving $\mathcal{T}^J$ as the \emph{finest mesh}.  Let $m_j$ be the number of interior nodes in $\mathcal{T}^j$, the \emph{degrees of freedom} at the $j$th level, and denote $h=h_J=2^{-J} h_0$ and $m=m_J$ for the finest level.  Now let $\mathcal{V}^j$ be the continuous, piecewise-linear FE space $P_1$ \cite{Elmanetal2014} over $\mathcal{T}^j$ with zero boundary values, and observe the following nesting:
+We restrict to the case of \emph{box constraints} \cite{BensonMunson2006,FerrisPang1997}, equivalently \emph{bi-obstacle problems}.  Suppose \emph{lower} and \emph{upper obstacles} $\underline{\gamma} \le \overline{\gamma}$ are given measurable functions on $\overline{\Omega}$ which take their values in the extended real line $\hat\RR = [-\infty,+\infty]$.
+
+Furthermore we consider a Dirichlet (or mixed) boundary value problem.  Suppose that the domain boundary is split into disjoint, measurable sets, $\partial\Omega = \partial_D \Omega \cup \partial_N \Omega$, with $\partial_D \Omega$ of positive measure for simplicity, to permit well-posedness \cite{Evans2010}, and $\partial_N \Omega$ possibly empty.  Suppose that the provided Dirichlet data $g_D:\partial_D \Omega \to \RR$ is sufficiently-regular to permit well-posedness, and that $\underline{\gamma} \le g_D \le \overline{\gamma}$ on $\partial_D \Omega$.
+
+Now define the constraint set
+\begin{equation}
+\cK = \left\{w \in \cV\,:\,\underline{\gamma} \le w \le \overline{\gamma} \,\text{ over }\, \Omega \, \text{ and }\, w\big|_{\partial_D \Omega} = g_D \, \text{ (trace sense \cite{Evans2010})}\right\} \subset \cV.
+\end{equation}
+It is easy to check that $\cK$ is closed and convex; note that the inequality and equality (boundary) constraints are treated in a unified manner by this definition of $\cK$.
+
+We will solve the same VI problem as the abstract problem \eqref{eq:vi}.  Given continuous $f:\cK \to \cV'$ and $\ell \in \cV'$, we assume that the following VI is well-posed for $u^*\in \cK$:
+\begin{equation}
+\ip{f(u^*)}{v-u^*} \ge \ip{\ell}{v-u^*} \qquad \text{for all } v\in \cK. \label{eq:boxdirichletvi}
+\end{equation}
+Note that $v-u^* \in W_0^{1,p}(\Omega)$, that is, the test functions in \eqref{eq:boxdirichletvi} have zero values on the Dirichlet boundary $\partial_D\Omega$.  In general, problem \eqref{eq:boxdirichletvi} is a mixed boundary value problem with homogeneous Neumann, i.e.~natural, boundary conditions over $\partial_N \Omega = \Omega \setminus \partial_D \Omega$.
+
+In this Section we construct a multilevel finite element (FE) approximation to problem \eqref{eq:boxdirichletvi} using $P_1$ or $Q_1$ elements \cite{Elmanetal2014} and triangular or quadrilateral meshes, respectively, over $\Omega$.  The targeted mesh will be the finest level in a hierarchy of meshes constructed by refinement of a coarsest mesh.   This hierarchy generates a multilevel CD of $\cK$, as covered in previous Sections.  The constraint subsets $\cK_i$  are designed to allow multigrid-type coarser-level corrections (next Section) in a manner which preserves admissibility while not introducing unnecessary high frequencies into the coarser-level problems, especially at the free boundary generated by the inequality constraints.
+
+FIXME The mesh hierarchy and FE spaces are constructed in a standard manner \cite{Elmanetal2014}.  Suppose $\Omega$ is polygonal and triangulated by $\mathcal{T}^0$, the \emph{coarsest mesh}, a finite set of non-overlapping triangles with union $\overline{\Omega}$ and characteristic size (e.g.~maximum edge length) $h_0>0$.  Starting with $j=1$, let $\mathcal{T}^j$ be the uniform refinement of $\mathcal{T}^{j-1}$ by edge bisection, thus each $\mathcal{T}^{j-1}$ triangle becomes four similar triangles in $\mathcal{T}^j$ with characteristic size $h_j = 2^{-j} h_0$.  Refinement proceeds to level $J\ge 0$, the \emph{depth} of the hierarchy, giving $\mathcal{T}^J$ as the \emph{finest mesh}.  Let $m_j$ be the number of interior nodes in $\mathcal{T}^j$, the \emph{degrees of freedom} at the $j$th level, and denote $h=h_J=2^{-J} h_0$ and $m=m_J$ for the finest level.  Now let $\mathcal{V}^j$ be the continuous, piecewise-linear FE space $P_1$ \cite{Elmanetal2014} over $\mathcal{T}^j$ with zero boundary values, and observe the following nesting:
 \begin{equation}
 \mathcal{V}^0 \subset \mathcal{V}^1 \subset \dots \subset \mathcal{V}^J \subset \mathcal{V}.  \label{eq:fe:nestedspaces}
 \end{equation}
