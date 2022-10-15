@@ -7,6 +7,13 @@ static char help[] =
 "solver is projected, nonlinear Gauss-Seidel (PNGS) sweeps.  Option prefix\n"
 "nm_.  Compare obstaclesl.c.\n\n";
 
+// FIXME possible ways to describe the current issues:
+//   * the iterate w is only slowly falling toward the obstacle
+//   * the corrections are always negative
+//   * the correction on the coarsest level is identically zero
+// see stdout and foo.m from
+//   $ ./nmcd -nm_monitor -nm_view foo.m -nm_levels 7 -nm_cycles 1 -nm_bumpsize 1.0
+
 #include <petsc.h>
 #include "src/utilities.h"
 #include "src/q1fem.h"
@@ -77,6 +84,20 @@ static PetscReal fg_zero(PetscReal x, PetscReal y, void *ctx) {
     return 0.0;
 }
 
+PetscErrorCode UpdateIndentPrintRange(Vec v, const char* name, PetscInt jtop, PetscInt j) {
+    char       strbuf[PETSC_MAX_PATH_LEN];
+    PetscInt   k;
+    PetscReal  vmin, vmax;
+    for (k = 0; k < jtop - j; k++)
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  "));
+    snprintf(strbuf,PETSC_MAX_PATH_LEN,"%s^%d",name,j);
+    PetscCall(VecMin(v,NULL,&vmin));
+    PetscCall(VecMax(v,NULL,&vmax));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  %.4e <= %s <= %.4e\n",
+                          vmin,strbuf,vmax));
+    return 0;
+}
+
 extern PetscErrorCode AssertBoundaryAdmissible(DM da, ObsCtx*);
 extern PetscErrorCode FormExact(DM da, Vec, ObsCtx*);
 extern PetscErrorCode ApplyOperatorF(DM, Vec, Vec, ObsCtx*);
@@ -89,7 +110,8 @@ int main(int argc,char **argv) {
     ObsCtx         ctx;
     DMDALocalInfo  finfo;
     PetscInt       totlevs=2, cycles=1, csweeps=1, jtop, viter, j, k;
-    PetscBool      ldcinfo = PETSC_FALSE, counts = PETSC_FALSE, view = PETSC_FALSE,
+    PetscBool      ldcinfo = PETSC_FALSE, counts = PETSC_FALSE,
+                   monitor = PETSC_FALSE, view = PETSC_FALSE,
                    admis;
     PetscLogDouble lflops, flops;
     PetscReal      bumpsize=0.0, errinf;
@@ -107,18 +129,20 @@ int main(int argc,char **argv) {
     PetscOptionsBegin(PETSC_COMM_WORLD,"nm_","obstacle problem NMCD solver options","");
     PetscCall(PetscOptionsReal("-bumpsize","initialization from exact solution plus this much bump",
                             "nmcd.c",bumpsize,&bumpsize,NULL));
-    PetscCall(PetscOptionsInt("-csweeps","number of PNGS sweeps used for coarse solver",
-                            "nmcd.c",csweeps,&csweeps,NULL));
     PetscCall(PetscOptionsBool("-counts","print counts for calls to call-back functions",
                             "nmcd.c",counts,&counts,NULL));
+    PetscCall(PetscOptionsInt("-csweeps","number of PNGS sweeps used for coarse solver",
+                            "nmcd.c",csweeps,&csweeps,NULL));
     PetscCall(PetscOptionsInt("-cycles","maximum number of NMCD V-cycles",
                             "nmcd.c",cycles,&cycles,NULL));
-    PetscCall(PetscOptionsBool("-info","print info on LDC (MCD) actions",
+    PetscCall(PetscOptionsBool("-ldcinfo","print info on LDC (MCD) actions",
                             "nmcd.c",ldcinfo,&ldcinfo,NULL));
     PetscCall(PetscOptionsInt("-levels","total number NMCD levels (>= 1)",
                             "nmcd.c",totlevs,&totlevs,NULL));
     PetscCall(PetscOptionsInt("-maxits","in PNGS, number of Newton iterations at each point",
                             "nmcd.c",ctx.maxits,&(ctx.maxits),NULL));
+    PetscCall(PetscOptionsBool("-monitor","print info on V cycles",
+                            "nmcd.c",monitor,&monitor,NULL));
     // WARNING: coarse problems are badly solved with -nm_quadpts 1
     PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only)",
                             "nmcd.c",ctx.quadpts,&(ctx.quadpts),NULL));
@@ -222,6 +246,8 @@ int main(int argc,char **argv) {
             PetscCall(VecSet(levs[j].y,0.0));
             PetscCall(ProjectedNGS(&(levs[j].ldc),PETSC_FALSE,levs[j].ell,
                                    levs[j].g,levs[j].y,&ctx));
+            if (monitor)
+                PetscCall(UpdateIndentPrintRange(levs[j].y,"y",jtop,j));
             // compute g^j-1 using injection:
             //   g^j-1 = R^dot(g^j + y^j)
             PetscCall(VecWAXPY(gplusy,1.0,levs[j].g,levs[j].y));
@@ -243,6 +269,8 @@ int main(int argc,char **argv) {
         for (k = 1; k < csweeps; k++)
             PetscCall(ProjectedNGS(&(levs[0].ldc),PETSC_TRUE,levs[0].ell,
                                    levs[0].g,levs[0].z,&ctx));
+        if (monitor)
+            PetscCall(UpdateIndentPrintRange(levs[0].z,"z",jtop,0));
         // upward direction
         for (j = 1; j <= jtop; j++) {
             // compute z^j using prolongation:
@@ -252,12 +280,14 @@ int main(int argc,char **argv) {
             // smooth in U^j to compute z^j
             PetscCall(ProjectedNGS(&(levs[j].ldc),PETSC_TRUE,levs[j].ell,
                                    levs[j].g,levs[j].z,&ctx));
+            if (monitor)
+                PetscCall(UpdateIndentPrintRange(levs[j].z,"z",jtop,j));
         }
         // update fine-level iterate:
         //   w <- w + z^J
         PetscCall(VecAXPY(w,1.0,levs[jtop].z));
         // report range on initial w and f^J(w) for initial iterate
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"iterate %2d:\n",viter+1));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"iterate %2d result:\n",viter+1));
         PetscCall(VecPrintRange(w,"iterate w",""));
         PetscCall(DMGetGlobalVector(levs[jtop].dmda,&F));
         PetscCall(ApplyOperatorF(levs[jtop].dmda,w,F,&ctx));
@@ -278,13 +308,7 @@ int main(int argc,char **argv) {
                               flops,ctx.residualcount,ctx.ngscount));
     }
 
-    if (view)
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"WARNING: ignoring option -nm_view\n"));
-#if 0
-// FIXME this is an old debug block ... don't trust
     if (view) {
-        Vec          F;
-        PetscReal    **au, **aF;
         PetscViewer  file;
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
             "viewing solution,residual,cr into ascii_matlab file %s\n",viewname));
@@ -293,27 +317,29 @@ int main(int argc,char **argv) {
         PetscCall(PetscViewerFileSetMode(file,FILE_MODE_WRITE));
         PetscCall(PetscViewerFileSetName(file,viewname));
         PetscCall(PetscViewerPushFormat(file,PETSC_VIEWER_ASCII_MATLAB));
-        PetscCall(PetscObjectSetName((PetscObject)u,"u"));
-        PetscCall(VecView(u,file));
-        PetscCall(DMDAVecGetArray(da, u, &au));
-        PetscCall(DMCreateGlobalVector(da,&F));
-        PetscCall(DMDAVecGetArray(da, F, &aF));
-        ctx.pngs = PETSC_FALSE;  // we want to view plain F, *then* CR
-        PetscCall(FormResidualOrCRLocal(&info,au,aF,&ctx));
-        PetscCall(DMDAVecRestoreArray(da, F, &aF));
+        PetscCall(PetscObjectSetName((PetscObject)w,"w"));
+        PetscCall(VecView(w,file));
+        PetscCall(DMGetGlobalVector(levs[jtop].dmda,&F));
+        PetscCall(ApplyOperatorF(levs[jtop].dmda,w,F,&ctx));
         PetscCall(PetscObjectSetName((PetscObject)F,"F"));
         PetscCall(VecView(F,file));
+        PetscCall(DMGetGlobalVector(levs[jtop].dmda,&uexact));
+        PetscCall(FormExact(levs[jtop].dmda,uexact,&ctx));
+        PetscCall(PetscObjectSetName((PetscObject)uexact,"uexact"));
+        PetscCall(VecView(uexact,file));
+        PetscCall(DMRestoreGlobalVector(levs[jtop].dmda,&uexact));
+#if 0
         PetscCall(DMDAVecGetArray(da, F, &aF));
         PetscCall(CRLocal(&info,au,aF,aF,&ctx));
         PetscCall(DMDAVecRestoreArray(da, F, &aF));
         PetscCall(DMDAVecRestoreArray(da, u, &au));
         PetscCall(PetscObjectSetName((PetscObject)F,"Fhat"));
         PetscCall(VecView(F,file));
-        PetscCall(VecDestroy(&F));
+#endif
+        PetscCall(DMRestoreGlobalVector(levs[jtop].dmda,&F));
         PetscCall(PetscViewerPopFormat(file));
         PetscCall(PetscViewerDestroy(&file));
     }
-#endif
 
     // report on numerical error
     PetscCall(DMGetGlobalVector(levs[jtop].dmda,&uexact));

@@ -17,7 +17,7 @@ initial:
   -0.235760 <= iterate w <=  1.000000
   -0.002833 <= residual f^J(w) <=  0.274846
 solving using 1 V-cycles with 3 levels ...
-iterate  1:
+iterate  1 result:
   -0.235760 <= iterate w <=  1.000000
   -0.000310 <= residual f^J(w) <=  0.281781
 flops = 5.162e+05,  residual calls = 6,  PNGS calls = 4
