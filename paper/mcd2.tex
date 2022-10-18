@@ -455,17 +455,17 @@ Finally, the monotone restrictions $\maxR,\minR$ are nonlinear maps which maximi
 \end{align}
 for $p=0,1,\dots,m_{j-1}-1$.  (In computing $\max$ and $\min$, the usual ordering of the extended real line is applied.)  Note that $\minR z \le z \le \maxR z$ because, by mesh refinement, node $x_p^{j-1}$ is in the set of $x_q^j$ such that $\psi_p^{j-1}(x_q^j)>0$.
 
-To define the constraint subsets in the current multilevel FE context, namely the sets denoted $\cK_i$ in Section \ref{sec:cd}, suppose $w^J \in \cK^J$ is an admissible finest-level iterate which approximates the solution $u^J$ of VI \eqref{eq:fe:vi}.  From this iterate we define the finest-level \emph{lower and upper defect constraints} \cite{GraeserKornhuber2009}
+To define the CD constraint subsets in the current multilevel FE context, suppose $w^J \in \cK^J$ is an admissible finest-level iterate which approximates the solution $u^J$ of VI \eqref{eq:fe:vi}.  From this iterate we define the \emph{finest-level lower/upper defect constraints}
 \begin{equation}
 \underline{\chi}^J = \underline{\gamma}^J - w^J, \qquad \overline{\chi}^J = \overline{\gamma}^J - w^J, \label{eq:fe:defectconstraints}
 \end{equation}
-functions in $\tilde{\mathcal{V}}^J$ satisfying $\underline{\chi}^J \le 0 \le \overline{\chi}^J$.  FIXME ADD DIRICHLET The motivation here is that a corrected iterate is admissible, $\underline{\gamma}^J \le w^J + z^J \le \overline{\gamma}^J$, if and only if the perturbation $z^J$ is between the defect constraints, $\underline{\chi}^J \le z^J \le \overline{\chi}^J$.
+as functions in $\tilde{\mathcal{V}}^J$.  Note that $\underline{\chi}^J \le 0 \le \overline{\chi}^J$ everywhere in $\overline{\Omega}$, including along the Dirichlet boundary $\partial_D\Omega$.  The motivation for such defect constraints \cite{GraeserKornhuber2009} is that a corrected iterate is admissible with respect to the defining inequalities for $\cK^J$, namely $\underline{\gamma}^J \le w^J + z^J \le \overline{\gamma}^J$, if and only if the perturbation $z^J$ is between the defect constraints, $\underline{\chi}^J \le z^J \le \overline{\chi}^J$.
 
-For $j=J,J-1,\dots,1$ we apply monotone restrictions to define the \emph{level defect constraints},
+For coarser levels $j=J-1,\dots,1,0$ we apply monotone restrictions to define the \emph{level defect constraints},
 \begin{equation}
-\underline{\chi}^{j-1} = \maxR \underline{\chi}^j, \qquad \overline{\chi}^{j-1} = \minR \overline{\chi}^j. \label{eq:fe:chilevels}
+\underline{\chi}^{j} = \maxR \underline{\chi}^{j+1}, \qquad \overline{\chi}^{j} = \minR \overline{\chi}^{j+1}. \label{eq:fe:chilevels}
 \end{equation}
-Observe that
+FIXME: VALUES ALONG $\partial_D\Omega$ ARE BY INJECTION  Observe that
 \begin{equation}
 \underline{\chi}^{J} \le \dots \le \underline{\chi}^0 \le 0 \le \overline{\chi}^0 \le \dots \le \overline{\chi}^J. \label{eq:fe:chiordering}
 \end{equation}
