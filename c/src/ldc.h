@@ -100,8 +100,8 @@ PetscErrorCode LDCDownDCsCRFromResidual(LDC *ldc, Vec y, Vec F, Vec Fhat);
 PetscErrorCode LDCVecFromFormula(LDC ldc, PetscReal (*ufcn)(PetscReal,PetscReal,void*),
                                  Vec u, void *ctx);
 
-// for each of 4 DCs, report min and max
-PetscErrorCode LDCReportDCRanges(LDC ldc);
+// for each pair of DCs, check lower <= 0 <= upper, and report min and max
+PetscErrorCode LDCCheckDCRanges(LDC ldc);
 
 // return flg=PETSC_TRUE if  ldc.philow <= y <= ldc.phiupp,  otherwise flg=PETSC_FALSE
 PetscErrorCode LDCCheckAdmissibleDownDefect(LDC ldc, Vec y, PetscBool *flg);

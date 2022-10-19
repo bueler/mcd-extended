@@ -70,10 +70,6 @@ int main(int argc,char **argv) {
     PetscCall(VecViewMatlabStdout(ldc[1].philow));
 #endif
 
-    // ranges on Vecs on each level
-    PetscCall(LDCReportDCRanges(ldc[0]));
-    PetscCall(LDCReportDCRanges(ldc[1]));
-
     // check admissibility of constant z on level 0 and y and z on level 1
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"checking admissibility of constant vectors:\n"));
     PetscCall(DMCreateGlobalVector(ldc[0].dal,&v));

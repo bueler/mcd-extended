@@ -79,14 +79,31 @@ PetscErrorCode LDCRefine(LDC *coarse, LDC *fine) {
     return 0;
 }
 
-PetscErrorCode LDCReportDCRanges(LDC ldc) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"defect constraint ranges at level %d:\n",
-                          ldc._level));
-    PetscCall(VecPrintRange(ldc.chiupp,"chiupp","+infty"));
-    PetscCall(VecPrintRange(ldc.chilow,"chilow","-infty"));
-    PetscCall(VecPrintRange(ldc.phiupp,"phiupp","+infty"));
-    PetscCall(VecPrintRange(ldc.philow,"philow","-infty"));
-    return 0;
+PetscErrorCode LDCCheckDCRanges(LDC ldc) {
+    PetscReal clmax = PETSC_NINFINITY, cumin = PETSC_INFINITY,
+              plmax = PETSC_NINFINITY, pumin = PETSC_INFINITY;
+    PetscInt  retval = 0;
+    if (ldc.chilow)
+        PetscCall(VecMin(ldc.chilow,NULL,&clmax));
+    if (ldc.chiupp)
+        PetscCall(VecMin(ldc.chiupp,NULL,&cumin));
+    if (ldc.philow)
+        PetscCall(VecMin(ldc.philow,NULL,&plmax));
+    if (ldc.phiupp)
+        PetscCall(VecMin(ldc.phiupp,NULL,&pumin));
+    if ((clmax <= 0.0) && (0.0 <= cumin) && (plmax <= 0.0) && (0.0 <= pumin))
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"defect constraint check PASSES (level %d):\n",
+                              ldc._level));
+    else {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"defect constraint check FAILS (level %d):\n",
+                              ldc._level));
+        retval = 1;
+    }
+    PetscCall(VecPrintRange(ldc.chilow,"chilow","-infty",PETSC_FALSE));
+    PetscCall(VecPrintRange(ldc.chiupp,"chiupp","+infty",PETSC_TRUE));
+    PetscCall(VecPrintRange(ldc.philow,"philow","-infty",PETSC_FALSE));
+    PetscCall(VecPrintRange(ldc.phiupp,"phiupp","+infty",PETSC_TRUE));
+    return retval;
 }
 
 PetscErrorCode LDCFinestUpDCsFromVecs(Vec w, Vec vgamupp, Vec vgamlow, LDC *ldc) {
@@ -286,6 +303,9 @@ PetscErrorCode _LDCDownDCs(LDC *coarse, LDC *fine) {
 PetscErrorCode LDCGenerateDCsVCycle(LDC *finest) {
     LDC *ldc = finest,
         *coarse;
+    if (finest->_printinfo)
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+        "  LDC info: generating V-cycle from finest level %d\n",finest->_level));
     while (ldc->_coarser) {
         coarse = (LDC*)(ldc->_coarser);
         PetscCall(_LDCUpDCsMonotoneRestrict(*ldc,coarse));
@@ -293,6 +313,17 @@ PetscErrorCode LDCGenerateDCsVCycle(LDC *finest) {
         ldc = coarse;
     }
     PetscCall(_LDCDownDCs(NULL,ldc));
+    if (finest->_printinfo) {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+        "  LDC info: calling LDCCheckDCRanges() on all levels\n"));
+        ldc = finest;
+        while (PETSC_TRUE) {
+            PetscCall(LDCCheckDCRanges(*ldc));
+            if (!ldc->_coarser)
+                break;
+            ldc = (LDC*)(ldc->_coarser);
+        }
+    }
     return 0;
 }
 
