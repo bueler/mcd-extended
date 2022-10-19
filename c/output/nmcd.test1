@@ -20,7 +20,7 @@ solving using 1 V-cycles with 3 levels ...
 iterate  1 result:
   -0.235760 <= iterate w <=  1.000000
   -0.000310 <= residual f^J(w) <=  0.281781
-flops = 5.162e+05,  residual calls = 6,  PNGS calls = 4
+flops = 3.037e+05,  residual calls = 6,  PNGS calls = 4
 done on 13 x 13 grid:   error |u-uexact|_inf = 1.125e-02
   LDC info: destroying LDC at level 0
   LDC info: destroying LDC at level 1

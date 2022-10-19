@@ -121,7 +121,7 @@ int main(int argc,char **argv) {
     ctx.gamma_lower = &gamma_lower;
     ctx.f_rhs = &fg_zero;
     ctx.g_bdry = &u_exact;
-    ctx.maxits = 2;
+    ctx.maxits = 1;
     ctx.quadpts = 2;
     ctx.sweeps = 1;
     ctx.residualcount = 0;

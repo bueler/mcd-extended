@@ -22,5 +22,5 @@ iterate  1 result:
 iterate  2 result:
   -0.235760 <= iterate w <=  1.337459
    0.000000 <= residual f^J(w) <=  0.134723
-flops = 1.925e+06,  residual calls = 15,  PNGS calls = 12
+flops = 1.100e+06,  residual calls = 15,  PNGS calls = 12
 done on 17 x 17 grid:   error |u-uexact|_inf = 4.813e-01
