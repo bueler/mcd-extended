@@ -223,10 +223,10 @@ int main(int argc,char **argv) {
 
     // report ranges for initial w and corresponding residual f^J(w)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"initial:\n"));
-    PetscCall(VecPrintRange(w,"iterate w",""));
+    PetscCall(VecPrintRange(w,"iterate w","",PETSC_TRUE));
     PetscCall(DMGetGlobalVector(levs[jtop].dmda,&F));
     PetscCall(ApplyOperatorF(levs[jtop].dmda,w,F,&ctx));
-    PetscCall(VecPrintRange(F,"residual f^J(w)",""));
+    PetscCall(VecPrintRange(F,"residual f^J(w)","",PETSC_TRUE));
     PetscCall(DMRestoreGlobalVector(levs[jtop].dmda,&F));
     // FIXME also CR residual?
 
@@ -288,10 +288,10 @@ int main(int argc,char **argv) {
         PetscCall(VecAXPY(w,1.0,levs[jtop].z));
         // report range on initial w and f^J(w) for initial iterate
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,"iterate %2d result:\n",viter+1));
-        PetscCall(VecPrintRange(w,"iterate w",""));
+        PetscCall(VecPrintRange(w,"iterate w","",PETSC_TRUE));
         PetscCall(DMGetGlobalVector(levs[jtop].dmda,&F));
         PetscCall(ApplyOperatorF(levs[jtop].dmda,w,F,&ctx));
-        PetscCall(VecPrintRange(F,"residual f^J(w)",""));
+        PetscCall(VecPrintRange(F,"residual f^J(w)","",PETSC_TRUE));
         PetscCall(DMRestoreGlobalVector(levs[jtop].dmda,&F));
         // FIXME also CR residual?
     } // for viter ...

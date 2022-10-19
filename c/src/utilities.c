@@ -1,15 +1,18 @@
 #include <petsc.h>
 
-PetscErrorCode VecPrintRange(Vec X, const char *name, const char *infcase) {
+PetscErrorCode VecPrintRange(Vec X, const char *name, const char *infcase,
+                             PetscBool newline) {
     PetscReal vmin, vmax;
     if (X) {
         PetscCall(VecMin(X,NULL,&vmin));
         PetscCall(VecMax(X,NULL,&vmax));
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  %9.6f <= %s <= %9.6f\n",
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  %10.6f <= %s <= %10.6f",
                               vmin,name,vmax));
     } else
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  [ %s=NULL is %s ]\n",
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  [[[   %s=NULL is %s   ]]]",
                               name,infcase));
+    if (newline)
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n"));
     return 0;
 }
 

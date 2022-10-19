@@ -6,7 +6,7 @@
 
 // print extended-reals min and max of a Vec; string infcase says what
 // to print if X==NULL
-PetscErrorCode VecPrintRange(Vec X, const char *name, const char *infcase);
+PetscErrorCode VecPrintRange(Vec X, const char *name, const char *infcase, PetscBool newline);
 
 // set flg=PETSC_TRUE if  u <= v  everywhere, otherwise flg=PETSC_FALSE
 // extended reals rule:  if u=NULL (-infty) or v=NULL (+infty) then flg=PETSC_TRUE
