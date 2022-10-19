@@ -7,6 +7,12 @@ static char help[] =
 "solver is projected, nonlinear Gauss-Seidel (PNGS) sweeps.  Option prefix\n"
 "nm_.  Compare obstaclesl.c.\n\n";
 
+// FIXME make it work as stupid single-level PNGS, i.e. make it reproduce
+//   ./obstaclesl -da_refine 2 -ob_counts -ob_pngs -snes_converged_reason
+// or similar by doing
+//   ./nmcd -da_grid_x 9 -da_grid_y 9 -nm_levels 1 -nm_cycles 26
+// currently there is NO progress with -nm_levels 1
+
 // FIXME possible ways to describe the current issues:
 //   * the iterate w is only slowly falling toward the obstacle
 //   * the corrections are always negative
