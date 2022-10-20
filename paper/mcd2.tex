@@ -388,9 +388,9 @@ We will solve the same VI as in the abstract problem \eqref{eq:vi}.  Given conti
 \end{equation}
 Note that $v-u^* \in W_0^{1,p}(\Omega)$, that is, the test functions in \eqref{eq:boxdirichletvi} have zero values on the Dirichlet boundary $\partial_D\Omega$.
 
-Weak form problem \eqref{eq:boxdirichletvi} is both a free-boundary problem, because of the inequality constraints in defining $\cK$, and a mixed fixed-boundary value problem.   Dirichlet conditions $u=g_D$ apply over $\partial_D\Omega$ and Neumann conditions over $\partial_N \Omega$.  The latter are determined by the formula for $f$; nonhomogeneous Neumann conditions require that the nonlinear operator $f:\cK\to\cV'$ include an integration over $\partial_N\Omega$.
+Problem \eqref{eq:boxdirichletvi} is both a free-boundary problem, because of the inequality constraints in defining $\cK$, and a mixed fixed-boundary value problem.   Dirichlet conditions $u=g_D$ apply over $\partial_D\Omega$ and Neumann conditions over $\partial_N \Omega$.  The latter are determined by the formula for $f$; nonhomogeneous Neumann conditions require that the nonlinear operator $f:\cK\to\cV'$ include an integration over $\partial_N\Omega$.
 
-Now, in this Section we construct a multilevel finite element (FE) approximation to problem \eqref{eq:boxdirichletvi} using either triangular or quadrilateral meshes over $\Omega$, and $P_1$ or $Q_1$ elements \cite{Elmanetal2014}, respectively.  The targeted solution is hosted on the finest-level mesh in a hierarchy of meshes constructed by refinement of a coarsest mesh.   This hierarchy will also generate a multilevel CD of $\cK$.  The subsets $\cK_i$ in this CD are designed to allow multigrid-type coarser-level corrections (next Section) in a manner which preserves admissibility, while not introducing unnecessary high frequencies into the coarser-level problems, especially at the free boundary.
+We now construct a multilevel finite element (FE) approximation to problem \eqref{eq:boxdirichletvi} using either triangular or quadrilateral meshes over $\Omega$, and $P_1$ or $Q_1$ elements \cite{Elmanetal2014}, respectively.  The targeted solution is hosted on the finest-level mesh in a hierarchy of meshes constructed by refinement of a coarsest mesh.   This hierarchy will also generate a multilevel CD of $\cK$.  The subsets $\cK_i$ in this CD are designed to allow multigrid-type coarser-level corrections (next Section) in a manner which preserves admissibility, while not introducing unnecessary high frequencies into the coarser-level problems, especially at the free boundary.
 
 The mesh hierarchy and FE spaces are constructed by nested refinement in the following standard manner \cite{Elmanetal2014}.  Suppose $\mathcal{T}^0$ is the \emph{coarsest mesh}, a finite set of non-overlapping, nondegenerate elements (triangles or quadrilaterals) with union equal to $\overline{\Omega}$ and maximum edge length (characteristic size) $h_0>0$.  For $j=1,\dots,J$, let $\mathcal{T}^j$ be the uniform refinement of $\mathcal{T}^{j-1}$ by connecting the midpoints of edges.  For triangles and rectangles, each $\mathcal{T}^{j-1}$ element becomes four similar elements in $\mathcal{T}^j$ with size $h_j = 2^{-j} h_0$.\footnote{For arbitrary triangles, and for rectangles, the refinement generates similar elements and $h_j=2^{-j}h_0$ is the exact maximum edge length in $\mathcal{T}^j$.  For general quadrilaterals, however, similarity is lost and maximum edge lengths are variable; cf.~\cite{Zhang2004}.  Only rectangular quadrilaterals are used in the Results section.}  We call $J\ge 0$ the \emph{depth} of the hierarchy and $\mathcal{T}^J$ the \emph{finest mesh}.  Let $m_j$ be the number of nodes in $\mathcal{T}^j$, the \emph{degrees of freedom} at the $j$th level, and denote $h=h_J=2^{-J} h_0$ and $m=m_J$ for the finest level.
 
@@ -427,7 +427,7 @@ As for \eqref{eq:vi}, if $f^J$ is continuous and $p$-coercive on $\mathcal{K}^J$
 
 While \eqref{eq:fe:vi} approximates \eqref{eq:boxdirichletvi}, it may not technically be conforming for that VI.  That is, even if quadrature and other implementation details for $f^J$ are ignored, and despite the vector space inclusion $\mathcal{V}^J \subset \mathcal{V}$, we do not require $\mathcal{K}^J \subset \mathcal{K}$.  The continuum constraint set $\mathcal{K}$ remains abstract in applications where only the nodal obstacles $\underline{\gamma}^J, \overline{\gamma}^J$ are defined.  In fact, even if smooth continuum obstacles exist, admissibility with respect to their FE interpolants will generally not imply continuum admissiblity.\footnote{Such caveats apply in geophysical situations where the obstacle is given by meshed elevation data, the continuum limit of which is generally unknown \cite{Bueler2016}.}
 
-The multilevel algorithm in the next section, a solver for VI problem \eqref{eq:fe:vi}, requires transfer operators between meshes.  We use five such operators, three of which are standard linear maps used for multigrid methods \cite{Trottenbergetal2001}.  Table \ref{tab:transfers} will help the reader keep track.
+The multilevel algorithm in the next section, a solver for finite-dimensional problem \eqref{eq:fe:vi}, requires transfer operators between meshes.  We use five such operators, three of which are standard within multigrid methods \cite{Trottenbergetal2001}.  Table \ref{tab:transfers} will help the reader keep track.
 
 \begin{table}
 \begin{tabular}{llc}
@@ -448,28 +448,34 @@ Canonical prolongation $P:\mathcal{V}^{j-1}\to\mathcal{V}^j$ acts as the identit
 
 To define injection $\iR:\mathcal{V}^j\to\mathcal{V}^{j-1}$, observe that for any given values at the nodes of $\mathcal{T}^j$ there is a unique function in $\mathcal{V}^j$ with those values.  Also observe that, by our refinement construction, the nodes of $\mathcal{T}^{j-1}$ are nodes of $\mathcal{T}^j$.  For $z\in\mathcal{V}^j$ we define the injection $\iR z$ as the element of $\mathcal{V}^{j-1}$ which has the same nodal values as $z$ does at the nodes of $\mathcal{T}^{j-1}$.  Note that injection is monotonic, that is, if $w \le z$ then $\iR w \le \iR z$.
 
-Finally, the monotone restrictions $\maxR,\minR$ are nonlinear maps which maximize and minimize, respectively, nodal values over the supports of coarser-mesh hat functions.  To make the definitions precise, let $x_q^j$, $q=0,1,\dots,m_j-1$, denote the nodes of mesh $\mathcal{T}^j$, and denote the corresponding hat functions \cite{Elmanetal2014} by $\psi_q^j(x)$.  The monotone restrictions $\maxR z,\minR z$ of an extended-real-valued nodal function $z\in\tilde{\mathcal{V}}^j$ are coarser-level functions in $\tilde{\mathcal{V}}^{j-1}$ defined by
+Finally, the monotone restrictions $\maxR,\minR$ are nonlinear maps which maximize and minimize, respectively, nodal values over the supports of coarser-mesh hat functions.  These restrictions will be applied only to nodal functions ($\tilde{\mathcal{V}}^j$), and only to functions which are either nonnegative or nonpositive, and not more generally.  To make the definitions precise, let $x_q^j$, $q=0,1,\dots,m_j-1$, denote the nodes of mesh $\mathcal{T}^j$, and denote the corresponding hat functions \cite{Elmanetal2014} by $\psi_q^j(x)$.  The monotone restrictions $\maxR z,\minR z$ of an extended-real-valued nodal function $z\in\tilde{\mathcal{V}}^j$ are coarser-level functions in $\tilde{\mathcal{V}}^{j-1}$ defined by
 \begin{align}
 (\maxR z)(x_p^{j-1}) &= \max \{z(x_q^j) \,:\, \psi_p^{j-1}(x_q^j) > 0\}, \label{eq:fe:monotonerestrictions} \\
 (\minR z)(x_p^{j-1}) &= \min \{z(x_q^j) \,:\, \psi_p^{j-1}(x_q^j) > 0\}, \notag
 \end{align}
-for $p=0,1,\dots,m_{j-1}-1$.  (In computing $\max$ and $\min$, the usual ordering of the extended real line is applied.)  Note that $\minR z \le z \le \maxR z$ because, by mesh refinement, node $x_p^{j-1}$ is in the set of $x_q^j$ such that $\psi_p^{j-1}(x_q^j)>0$.
+for $p=0,1,\dots,m_{j-1}-1$.  (In computing $\max$ and $\min$, the usual ordering of the extended real line is applied.)  Because, by mesh refinement, a node $x_p^{j-1}$ is in the set of $x_q^j$ such that $\psi_p^{j-1}(x_q^j)>0$, the following formal property holds:
+\begin{equation}
+\minR z \le z \le \maxR z,  \label{eq:fe:monotonerestrictionprops}
+\end{equation}
+In particular, $z\ge 0$ implies $\minR z \ge 0$ and $z \le 0$ implies $\maxR z \le 0$.  These properties are used in the CD construction which follows.
 
-To define the CD constraint subsets in the current multilevel FE context, suppose $w^J \in \cK^J$ is an admissible finest-level iterate which approximates the solution $u^J$ of VI \eqref{eq:fe:vi}.  From this iterate we define the \emph{finest-level lower/upper defect constraints}
+Suppose $w^J \in \cK^J$ is an admissible finest-level iterate which approximates the solution $u^J$ of VI \eqref{eq:fe:vi}.  We will now define the CD constraint subsets in our multilevel FE context from $w^J$ and the defining inequalities for $\cK^J$ (equation \eqref{eq:fe:fineconstraintset}).  Though the ideas are fundamentally the same as for unilateral constraints \cite{GraeserKornhuber2009}, the notation is more elaborate because we consider bi-obstacle (box-constrained) problems.
+
+From the iterate $w^J$ we define the \emph{finest-level defect constraints}
 \begin{equation}
 \underline{\chi}^J = \underline{\gamma}^J - w^J, \qquad \overline{\chi}^J = \overline{\gamma}^J - w^J, \label{eq:fe:defectconstraints}
 \end{equation}
-as functions in $\tilde{\mathcal{V}}^J$.  Note that $\underline{\chi}^J \le 0 \le \overline{\chi}^J$ everywhere in $\overline{\Omega}$, including along the Dirichlet boundary $\partial_D\Omega$.  The motivation for such defect constraints \cite{GraeserKornhuber2009} is that a corrected iterate is admissible with respect to the defining inequalities for $\cK^J$, namely $\underline{\gamma}^J \le w^J + z^J \le \overline{\gamma}^J$, if and only if the perturbation $z^J$ is between the defect constraints, $\underline{\chi}^J \le z^J \le \overline{\chi}^J$.
+as nodal functions in $\tilde{\mathcal{V}}^J$.  Note that $\underline{\chi}^J \le 0 \le \overline{\chi}^J$ everywhere in $\overline{\Omega}$, including along the Dirichlet boundary $\partial_D\Omega$ where $\underline{\gamma}^J \le g_D^J \le \overline{\gamma}^J$ and $w^J = g_D^J = g_D$.  The motivation for creating such defect constraints \cite{GraeserKornhuber2009} is that a corrected iterate $w^J + z^J$, for $z^J\in\cV^J$, is admissible ($w^J + z^J \in \cK^J$) if and only if the perturbation $z^J$ is between the defect constraints, $\underline{\chi}^J \le z^J \le \overline{\chi}^J$, and $z^J=0$ on $\partial_D\Omega$.
 
-For coarser levels $j=J-1,\dots,1,0$ we apply monotone restrictions to define the \emph{level defect constraints},
+For coarser levels $j=J-1,\dots,1,0$ we apply the monotone restrictions to generate ``\emph{below}'' and ``\emph{above}'' \emph{level defect constraints} (LDCs):
 \begin{equation}
-\underline{\chi}^{j} = \maxR \underline{\chi}^{j+1}, \qquad \overline{\chi}^{j} = \minR \overline{\chi}^{j+1}. \label{eq:fe:chilevels}
+\underline{\chi}^{j} = \maxR \underline{\chi}^{j+1}, \qquad \overline{\chi}^{j} = \minR \overline{\chi}^{j+1}, \label{eq:fe:chilevels}
 \end{equation}
-FIXME: VALUES ALONG $\partial_D\Omega$ ARE BY INJECTION  Observe that
+thus $\underline{\chi}^{j},\overline{\chi}^{j} \in \tilde{\mathcal{V}}^J$.  Observe that
 \begin{equation}
-\underline{\chi}^{J} \le \dots \le \underline{\chi}^0 \le 0 \le \overline{\chi}^0 \le \dots \le \overline{\chi}^J. \label{eq:fe:chiordering}
+\underline{\chi}^{J} \le \dots \le \underline{\chi}^0 \le 0 \le \overline{\chi}^0 \le \dots \le \overline{\chi}^J, \label{eq:fe:chiordering}
 \end{equation}
-A $J=4$ example, with no upper obstacles, namely $\overline{\chi}^j=+\infty$ for all $j$, is shown in Figure \ref{fig:chiphilevels}.
+in the sense of comparing nodal values at nodes shared between levels.  A $J=4$ example of ``below'' LDCs $\underline{\chi}^j$ is shown in Figure \ref{fig:chiphilevels}.
 
 %REGENERATE using https://github.com/bueler/mg-glaciers:
 %$ cd mg-glaciers/py/
@@ -478,29 +484,48 @@ A $J=4$ example, with no upper obstacles, namely $\overline{\chi}^j=+\infty$ for
 %fine level 5 (m=63): using 20 V(1,0) cycles -> 38.750 WU
 \begin{figure}
 \includegraphics[width=0.65\textwidth]{fixfigs/chiphilevels.pdf}
-\caption{The lower defect constraint $\underline{\chi}^J = \underline{\gamma}^J - w^J$ is decomposed using maximum restriction: $\underline{\chi}^{j-1} = \maxR \underline{\chi}^j$.}
+\caption{The ``below'' level defect constraint (LDC) $\underline{\chi}^J = \underline{\gamma}^J - w^J$ is decomposed using maximum restriction: $\underline{\chi}^{j-1} = \maxR \underline{\chi}^j$.}
 \label{fig:chiphilevels}
 \end{figure}
 
-We also compute the differences between the level defect constraints:
+We then compute the differences between the previous LDCs:
 \begin{equation}
 \underline{\phi}^j = \underline{\chi}^j - \underline{\chi}^{j-1}, \qquad \overline{\phi}^j = \overline{\chi}^j - \overline{\chi}^{j-1},  \label{eq:fe:philevels}
 \end{equation}
-using $\underline{\chi}^{-1}=\overline{\chi}^{-1}=0$ to define $\underline{\phi}^0=\underline{\chi}^0$ and $\overline{\phi}^0=\overline{\chi}^0$.  These constraints bracket zero,
+using $\underline{\chi}^{-1}=\overline{\chi}^{-1}=0$ to define $\underline{\phi}^0=\underline{\chi}^0$ and $\overline{\phi}^0=\overline{\chi}^0$.  These new nodal functions $\underline{\phi}^{j},\overline{\phi}^{j} \in \tilde{\mathcal{V}}^J$ are also LDCs, and again they bracket zero,
 \begin{equation}
-\underline{\phi}^j \le 0 \le \overline{\phi}^j.  \label{eq:fe:phibrackets}
+\underline{\phi}^j \le 0 \le \overline{\phi}^j,  \label{eq:fe:phibrackets}
 \end{equation}
-Though these functions are not ordered as in \eqref{eq:fe:chiordering}, telescoping sums hold for $j=0,1,\dots,J$:
+but they are not ordered as in \eqref{eq:fe:chiordering}.  However, telescoping sums hold for $j=0,1,\dots,J$:
 \begin{equation}
 \sum_{i=0}^j \underline{\phi}^i = \underline{\chi}^j, \qquad \sum_{i=0}^j \overline{\phi}^i = \overline{\chi}^j.  \label{eq:fe:telescoping}
 \end{equation}
+Table \ref{tab:ldcs} should help the reader keep track of these objects.
 
-FIXME A multilevel V-cycle is defined in the next Section.  For the downward direction we will use the differences $\underline{\phi}^j,\overline{\phi}^j$ as constraints, and for the upward part the defect constraints $\underline{\chi}^j,\overline{\chi}^j$.  That is,
+\begin{table}
+\begin{tabular}{llc}
+\emph{LDC name}        & \emph{formula} \\ \hline
+(finest) upward below & ${\Large \strut} \underline{\chi}^J = \underline{\gamma}^J - w^J$ \\
+(finest) upward above & ${\Large \strut} \overline{\chi}^J = \overline{\gamma}^J - w^J$ \\
+upward below          & ${\Large \strut} \underline{\chi}^{j} = \maxR \underline{\chi}^{j+1}$ \\
+upward above          & ${\Large \strut} \overline{\chi}^{j} = \minR \overline{\chi}^{j+1}$ \\
+downward below        & ${\Large \strut} \underline{\phi}^j = \underline{\chi}^j - \underline{\chi}^{j-1}$ \\
+downward above        & ${\Large \strut} \overline{\phi}^j = \overline{\chi}^j - \overline{\chi}^{j-1}$ \\
+\end{tabular}
+
+\medskip
+\caption{Level defect constraints (LDCs) are constructed from the defining box constraints ($\underline{\gamma}^J,\overline{\gamma}^J$) in problem \eqref{eq:fe:vi}, and a finest level iterate ($w^J \in \cK^J$), by starting at the finest level.  Then monotone restrictions and differences generate LDCs for coarser levels $j=0,\dots,J-1$.  LDCs $\underline{\chi}^j,\overline{\chi}^j$ are used for the upward direction in V-cycles, and $\underline{\phi}^j,\overline{\phi}^j$ for the downward direction.}
+\label{tab:ldcs}
+\end{table}
+
+A multilevel V-cycle is defined in the next Section.  For the downward direction in a V-cycle we will use the LDCs $\underline{\phi}^j,\overline{\phi}^j$ as constraints, and for the upward part the LDCs $\underline{\chi}^j,\overline{\chi}^j$.  In fact, let
 \begin{align}
-\mathcal{D}^j = \{v \in \mathcal{V}^j \,:\, \underline{\phi}^j \le v \le \overline{\phi}^j\}, \label{eq:fe:constraintsets} \\
-\mathcal{U}^j = \{v \in \mathcal{V}^j \,:\, \underline{\chi}^j \le v \le \overline{\chi}^j\}, \notag
+\mathcal{D}^j = \left\{v \,:\, \underline{\phi}^j \le v \le \overline{\phi}^j \text{ and } \, v|_{\partial_D\Omega} = 0\right\} \subset \mathcal{V}^j, \label{eq:fe:constraintsets} \\
+\mathcal{U}^j = \left\{v\,:\, \underline{\chi}^j \le v \le \overline{\chi}^j \text{ and } \, v|_{\partial_D\Omega} = 0\right\} \subset \mathcal{V}^j, \notag
 \end{align}
-are the \emph{downward} and \emph{upward constraint subsets} of the FE subspaces $\mathcal{V}^j$, respectively.  Observe that the upward sets are larger, $\mathcal{D}^j \subset \mathcal{U}^j$, and in fact by \eqref{eq:fe:telescoping} the set decompositions
+be the \emph{downward} and \emph{upward defect constraint subsets} of the FE subspaces $\mathcal{V}^j$, respectively.  Again these subsets are closed and convex.
+
+Observe that the upward sets are larger, $\mathcal{D}^j \subset \mathcal{U}^j$, and by \eqref{eq:fe:telescoping} the set decompositions
 \begin{equation}
 \mathcal{U}^j = \sum_{i=0}^j \mathcal{D}^i \label{eq:fe:constraintdecomp}
 \end{equation}
@@ -509,7 +534,22 @@ apply in the same sense as \eqref{eq:constraintdecomp}.  Also note that the fine
 z^J \in \mathcal{U}^J \quad \iff \quad w^J+z^J \in \mathcal{K}^J. \label{eq:fe:finestlevelequivalent}
 \end{equation}
 
-FIXME what are the CDs?  what are the decomposition operators?
+Recalling definitions \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum}, we now have two varieties of multilevel CDs of the finest-level upward defect constraint set $\mathcal{U}^J$.
+
+\begin{lemma}  Given upper and lower obstacles $\underline{\gamma}^J,\overline{\gamma}^J \in \cV^J$, the constraint set $\cK^J$ defined as in \eqref{eq:fe:fineconstraintset}, and a finest level iterate $w^J \in \cK^J$.  Suppose that the downward and upward defect constraint subsets $\mathcal{D}^i,\mathcal{U}^j$ are defined as in \eqref{eq:fe:constraintsets}.  Then for any $j=0,1,\dots,J$ the sums
+\begin{equation}
+\mathcal{U}^J \stackrel{\text{(i)}}{=} \sum_{i=0}^J \mathcal{D}^i \quad \text{ and } \quad  \mathcal{U}^J \stackrel{\text{(ii)}}{=} \mathcal{U}^j + \sum_{i={j+1}}^J \mathcal{D}^i
+\end{equation}
+are each CDs of $\mathcal{U}^J = \cK^J - w^J$, over subspace decompositions $\cV^J=\sum_{i=0}^J \cV^i$ and $\cV^J=\sum_{i=j}^J \cV^i$, respectively.
+\end{lemma}
+
+\begin{proof}  Definition \eqref{eq:fe:constraintsets} shows $\mathcal{D}^i \subset \cV^i$ and $\mathcal{U}^i \subset \cV^i$.  FIXME what are the decomposition operators?
+
+FIXME Define the coarsening decomposition (projection) operator
+    $$\Pi_j^{j-1} v = \min\{\max\{\iR v, \underline{\chi}^{j-1}\}, \overline{\chi}^{j-1}\}.$$
+It is easy to see that $\Pi_j^{j-1}:\mathcal{U}^j \to \mathcal{U}^{j-1}$ and $I-\Pi_j^{j-1}:\mathcal{U}^j \to \mathcal{D}^{j-1}$.
+\end{proof}
+ 
 
 
 \section{The nonlinear multilevel CD V-cycle} \label{sec:vcycle}
