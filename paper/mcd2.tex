@@ -502,7 +502,7 @@ but they are not ordered as in \eqref{eq:fe:chiordering}.  However, telescoping 
 \end{equation}
 Table \ref{tab:ldcs} should help the reader keep track of these objects.
 
-\begin{table}
+\begin{table}[H]
 \begin{tabular}{llc}
 \emph{LDC name}        & \emph{formula} \\ \hline
 (finest) upward below & ${\Large \strut} \underline{\chi}^J = \underline{\gamma}^J - w^J$ \\
@@ -514,7 +514,7 @@ downward above        & ${\Large \strut} \overline{\phi}^j = \overline{\chi}^j -
 \end{tabular}
 
 \medskip
-\caption{Level defect constraints (LDCs) are constructed from the defining box constraints ($\underline{\gamma}^J,\overline{\gamma}^J$) in problem \eqref{eq:fe:vi}, and a finest level iterate ($w^J \in \cK^J$), by starting at the finest level.  Then monotone restrictions and differences generate LDCs for coarser levels $j=0,\dots,J-1$.  LDCs $\underline{\chi}^j,\overline{\chi}^j$ are used for the upward direction in V-cycles, and $\underline{\phi}^j,\overline{\phi}^j$ for the downward direction.}
+\caption{The box level defect constraints (LDCs) are constructed from the defining box constraints ($\underline{\gamma}^J,\overline{\gamma}^J$) in problem \eqref{eq:fe:vi}, and a finest level iterate ($w^J \in \cK^J$), by starting at the finest level.}
 \label{tab:ldcs}
 \end{table}
 
@@ -536,11 +536,12 @@ z^J \in \mathcal{U}^J \quad \iff \quad w^J+z^J \in \mathcal{K}^J. \label{eq:fe:f
 
 Recalling definitions \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum}, we now have two varieties of multilevel CDs of the finest-level upward defect constraint set $\mathcal{U}^J$.
 
-\begin{lemma}  Given upper and lower obstacles $\underline{\gamma}^J,\overline{\gamma}^J \in \cV^J$, the constraint set $\cK^J$ defined as in \eqref{eq:fe:fineconstraintset}, and a finest level iterate $w^J \in \cK^J$.  Suppose that the downward and upward defect constraint subsets $\mathcal{D}^i,\mathcal{U}^j$ are defined as in \eqref{eq:fe:constraintsets}.  Then for any $j=0,1,\dots,J$ the sums
-\begin{equation}
-\mathcal{U}^J \stackrel{\text{(i)}}{=} \sum_{i=0}^J \mathcal{D}^i \quad \text{ and } \quad  \mathcal{U}^J \stackrel{\text{(ii)}}{=} \mathcal{U}^j + \sum_{i={j+1}}^J \mathcal{D}^i
-\end{equation}
-are each CDs of $\mathcal{U}^J = \cK^J - w^J$, over subspace decompositions $\cV^J=\sum_{i=0}^J \cV^i$ and $\cV^J=\sum_{i=j}^J \cV^i$, respectively.
+\begin{lemma}  Given upper and lower obstacles $\underline{\gamma}^J,\overline{\gamma}^J \in \cV^J$, the constraint set $\cK^J$ defined as in \eqref{eq:fe:fineconstraintset}, a finest level iterate $w^J \in \cK^J$, and downward and upward defect constraint subsets $\mathcal{D}^i,\mathcal{U}^j$ as defined in \eqref{eq:fe:constraintsets}.  Then for any $j=0,1,\dots,J$ the descending sums
+\begin{align}
+\mathcal{U}^J &\stackrel{\text{(i)}}{=} \mathcal{D}^J + \mathcal{D}^{J-1} + \dots + \mathcal{D}^0, \label{eq:fe:downwardsumcd} \\
+\mathcal{U}^J &\stackrel{\text{(ii)}}{=} \mathcal{D}^J + \mathcal{D}^{J-1} + \dots + \mathcal{D}^{j+1} + \mathcal{U}^j \label{eq:fe:upwardsumcd}
+\end{align}
+are CDs of\, $\mathcal{U}^J = \cK^J - w^J$, over subspace decompositions $\cV^J=\sum_{i=0}^J \cV^i$ and $\cV^J=\sum_{i=j}^J \cV^i$, respectively.
 \end{lemma}
 
 \begin{proof}  Definition \eqref{eq:fe:constraintsets} shows $\mathcal{D}^i \subset \cV^i$ and $\mathcal{U}^i \subset \cV^i$.  FIXME what are the decomposition operators?
@@ -554,23 +555,19 @@ It is easy to see that $\Pi_j^{j-1}:\mathcal{U}^j \to \mathcal{U}^{j-1}$ and $I-
 
 \section{The nonlinear multilevel CD V-cycle} \label{sec:vcycle}
 
-Our \emph{nonlinear multilevel constraint decomposition} (NMCD) V-cycle algorithm in this section will use the two types of constraint subsets in \eqref{eq:fe:constraintsets}, with distinct sets for the downward and upward parts of the cycle.  We also diverge from the multilevel CD algorithms by Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear \emph{full approximation scheme} (FAS) philosophy \cite{BrandtLivne2011}.  In the FAS approach here we must coarsen the solution iterate itself, using the injection restriction, in constrast to classical linear multigrid, wherein only the residual and correction are coarsened, and in constrast to the implemented examples in \cite{GraeserKornhuber2009,Tai2003} in which $f$ is linear.
+The \emph{nonlinear multilevel constraint decomposition} (NMCD) V-cycle algorithm in this section uses CDs \eqref{eq:fe:downwardsumcd} and \eqref{eq:fe:upwardsumcd}, thus applying coarse corrections from $\mathcal{D}^j$ for the downward and $\mathcal{U}^j$ for the upward directions, respectively.  The algorithm generalizes the multilevel CD schemes of Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear \emph{full approximation scheme} (FAS) approach \cite{BrandtLivne2011}.  That is, we coarsen the solution iterate itself, using the injection restriction, in constrast to classical linear multigrid, wherein only the residual and correction are coarsened.
 
-FIXME from here
-
-We will correct the finest-level iterate $w^J\in \mathcal{K}^J$ by adding modifications from each coarser subspace $\mathcal{V}^j$.  By nesting \eqref{eq:fe:nestedspaces} these corrections live in the fine-level subspace $\mathcal{V}^J$, but the corrected iterate needs to be admissible as well.  The accumulated corrections, from the constraint subsets $\mathcal{D}^j$ and $\mathcal{U}^j$, over the whole multigrid V-cycle, compute a new iterate in $\mathcal{K}^J$.
-
-In detail, suppose $y^{j+1} \in \mathcal{D}^{j+1}, \dots, y^J \in \mathcal{D}^J$ are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:nmcdvcycle}).  The so-far corrected iterate is admissible, namely $w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$, because the sum of corrections is in the (finest) defect constraint set, i.e.~$y^J + \dots + y^{j+1} \in \mathcal{U}^J = \{v\ge \chi^J\}$.
+The finest-level iterate $w^J\in \mathcal{K}^J$ is corrected by perturbations from each coarser subspace $\mathcal{V}^j$---by nesting \eqref{eq:fe:nestedspaces} these corrections live in the fine-level subspace $\mathcal{V}^J$---but the corrected iterate needs to be admissible.  In detail, suppose $y^J \in \mathcal{D}^J, y^{J-1} \in \mathcal{D}^{J-1}, \dots, y^{j+1} \in \mathcal{D}^{j+1}$ are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:nmcdvcycle}).  By \eqref{eq:fe:downwardsumcd} the corrected iterate at this point is admissible, namely $y^J + \dots + y^{j+1} + 0 + \dots + 0 \in \mathcal{U}^J$, equivalently $w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$.  Smoothing then happens in the next-coarser level, i.e.~we incompletely solve VI \eqref{eq:fe:downvi} below.  The coarsest-level VI is then (accurately) solved to generate the downslash correction $y^J + \dots + y^1 + z^0 \in \mathcal{U}^J$, again by \eqref{eq:fe:downwardsumcd}.  Starting upward, however, we can use $y^1+ z^0 \in \mathcal{U}^1$ as an initial iterate, then smooth by incompletely solving VI \eqref{eq:fe:upvi} in $\mathcal{U}^1$ (see below), yielding admissible total correction $y^J + \dots + y^2 + z^1 \in \mathcal{U}^J$ using \eqref{eq:fe:upwardsumcd}.  Continuing in this way, solving in the larger upward constraint sets $\mathcal{U}^j$, eventually generates $z^J\in \mathcal{U}^J$ as the full V-cycle correction, yielding the update $w^J \leftarrow w^J + z^J \in \mathcal{K}^J$.  Each of the upward smoothing stages solves a less-restricted VI problem than the corresponding down-smoothing problem.
 
 \begin{figure}[ht]
 \begin{center}
 \input{tikz/nmcdvcycle.tex}
 \end{center}
-\caption{An NMCD V-cycle computes downward corrections $y_j \in \mathcal{D}^j$, but the upward corrections $z_j$ may expand into larger constraint subsets $\mathcal{U}^j$.}
+\caption{An NMCD V-cycle computes downward corrections $y_j \in \mathcal{D}^j$.  The upward corrections $z_j\in\mathcal{U}^j$ live in larger constraint subsets.}
 \label{fig:nmcdvcycle}
 \end{figure}
 
-When computing the next-coarser correction one must use the coarser-mesh representation of the problem.  As in nonlinear FAS multigrid schemes \cite{BrandtLivne2011,Bruneetal2015,Trottenbergetal2001}, this requires that we coarsen the iterate as well as the residual and the correction, and here injection is used \cite[section 5.3]{Trottenbergetal2001}.  Define
+When computing the next-coarser correction one must use the coarser-mesh representation of the problem.  As in nonlinear FAS multigrid schemes \cite{BrandtLivne2011,Bruneetal2015,Trottenbergetal2001}, this requires that we coarsen the iterate as well as the residual and the correction.  Injection is used \cite[section 5.3]{Trottenbergetal2001}.  Define
 \begin{equation}
 g^j = \begin{cases} w^J, & j=J \\
                     \iR(g^{j+1} + y^{j+1}), & j < J.
@@ -692,6 +689,8 @@ FIXME stopping criteria for smoother
 FIXME show results for 2D Firedrake implementation of NMCD for $p$-Laplacian obstacle problem (Example \ref{ex:plaplacian}), advection-diffusion obstacle problem (Example \ref{ex:advectiondiffusion}), and porous-media obstacle problem (Example \ref{ex:porous})
 
 FIXME observe that up-smoothing is more efficient
+
+FIXME constrast the implemented examples in \cite{GraeserKornhuber2009,Tai2003} in which $f$ is linear
 
 % A BRIDGE TOO FAR:  \section{Results for a nonlocal variational inequality}
 
