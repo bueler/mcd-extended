@@ -557,7 +557,7 @@ It is easy to see that $\Pi_j^{j-1}:\mathcal{U}^j \to \mathcal{U}^{j-1}$ and $I-
 
 The \emph{nonlinear multilevel constraint decomposition} (NMCD) V-cycle algorithm in this section uses CDs \eqref{eq:fe:downwardsumcd} and \eqref{eq:fe:upwardsumcd}, thus applying coarse corrections from $\mathcal{D}^j$ for the downward and $\mathcal{U}^j$ for the upward directions, respectively.  The algorithm generalizes the multilevel CD schemes of Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear \emph{full approximation scheme} (FAS) approach \cite{BrandtLivne2011}.  That is, we coarsen the solution iterate itself, using the injection restriction, in constrast to classical linear multigrid, wherein only the residual and correction are coarsened.
 
-The finest-level iterate $w^J\in \mathcal{K}^J$ is corrected by perturbations from each coarser subspace $\mathcal{V}^j$---by nesting \eqref{eq:fe:nestedspaces} these corrections live in the fine-level subspace $\mathcal{V}^J$---but the corrected iterate needs to be admissible.  In detail, suppose $y^J \in \mathcal{D}^J, y^{J-1} \in \mathcal{D}^{J-1}, \dots, y^{j+1} \in \mathcal{D}^{j+1}$ are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:nmcdvcycle}).  By \eqref{eq:fe:downwardsumcd} the corrected iterate at this point is admissible, namely $y^J + \dots + y^{j+1} + 0 + \dots + 0 \in \mathcal{U}^J$, equivalently $w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$.  Smoothing then happens in the next-coarser level, i.e.~we incompletely solve VI \eqref{eq:fe:downvi} below.  The coarsest-level VI is then (accurately) solved to generate the downslash correction $y^J + \dots + y^1 + z^0 \in \mathcal{U}^J$, again by \eqref{eq:fe:downwardsumcd}.  Starting upward, however, we can use $y^1+ z^0 \in \mathcal{U}^1$ as an initial iterate, then smooth by incompletely solving VI \eqref{eq:fe:upvi} in $\mathcal{U}^1$ (see below), yielding admissible total correction $y^J + \dots + y^2 + z^1 \in \mathcal{U}^J$ using \eqref{eq:fe:upwardsumcd}.  Continuing in this way, solving in the larger upward constraint sets $\mathcal{U}^j$, eventually generates $z^J\in \mathcal{U}^J$ as the full V-cycle correction, yielding the update $w^J \leftarrow w^J + z^J \in \mathcal{K}^J$.  Each of the upward smoothing stages solves a less-restricted VI problem than the corresponding down-smoothing problem.
+The finest-level iterate $w^J\in \mathcal{K}^J$ is corrected by perturbations from each coarser subspace $\mathcal{V}^j$---by nesting \eqref{eq:fe:nestedspaces} these corrections live in the fine-level subspace $\mathcal{V}^J$---but the corrected iterate needs to be admissible.  In detail, suppose $y^J \in \mathcal{D}^J, y^{J-1} \in \mathcal{D}^{J-1}, \dots, y^{j+1} \in \mathcal{D}^{j+1}$ are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:nmcdvcycle}).  By \eqref{eq:fe:downwardsumcd} the corrected iterate at this point is admissible, namely $y^J + \dots + y^{j+1} + 0 + \dots + 0 \in \mathcal{U}^J$, equivalently $w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$.  Smoothing then happens in the next-coarser level, i.e.~we incompletely solve VI \eqref{eq:fe:downvi} below.  The coarsest-level VI is then (accurately) solved to generate the downslash correction $y^J + \dots + y^1 + z^0 \in \mathcal{U}^J$, again by \eqref{eq:fe:downwardsumcd}.  Starting upward, however, we can use $y^1+ z^0 \in \mathcal{U}^1$ as an initial iterate, then smooth by incompletely solving VI \eqref{eq:fe:upvi} in $\mathcal{U}^1$ (see below), yielding admissible total correction $y^J + \dots + y^2 + z^1 \in \mathcal{U}^J$ using \eqref{eq:fe:upwardsumcd}.  Continuing in this way, solving in the larger upward constraint sets $\mathcal{U}^j$, eventually generates $z^J\in \mathcal{U}^J$ as the full V-cycle correction, yielding the update $w^J \leftarrow w^J + z^J \in \mathcal{K}^J$.
 
 \begin{figure}[ht]
 \begin{center}
@@ -567,57 +567,72 @@ The finest-level iterate $w^J\in \mathcal{K}^J$ is corrected by perturbations fr
 \label{fig:nmcdvcycle}
 \end{figure}
 
-When computing the next-coarser correction one must use the coarser-mesh representation of the problem.  As in nonlinear FAS multigrid schemes \cite{BrandtLivne2011,Bruneetal2015,Trottenbergetal2001}, this requires that we coarsen the iterate as well as the residual and the correction.  Injection is used \cite[section 5.3]{Trottenbergetal2001}.  Define
+A key idea, implicit in the above paragraph, is that the up-smoothing stages solve less-restricted VI problems than the down-smoothing stages.  Intuitively-speaking, going downward one does not know what the coarse corrections will be, so they must be in sufficiently-small sets ($\mathcal{D}^j$) so that there sum is admissible once we get back to the current level.  However, going upward the result of smoothing can be computed in the larger admissible-sum sets ($\mathcal{U}^j$).
+
+To state the NMCD algorithm---see Algorithm \ref{alg:nmcd} below---we must explain how to generate the coarsened problems solved at each mesh level.\footnote{Smoothers/solvers for these problems are proposed in Section \ref{sec:smoothers}.}  As in classical FAS multigrid for nonlinear PDEs \cite{BrandtLivne2011,Bruneetal2015,Trottenbergetal2001}, both the solution approximation (iterate) and the residual must be coarsened, and a but also a source functional must be created.  Let $j$ denote the mesh level of the coarsened problem.  We assume a (re-)discretized nonlinear operator $f^j$, approximating $f$ in \eqref{eq:boxdirichletvi}, with output in $(\cV^j)'$.  Injection $\iR$ generates the coarsened iterate (denoted $g^j$ below; note injection is commonly used for classical FAS \cite[section 5.3]{Trottenbergetal2001}), and canonical restriction $R$ the coarsened source functional (denoted $\ell^j$).
+
+The formulas are as follows.  At the finest level we have problem \eqref{eq:fe:vi} defined by the discretized operator $f^J$ and the original source functional $\ell^J$.  A finest-level, admissible iterate $w^J \approx u^J$, $w^J \in \mathcal{K}^J$, has already\footnote{Conceptually-speaking, at least.  In practice one generates LDCs $\underline{\chi}^j,\overline{\chi}^j,\underline{\phi}^j,\overline{\phi}^j$ during the descent stage; see Algorithm \ref{alg:nmcd}.  Observe that the LDCs depend neither on coarsened iterates $g^j$ nor corrections $y^j,z^j$.} been used to general the LDCs and the constraint sets $\mathcal{D}^j,\mathcal{U}^j$ at each level (Section \ref{sec:multilevel}).  As we descend in the V-cycle, we recursively define $j$th-level iterates
 \begin{equation}
 g^j = \begin{cases} w^J, & j=J \\
                     \iR(g^{j+1} + y^{j+1}), & j < J.
       \end{cases}  \label{eq:fe:defineg}
 \end{equation}
-Function $g^j$ is the $j$th-level mesh approximation to the solution of \eqref{eq:fe:vi}, before smoothing and correction at that level.\footnote{If we were to inject the finest-mesh obstacle downward to coarser meshes, $\gamma^{j-1} = \iR \gamma^j$, then, because $\iR$ preserves inequalities and $y^j \in \mathcal{D}^j$, it would follow that $g^j \ge \gamma^j$.  In this sense $g^j$ is admissible on the $j$th-level mesh.  However, following \cite{GraeserKornhuber2009}, our use of defect constraints $\chi^j$ avoids the need to generate the $\gamma^j$.}
-
-Down-smoothing makes progress toward solving the following VI for $y^j \in \mathcal{D}^j$:
+These are the iterates \emph{before} smoothing and/or correction has been applied at level $j$.  (Note that the problem solved by the finer-level, down-smoother correction $y^{j+1}$ is stated momentarily.)  From $g^j$ we define
 \begin{equation}
-\ip{f^j(g^j + y^j)}{v-y^j} \ge \ip{\ell^j}{v-y^j} \qquad \text{for all } v\in \mathcal{D}^j. \label{eq:fe:downvi}
+\ell^j = \begin{cases} \ell^J, & j=J \\
+                       f^j(g^j) + R\left(\ell^{j+1}-f^{j+1}(g^{j+1}+y^{j+1})\right), & j<J. \end{cases} \label{eq:fe:levelsource}
 \end{equation}
-Here $f^j$ is a discretization of $f$ in \eqref{eq:vi},\footnote{Again we diverge from the algorithm by Tai \cite{Tai2003}, who essentially assumes that ``$f(g^j + y^j)$'' is used here.  If $f$ is linear then efficient implementation via that formula is possible, but otherwise one must apply $f^j$.} using quadrature etc.~as addressed for $f^J$ in \eqref{eq:fe:vi}.
-
-For $j<J$ the source function $\ell^j$ is determined by an FAS-type formula, as follows.  First note that the $j+1$ level version of \eqref{eq:fe:downvi} is not solved exactly by the correction $y^{j+1}$.  Fixing $y^{j+1} \in \mathcal{D}^{j+1}$, we would want to find a further correction $y$ so that $g^{j+1}+y^{j+1}+y$ is still admissible, and so that
+On descent we solve the following VI for $y^j \in \mathcal{D}^j$:
 \begin{equation}
-\ip{f^{j+1}(g^{j+1}+y^{j+1}+y)}{v-y^{j+1}-y} \ge \ip{\ell^{j+1}}{v-y^{j+1}-y} \qquad \text{\emph{(notional)}} \label{eq:fe:downvinotional}
+\ip{f^j(g^j + y^j)}{v-y^j} \ge \ip{\ell^j}{v-y^j} \qquad \text{for all } v\in \mathcal{D}^j, \label{eq:fe:downvi}
 \end{equation}
-held exactly.  However, in a multilevel method we actually compute this next correction $y$ on the next-coarser level $j$.  To do this we modify the notional finer-level VI \eqref{eq:fe:downvinotional} in five steps which mimic the standard argument for the FAS correction equations for PDEs \cite{BrandtLivne2011,Trottenbergetal2001}:
+for which the initial iterate is
+\begin{equation}
+(y^j)^{(0)}=0.  \label{eq:fe:downwardinitial}
+\end{equation}
+(Zero is admissible by \eqref{eq:fe:phibrackets}.)  On ascent the same VI is solved, but in a larger admissible set.  We find $z^j \in \mathcal{U}^j$ so that
+\begin{equation}
+\ip{f^j(g^j + z^j)}{v-z^j} \ge \ip{\ell^j}{v-z^j} \qquad \text{for all } v\in \mathcal{U}^j. \label{eq:fe:upvi}
+\end{equation}
+The nontrivial initial iterate for this problem is found by prolonging the coarser-level solution and using it to correct the down-smoothed iterate:
+\begin{equation}
+(z^j)^{(0)} = y^j + P z^{j-1}.  \label{eq:fe:upwardinitial}
+\end{equation}
+This is admissible since $\mathcal{U}^j = \mathcal{D}^j + \mathcal{U}^{j-1}$; see \eqref{eq:fe:constraintdecomp} or \eqref{eq:fe:upwardsumcd}.
+
+Regarding formula \eqref{eq:fe:defineg}, note that if we were to inject the bi-obstacles downward to coarser meshes, i.e.~$\underline{\gamma}^j = \iR \underline{\gamma}^{j+1}$ and $\overline{\gamma}^j = \iR \overline{\gamma}^{j+1}$, then, because injection preserves inequalities, and because $y^{j+1} \in \mathcal{D}^{j+1}$, it would follow that $\underline{\gamma}^j \le g^j \le \overline{\gamma}^j$, just like $\underline{\gamma}^J \le w^J \le \overline{\gamma}^J$ for the finest-level iterate.  In this narrow sense $g^j$ is admissible with respect to the original (finest-level) box constraints.\footnote{In fact, while $g^j \in \cV^j \subset \cV^J$ certainly holds, generally $g^j \notin \cK^J$.}  However, following \cite{GraeserKornhuber2009}, our use of defect constraints (Table \ref{tab:ldcs}) avoids the need to generate functions $\underline{\gamma}^j$ and $\overline{\gamma}^j$, and it yields a final, finest-level iterate $g^J+z^J \in \cK^J$ which is genuinely admissible on that level.
+
+Regarding formula \eqref{eq:fe:levelsource}, the source function $\ell^j$ is determined by a classical FAS-type formula.  (Compare equation (8.5b) in \cite{BrandtLivne2011} or equation (5.3.14) in \cite{Trottenbergetal2001}.)  It has the following explanation, mimicking the PDE version from textbooks, which simultaneously justifies VI problems \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi}.
+
+First, the $j+1$ level problem \eqref{eq:fe:downvi} is not solved exactly by the finer-level correction $y^{j+1}$; the down-smoother was only approximate.  Conceptually, we seek a further correction $y$ on the $j+1$ level so that
+\begin{equation}
+\ip{f^{j+1}(g^{j+1}+y^{j+1}+y)}{v-y^{j+1}-y} \ge \ip{\ell^{j+1}}{v-y^{j+1}-y}, \, \forall v\in \mathcal{D}^j \quad \text{\emph{(notional)}} \label{eq:fe:downvinotional}
+\end{equation}
+held exactly.  However, $y$ is actually approximated from a problem on the next-coarser level.  This $j$th-level problem comes from modifying notional VI \eqref{eq:fe:downvinotional} in 4 steps:
 \begin{enumerate}
-\item group $v-y^{j+1}$ as a coarser-level test function $v\in \mathcal{D}^j$,
 \item subtract the known $f^{j+1}(g^{j+1}+y^{j+1}) \in (\mathcal{V}^{j+1})'$ from both sides,
 \item replace the residual $\ell^{j+1}-f^{j+1}(g^{j+1}+y^{j+1})$ by its restriction,
-\item replace $g^{j+1}+y^{j+1}$ where it appears by its restriction,
+\item replace $g^{j+1}+y^{j+1}$, where it appears on the left, by its restriction,
 \item and replace $f^{j+1}$ by its coarser rediscretization $f^j$ where it appears on the left.
 \end{enumerate}
-Steps \emph{(iii)}--\emph{(v)} are justified, as usual, by the assumption that the residual and the correction should be smooth as a result of the progress made by the smoother on the $j+1$ level.  These steps now yield the precise $j$th-level VI problem, in cluttered form but the same as \eqref{eq:fe:downvi}:
+Steps \emph{(ii)}--\emph{(iv)} are justified, as for PDEs \cite[subsection 5.3.4, for example]{Trottenbergetal2001}, because the residual and the error should be smooth as a result of the progress made by the $j+1$ level down-smoother.  These steps now yield a problem for the $j$th-level correction $y^j \in \mathcal{D}^j$:
 \begin{align}
 &\ip{f^j\left(\iR(g^{j+1}+y^{j+1})+y^j\right)}{v-y^j} - \ip{f^j\left(\iR(g^{j+1}+y^{j+1})\right)}{v-y^j} \label{eq:fe:downvicluttered} \\
 &\qquad \ge \ip{R\left(\ell^{j+1}-f^{j+1}(g^{j+1}+y^{j+1})\right)}{v-y^j} \notag
 \end{align}
+This is the same as VI problem \eqref{eq:fe:downvi}, but in cluttered form; application of definitions \eqref{eq:fe:defineg} and \eqref{eq:fe:levelsource} yields \eqref{eq:fe:downvi}.  The explanation for VI \eqref{eq:fe:upvi} is essentially identical, but with different initial iterate and admissible set, as justified already.
 
-Thus we define $\ell^j \in (\mathcal{V}^j)'$ in \eqref{eq:fe:downvi} by the following recursive definition, starting from $\ell^J$ already defined for the finest-level problem \eqref{eq:fe:vi}, and incorporating definition \eqref{eq:fe:defineg}:
-\begin{equation}
-\ell^j = f^j(g^j) + R\left(\ell^{j+1}-f^{j+1}(g^{j+1}+y^{j+1})\right). \label{eq:fe:levelsource}
-\end{equation}
-This is identical, even if the notation differs, to the standard FAS formula for a PDE source term, for example equation (8.5b) in \cite{BrandtLivne2011} or equation (5.3.14) in \cite{Trottenbergetal2001}.
+FIXME? Down-smoothing solves \eqref{eq:fe:downvi}, with $f^j$ is a discretization of $f$ in \eqref{eq:vi}, using quadrature etc.~as addressed for $f^J$ in \eqref{eq:fe:vi}.
+
+FIXME? smoothers generate $y^j$, $z^j$ in the given sets but these are not the exact solutions to VIs \eqref{eq:fe:downvi}, \eqref{eq:fe:upvi} resp
 
 At each level in the downward part of the V-cycle (Figure \ref{fig:nmcdvcycle}) we apply a smoother, an iterative partial solver of \eqref{eq:fe:downvi} which rapidly reduces the high-frequencies in the error.  This smoother yields a correction $y^j \in \mathcal{D}^j$.  It is important that we can initialize this iteration using an admissible first guess.  However, by the monotone restriction construction the down-constraint is nonpositive, $\phi^j\le 0$ so $0\in \mathcal{D}^j$, and thus an initial value of $y^j=0$ is admissible.
 
 At the coarsest $j=0$ level we solve \eqref{eq:fe:downvi}, accurately if possible, yielding a correction $y^0$ in the coarsest defect constraint set $\mathcal{D}^0=\mathcal{U}^0 = \{v \ge \chi^0\}$.  Note that the coarsest-level solver may be the same as the other smoothers.
 
-In the upward part of the V-cycle the smoother starts from an initial iterate which has accumulated the coarser-level corrections.  Define $z^0 = y^0$ and
-\begin{equation}
-z^j = P z^{j-1} + y^j  \label{eq:fe:upwardaccumulation}
-\end{equation}
-where $P$ is canonical prolongation; stated simply, $z^j = y^j + \dots + y^0$.  By the decompositions $\mathcal{U}^j = \sum_{i=0}^j \mathcal{D}^i$, noted earlier, $z^j \in \mathcal{U}^j$.  This initial $z^j$ is smoothed to generate a result, also denoted $z^j \in \mathcal{U}^j$.  This result approximately solves the same VI as the downward version \eqref{eq:fe:downvi}, except now over a larger constraint set:
-\begin{equation}
-\ip{f^j(g^j + z^j)}{v-z^j} \ge \ip{\ell^j}{v-z^j} \qquad \text{for all } v\in \mathcal{U}^j. \label{eq:fe:upvi}
-\end{equation}
-The reason we can solve over $\mathcal{U}^j$ is that, unlike during the downward phase, there is no forthcoming coarser correction which could violate admissibility.
+FIXME upward initial iterate \emph{accumulates} the coarser-level corrections
+
+FIXME stated simply, $z^j = y^j + \dots + y^0$.  By the decompositions $\mathcal{U}^j = \sum_{i=0}^j \mathcal{D}^i$, noted earlier, $z^j \in \mathcal{U}^j$.  This initial $z^j$ is smoothed to generate a result, also denoted $z^j \in \mathcal{U}^j$.  This result approximately solves the same VI as the downward version \eqref{eq:fe:downvi}, except now over a larger constraint set; get \ref{eq:fe:upvi}.  The reason we can solve over $\mathcal{U}^j$ is that, unlike during the downward phase, there is no forthcoming coarser correction which could violate admissibility.
 
 These ideas come together in Algorithm \ref{alg:nmcd}, an NMCD V-cycle.  This procedure acts in-place on the final argument $w^J$, but it leaves the other vector inputs $\ell^J,\gamma^J$ unchanged.
 
