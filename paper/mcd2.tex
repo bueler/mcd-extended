@@ -165,7 +165,7 @@ The multilevel CD algorithms in \cite{GraeserKornhuber2009} and \cite{Tai2003} a
 \begin{enumerate}
 \item We apply a full approximation storage (FAS; see \cite{Brandt1977,Bruneetal2015}) approach.  Section \ref{sec:results} shows results from this \emph{nonlinear multilevel constraint decomposition} (NMCD) algorithm  for several nonlinear problems.  Note that this algorithm avoids global (Newton) linearization; compare \cite{GraeserKornhuber2009}.
 \item Our implementation permits ``box'' constraints, namely upper and lower obstacles; see Section \ref{sec:multilevel}.
-\item In Sections \ref{sec:multilevel} and \ref{sec:vcycle} we explain why, given the manner in which constraint sets are decomposed in the multilevel context \cite{GraeserKornhuber2009}, ``up-smoothing'' is more efficient than ``down-smoothing''.  A strong preference for up-smoothing is special to multilevel CD methods and does not arise in unconstrained problems.\footnote{This observation seems to be new; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}.}
+\item In Sections \ref{sec:multilevel} and \ref{sec:vcycle} we explain why, given the manner in which constraint sets are decomposed in the multilevel context \cite{GraeserKornhuber2009}, ``up-smoothing'' is more efficient than ``down-smoothing''.  A strong preference for up-smoothing is special to multilevel CD methods and does not arise in unconstrained problems.
 \end{enumerate}
 
 The iterates from a CD method are always admissible, and thus the nonlinear operator in the VI need only be defined for admissible states.  Our NMCD scheme is designed for such admissible-only problems, some of which require the solution of an auxiliary PDE on a domain determined inside the VI residual evaluation, as discussed in \cite{Bueler2021conservation}.  NMCD methods should permit direct solutions of those VI problems for which non-admissible methods, including semi-smooth methods \cite{BensonMunson2006}, require unnatural modifications of the operator formula.
@@ -428,14 +428,14 @@ Finite-dimensional, box-constrained VI problem \eqref{eq:fe:vi} is equivalent to
 \underline{\gamma}^J \le u^J \le \overline{\gamma}^J \quad &\perp \quad f^J(u^J) - \ell^J - I_D^\top \lambda \label{eq:fe:mcp} \\
 I_D u^J &= g_D^J\big|_{\partial_D\Omega}. \notag
 \end{align}
-The Lagrange multipliers $\lambda \in \RR^{m_D}$ are free (unconstrained).  Let $\psi_p(x)$ denote the hat function for a node $x_p \in \mathcal{T}^J$.  MCP \eqref{eq:fe:mcp} says that at each node exactly\footnote{The stated conditions are actually exclusive only where $\underline{\gamma}^J(x_p) < \overline{\gamma}^J(x_p)$.  Where the box constraints meet at $x_p \notin \partial_D\Omega$, both of the first conditions hold.} one of the following conditions holds for the solution $u^J$:
+The Lagrange multipliers $\lambda \in \RR^{m_D}$ are free (unconstrained).  Let $\psi_p(x)$ denote the hat function for a node $x_p \in \mathcal{T}^J$.  MCP \eqref{eq:fe:mcp} says that at each node exactly\footnote{The stated conditions are correct anywhere $\underline{\gamma}^J(x_p) < \overline{\gamma}^J(x_p)$.  Where the box constraints meet (pinch) at $x_p \notin \partial_D\Omega$ then $\underline{\gamma}^J(x_p)=u^J(x_p)=\overline{\gamma}^J(x_p)$ holds and $\ip{f^J(u^J)-\ell^J}{\psi_p}$ can have any value.} one of the following conditions holds for the solution $u^J$:
 \begin{itemize}
-\item $x_p \notin \partial_D\Omega$ and $u^J(x_p)=\underline{\gamma}^J(x_p)$ and $f^J(u^J)(\psi_p)-\ell^J(\psi_p) \ge 0$, or
-\item $x_p \notin \partial_D\Omega$ and $u^J(x_p)=\overline{\gamma}^J(x_p)$ and $f^J(u^J)(\psi_p)-\ell^J(\psi_p) \le 0$, or
-\item $x_p \notin \partial_D\Omega$ and $\underline{\gamma}^J(x_p)<u^J(x_p)<\overline{\gamma}^J(x_p)$ and $f^J(u^J)(\psi_p)-\ell^J(\psi_p) = 0$, or
+\item $x_p \notin \partial_D\Omega$ and $\underline{\gamma}^J(x_p)<u^J(x_p)<\overline{\gamma}^J(x_p)$ and $\ip{f^J(u^J)-\ell^J}{\psi_p} = 0$, or
+\item $x_p \notin \partial_D\Omega$ and $u^J(x_p)=\underline{\gamma}^J(x_p)$ and $\ip{f^J(u^J)-\ell^J}{\psi_p} \ge 0$, or
+\item $x_p \notin \partial_D\Omega$ and $u^J(x_p)=\overline{\gamma}^J(x_p)$ and $\ip{f^J(u^J)-\ell^J}{\psi_p} \le 0$, or
 \item $x_p \in \partial_D\Omega$ and $u^J(x_p)=g_D^J(x_p)$.
 \end{itemize}
-Regarding the final case, $\lambda_p=f^J(u^J)(\psi_p)-\ell^J(\psi_p)$ has any value if $x_p \in \partial_D\Omega$.
+These cases might be labeled \emph{inactive}, \emph{lower active}, \emph{upper active}, and \emph{boundary}, respectively.  Where case \emph{boundary} applies, $\lambda_p=\ip{f^J(u^J)-\ell^J}{\psi_p}\in\RR$ has any value.
 
 The multilevel algorithm defined in the next two Sections, a solver for finite-dimensional problem \eqref{eq:fe:vi}, requires transfer operators between meshes.  We use five such operators, three of which are standard within multigrid methods \cite{Trottenbergetal2001}.  Table \ref{tab:transfers} will help the reader keep track.
 
@@ -488,7 +488,7 @@ thus $\underline{\chi}^{j},\overline{\chi}^{j} \in \tilde{\mathcal{V}}^J$.  Obse
 \begin{equation}
 \underline{\chi}^{J} \le \dots \le \underline{\chi}^0 \le 0 \le \overline{\chi}^0 \le \dots \le \overline{\chi}^J, \label{eq:fe:chiordering}
 \end{equation}
-in the sense of comparing nodal values at nodes shared between levels.  A $J=4$ example of ``below'' LDCs $\underline{\chi}^j$ is shown in Figure \ref{fig:chiphilevels}.
+in the sense of comparing nodal values at nodes shared between levels.  A $J=4$ example of ``below'' LDCs $\underline{\chi}^j$ is shown in Figure \ref{fig:chiphilevels}. 
 
 %REGENERATE using https://github.com/bueler/mg-glaciers:
 %$ cd mg-glaciers/py/
@@ -500,6 +500,8 @@ in the sense of comparing nodal values at nodes shared between levels.  A $J=4$ 
 \caption{The ``below'' level defect constraint (LDC) $\underline{\chi}^J = \underline{\gamma}^J - w^J$ is decomposed using maximum restriction: $\underline{\chi}^{j-1} = \maxR \underline{\chi}^j$.}
 \label{fig:chiphilevels}
 \end{figure}
+
+Intuitively-speaking, below LDC $\underline{\chi}^j$ generated by maximum restriction $\maxR$, as in \eqref{eq:fe:chilevels}, is the most-negative function from $\mathcal{V}^j$ such that if another element of $\mathcal{V}^j$ is above $\underline{\chi}^j$ then it is also above $\underline{\chi}^{j+1}$ at the finer level.  (Similar comments apply for above LDCs $\overline{\chi}^{j}$.)  In this way, monotone restriction construction of the coarser-level constraints is designed to permit the largest corrections from the coarsest levels \cite{GraeserKornhuber2009}, which promotes V-cycle efficiency.  However, any system satisfying property \eqref{eq:fe:chiordering} will suffice; the particular formula \eqref{eq:fe:chilevels} is not required when generating the LDCs $\underline{\chi}^{j},\overline{\chi}^{j}$.
 
 We then compute the differences between the previous LDCs:
 \begin{equation}
@@ -668,34 +670,28 @@ Regarding its efficiency, to begin we consider storage.  One application of \pr{
 \end{equation}
 real numbers.  For comparison, a single-level method needs at least $4 m_J$ storage for the vectors $\underline{\gamma}^J,\overline{\gamma}^J,\ell^J,w^J$.  If some of the obstacles are trivial, for instance if $\overline{\gamma}^J=+\infty$ in a unilateral obstacle problem, storage is correspondingly reduced at all levels.
 
-\pr{nmcd-vcycle} assumes certain semantics for the smoothers and the coarsest-level solver; the latter might also be a smoother algorithm.  These solvers do in-place modifications of their final arguments, and they do not modify their first three arguments.  The smoothers are in-exact solvers of VIs \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi}, respectively, and they are iterated \id{down} and \id{up} times.  Further smoother implementation details and choices are addressed in the next section.
+\pr{nmcd-vcycle} assumes certain semantics for the smoothers \pr{smooth} and the coarsest-level solver \pr{solve}.  These solvers do in-place modifications of their final arguments, without modifying their first four arguments.  $\pr{smooth}^{\id{down}}$ and $\pr{smooth}^{\id{up}}$ are in-exact solvers of VIs \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi}, respectively, iterated \id{down} and \id{up} times.  Further implementation details are addressed in Section \ref{sec:smoothers}.
 
-Repeated application of \pr{nmcd-vcycle} to solve VI \eqref{eq:fe:vi} will not reduce the finest-level residual $f^J(u^J) - \ell^J$ to zero everywhere.  However, recalling that a finite-dimensional VI is equivalent to a \emph{nonlinear complementarity problem} (NCP) \cite{FacchineiPang2003}, \eqref{eq:fe:vi} corresponds to the NCP
+Repeated application of \pr{nmcd-vcycle} to solve VI \eqref{eq:fe:vi} will not reduce the finest-level residual $f^J(w^J) - \ell^J$ to zero everywhere, and we need to identify the vector quantity whose norm must be controlled by a tolerance.  Recalling the comments following mixed complementarity problem \eqref{eq:fe:mcp}, and denoting the hat function at node $x_p \in \mathcal{T}^J$ by $\psi_p$, for $w^J \in \mathcal{K}^J$ we define the following vector in $\RR^{m_J}$ as the finest-level \emph{nodal complementarity residual} which is defined as follows in the four cases (inactive, lower active, upper active, boundary):\footnote{Formally-speaking, $\hat r:\mathcal{V}^J \to \RR^{m_J}$ is simply a computable nonlinear map derived from $f^J$ and the vectors $\ell^J$, $\underline{\gamma}^J$, and $\overline{\gamma}^J$.  It is an important part of the implementation.}
 \begin{equation}
-u^J \ge \gamma^J, \qquad f^J(u^J) \ge \ell^J, \qquad (u^J - \gamma^J)\left(f^J(u^J) - \ell^J\right) = 0.  \label{eq:fe:ncp}
+\hat r(w^J)_p = \begin{cases}
+    \ip{f^J(w^J)-\ell^J}{\psi_p}, & \underline{\gamma}^J(x_p) < w^J(x_p) < \overline{\gamma}^J(x_p), \\
+    \min\{\ip{f^J(w^J)-\ell^J}{\psi_p},0\}, & w^J(x_p) = \underline{\gamma}^J(x_p), \\
+    \max\{\ip{f^J(w^J)-\ell^J}{\psi_p},0\}, & w^J(x_p) = \overline{\gamma}^J(x_p), \\
+    0, & x_p \in \partial_D\Omega. \end{cases} \label{eq:cpresidual}
 \end{equation}
-Thus, at convergence we only expect $f^J(u^J) = \ell^J$ at those locations where the constraint is inactive, namely where $u^J > \gamma^J$.  Therefore, recalling that the hat function at node $x_q^J$ is denoted $\psi_q^J$, for $w^J \in \mathcal{K}^J$ we define the following vector in $\RR^{m^J}$ as the finest-level \emph{nodal residual}:
+The point is that $\hat r(w^J)\in \RR^{m_J}$ is nonzero if there are nodes where MCP \eqref{eq:fe:mcp} is violated, either because the pointwise classical residual $\ip{f^J(w^J)-\ell^J}{\psi_p}$ remains nonzero where the constraints are inactive, or because it has the wrong sign on an actively-constrained degree of freedom.
+
+A solver for \eqref{eq:fe:vi} using repeated applications of \pr{nmcd-vcycle} would start with an initial iterate $(w^J)^{(0)}$, do V-cycles, and stop once the finest-level nodal residual $\hat r(w^J)$ was sufficiently small.  For example, using tolerances \id{atol}$>0$ and \id{rtol}$>0$ the stopping criterion might be
 \begin{equation}
-\hat r(w^J)_q = \begin{cases} \ip{f^J(w^J)-\ell^J}{\psi_q^J}, & w^J(x_q^J) > \gamma^J(x_q^J), \\
-                                  \min\{\ip{f^J(w^J)-\ell^J}{\psi_q^J},0\}, & w^J(x_q^J) = \gamma^J(x_q^J). \end{cases} \label{eq:cpresidual}
+\|\hat r(w^J)\| < \id{atol} \qquad \text{or} \qquad \frac{\|\hat r(w^J)\|}{\|\hat r((w^J)^{(0)})\|} < \id{rtol},
 \end{equation}
-(Formally, $\hat r:\mathcal{V}^J \to \RR^{m^J}$ is a nonlinear map.)  Observe that $\hat r(w^J)$ is nonzero if there are nodes where the NCP \eqref{eq:fe:ncp} is violated, either because $f^J(w^J)-\ell^J$ remains nonzero on the inactive set or because the same quantity is negative on the active set, and that nodal values of $f^J(w^J)-\ell^J$ are in evaluated in a weak sense, by application to a hat function.
-
-A solver for \eqref{eq:fe:vi} using repeated applications of \pr{nmcd-vcycle} would start with an initial iterate $w^{J,0}$, do V-cycles, and stop once the finest-level nodal residual $\hat r(w^J)$ was sufficiently small.  For example, using tolerances \id{atol}$>0$ and \id{rtol}$>0$ the stopping criterion might be
-\begin{equation}
-\|\hat r(w^J)\| < \id{atol} \qquad \text{or} \qquad \frac{\|\hat r(w^J)\|}{\|\hat r(w^{J,0})\|} < \id{rtol},
-\end{equation}
-where $\|\cdot\|$ denotes a norm on $\RR^{m^J}$.  A step tolerance could also be used, measuring the difference between successive iterates.
-
-FIXME in Appendix we show how NMCD reduces to FAS if the obstacle is removed and to MCD if $f$ is assumed to be linear
-
+for some norm $\|\cdot\|$ on $\RR^{m_J}$.  A step tolerance could also be used, measuring the difference between successive iterates.
 
 
 \section{Smoother implementations} \label{sec:smoothers}
 
-FIXME
-
-Recall that a $j$th-level hat function based at node $x_p^j$ is denoted $\psi_p^j$, for an iterate $g^j$ and an admissible correction $y^j \in \mathcal{D}^j$ we define the \emph{downward nodal residual} as
+FIXME  Recall that a $j$th-level hat function based at node $x_p^j$ is denoted $\psi_p^j$, for an iterate $g^j$ and an admissible correction $y^j \in \mathcal{D}^j$ we define the \emph{downward nodal residual} as
 \begin{equation}
 (\hat r_{\text{down}}(y^j))_p = \begin{cases} \ip{f^j(g^j+y^j)-\ell^j}{\psi_p^j}, & y^j(x_p^j) > \phi^j(x_p^j), \\
                                   \min\{\ip{f^j(g^j+y^j)-\ell^j}{\psi_p^j},0\}, & y^j(x_p^j) = \phi^j(x_p^j). \end{cases} \label{eq:dncpresidual}
@@ -705,13 +701,15 @@ The \emph{upward nodal residual} $\hat r_{\text{up}}(z^j)$ for $z^j \in \mathcal
 FIXME stopping criteria for smoother
 
 
-\section{Results} \label{sec:results}
+\section{Results and discussion} \label{sec:results}
 
 FIXME show results for 2D Firedrake implementation of NMCD for $p$-Laplacian obstacle problem (Example \ref{ex:plaplacian}), advection-diffusion obstacle problem (Example \ref{ex:advectiondiffusion}), and porous-media obstacle problem (Example \ref{ex:porous})
 
-FIXME observe that up-smoothing is more efficient
+FIXME observe that up-smoothing is more efficient; this observation seems to be new; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}
 
 FIXME constrast the implemented examples in \cite{GraeserKornhuber2009,Tai2003} in which $f$ is linear
+
+FIXME in Appendix we show how NMCD reduces to FAS if the obstacle is removed and to MCD if $f$ is assumed to be linear
 
 % A BRIDGE TOO FAR:  \section{Results for a nonlocal variational inequality}
 
@@ -721,21 +719,29 @@ FIXME constrast the implemented examples in \cite{GraeserKornhuber2009,Tai2003} 
 
 
 \appendix
-\section{Reduction of NMCD to unconstrained FAS}
+\section{Reductions of NMCD to familiar multilevel algorithms}
 
-\pr{nmcd-vcycle}, Algorithm \ref{alg:nmcd} in the main text, generalizes two multilevel algorithms, first the FAS multigrid V-cycle for nonlinear PDEs, which itself generalizes the standard linear multigrid V-cycle, and second the MCD V-cycle for linear variational inequalities.  This Appendix helps readers understand \pr{nmcd-vcycle} by identifying the assumptions which reduces it to these existing methods.
+Algorithm \ref{alg:nmcd} in the main text, \pr{nmcd-vcycle}, generalizes two better-known multilevel algorithms.  First we show that it reduces to the FAS multigrid V-cycle for nonlinear PDEs (which itself generalizes the standard linear multigrid V-cycle \cite{Trottenbergetal2001}).  Second we reduce NMCD to an existing MCD V-cycle for unilateral linear variational inequalities \cite{GraeserKornhuber2009}.  This Appendix helps readers understand Algorithm \ref{alg:nmcd} by separating those assumptions which relate to nonlinear and FAS aspects from the nontrivial modifications of standard multigrid which are caused by inequality constraints.  The later arise even when $f$ in \eqref{eq:vi} is a linear operator.
 
-To derive the FAS multigrid V-cycle we need to remove the inequality constraints from \pr{nmcd-vcycle}.  To do this, suppose that the finest-level obstacle $\gamma^J$ is very negative, with magnitude greater than $u^J$ or any prospective iterate $w^J$.  Problem \eqref{eq:fe:vi} is then unconstrained, so by replacing ``$v-u^J$'' with an arbitrary $v \in \mathcal{V}^J$ we have the finest-level, weak form problem
+To derive the classical FAS multigrid V-cycle from Algorithm \ref{alg:nmcd}, we remove the inequality constraints from VI problem \eqref{eq:fe:vi} and then simplify the pseudocode accordingly.  To do this we suppose that the finest-level obstacles $\underline{\gamma}^J$ and $\overline{\gamma}^J$ are very negative and positive, respectively, with magnitude exceeding $u^J$ or any prospective iterate $w^J$.  Finest-level problem \eqref{eq:fe:vi} is then unconstrained except for its Dirichlet boundary conditions.  Let $\mathcal{V}_0^J \subset \mathcal{V}^J$ denote the space with zero values on $\partial_D\Omega$.  By replacing ``$v-u^J$'' with an arbitrary $v \in \mathcal{V}_0^J$ we have the finest-level, weak form problem
 \begin{equation}
-\ip{f^J(u^J)}{v} = \ip{\ell^J}{v} \qquad \text{for all } v\in \mathcal{V}^J \label{eq:app:fas:pde}
+\ip{f^J(u^J)}{v} = \ip{\ell^J}{v} \qquad \text{for all } v\in \mathcal{V}_0^J \label{eq:app:fas:pde}
 \end{equation}
-corresponding to the strong-form PDE $f(u)=\ell$.  Now, \pr{nmcd-vcycle} would generate downward defect constraints by monotone restriction.  However, all that is required for the downward system is that $\chi^{j-1} \ge \chi^j$, so that $\phi^j = \chi^j - P \chi^{j-1} \le 0$.  In the unconstrained case we can assume, more simply, that the fine level defect constraint is a negative constant $\chi^J = -JZ$ for $Z>0$ such that $Z \gg \|u^J\|_\infty$.  Defining $\chi^j = - jZ$, and calculating $\phi^j = \chi^j - P \chi^{j-1} = - Z$, we see that both the downward VI \eqref{eq:fe:downvi} and the upward VI \eqref{eq:fe:upvi} can also be made unconstrained.  It then follows that lines 2, 5, and 6, can be removed from Algorithm \ref{alg:nmcd}, and further that the constraint arguments can be removed from the smoothers and the coarse-level solver.  Because the downward corrections $y^j$ are no longer separately constrained, we may simply refer to the corrected solution $w^j=g^j+y^j$.  The smoothers can be regarded as in-place modifications of $w^j$.  Also recognizing that the initial iterate for the coarse-level smoother is $w^{j-1}=\iR w^j$, the definition of the coarsened source functional can be rewritten
+corresponding to the strong-form PDE $f(u)=\ell$.
+
+Furthermore, the downward $\mathcal{D}^j$ and upward $\mathcal{U}^j$ constraint sets can be arbitrarily enlarged so that the coarser-level corrections $y^j$ and $z^j$ in Algorithm \ref{alg:nmcd} are also never constrained.  Formally-speaking we might do this, still satisfying the LDC ordering property \eqref{eq:fe:chiordering}, by choosing LDCs with all gaps being large so that $\underline{\chi}^j \ll 0 \ll \overline{\chi}^j$ and also $\underline{\phi}^j = \underline{\chi}^j - \underline{\chi}^{j-1} \ll 0 \ll \overline{\phi}^j = \overline{\chi}^j - \overline{\chi}^{j-1}$.\footnote{As noted after \eqref{eq:fe:chiordering}, the application of monotone restriction operators $\maxR,\minR$ is not required to generate LDCs $\underline{\chi}^j$ and $\overline{\chi}^j$ satisfying the ordering property.}
+
+Now the correction VIs \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi} are also unconstrained, and lines 2--3 and 6--9 can be removed from Algorithm \ref{alg:nmcd}.  Also, because the downward corrections $y^j$ are no longer separately constrained, we may simply refer to the corrected solution $w^j=g^j+y^j$ instead of $g^j$ and $y^j$ separately.  Then the smoothers and the coarsest-level solver can be regarded as in-place modifications of $w^j$.  Now noting $g^{j-1}=\iR w^j$ in line 12, after down-smoothing, the coarsened source functional can be rewritten using notation $w^{j-1}=\iR w^j$:
 \begin{equation}
 \ell^{j-1} = f^{j-1}\left(w^{j-1}\right) + R\left(\ell^j-f^j(w^j)\right). \label{eq:app:fas:levelsource}
 \end{equation}
-However, now we must be careful that going upward only the correction gets prolonged;compare Remark 5.3.9 in \cite{Trottenbergetal2001}.  We note that the coarse correction produces an updated $w^{j-1}$ (previously denoted $g^{j-1}+y^{j-1}$).  If $w^j$ denotes the result of down-smoothing, and if $z^j = y^j + P z^{j-1} = y^j + y^{j-1} + \dots + y^0$ is the sum of all prolonged corrections, we want to set $w^j = g^j + z^j = (g^j+y^j) + P(y^{j-1} + \dots + y^0)$ as the iterate going into the up-smoother.  For this we write $w^j \gets w^j + P(w^{j-1} - \iR w^j)$.  With these modifications we get pseudocode in Algorithm \ref{alg:fas}.
+(Compare line 13 of Algorithm \ref{alg:nmcd}.)
 
-\begin{pseudofloat}[H]
+At the completion of down-smoothing the solution iterate on the $j$th level is $w^j=g^j+y^j$.  Now we must be careful that going upward only the coarse correction, and not the coarse solution, gets prolonged.\footnote{Compare Remark 5.3.9 in \cite{Trottenbergetal2001}, a warning to novices.}  The coarser-level iterate is $w^{j-1} = g^{j-1}+z^{j-1}$ after up-smoothing on the $j-1$ level.  From Algorithm \ref{alg:nmcd} the initial value of the correction $z^j$, before smoothing, is $z^j = y^j + P z^{j-1}$.  These facts imply that the $j$th-level iterate before up-smoothing must be set to
+    $$w^j \gets w^j + Pz^j = (g^j+y^j)+P(w^{j-1} - g^{j-1}) = w^j + P(w^{j-1} - \iR w^j).$$
+This is a standard FAS statement.  In fact, with the given modifications, we have the much-simplified pseudocode in Algorithm \ref{alg:fas}.  This FAS V-cycle algorithm appears in various places, for example Algorithm 14 of \cite{Bruneetal2015} or in section 5.3.4 of \cite{Trottenbergetal2001}.
+
+\begin{pseudofloat}[ht]
 \begin{pseudo} \label{ps:fas-vcycle}
 \pr{fas-vcycle}(\ell^J; w^J)\text{:} \\+
     for $j=J$ downto $j=1$ \\+
@@ -747,16 +753,9 @@ However, now we must be careful that going upward only the correction gets prolo
       $w^j \gets w^j + P (w^{j-1} - \iR w^j)$ \\
       $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j;w^j)$ \\-
 \end{pseudo}
-\caption{An FAS V-cycle results from removing the inequality constraints from \pr{nmcd-vcycle}, and also grouping $w^j=g^j+y^j$ (downward) and $w^j=g^j+z^j$ (upward).}
+\caption{An FAS V-cycle results from removing the inequality constraints from \pr{nmcd-vcycle}, and simplifying accordingly.}
 \label{alg:fas}
 \end{pseudofloat}
-
-a negative constant, $\gamma^J=-JZ$, where $Z>0$ is larger than the magnitude of $u^J$, or of any prospective iterate $w^J$, say $Z > \|w^J\|_\infty$.
-
-FIXME get Algorithm 14 \cite{Bruneetal2015}
-
-
-\section{Reduction of NMCD for linear operators}
 
 FIXME by assuming $f$ is linear, reduce to Algorithm 4.7 in \cite{GraeserKornhuber2009} but with $\text{V}(\nu_1,\nu_2)$ cycles
 
