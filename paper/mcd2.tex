@@ -423,17 +423,21 @@ As is true for \eqref{eq:vi}, if $f^J$ is continuous and $p$-coercive on $\mathc
 
 While \eqref{eq:fe:vi} approximates \eqref{eq:boxdirichletvi}, it may not technically be conforming for that VI.  That is, even if quadrature and other implementation details for $f^J$ are ignored, and despite the vector space inclusion $\mathcal{V}^J \subset \mathcal{V}$, we still do not require $\mathcal{K}^J \subset \mathcal{K}$.  The continuum constraint set $\mathcal{K}$ remains abstract in those applications where only the nodal obstacles $\underline{\gamma}^J, \overline{\gamma}^J$ are defined.  In fact, even if smooth continuum obstacles exist, admissibility with respect to their FE interpolants will generally not imply continuum admissiblity.\footnote{Such caveats apply in geophysical situations where the obstacle is given by meshed elevation data, the continuum limit of which is generally unknown \cite{Bueler2016}.}
 
-Finite-dimensional, box-constrained VI problem \eqref{eq:fe:vi} is equivalent to a \emph{mixed complementarity problem} (MCP) \cite{FacchineiPang2003,FerrisPang1997}.  Stating this strong-form problem may be clarifying for some readers.  Denoting $x_p$ for nodes of $\mathcal{T}^J$, let $X=\left\{w\in\cV^J\,:\,w(x_p)=g_D^J(x_p) \text{ if } x_p\in \partial_D\Omega\right\}$ so $\cK^J = \left\{\underline{\gamma}^J \le w \le \overline{\gamma}^J\right\} \cap X$.  Problem \eqref{eq:fe:vi} might be stated as VI$\left(f^J(\cdot)-\ell^J,\left[\underline{\gamma}^J,\overline{\gamma}^J\right] \cap X\right)$ in the operations research literature \cite{FerrisPang1997}, and it is equivalent to the equality-constrained MCP
+Finite-dimensional, box-constrained VI problem \eqref{eq:fe:vi} is equivalent to a \emph{mixed complementarity problem} (MCP) \cite{FacchineiPang2003,FerrisPang1997}.  Stating this strong-form problem may be clarifying for some readers.  Denoting $x_p$ for nodes of the finest-level mesh $\mathcal{T}^J$, let $X=\big\{w\in\cV^J\,:\,w(x_p)=g_D^J(x_p) \text{ if } x_p\in \partial_D\Omega\big\}$, thus $\cK^J = \left\{\underline{\gamma}^J \le w \le \overline{\gamma}^J\right\} \cap X$.  If $m_D$ is the number of nodes $x_p$ in the Dirichlet boundary, let us define $I_D$, an the $m_D\times m_J$ matrix, as the matrix which indicates (extracts) Dirichlet nodal values, so its transpose $I_D^\top$ injects Dirichlet values into $(\mathcal{V}^J)'$.  Problem \eqref{eq:fe:vi} could be stated as VI$\left(f^J(\cdot)-\ell^J,\left[\underline{\gamma}^J,\overline{\gamma}^J\right] \cap X\right)$, for instance in the operations research literature \cite{FerrisPang1997}, and it is equivalent to the equality-constrained MCP
 \begin{align}
-\underline{\gamma}^J \le u^J \le \overline{\gamma}^J \quad &\perp \quad f^J(u^J) - \ell^J + I_D^\top \lambda \label{eq:fe:mcp} \\
+\underline{\gamma}^J \le u^J \le \overline{\gamma}^J \quad &\perp \quad f^J(u^J) - \ell^J - I_D^\top \lambda \label{eq:fe:mcp} \\
 I_D u^J &= g_D^J\big|_{\partial_D\Omega}. \notag
 \end{align}
-Here the $m_J\times m_D$ matrix $I_D$ indicates Dirichlet nodes, $m_D$ is the number of $\mathcal{T}^J$ nodes in the Dirichlet boundary, and the Lagrange multipliers $\lambda \in \RR^{m_D}$ are free.  (The transpose $I_D^\top$ injects Dirichlet values into $(\mathcal{V}^J)'$.)  That is, at each node $x_p \in \mathcal{T}^J$ in the finest-level mesh, exactly one of the following conditions holds for the exact solution $u^J$ of \eqref{eq:fe:vi}, equivalently \eqref{eq:fe:mcp}:
+The Lagrange multipliers $\lambda \in \RR^{m_D}$ are free (unconstrained).  Let $\psi_p(x)$ denote the hat function for a node $x_p \in \mathcal{T}^J$.  MCP \eqref{eq:fe:mcp} says that at each node exactly\footnote{The stated conditions are actually exclusive only where $\underline{\gamma}^J(x_p) < \overline{\gamma}^J(x_p)$.  Where the box constraints meet at $x_p \notin \partial_D\Omega$, both of the first conditions hold.} one of the following conditions holds for the solution $u^J$:
 \begin{itemize}
-\item FIXME
+\item $x_p \notin \partial_D\Omega$ and $u^J(x_p)=\underline{\gamma}^J(x_p)$ and $f^J(u^J)(\psi_p)-\ell^J(\psi_p) \ge 0$, or
+\item $x_p \notin \partial_D\Omega$ and $u^J(x_p)=\overline{\gamma}^J(x_p)$ and $f^J(u^J)(\psi_p)-\ell^J(\psi_p) \le 0$, or
+\item $x_p \notin \partial_D\Omega$ and $\underline{\gamma}^J(x_p)<u^J(x_p)<\overline{\gamma}^J(x_p)$ and $f^J(u^J)(\psi_p)-\ell^J(\psi_p) = 0$, or
+\item $x_p \in \partial_D\Omega$ and $u^J(x_p)=g_D^J(x_p)$.
 \end{itemize}
+In the final case $\lambda_p=f^J(u^J)(\psi_p)-\ell^J(\psi_p)$ has any value.
 
-The multilevel algorithm in the next two Sections, a solver for finite-dimensional problem \eqref{eq:fe:vi}, requires transfer operators between meshes.  We use five such operators, three of which are standard within multigrid methods \cite{Trottenbergetal2001}.  Table \ref{tab:transfers} will help the reader keep track.
+The multilevel algorithm defined in the next two Sections, a solver for finite-dimensional problem \eqref{eq:fe:vi}, requires transfer operators between meshes.  We use five such operators, three of which are standard within multigrid methods \cite{Trottenbergetal2001}.  Table \ref{tab:transfers} will help the reader keep track.
 
 \begin{table}[H]
 \begin{tabular}{llc}
