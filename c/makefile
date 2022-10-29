@@ -71,7 +71,9 @@ runnmcd_2:
 test_nmcd: runnmcd_1 runnmcd_2
 
 runldctwolevel_1:
-	-@./testit.sh ldctwolevel "" 1 1
+	-@./testit.sh ldctwolevel "-unilateral" 1 1
+
+# FIXME add bilateral ldctwolevel regression, after checking both unilateral and bilateral stdout
 
 test_ldctwolevel: runldctwolevel_1
 

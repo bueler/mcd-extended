@@ -1,9 +1,9 @@
 static char help[] =
-"Test a two-level LDC stack.  Here the upper DCs are +infty, but the\n"
-"lower DCs are nontrivial.  The region is the square [0,1]^2, the\n"
-"fine level is a 5x5 grid and the coarse is a 3x3 grid.  The fine-level\n"
-"original lower obstacle has range 0 <= gamlow <= 1, and the iterate\n"
-"w=2 is constant.\n\n";
+"Test a two-level LDC stack.  The below LDCs are nontrivial.  With -unilateral\n"
+"the above LDCs are +infty, otherwise they are finite.  The region is the\n"
+"square [0,1]^2, the fine level is a 5x5 grid and the coarse is a 3x3 grid.\n"
+"On the fine-level, the original lower obstacle has range 0 <= gamlow <= 1,\n"
+"the original above obstacle is gamupp=1.0, and the iterate w=2 is constant.\n\n";
 
 #include <petsc.h>
 #include "src/q1transfers.h"
@@ -14,15 +14,24 @@ PetscReal gamma_lower(PetscReal x, PetscReal y, void *ctx) {
     return 16.0 * x * (1.0 - x) * y * (1.0 - y);
 }
 
+// z = gamma_upper(x,y) = 3
+PetscReal gamma_upper(PetscReal x, PetscReal y, void *ctx) {
+    return 3.0;
+}
+
 extern PetscErrorCode VecViewMatlabStdout(Vec);
 
 int main(int argc,char **argv) {
     Vec            w, v;
-    PetscBool      admis;
+    PetscBool      unilateral, admis;
     DM             cdmda;
     LDC            ldc[2];
 
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
+    PetscOptionsBegin(PETSC_COMM_WORLD,"","ldctwolevel options","");
+    PetscCall(PetscOptionsBool("-unilateral","set original above obstacle to +infty",
+                               "ldctwolevel.c",unilateral,&unilateral,NULL));
+    PetscOptionsEnd();
 
     // create DMDA for coarsest level: 3x3 grid on on Omega = (0,1)x(0,1)
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
@@ -44,11 +53,14 @@ int main(int argc,char **argv) {
     PetscCall(DMView(ldc[0].dal, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(DMView(ldc[1].dal, PETSC_VIEWER_STDOUT_WORLD));
 
-    // iterate w=1 gives up defect constraint on finest level
+    // iterate w=1 gives up LDCs on finest level
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"using iterate w=2 to generate finest-level up defect constraints\n"));
     PetscCall(DMCreateGlobalVector(ldc[1].dal,&w));
     PetscCall(VecSet(w,2.0));
-    PetscCall(LDCFinestUpDCsFromFormulas(w,NULL,&gamma_lower,&(ldc[1]),NULL));
+    if (unilateral)
+        PetscCall(LDCFinestUpDCsFromFormulas(w,NULL,&gamma_lower,&(ldc[1]),NULL));
+    else
+        PetscCall(LDCFinestUpDCsFromFormulas(w,&gamma_upper,&gamma_lower,&(ldc[1]),NULL));
     PetscCall(VecDestroy(&w));
 
     // generate up and down defect constraints for both levels
@@ -70,7 +82,7 @@ int main(int argc,char **argv) {
     PetscCall(VecViewMatlabStdout(ldc[1].philow));
 #endif
 
-    // check admissibility of constant z on level 0 and y and z on level 1
+    // check admissibility of different constants z0 on level 0 and y1 and z1 on level 1
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"checking admissibility of constant vectors:\n"));
     PetscCall(DMCreateGlobalVector(ldc[0].dal,&v));
     PetscCall(VecSet(v,0.0));
