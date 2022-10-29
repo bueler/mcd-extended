@@ -92,10 +92,10 @@ PetscErrorCode LDCCheckDCRanges(LDC ldc) {
     if (ldc.phiupp)
         PetscCall(VecMin(ldc.phiupp,NULL,&pumin));
     if ((clmax <= 0.0) && (0.0 <= cumin) && (plmax <= 0.0) && (0.0 <= pumin))
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"defect constraint check PASSES (level %d):\n",
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"zero bracket checks PASS (level %d):\n",
                               ldc._level));
     else {
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"defect constraint check FAILS (level %d):\n",
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"zero bracket checks FAIL (level %d):\n",
                               ldc._level));
         retval = 1;
     }
@@ -123,7 +123,7 @@ PetscErrorCode LDCFinestUpDCsFromVecs(Vec w, Vec vgamupp, Vec vgamlow, LDC *ldc)
     } else
         if (ldc->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "  LDC info: chiupp=NULL because gamupp=NULL is +infty at level %d\n",
+            "  LDC info: chiupp=NULL is +infty because gamupp=NULL at level %d\n",
             ldc->_level));
     if (vgamlow) {
         if (ldc->_printinfo)
@@ -135,7 +135,7 @@ PetscErrorCode LDCFinestUpDCsFromVecs(Vec w, Vec vgamupp, Vec vgamlow, LDC *ldc)
     } else
         if (ldc->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "  LDC info: chilow=NULL because gamlow=NULL is -infty at level %d\n",
+            "  LDC info: chilow=NULL is -infty because gamlow=NULL at level %d\n",
             ldc->_level));
     return 0;
 }
@@ -255,7 +255,7 @@ PetscErrorCode _LDCDownDCs(LDC *coarse, LDC *fine) {
         } else {
             if (fine->_printinfo)
                 PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-                "  LDC info: phiupp=NULL is +infty at level %d\n",fine->_level));
+                "  LDC info: phiupp=NULL is +infty (coarsest case) at level %d\n",fine->_level));
         }
     } else if (coarse->chiupp && fine->chiupp) {
         if (fine->_printinfo)
@@ -269,7 +269,7 @@ PetscErrorCode _LDCDownDCs(LDC *coarse, LDC *fine) {
     } else
         if (fine->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "  LDC info: phiupp=NULL is -infty at level %d\n",fine->_level));
+            "  LDC info: phiupp=NULL is +infty at level %d\n",fine->_level));
     // generate philow
     if (!coarse) {
         if (fine->chilow) {
@@ -282,7 +282,7 @@ PetscErrorCode _LDCDownDCs(LDC *coarse, LDC *fine) {
         } else {
             if (fine->_printinfo)
                 PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-                "  LDC info: philow=NULL at level %d\n",fine->_level));
+                "  LDC info: philow=NULL is -infty (coarsest case) at level %d\n",fine->_level));
         }
     } else if (coarse->chilow && fine->chilow) {
         if (fine->_printinfo)
@@ -296,7 +296,7 @@ PetscErrorCode _LDCDownDCs(LDC *coarse, LDC *fine) {
     } else
         if (fine->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "  LDC info: philow=NULL at level %d\n",fine->_level));
+            "  LDC info: philow=NULL is -infty at level %d\n",fine->_level));
     return 0;
 }
 

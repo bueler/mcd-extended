@@ -1,8 +1,8 @@
 // Level Defect Constraints (LDC) are box constraints for a mesh hierarchy
 // based on subtracting a fine-level admissible iterate.  The intended use
 // is that there is one LDC object per level during each multilevel V-cycle
-// of a multilevel constraint decomposition (MCD) method.  Each LDC contains
-// 4 DCs (defect constraints), namely upper and lower DCs for the up and
+// of a multilevel constraint decomposition (MCD) method.  Each LDC object
+// contains 4 LDCs, namely above and below lDCs for the up and
 // down directions in a V-cycle.
 //
 // The theory of nonlinear MCD methods using defect constraints at each level
@@ -12,15 +12,20 @@
 //
 // LDC is a struct which contains
 //   * a structured grid (DM dal, a DMDA)
-//   * upper and lower up DCs (Vec chiupp, chilow)
-//   * upper and lower down DCs (Vec phiupp, philow)
+//   * above and below up LDCs (Vec chiupp, chilow)
+//   * above and below down LDCs (Vec phiupp, philow)
 // for each level.
 //
 // After creation, at the finest level one uses the original upper/lower
 // obstacles (e.g. Vec gamupp, gamlow) to generate the finest-level up
 // DCs.  Then monotone restriction (see src/q1transfers.h|c) is used to
-// generate up DCs at coarser levels.  Then subtraction is used to generate
-// down DCs.
+// generate up LDCs at coarser levels.  Then subtraction is used to generate
+// down LDCs.
+//
+// Support for extended real line [-infty,+infty] values is *incomplete*.
+// Any LDC Vec is allowed to be NULL in which case it is interpreted as
+// +infty or -infty accordingly, but if an LDC Vec is not null then it is
+// assumed that *all* values of it are finite.
 //
 // The following gives canonical V-cycle usage with nontrivial upper and
 // lower finest-level obstacles defined by Vecs vgamupp, vgamlow.  Note
