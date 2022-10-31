@@ -1,7 +1,7 @@
 static char help[] =
-"Solve classical obstacle problem by nonlinear multilevel constraint\n"
+"Solve classical, unilateral obstacle problem by nonlinear multilevel constraint\n"
 "decomposition (NMCD) method using Q1 finite elements in 2D square (-2,2)^2\n"
-"on a structured-grid (DMDA).  Problem is\n"
+"on a structured-grid (DMDA):\n"
 "  - nabla^2 u = f(x,y),  u >= psi(x,y),\n"
 "subject to Dirichlet boundary conditions u=g.  Smoother and coarse-level\n"
 "solver is projected, nonlinear Gauss-Seidel (PNGS) sweeps.  Option prefix\n"
@@ -33,8 +33,10 @@ typedef struct {
   PetscReal (*f_rhs)(PetscReal x, PetscReal y, void *ctx);
   // Dirichlet boundary condition g(x,y)
   PetscReal (*g_bdry)(PetscReal x, PetscReal y, void *ctx);
-  PetscInt  maxits, quadpts, sweeps,
-            residualcount, ngscount;
+  PetscInt  quadpts,     // number n of quadrature points (= 1,2,3 only)
+            maxits,      // in PNGS, number of Newton iterations at each point
+            sweeps,      // in PNGS, number of sweeps over the grid
+            residualcount, ngscount; // for performance reporting
 } ObsCtx;
 
 typedef struct {
@@ -43,11 +45,12 @@ typedef struct {
   DM        dmda;    // DMDA (structured grid) for this level
   Vec       g,       // iterate on the level
             ell,     // right-hand side linear functional on level
-            y,       // downward correction on level
+            y,       // downward correction on level; NULL on level 0
             z;       // upward correction on level
 } Level;
 
-// z = gamma_lower(x,y) is the hemispherical obstacle, but made C^1 with "skirt" at r=r0
+// z = gamma_lower(x,y) is the hemispherical obstacle, but made C^1 using
+// "skirt" at r=r0
 PetscReal gamma_lower(PetscReal x, PetscReal y, void *ctx) {
     const PetscReal  r = PetscSqrtReal(x * x + y * y),
                      r0 = 0.9,
@@ -76,12 +79,12 @@ The solution is  u(r) = - A log(r) + B   on  r > a.  The boundary conditions
 can then be reduced to a root-finding problem for a:
     a^2 (log(2) - log(a)) = 1 - a^2
 The solution is a = 0.697965148223374 (giving residual 1.5e-15).  Then
-A = a^2*(1-a^2)^(-0.5) and B = A*log(2) are as given below in the code.  */
+A = a^2*(1-a^2)^(-0.5) and B = A*log(2) are given below in the code.  */
 PetscReal u_exact(PetscReal x, PetscReal y, void *ctx) {
     const PetscReal afree = 0.697965148223374,
                     A     = 0.680259411891719,
-                    B     = 0.471519893402112;
-    PetscReal       r = PetscSqrtReal(x * x + y * y);
+                    B     = 0.471519893402112,
+                    r = PetscSqrtReal(x * x + y * y);
     return (r <= afree) ? gamma_lower(x,y,ctx)  // active set; on the obstacle
                         : - A * PetscLogReal(r) + B; // solves laplace eqn
 }
@@ -90,30 +93,16 @@ static PetscReal fg_zero(PetscReal x, PetscReal y, void *ctx) {
     return 0.0;
 }
 
-PetscErrorCode UpdateIndentPrintRange(Vec v, const char* name, PetscInt jtop, PetscInt j) {
-    char       strbuf[PETSC_MAX_PATH_LEN];
-    PetscInt   k;
-    PetscReal  vmin, vmax;
-    for (k = 0; k < jtop - j; k++)
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  "));
-    snprintf(strbuf,PETSC_MAX_PATH_LEN,"%s^%d",name,j);
-    PetscCall(VecMin(v,NULL,&vmin));
-    PetscCall(VecMax(v,NULL,&vmax));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  %.4e <= %s <= %.4e\n",
-                          vmin,strbuf,vmax));
-    return 0;
-}
-
-extern PetscErrorCode AssertBoundaryAdmissible(DM da, ObsCtx*);
+extern PetscErrorCode AssertBoundaryValuesAdmissible(DM da, ObsCtx*);
 extern PetscErrorCode FormExact(DM da, Vec, ObsCtx*);
 extern PetscErrorCode ApplyOperatorF(DM, Vec, Vec, ObsCtx*);
 extern PetscErrorCode ProjectedNGS(LDC*, PetscBool, Vec, Vec, Vec, ObsCtx*);
 
 int main(int argc,char **argv) {
+    ObsCtx         ctx;
     Level          *levs;
     Vec            gamlow, w, uexact, F,
                    gplusy, tmpfine, tmpcoarse;
-    ObsCtx         ctx;
     DMDALocalInfo  finfo;
     PetscInt       totlevs=2, cycles=1, csweeps=1, jtop, viter, j, k;
     PetscBool      ldcinfo = PETSC_FALSE, counts = PETSC_FALSE,
@@ -152,18 +141,30 @@ int main(int argc,char **argv) {
     // WARNING: coarse problems are badly solved with -nm_quadpts 1
     PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only)",
                             "nmcd.c",ctx.quadpts,&(ctx.quadpts),NULL));
-    PetscCall(PetscOptionsInt("-sweeps","in PNGS, number of sweeps",
+    PetscCall(PetscOptionsInt("-sweeps","in PNGS, number of sweeps over the grid",
                             "nmcd.c",ctx.sweeps,&(ctx.sweeps),NULL));
     PetscCall(PetscOptionsString("-view","custom view of solution,residual,cr in ascii_matlab",
                             "nmcd",viewname,viewname,sizeof(viewname),&view));
     PetscOptionsEnd();
 
     // options consistency checking
+    if (csweeps < 1) {
+        SETERRQ(PETSC_COMM_SELF,1,"do at least 1 sweep over points at coarsest level in PNGS");
+    }
+    if (cycles < 1) {
+        SETERRQ(PETSC_COMM_SELF,2,"do at least 1 V-cycle");
+    }
     if (totlevs < 1) {
-        SETERRQ(PETSC_COMM_SELF,1,"totlevs >= 1 required");
+        SETERRQ(PETSC_COMM_SELF,3,"use at least 1 grid level");
+    }
+    if (ctx.maxits < 1) {
+        SETERRQ(PETSC_COMM_SELF,4,"do at least 1 Newton iteration at each point in PNGS");
+    }
+    if (ctx.sweeps < 1) {
+        SETERRQ(PETSC_COMM_SELF,5,"do at least 1 sweep over points in PNGS");
     }
     if (ctx.quadpts < 1 || ctx.quadpts > 3) {
-        SETERRQ(PETSC_COMM_SELF,2,"quadrature points n=1,2,3 only");
+        SETERRQ(PETSC_COMM_SELF,6,"quadrature points n=1,2,3 only");
     }
 
     // allocate Level stack
@@ -373,7 +374,8 @@ int main(int argc,char **argv) {
     return 0;
 }
 
-PetscErrorCode AssertBoundaryAdmissible(DM da, ObsCtx* user) {
+// check that g_bdry(x,y) is above gamma_lower(x,y); error if not
+PetscErrorCode AssertBoundaryValuesAdmissible(DM da, ObsCtx* user) {
     DMDALocalInfo  info;
     PetscInt       i, j;
     PetscReal      hx, hy, x, y;
@@ -386,8 +388,10 @@ PetscErrorCode AssertBoundaryAdmissible(DM da, ObsCtx* user) {
             x = -2.0 + i * hx;
             if (user->g_bdry(x,y,user) < user->gamma_lower(x,y,user)) {
                 PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-                    "ERROR: g(x,y) >= gamma(x,y) fails at x=%.6e,y=%.6e\n",x,y));
-                SETERRQ(PETSC_COMM_SELF,1,"assertion fails: boundary values are above obstacle");
+                    "ERROR: g_bdry(x,y) < gamma_lower(x,y) at x=%.6e,y=%.6e\n",
+                    x,y));
+                SETERRQ(PETSC_COMM_SELF,1,
+                    "assertion fails (boundary values are NOT above obstacle)");
             }
         }
     }
