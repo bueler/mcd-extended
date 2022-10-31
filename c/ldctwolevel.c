@@ -24,7 +24,6 @@ extern PetscErrorCode VecViewMatlabStdout(Vec);
 int main(int argc,char **argv) {
     Vec            w, v;
     PetscBool      unilateral, admis;
-    DM             cdmda;
     LDC            ldc[2];
 
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
@@ -36,15 +35,15 @@ int main(int argc,char **argv) {
     // create DMDA for coarsest level: 3x3 grid on on Omega = (0,1)x(0,1)
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
                            DMDA_STENCIL_BOX,
-                           3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&cdmda));
-    PetscCall(DMSetFromOptions(cdmda));  // allows -da_grid_x mx -da_grid_y my etc.
-    PetscCall(DMDASetInterpolationType(cdmda,DMDA_Q1));
-    PetscCall(DMDASetRefinementFactor(cdmda,2,2,2));
-    PetscCall(DMSetUp(cdmda));  // must be called BEFORE SetUniformCoordinates
-    PetscCall(DMDASetUniformCoordinates(cdmda,0.0,1.0,0.0,1.0,0.0,0.0));
+                           3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&(ldc[0].dal)));
+    PetscCall(DMSetFromOptions(ldc[0].dal));  // allows -da_grid_x mx -da_grid_y my etc.
+    PetscCall(DMDASetInterpolationType(ldc[0].dal,DMDA_Q1));
+    PetscCall(DMDASetRefinementFactor(ldc[0].dal,2,2,2));
+    PetscCall(DMSetUp(ldc[0].dal));  // must be called BEFORE SetUniformCoordinates
+    PetscCall(DMDASetUniformCoordinates(ldc[0].dal,0.0,1.0,0.0,1.0,0.0,0.0));
 
     // create LDC stack
-    PetscCall(LDCCreateCoarsest(PETSC_TRUE,cdmda,&(ldc[0])));
+    PetscCall(LDCCreateCoarsest(PETSC_TRUE,&(ldc[0])));
     PetscCall(LDCRefine(&(ldc[0]),&(ldc[1])));
 
     // view DMDA at each level

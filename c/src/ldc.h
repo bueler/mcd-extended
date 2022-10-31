@@ -67,13 +67,13 @@ typedef struct {
 // private
   PetscInt      _level;           // =0 in single-level usage; otherwise 0 is coarsest
   PetscBool     _printinfo;
-  PetscReal     _xmin, _xmax, _ymin, _ymax; // copied from coarse-level DMDA
   void*         _coarser;         // cast to LDC*; this is NULL at coarsest level
                                   // (level=0) or points to next-coarser LDC
 } LDC;
 
-// create LDC for coarsest level from user's DM cdmda
-PetscErrorCode LDCCreateCoarsest(PetscBool verbose, DM cdmda, LDC *ldc);
+// create LDC for coarsest level from user's coarsest DMDA; that is,
+// the user must set up ldc->dal before calling this
+PetscErrorCode LDCCreateCoarsest(PetscBool verbose, LDC *ldc);
 
 PetscErrorCode LDCDestroy(LDC *ldc);
 

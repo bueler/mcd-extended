@@ -3,23 +3,23 @@
 #include "q1transfers.h"
 #include "ldc.h"
 
-PetscErrorCode LDCCreateCoarsest(PetscBool verbose, DM cdmda, LDC *ldc) {
+PetscErrorCode LDCCreateCoarsest(PetscBool verbose, LDC *ldc) {
     DMDALocalInfo  info;
     PetscReal      xymin[2], xymax[2];
     ldc->_level = 0;
     ldc->_printinfo = verbose;
-    ldc->dal = cdmda;
     if (ldc->_printinfo) {
         PetscCall(DMDAGetLocalInfo(ldc->dal,&info));
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-        "  LDC info: creating LDC at level %d based on provided %d x %d coarse DMDA\n",
+            "  LDC info: creating LDC at level %d based on provided %d x %d coarse DMDA\n",
         ldc->_level,info.mx,info.my));
+        PetscCall(DMGetBoundingBox(ldc->dal,xymin,xymax));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+            "            with bounding box [%10.6f,%10.6f,%10.6f,%10.6f]\n",
+            xymin[0],xymax[0],xymin[1],xymax[1]));
     }
-    PetscCall(DMGetBoundingBox(ldc->dal,xymin,xymax));
-    ldc->_xmin = xymin[0];
-    ldc->_xmax = xymax[0];
-    ldc->_ymin = xymin[1];
-    ldc->_ymax = xymax[1];
+    PetscCall(DMDASetInterpolationType(ldc->dal,DMDA_Q1));
+    PetscCall(DMDASetRefinementFactor(ldc->dal,2,2,2));
     ldc->chiupp = NULL;
     ldc->chilow = NULL;
     ldc->phiupp = NULL;
@@ -48,7 +48,8 @@ PetscErrorCode LDCDestroy(LDC *ldc) {
 }
 
 PetscErrorCode LDCRefine(LDC *coarse, LDC *fine) {
-    DMDALocalInfo info;
+    DMDALocalInfo  info;
+    PetscReal      xymin[2], xymax[2];
     if (!(coarse->dal)) {
         SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: allocate coarse DMDA before calling LDCRefine()");
     }
@@ -65,12 +66,9 @@ PetscErrorCode LDCRefine(LDC *coarse, LDC *fine) {
         info.mx,info.my,fine->_level));
     PetscCall(DMDASetInterpolationType(fine->dal,DMDA_Q1));
     PetscCall(DMDASetRefinementFactor(fine->dal,2,2,2));
-    fine->_xmin = coarse->_xmin;
-    fine->_xmax = coarse->_xmax;
-    fine->_ymin = coarse->_ymin;
-    fine->_ymax = coarse->_ymax;
+    PetscCall(DMGetBoundingBox(coarse->dal,xymin,xymax));
     PetscCall(DMDASetUniformCoordinates(fine->dal,
-                  fine->_xmin,fine->_xmax,fine->_ymin,fine->_ymax,0.0,0.0));
+              xymin[0],xymax[0],xymin[1],xymax[1],0.0,0.0));
     fine->chiupp = NULL;
     fine->chilow = NULL;
     fine->phiupp = NULL;
@@ -143,16 +141,17 @@ PetscErrorCode LDCFinestUpDCsFromVecs(Vec w, Vec vgamupp, Vec vgamlow, LDC *ldc)
 PetscErrorCode LDCVecFromFormula(LDC ldc, PetscReal (*ufcn)(PetscReal,PetscReal,void*),
                                  Vec u, void *ctx) {
     PetscInt      i, j;
-    PetscReal     hx, hy, x, y, **au;
+    PetscReal     hx, hy, x, y, **au, xymin[2], xymax[2];
     DMDALocalInfo info;
     PetscCall(DMDAGetLocalInfo(ldc.dal,&info));
-    hx = (ldc._xmax - ldc._xmin) / (PetscReal)(info.mx - 1);
-    hy = (ldc._ymax - ldc._ymin) / (PetscReal)(info.my - 1);
+    PetscCall(DMGetBoundingBox(ldc.dal,xymin,xymax));
+    hx = (xymax[0] - xymin[0]) / (PetscReal)(info.mx - 1);
+    hy = (xymax[1] - xymin[1]) / (PetscReal)(info.my - 1);
     PetscCall(DMDAVecGetArray(info.da, u, &au));
     for (j=info.ys; j<info.ys+info.ym; j++) {
-        y = ldc._ymin + j * hy;
+        y = xymin[1] + j * hy;
         for (i=info.xs; i<info.xs+info.xm; i++) {
-            x = ldc._xmin + i * hx;
+            x = xymin[0] + i * hx;
             au[j][i] = (*ufcn)(x,y,ctx);
         }
     }

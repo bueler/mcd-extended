@@ -1,4 +1,5 @@
   LDC info: creating LDC at level 0 based on provided 3 x 3 coarse DMDA
+            with bounding box [  0.000000,  1.000000,  0.000000,  1.000000]
   LDC info: refining level 0 LDC, yielding LDC with 5 x 5 DMDA at level 1
 DM Object: ldc[0].dal 1 MPI process
   type: da
