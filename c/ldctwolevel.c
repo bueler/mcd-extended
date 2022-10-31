@@ -22,7 +22,7 @@ PetscReal gamma_upper(PetscReal x, PetscReal y, void *ctx) {
 extern PetscErrorCode VecViewMatlabStdout(Vec);
 
 int main(int argc,char **argv) {
-    Vec            w, v;
+    Vec            gamlow, gamupp, w, v;
     PetscBool      unilateral, admis;
     LDC            ldc[2];
 
@@ -52,14 +52,23 @@ int main(int argc,char **argv) {
     PetscCall(DMView(ldc[0].dal, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(DMView(ldc[1].dal, PETSC_VIEWER_STDOUT_WORLD));
 
-    // iterate w=1 gives up LDCs on finest level
+    // iterate w=2 gives up LDCs on finest level
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"using iterate w=2 to generate finest-level up defect constraints\n"));
     PetscCall(DMCreateGlobalVector(ldc[1].dal,&w));
     PetscCall(VecSet(w,2.0));
-    if (unilateral)
-        PetscCall(LDCFinestUpDCsFromFormulas(w,NULL,&gamma_lower,&(ldc[1]),NULL));
-    else
-        PetscCall(LDCFinestUpDCsFromFormulas(w,&gamma_upper,&gamma_lower,&(ldc[1]),NULL));
+    PetscCall(DMGetGlobalVector(ldc[1].dal,&gamlow));
+    PetscCall(LDCVecFromFormula(ldc[1],gamma_lower,gamlow,NULL));
+    if (unilateral) {
+        gamupp = NULL;
+    } else {
+        PetscCall(DMGetGlobalVector(ldc[1].dal,&gamupp));
+        PetscCall(LDCVecFromFormula(ldc[1],gamma_upper,gamupp,NULL));
+    }
+    PetscCall(LDCSetFinestUpDCs(w,gamupp,gamlow,&(ldc[1])));
+    PetscCall(DMRestoreGlobalVector(ldc[1].dal,&gamlow));
+    if (!unilateral) {
+        PetscCall(DMRestoreGlobalVector(ldc[1].dal,&gamupp));
+    }
     PetscCall(VecDestroy(&w));
 
     // generate up and down defect constraints for both levels

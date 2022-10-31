@@ -104,7 +104,7 @@ PetscErrorCode LDCCheckDCRanges(LDC ldc) {
     return retval;
 }
 
-PetscErrorCode LDCFinestUpDCsFromVecs(Vec w, Vec vgamupp, Vec vgamlow, LDC *ldc) {
+PetscErrorCode LDCSetFinestUpDCs(Vec w, Vec vgamupp, Vec vgamlow, LDC *ldc) {
     if (ldc->chiupp) {
         SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: chiupp already created");
     }
@@ -156,43 +156,6 @@ PetscErrorCode LDCVecFromFormula(LDC ldc, PetscReal (*ufcn)(PetscReal,PetscReal,
         }
     }
     PetscCall(DMDAVecRestoreArray(info.da, u, &au));
-    return 0;
-}
-
-PetscErrorCode LDCFinestUpDCsFromFormulas(Vec w,
-                   PetscReal (*fgamupp)(PetscReal,PetscReal,void*),
-                   PetscReal (*fgamlow)(PetscReal,PetscReal,void*),
-                   LDC *ldc, void *ctx) {
-    Vec vgamupp = NULL, vgamlow = NULL;
-    if (fgamupp) {
-        if (ldc->_printinfo)
-            PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "  LDC info: using formula for gamupp at level %d\n",
-            ldc->_level));
-        PetscCall(DMCreateGlobalVector(ldc->dal,&vgamupp));
-        PetscCall(LDCVecFromFormula(*ldc,fgamupp,vgamupp,ctx));
-    } else
-        if (ldc->_printinfo)
-            PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "  LDC info: gamupp=NULL is +infty at level %d\n",
-            ldc->_level));
-    if (fgamlow) {
-        if (ldc->_printinfo)
-            PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "  LDC info: using formula for gamlow at level %d\n",
-            ldc->_level));
-        PetscCall(DMCreateGlobalVector(ldc->dal,&vgamlow));
-        PetscCall(LDCVecFromFormula(*ldc,fgamlow,vgamlow,ctx));
-    } else
-        if (ldc->_printinfo)
-            PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "  LDC info: gamlow=NULL is -infty at level %d\n",
-            ldc->_level));
-    PetscCall(LDCFinestUpDCsFromVecs(w,vgamupp,vgamlow,ldc));
-    if (vgamupp)
-        PetscCall(VecDestroy(&vgamupp));
-    if (vgamlow)
-        PetscCall(VecDestroy(&vgamlow));
     return 0;
 }
 

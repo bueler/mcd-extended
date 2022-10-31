@@ -82,13 +82,7 @@ PetscErrorCode LDCRefine(LDC *coarse, LDC *fine);
 
 // create up DCs on finest level using original constraints gamupp, gamlow
 // and current iterate w
-PetscErrorCode LDCFinestUpDCsFromVecs(Vec w, Vec gamupp, Vec gamlow, LDC *ldc);
-
-// same, but use formulas for gamupp, gamlow
-PetscErrorCode LDCFinestUpDCsFromFormulas(Vec w,
-                   PetscReal (*fgamupp)(PetscReal,PetscReal,void*),
-                   PetscReal (*fgamlow)(PetscReal,PetscReal,void*),
-                   LDC *ldc, void *ctx);
+PetscErrorCode LDCSetFinestUpDCs(Vec w, Vec gamupp, Vec gamlow, LDC *ldc);
 
 // after finest up DCs are created, generate up and down DCs on all levels
 PetscErrorCode LDCGenerateDCsVCycle(LDC *finest);
