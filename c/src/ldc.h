@@ -34,20 +34,16 @@
 //     LDC       ldc[N+1];
 //     DMDA      cdmda
 //     PetscInt  k;
-//     [  use DMDACreate2d() to create cdmda, and then fully configure it  ]
-//     LDCCreateCoarsest(PETSC_TRUE,cdmda,&(ldc[0]));
+//     [  use DMDACreate2d() to create ldc[0].dal, and fully configure it  ]
+//     LDCCreateCoarsest(PETSC_TRUE,&(ldc[0]));
 //     for (k=0; k<N; k++)
 //         LDCRefine(ldc[k],&(ldc[k+1]));
 //     [  a box-constrained solver on finest level returns fine-level iterate w  ]
-//     LDCFinestUpDCsFromVecs(w,vgamupp,vgamlow,&(ldc[N]));
+//     LDCSetFinestUpDCs(w,vgamupp,vgamlow,&(ldc[N]));
 //     LDCGenerateDCsVCycle(&(ldc[N]));
 //     [  continue with the solver  ]
 //     for (k=0; k<N+1; k++)
 //         LDCDestroy(&(ldc[k]));
-//
-// Alternatively one can use formulas to define the finest-level up defect
-// constraints:
-//     LDCFinestUpDCsFromFormulas(w,fgamupp,fgamlow,&(ldc[N]));
 
 
 #ifndef LDC_H_
@@ -84,7 +80,7 @@ PetscErrorCode LDCRefine(LDC *coarse, LDC *fine);
 // and current iterate w
 PetscErrorCode LDCSetFinestUpDCs(Vec w, Vec gamupp, Vec gamlow, LDC *ldc);
 
-// FIXME    GET RID OF THIS AND GENERATE UP/DOWN AS WE DO V-CYCLE
+// FIXME    GET RID OF THIS AND GENERATE UP/DOWN LDCs AS WE DO V-CYCLE
 // after finest up DCs are created, generate up and down DCs on all levels
 PetscErrorCode LDCGenerateDCsVCycle(LDC *finest);
 
