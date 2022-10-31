@@ -105,36 +105,40 @@ PetscErrorCode LDCCheckDCRanges(LDC ldc) {
 }
 
 PetscErrorCode LDCSetFinestUpDCs(Vec w, Vec vgamupp, Vec vgamlow, LDC *ldc) {
-    if (ldc->chiupp) {
-        SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: chiupp already created");
-    }
-    if (ldc->chilow) {
-        SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: chilow already created");
-    }
     if (vgamupp) {
         if (ldc->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
             "  LDC info: creating chiupp and setting chiupp=gamupp-w at level %d\n",
             ldc->_level));
-        PetscCall(DMCreateGlobalVector(ldc->dal,&(ldc->chiupp)));
+        if (!ldc->chiupp)
+            PetscCall(DMCreateGlobalVector(ldc->dal,&(ldc->chiupp)));
         PetscCall(VecWAXPY(ldc->chiupp,-1.0,w,vgamupp));  // chiupp = gamupp - w
-    } else
+    } else {
+        if (ldc->chiupp) {
+            SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: conflicting state for vgamupp versus ldc->chiupp");
+        }
         if (ldc->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
             "  LDC info: chiupp=NULL is +infty because gamupp=NULL at level %d\n",
             ldc->_level));
+    }
     if (vgamlow) {
         if (ldc->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
             "  LDC info: creating chilow and setting chilow=gamlow-w at level %d\n",
             ldc->_level));
-        PetscCall(DMCreateGlobalVector(ldc->dal,&(ldc->chilow)));
+        if (!ldc->chilow)
+            PetscCall(DMCreateGlobalVector(ldc->dal,&(ldc->chilow)));
         PetscCall(VecWAXPY(ldc->chilow,-1.0,w,vgamlow));  // chilow = gamlow - w
-    } else
+    } else {
+        if (ldc->chilow) {
+            SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: conflicting state for vgamlow versus ldc->chilow");
+        }
         if (ldc->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
             "  LDC info: chilow=NULL is -infty because gamlow=NULL at level %d\n",
             ldc->_level));
+    }
     return 0;
 }
 
@@ -163,48 +167,46 @@ PetscErrorCode _LDCUpDCsMonotoneRestrict(LDC fine, LDC *coarse) {
     if (!coarse) {
         SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: coarse not created");
     }
-    if (coarse->chiupp) {
-        SETERRQ(PETSC_COMM_SELF,2,"LDC ERROR: coarse chiupp already created");
-    }
-    if (coarse->chilow) {
-        SETERRQ(PETSC_COMM_SELF,3,"LDC ERROR: coarse chilow already created");
-    }
     if (fine.chiupp) {
         if (coarse->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
             "  LDC info: setting chiupp at level %d using monotone restriction from level %d\n",
             coarse->_level,fine._level));
-        PetscCall(DMCreateGlobalVector(coarse->dal,&(coarse->chiupp)));
+        if (!coarse->chiupp)
+            PetscCall(DMCreateGlobalVector(coarse->dal,&(coarse->chiupp)));
         PetscCall(Q1MonotoneRestrict(Q1_MIN,fine.dal,coarse->dal,
                                      fine.chiupp,&(coarse->chiupp)));
-    } else
+    } else {
+        if (coarse->chiupp) {
+            SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: conflicting state for coarse->chiupp");
+        }
         if (coarse->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
             "  LDC info: chiupp=NULL is +infty at level %d\n",
             coarse->_level));
+    }
     if (fine.chilow) {
         if (coarse->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
             "  LDC info: setting chilow at level %d using monotone restriction from level %d\n",
             coarse->_level,fine._level));
-        PetscCall(DMCreateGlobalVector(coarse->dal,&(coarse->chilow)));
+        if (!coarse->chilow)
+            PetscCall(DMCreateGlobalVector(coarse->dal,&(coarse->chilow)));
         PetscCall(Q1MonotoneRestrict(Q1_MAX,fine.dal,coarse->dal,
                                      fine.chilow,&(coarse->chilow)));
-    } else
+    } else {
+        if (coarse->chilow) {
+            SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: conflicting state for coarse->chilow");
+        }
         if (coarse->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
             "  LDC info: chilow=NULL is -infty at level %d\n",
             coarse->_level));
+    }
     return 0;
 }
 
 PetscErrorCode _LDCDownDCs(LDC *coarse, LDC *fine) {
-    if (fine->phiupp) {
-        SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: phiupp already created");
-    }
-    if (fine->philow) {
-        SETERRQ(PETSC_COMM_SELF,2,"LDC ERROR: philow already created");
-    }
     // generate phiupp
     if (!coarse) {
         if (fine->chiupp) {
@@ -212,9 +214,13 @@ PetscErrorCode _LDCDownDCs(LDC *coarse, LDC *fine) {
                 PetscCall(PetscPrintf(PETSC_COMM_WORLD,
                 "  LDC info: creating and setting phiupp=chiupp (coarsest case) at level %d\n",
                 fine->_level));
-            PetscCall(DMCreateGlobalVector(fine->dal,&(fine->phiupp)));
+            if (!fine->phiupp)
+                PetscCall(DMCreateGlobalVector(fine->dal,&(fine->phiupp)));
             PetscCall(VecCopy(fine->chiupp,fine->phiupp));
         } else {
+            if (fine->phiupp) {
+                SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: conflicting state for fine->phiupp");
+            }
             if (fine->_printinfo)
                 PetscCall(PetscPrintf(PETSC_COMM_WORLD,
                 "  LDC info: phiupp=NULL is +infty (coarsest case) at level %d\n",fine->_level));
@@ -224,14 +230,19 @@ PetscErrorCode _LDCDownDCs(LDC *coarse, LDC *fine) {
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
             "  LDC info: creating and setting phiupp=chiupp-chiupp_coarse at level %d\n",
             fine->_level));
-        PetscCall(DMCreateGlobalVector(fine->dal,&(fine->phiupp)));
+        if (!fine->phiupp)
+            PetscCall(DMCreateGlobalVector(fine->dal,&(fine->phiupp)));
         // phiupp = chiupp - P(chiupp_coarse)
         PetscCall(Q1Interpolate(coarse->dal,fine->dal,coarse->chiupp,&(fine->phiupp)));
         PetscCall(VecAYPX(fine->phiupp,-1.0,fine->chiupp));
-    } else
+    } else {
+        if (fine->phiupp) {
+            SETERRQ(PETSC_COMM_SELF,2,"LDC ERROR: conflicting state for fine->phiupp");
+        }
         if (fine->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
             "  LDC info: phiupp=NULL is +infty at level %d\n",fine->_level));
+    }
     // generate philow
     if (!coarse) {
         if (fine->chilow) {
@@ -239,9 +250,13 @@ PetscErrorCode _LDCDownDCs(LDC *coarse, LDC *fine) {
                 PetscCall(PetscPrintf(PETSC_COMM_WORLD,
                 "  LDC info: creating and setting philow=chilow (coarsest case) at level %d\n",
                 fine->_level));
-            PetscCall(DMCreateGlobalVector(fine->dal,&(fine->philow)));
+            if (!fine->philow)
+                PetscCall(DMCreateGlobalVector(fine->dal,&(fine->philow)));
             PetscCall(VecCopy(fine->chilow,fine->philow));
         } else {
+            if (fine->philow) {
+                SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: conflicting state for fine->philow");
+            }
             if (fine->_printinfo)
                 PetscCall(PetscPrintf(PETSC_COMM_WORLD,
                 "  LDC info: philow=NULL is -infty (coarsest case) at level %d\n",fine->_level));
@@ -251,14 +266,19 @@ PetscErrorCode _LDCDownDCs(LDC *coarse, LDC *fine) {
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
             "  LDC info: creating and setting philow=chilow-chilow_coarse at level %d\n",
             fine->_level));
-        PetscCall(DMCreateGlobalVector(fine->dal,&(fine->philow)));
+        if (!fine->philow)
+            PetscCall(DMCreateGlobalVector(fine->dal,&(fine->philow)));
         // philow = chilow - P(chilow_coarse)
         PetscCall(Q1Interpolate(coarse->dal,fine->dal,coarse->chilow,&(fine->philow)));
         PetscCall(VecAYPX(fine->philow,-1.0,fine->chilow));
-    } else
+    } else {
+        if (fine->philow) {
+            SETERRQ(PETSC_COMM_SELF,2,"LDC ERROR: conflicting state for fine->philow");
+        }
         if (fine->_printinfo)
             PetscCall(PetscPrintf(PETSC_COMM_WORLD,
             "  LDC info: philow=NULL is -infty at level %d\n",fine->_level));
+    }
     return 0;
 }
 

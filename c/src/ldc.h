@@ -84,6 +84,7 @@ PetscErrorCode LDCRefine(LDC *coarse, LDC *fine);
 // and current iterate w
 PetscErrorCode LDCSetFinestUpDCs(Vec w, Vec gamupp, Vec gamlow, LDC *ldc);
 
+// FIXME    GET RID OF THIS AND GENERATE UP/DOWN AS WE DO V-CYCLE
 // after finest up DCs are created, generate up and down DCs on all levels
 PetscErrorCode LDCGenerateDCsVCycle(LDC *finest);
 
