@@ -60,9 +60,16 @@ static PetscReal fg_zero(PetscReal x, PetscReal y, void *ctx) {
     return 0.0;
 }
 
+// z = bump(x,y) is zero along boundary of Omega=(-2,2)^2 and reaches maximum
+// of bump(0,0) = 1.0 in center
+PetscReal bump(PetscReal x, PetscReal y, void *ctx) {
+    return (x + 2.0) * (2.0 - x) * (y + 2.0) * (2.0 - y) / 16.0;
+}
+
 extern PetscErrorCode AssertBoundaryAdmissible(DMDALocalInfo*, ObsCtx*);
 extern PetscErrorCode FormExact(PetscReal (*)(PetscReal,PetscReal,void*),
                                 DMDALocalInfo*, Vec, ObsCtx*);
+extern PetscErrorCode AddBump(PetscReal, DMDALocalInfo*, Vec, ObsCtx*);
 extern PetscErrorCode FormBounds(SNES, Vec, Vec);
 extern PetscBool NodeOnBdry(DMDALocalInfo*, PetscInt, PetscInt);
 extern PetscErrorCode CRLocal(DMDALocalInfo*, PetscReal **, PetscReal **,
@@ -79,9 +86,10 @@ int main(int argc,char **argv) {
     Vec            u, uexact;
     ObsCtx         ctx;
     DMDALocalInfo  info;
-    PetscBool      counts = PETSC_FALSE, view = PETSC_FALSE;
+    PetscBool      counts = PETSC_FALSE, view = PETSC_FALSE,
+                   initialzero = PETSC_FALSE;
     PetscLogDouble lflops, flops;
-    PetscReal      errinf;
+    PetscReal      bumpsize  = 1.0, errinf;
     char           viewname[PETSC_MAX_PATH_LEN];
 
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
@@ -96,6 +104,10 @@ int main(int argc,char **argv) {
     // WARNING: coarse problems are badly solved with -ob_quadpts 1, so avoid in MG
     PetscCall(PetscOptionsBool("-counts","print counts for calls to call-back functions",
                             "obstaclesl.c",counts,&counts,NULL));
+    PetscCall(PetscOptionsReal("-initialbump","initialize with admissible: exact solution plus bump of this size",
+                            "obstaclesl.c",bumpsize,&(bumpsize),NULL));
+    PetscCall(PetscOptionsBool("-initialzero","initial iterate is inadmissible u=0",
+                            "obstaclesl.c",initialzero,&initialzero,NULL));
     PetscCall(PetscOptionsBool("-pngs","only do sweeps of projected nonlinear Gauss-Seidel",
                             "obstaclesl.c",ctx.pngs,&(ctx.pngs),NULL));
     PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only)",
@@ -145,9 +157,16 @@ int main(int argc,char **argv) {
     }
     PetscCall(SNESSetFromOptions(snes));
 
-    // solve the problem
+    // set initial iterate
     PetscCall(DMCreateGlobalVector(da,&u));
-    PetscCall(VecSet(u,0.0));  // initialize to zero in this single-purpose code
+    if (initialzero)
+        PetscCall(VecSet(u,0.0));
+    else {
+        PetscCall(FormExact(u_exact,&info,u,&ctx));
+        PetscCall(AddBump(bumpsize,&info,u,&ctx));
+    }
+
+    // solve the problem
     PetscCall(SNESSolve(snes,NULL,u));
     PetscCall(VecDestroy(&u));
     PetscCall(DMDestroy(&da));
@@ -246,6 +265,23 @@ PetscErrorCode FormExact(PetscReal (*ufcn)(PetscReal,PetscReal,void*),
         for (i=info->xs; i<info->xs+info->xm; i++) {
             x = -2.0 + i * hx;
             au[j][i] = (*ufcn)(x,y,user);
+        }
+    }
+    PetscCall(DMDAVecRestoreArray(info->da, u, &au));
+    return 0;
+}
+
+PetscErrorCode AddBump(PetscReal bumpsize, DMDALocalInfo *info, Vec u, ObsCtx* user) {
+    PetscInt     i, j;
+    PetscReal    hx, hy, x, y, **au;
+    hx = 4.0 / (PetscReal)(info->mx - 1);
+    hy = 4.0 / (PetscReal)(info->my - 1);
+    PetscCall(DMDAVecGetArray(info->da, u, &au));
+    for (j=info->ys; j<info->ys+info->ym; j++) {
+        y = -2.0 + j * hy;
+        for (i=info->xs; i<info->xs+info->xm; i++) {
+            x = -2.0 + i * hx;
+            au[j][i] += bumpsize * bump(x,y,user);
         }
     }
     PetscCall(DMDAVecRestoreArray(info->da, u, &au));
@@ -545,6 +581,9 @@ PetscErrorCode ProjectedNGS(SNES snes, Vec u, Vec b, void *ctx) {
 
     PetscCall(SNESNGSGetSweeps(snes,&sweeps));
     PetscCall(SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&maxits));
+    //PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+    //    "in PNGS: sweepw=%.d, atol=%.3e, rtol=%.3e, stol=%.3e, maxits=%d\n",
+    //    sweeps,atol,rtol,stol,maxits));
     PetscCall(SNESGetDM(snes,&da));
     PetscCall(Q1Setup(user->quadpts,da,-2.0,2.0,-2.0,2.0));
 

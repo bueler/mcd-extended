@@ -52,13 +52,13 @@ runbratu_9: # FEM, FAS-multigrid V-cycles, NJacobi smoother, Newton-Krylov-CGICC
 test_bratu: runbratu_1 runbratu_2 runbratu_3 runbratu_4 runbratu_5 runbratu_6 runbratu_7 runbratu_8 runbratu_9
 
 runobstaclesl_1:
-	-@./testit.sh obstaclesl "-ob_counts -pc_type mg -snes_converged_reason -ksp_converged_reason -snes_grid_sequence 2" 1 1
+	-@./testit.sh obstaclesl "-ob_initialzero -ob_counts -pc_type mg -snes_converged_reason -ksp_converged_reason -snes_grid_sequence 2" 1 1
 
 runobstaclesl_2:
-	-@./testit.sh obstaclesl "-ob_counts -ob_pngs -snes_converged_reason -snes_grid_sequence 2" 1 2
+	-@./testit.sh obstaclesl "-ob_initialzero -ob_counts -ob_pngs -snes_converged_reason -snes_grid_sequence 2" 1 2
 
 runobstaclesl_3:
-	-@./testit.sh obstaclesl "-ob_pngs -da_refine 1 -ob_view tmpview.m" 1 3
+	-@./testit.sh obstaclesl "-ob_initialzero -ob_pngs -da_refine 1 -ob_view tmpview.m" 1 3
 
 test_obstaclesl: runobstaclesl_1 runobstaclesl_2 runobstaclesl_3
 
