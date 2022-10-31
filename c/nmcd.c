@@ -8,9 +8,10 @@ static char help[] =
 "nm_.  Compare obstaclesl.c.\n\n";
 
 // FIXME make it work as stupid single-level PNGS, i.e. make it reproduce
-//   ./obstaclesl -da_refine 2 -ob_counts -ob_pngs -snes_converged_reason
-// or similar by doing
-//   ./nmcd -da_grid_x 9 -da_grid_y 9 -nm_levels 1 -nm_cycles 26
+//   ./obstaclesl -ob_initialbump 1.0 -da_refine 1 -ob_counts -ob_pngs -snes_converged_reason -npc_snes_ngs_max_it 1 -snes_monitor
+// or similar
+// do:
+//   ./nmcd -nm_bumpsize 1.0 -da_refine 1 -nm_levels 1 -nm_cycles 2
 // currently there is NO progress with -nm_levels 1
 
 // FIXME possible ways to describe the current issues:
@@ -174,8 +175,11 @@ int main(int argc,char **argv) {
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
                            DMDA_STENCIL_BOX,
                            3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&(levs[0].ldc.dal)));
-    PetscCall(DMSetFromOptions(levs[0].ldc.dal));  // allows -da_grid_x mx -da_grid_y my etc.
+    // next line allows  -da_grid_x mx -da_grid_y my  or  -da_refine L  to set
+    // coarsest level
+    PetscCall(DMSetFromOptions(levs[0].ldc.dal));
     PetscCall(DMSetUp(levs[0].ldc.dal));  // must be called BEFORE SetUniformCoordinates
+    // note LDCRefine() duplicates bounding box for finer-level DMDA
     PetscCall(DMDASetUniformCoordinates(levs[0].ldc.dal,-2.0,2.0,-2.0,2.0,0.0,0.0));
 
     // create Level stack by creating coarsest LDC using levs[0].dmda,
@@ -213,7 +217,8 @@ int main(int argc,char **argv) {
     PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&tmpfine));
     PetscCall(LDCVecFromFormula(levs[jtop].ldc,bump,tmpfine,&ctx));
     PetscCall(VecAXPY(w,bumpsize,tmpfine));  // w <- bumpsize * tmpfine + w
-    //PetscCall(VecSet(w,0.0));  FIXME alternative
+    // PetscCall(VecSet(w,0.0));  // not really an alternative because we
+                                  // require w^J admissible to start
 
     // check admissibility of w^J
     PetscCall(VecLessThanOrEqual(levs[jtop].ldc.dal,gamlow,w,&admis));
@@ -292,7 +297,8 @@ int main(int argc,char **argv) {
         // update fine-level iterate:
         //   w <- w + z^J
         PetscCall(VecAXPY(w,1.0,levs[jtop].z));
-        // report range on initial w and f^J(w) for initial iterate
+
+        // report range on current w and f^J(w)
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,"iterate %2d result:\n",viter+1));
         PetscCall(VecPrintRange(w,"iterate w","",PETSC_TRUE));
         PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&F));
