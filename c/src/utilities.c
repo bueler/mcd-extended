@@ -16,6 +16,18 @@ PetscErrorCode VecPrintRange(Vec X, const char *name, const char *infcase,
     return 0;
 }
 
+PetscErrorCode UpdateIndentPrintRange(Vec v, const char* name, PetscInt jtop, PetscInt j) {
+    PetscInt   k;
+    PetscReal  vmin, vmax;
+    PetscCall(VecMin(v,NULL,&vmin));
+    PetscCall(VecMax(v,NULL,&vmax));
+    for (k = 0; k < jtop - j; k++)
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  "));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  %.4e <= %s^%d <= %.4e\n",
+                          vmin,name,j,vmax));
+    return 0;
+}
+
 PetscErrorCode VecLessThanOrEqual(DM da, Vec u, Vec v, PetscBool *flg) {
     Vec       w;
     PetscReal wmin;
