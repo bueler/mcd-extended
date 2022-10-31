@@ -271,9 +271,10 @@ int main(int argc,char **argv) {
         }
         // coarse solve in U^0 to compute z^0
         PetscCall(VecSet(levs[0].z,0.0));
-        for (k = 1; k < csweeps; k++)
+        for (k = 0; k < csweeps; k++) {
             PetscCall(ProjectedNGS(&(levs[0].ldc),PETSC_TRUE,levs[0].ell,
                                    levs[0].g,levs[0].z,&ctx));
+        }
         if (monitor)
             PetscCall(UpdateIndentPrintRange(levs[0].z,"z",jtop,0));
         // upward direction
