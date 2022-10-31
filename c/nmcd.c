@@ -226,11 +226,6 @@ int main(int argc,char **argv) {
         SETERRQ(PETSC_COMM_SELF,3,"initial iterate is not admissible\n");
     }
 
-    // complete set-up of LDC stack for complete V-cycle, from initial iterate w
-    PetscCall(LDCFinestUpDCsFromVecs(w,NULL,gamlow,&(levs[jtop].ldc)));
-    PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&gamlow));
-    PetscCall(LDCGenerateDCsVCycle(&(levs[jtop].ldc)));
-
     // report ranges for initial w and corresponding residual f^J(w)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"initial:\n"));
     PetscCall(VecPrintRange(w,"iterate w","",PETSC_TRUE));
@@ -245,6 +240,10 @@ int main(int argc,char **argv) {
                           cycles,totlevs));
     PetscCall(VecSet(levs[jtop].ell,0.0));
     for (viter = 0; viter < cycles; viter++) {
+        // set-up of LDC stack for complete V-cycle, from initial iterate w
+        PetscCall(LDCSetFinestUpDCs(w,NULL,gamlow,&(levs[jtop].ldc)));
+        PetscCall(LDCGenerateDCsVCycle(&(levs[jtop].ldc)));
+        // initialize iterate at top level
         PetscCall(VecCopy(w,levs[jtop].g));
         // downward direction
         for (j = jtop; j >= 1; j--) {
@@ -307,6 +306,7 @@ int main(int argc,char **argv) {
         PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&F));
         // FIXME also CR residual?
     } // for viter ...
+    PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&gamlow));
 
     if (counts) {
         // note calls to FormResidualOrCRLocal() and ProjectedNGS() are
