@@ -108,13 +108,14 @@ PetscReal bump4_fcn(PetscReal x, PetscReal y, void *ctx) {
 extern PetscErrorCode AssertBoundaryValuesAdmissible(DM, ObsCtx*);
 extern PetscErrorCode MonitorCRNorm(DM, Vec, Vec, Vec, PetscInt, ObsCtx*);
 extern PetscErrorCode MonitorRanges(DM, Vec, PetscInt, ObsCtx*);
+extern PetscErrorCode ViewResultsMatlab(DM, Vec, Vec, Vec, Vec, char*, ObsCtx*);
 extern PetscErrorCode ApplyOperatorF(DM, Vec, Vec, ObsCtx*);
 extern PetscErrorCode ProjectedNGS(LDC*, PetscBool, Vec, Vec, Vec, ObsCtx*);
 
 int main(int argc,char **argv) {
     ObsCtx         ctx;
     Level          *levs;
-    Vec            gamlow, w, uexact, F, Fhat, gplusy, tmpfine, tmpcoarse;
+    Vec            gamlow, w, uexact, gplusy, tmpfine, tmpcoarse;
     DMDALocalInfo  finfo;
     PetscInt       totlevs=2, cycles=1, csweeps=1, jtop, viter, j, k;
     PetscBool      bratu = PETSC_FALSE, counts = PETSC_FALSE,
@@ -359,57 +360,30 @@ int main(int argc,char **argv) {
                               flops,ctx.residualcount,ctx.ngscount));
     }
 
-    if (view) {
-        PetscViewer  file;
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "viewing iterate, exact solution, residual, CR residual into ascii_matlab file %s\n",viewname));
-        PetscCall(PetscViewerCreate(PETSC_COMM_WORLD,&file));
-        PetscCall(PetscViewerSetType(file,PETSCVIEWERASCII));
-        PetscCall(PetscViewerFileSetMode(file,FILE_MODE_WRITE));
-        PetscCall(PetscViewerFileSetName(file,viewname));
-        PetscCall(PetscViewerPushFormat(file,PETSC_VIEWER_ASCII_MATLAB));
-        PetscCall(PetscObjectSetName((PetscObject)w,"w"));
-        PetscCall(VecView(w,file));
-        PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&uexact));
-        if (bratu)
-            PetscCall(VecFromFormula(levs[jtop].ldc.dal,uexact_liouville,uexact,&ctx));
-        else
-            PetscCall(VecFromFormula(levs[jtop].ldc.dal,uexact_obstacle,uexact,&ctx));
-        PetscCall(PetscObjectSetName((PetscObject)uexact,"uexact"));
-        PetscCall(VecView(uexact,file));
-        PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&F));
-        PetscCall(ApplyOperatorF(levs[jtop].ldc.dal,w,F,&ctx));
-        PetscCall(PetscObjectSetName((PetscObject)F,"F"));
-        PetscCall(VecView(F,file));
-        PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&Fhat));
-        PetscCall(CRFromResidual(levs[jtop].ldc.dal,NULL,gamlow,w,F,Fhat));
-        PetscCall(PetscObjectSetName((PetscObject)F,"Fhat"));
-        PetscCall(VecView(Fhat,file));
-        PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&uexact));
-        PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&F));
-        PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&Fhat));
-        PetscCall(PetscViewerPopFormat(file));
-        PetscCall(PetscViewerDestroy(&file));
-    }
-
-    // report on numerical error
+    // compute exact solution
     PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&uexact));
     if (bratu)
         PetscCall(VecFromFormula(levs[jtop].ldc.dal,uexact_liouville,uexact,&ctx));
     else
         PetscCall(VecFromFormula(levs[jtop].ldc.dal,uexact_obstacle,uexact,&ctx));
+
+    // optionally view to Matlab file
+    if (view)
+        PetscCall(ViewResultsMatlab(levs[jtop].ldc.dal,w,NULL,gamlow,uexact,viewname,&ctx));
+
+    // report on numerical error
     PetscCall(VecAXPY(w,-1.0,uexact));    // u <- u + (-1.0) uexact
     PetscCall(VecNorm(w,NORM_INFINITY,&errinf));
-    PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&uexact));
     PetscCall(DMDAGetLocalInfo(levs[jtop].ldc.dal,&finfo));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,
                           "done on %d x %d grid:   error |u-uexact|_inf = %.3e\n",
                           finfo.mx,finfo.my,errinf));
 
     // restore or destroy it all
+    PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&w));
+    PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&uexact));
     if (gamlow)
         PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&gamlow));
-    PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&w));
     for (j=0; j<totlevs; j++) {
         PetscCall(DMRestoreGlobalVector(levs[j].ldc.dal,&(levs[j].g)));
         PetscCall(DMRestoreGlobalVector(levs[j].ldc.dal,&(levs[j].ell)));
@@ -477,6 +451,37 @@ PetscErrorCode MonitorRanges(DM da, Vec w, PetscInt iter, ObsCtx *ctx) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"    "));
     PetscCall(VecPrintRange(F,"f^J(w)","",PETSC_TRUE));
     PetscCall(DMRestoreGlobalVector(da,&F));
+    return 0;
+}
+
+PetscErrorCode ViewResultsMatlab(DM da, Vec w, Vec gamupp, Vec gamlow,
+                                 Vec uexact, char* filename, ObsCtx *ctx) {
+    PetscViewer  file;
+    Vec          F, Fhat;
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+        "viewing iterate, exact solution, residual, CR residual into ascii_matlab file %s\n",
+        filename));
+    PetscCall(PetscViewerCreate(PETSC_COMM_WORLD,&file));
+    PetscCall(PetscViewerSetType(file,PETSCVIEWERASCII));
+    PetscCall(PetscViewerFileSetMode(file,FILE_MODE_WRITE));
+    PetscCall(PetscViewerFileSetName(file,filename));
+    PetscCall(PetscViewerPushFormat(file,PETSC_VIEWER_ASCII_MATLAB));
+    PetscCall(PetscObjectSetName((PetscObject)w,"w"));
+    PetscCall(VecView(w,file));
+    PetscCall(PetscObjectSetName((PetscObject)uexact,"uexact"));
+    PetscCall(VecView(uexact,file));
+    PetscCall(DMGetGlobalVector(da,&F));
+    PetscCall(ApplyOperatorF(da,w,F,ctx));
+    PetscCall(PetscObjectSetName((PetscObject)F,"F"));
+    PetscCall(VecView(F,file));
+    PetscCall(DMGetGlobalVector(da,&Fhat));
+    PetscCall(CRFromResidual(da,NULL,gamlow,w,F,Fhat));
+    PetscCall(PetscObjectSetName((PetscObject)Fhat,"Fhat"));
+    PetscCall(VecView(Fhat,file));
+    PetscCall(DMRestoreGlobalVector(da,&F));
+    PetscCall(DMRestoreGlobalVector(da,&Fhat));
+    PetscCall(PetscViewerPopFormat(file));
+    PetscCall(PetscViewerDestroy(&file));
     return 0;
 }
 
