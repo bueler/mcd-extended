@@ -51,7 +51,7 @@ PetscErrorCode LDCRefine(LDC *coarse, LDC *fine) {
     DMDALocalInfo  info;
     PetscReal      xymin[2], xymax[2];
     if (!(coarse->dal)) {
-        SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: allocate coarse DMDA before calling LDCRefine()");
+        SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: allocate DM coarse->dal before calling LDCRefine()");
     }
     if (coarse->_printinfo)
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
@@ -73,7 +73,7 @@ PetscErrorCode LDCRefine(LDC *coarse, LDC *fine) {
     fine->chilow = NULL;
     fine->phiupp = NULL;
     fine->philow = NULL;
-    fine->_coarser = (void*)(coarse);
+    fine->_coarser = coarse;
     return 0;
 }
 

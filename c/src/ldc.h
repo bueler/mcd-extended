@@ -1,8 +1,9 @@
 // Level Defect Constraints (LDC) are box constraints for a mesh hierarchy
-// based on subtracting a fine-level admissible iterate.  The intended use
+// based on "defect constraints", i.e. subtracting a fine-level admissible
+// iterate from some original box constraints.  The intended use
 // is that there is one LDC object per level during each multilevel V-cycle
 // of a multilevel constraint decomposition (MCD) method.  Each LDC object
-// contains 4 LDCs, namely above and below lDCs for the up and
+// contains 4 LDCs, namely above and below LDCs for the up and
 // down directions in a V-cycle.
 //
 // The theory of nonlinear MCD methods using defect constraints at each level
@@ -27,14 +28,13 @@
 // +infty or -infty accordingly, but if an LDC Vec is not null then it is
 // assumed that *all* values of it are finite.
 //
-// The following gives canonical V-cycle usage.  Note ldc[0] is coarse
-// level while ldc[N] is finest level.  We do maxiters V-cycles.  We
-// start with
+// The following gives canonical V-cycle usage.  Note ldc[0] is the
+// coarsest level while ldc[N] is the finest level.  We do maxiters V-cycles.
+// We start with
 //   * upper and lower finest-level obstacles (Vecs) gamupp, gamlow
 //   * an admissible finest-level iterate w:  gamlow <= w <= gamupp
 //
 //     LDC       ldc[N+1];
-//
 //     [  use DMDACreate2d() to create ldc[0].dal, and fully configure it  ]
 //     LDCCreateCoarsest(PETSC_TRUE,&(ldc[0]));
 //     for (j=0; j<N; j++) {
@@ -63,10 +63,12 @@
 // notes:
 //   * DM dal is for a 2D rectangle with uniform coordinates, box stencil,
 //     and no (extra) boundary allocations
+//   * the user sets up the DM dal for the coarsest level
 //   * defect constraint values from extended real line [-\infty,+\infty]
-//   * PETSC_INFINITY and PETSC_NINFINITY are valid entries
-//   * special case: if defect constraint is identically PETSC_INFINITY or
-//     PETSC_NINFINITY then it is unallocated and NULL
+//   * FIXME want to allow PETSC_INFINITY and PETSC_NINFINITY as valid entries
+//   * special case: a defect constraint which is unallocated and NULL
+//                   is interpreted as identically PETSC_INFINITY or
+//                   PETSC_NINFINITY, respectively
 typedef struct {
   DM            dal;             // DMDA (structured grid) for this level
   Vec           chiupp, chilow,  // up defect constraints: chiX = w - gammaX
@@ -75,7 +77,7 @@ typedef struct {
   PetscInt      _level;           // =0 in single-level usage; otherwise 0 is coarsest
   PetscBool     _printinfo;
   void*         _coarser;         // cast to LDC*; this is NULL at coarsest level
-                                  // (level=0) or points to next-coarser LDC
+                                  // (level=0), or it points to next-coarser LDC
 } LDC;
 
 // create LDC for coarsest level from user's coarsest DMDA; that is,
@@ -87,8 +89,8 @@ PetscErrorCode LDCDestroy(LDC *ldc);
 // refine LDC *coarse to create LDC *fine; this creates a DMDA for *fine
 PetscErrorCode LDCRefine(LDC *coarse, LDC *fine);
 
-// create up DCs on finest level using original constraints gamupp, gamlow
-// and current iterate w
+// create up DCs chiupp,chilow on finest level using original constraints
+// gamupp, gamlow and the current finest-level iterate w
 PetscErrorCode LDCSetFinestUpDCs(Vec w, Vec gamupp, Vec gamlow, LDC *ldc);
 
 // assuming LDC fine has chiupp, chilow set,
