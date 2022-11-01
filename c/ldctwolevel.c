@@ -8,6 +8,7 @@ static char help[] =
 #include <petsc.h>
 #include "src/q1transfers.h"
 #include "src/ldc.h"
+#include "src/utilities.h"
 
 // z = gamma_lower(x,y) has tight bounds  0 <= z <= 1
 PetscReal gamma_lower(PetscReal x, PetscReal y, void *ctx) {
@@ -57,12 +58,12 @@ int main(int argc,char **argv) {
     PetscCall(DMCreateGlobalVector(ldc[1].dal,&w));
     PetscCall(VecSet(w,2.0));
     PetscCall(DMGetGlobalVector(ldc[1].dal,&gamlow));
-    PetscCall(LDCVecFromFormula(ldc[1],gamma_lower,gamlow,NULL));
+    PetscCall(VecFromFormula(ldc[1].dal,gamma_lower,gamlow,NULL));
     if (unilateral) {
         gamupp = NULL;
     } else {
         PetscCall(DMGetGlobalVector(ldc[1].dal,&gamupp));
-        PetscCall(LDCVecFromFormula(ldc[1],gamma_upper,gamupp,NULL));
+        PetscCall(VecFromFormula(ldc[1].dal,gamma_upper,gamupp,NULL));
     }
     PetscCall(LDCSetFinestUpDCs(w,gamupp,gamlow,&(ldc[1])));
     PetscCall(DMRestoreGlobalVector(ldc[1].dal,&gamlow));

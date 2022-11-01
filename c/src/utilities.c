@@ -43,6 +43,27 @@ PetscErrorCode VecLessThanOrEqual(DM da, Vec u, Vec v, PetscBool *flg) {
     return 0;
 }
 
+PetscErrorCode VecFromFormula(DM da, PetscReal (*ufcn)(PetscReal,PetscReal,void*),
+                              Vec u, void *ctx) {
+    PetscInt      i, j;
+    PetscReal     hx, hy, x, y, **au, xymin[2], xymax[2];
+    DMDALocalInfo info;
+    PetscCall(DMDAGetLocalInfo(da,&info));
+    PetscCall(DMGetBoundingBox(da,xymin,xymax));
+    hx = (xymax[0] - xymin[0]) / (PetscReal)(info.mx - 1);
+    hy = (xymax[1] - xymin[1]) / (PetscReal)(info.my - 1);
+    PetscCall(DMDAVecGetArray(da, u, &au));
+    for (j=info.ys; j<info.ys+info.ym; j++) {
+        y = xymin[1] + j * hy;
+        for (i=info.xs; i<info.xs+info.xm; i++) {
+            x = xymin[0] + i * hx;
+            au[j][i] = (*ufcn)(x,y,ctx);
+        }
+    }
+    PetscCall(DMDAVecRestoreArray(da, u, &au));
+    return 0;
+}
+
 PetscErrorCode CRFromResidual(DM da, Vec Upper, Vec Lower, Vec u, Vec F, Vec Fhat) {
     DMDALocalInfo    info;
     PetscInt         i, j;

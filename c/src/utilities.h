@@ -15,6 +15,10 @@ PetscErrorCode UpdateIndentPrintRange(Vec v, const char* name, PetscInt jtop, Pe
 // extended reals rule:  if u=NULL (-infty) or v=NULL (+infty) then flg=PETSC_TRUE
 PetscErrorCode VecLessThanOrEqual(DM da, Vec u, Vec v, PetscBool *flg);
 
+// evaluate ufcn(x,y,ctx) on DMDA rectangle to fill u
+PetscErrorCode VecFromFormula(DM da, PetscReal (*ufcn)(PetscReal,PetscReal,void*),
+                              Vec u, void *ctx);
+
 // compute complementarity residual Fhat from ordinary residual F, for bi-lateral constraints:
 //     Fhat_ij = F_ij         if  Lower_ij < u_ij < Upper_ij   (inactive constraints)
 //               min{F_ij,0}  if  u_ij <= Lower_ij

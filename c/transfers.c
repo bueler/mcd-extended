@@ -7,6 +7,7 @@ static char help[] =
 #include <petsc.h>
 #include "src/q1transfers.h"
 #include "src/ldc.h"
+#include "src/utilities.h"
 
 // z = gamma_lower(x,y) has tight bounds  0 <= z <= 1
 PetscReal gamma_lower(PetscReal x, PetscReal y, void *ctx) {
@@ -40,8 +41,7 @@ int main(int argc,char **argv) {
     PetscCall(DMCreateGlobalVector(ldc[1].dal,&vgamlow));
     PetscCall(PetscObjectSetName((PetscObject)(vgamlow),"gamlow"));
     PetscCall(DMDAGetLocalInfo(ldc[1].dal,&info));
-    //PetscCall(FormVecFromFormula(gamma_lower,&info,vgamlow));
-    PetscCall(LDCVecFromFormula(ldc[1],gamma_lower,vgamlow,NULL));
+    PetscCall(VecFromFormula(ldc[1].dal,gamma_lower,vgamlow,NULL));
     PetscCall(VecViewMatlabStdout(vgamlow));
 
     // test Q1 restriction, injection, and interpolation on temporary vecs

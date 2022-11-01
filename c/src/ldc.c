@@ -142,27 +142,6 @@ PetscErrorCode LDCSetFinestUpDCs(Vec w, Vec vgamupp, Vec vgamlow, LDC *ldc) {
     return 0;
 }
 
-PetscErrorCode LDCVecFromFormula(LDC ldc, PetscReal (*ufcn)(PetscReal,PetscReal,void*),
-                                 Vec u, void *ctx) {
-    PetscInt      i, j;
-    PetscReal     hx, hy, x, y, **au, xymin[2], xymax[2];
-    DMDALocalInfo info;
-    PetscCall(DMDAGetLocalInfo(ldc.dal,&info));
-    PetscCall(DMGetBoundingBox(ldc.dal,xymin,xymax));
-    hx = (xymax[0] - xymin[0]) / (PetscReal)(info.mx - 1);
-    hy = (xymax[1] - xymin[1]) / (PetscReal)(info.my - 1);
-    PetscCall(DMDAVecGetArray(info.da, u, &au));
-    for (j=info.ys; j<info.ys+info.ym; j++) {
-        y = xymin[1] + j * hy;
-        for (i=info.xs; i<info.xs+info.xm; i++) {
-            x = xymin[0] + i * hx;
-            au[j][i] = (*ufcn)(x,y,ctx);
-        }
-    }
-    PetscCall(DMDAVecRestoreArray(info.da, u, &au));
-    return 0;
-}
-
 PetscErrorCode _LDCUpDCsMonotoneRestrict(LDC fine, LDC *coarse) {
     if (!coarse) {
         SETERRQ(PETSC_COMM_SELF,1,"LDC ERROR: coarse not created");

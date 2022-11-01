@@ -106,10 +106,6 @@ PetscErrorCode LDCUpDCsCRFromResidual(LDC *ldc, Vec z, Vec F, Vec Fhat);
 // defect y, for down DCs
 PetscErrorCode LDCDownDCsCRFromResidual(LDC *ldc, Vec y, Vec F, Vec Fhat);
 
-// create a Vec from a formula
-PetscErrorCode LDCVecFromFormula(LDC ldc, PetscReal (*ufcn)(PetscReal,PetscReal,void*),
-                                 Vec u, void *ctx);
-
 // for each pair of DCs, check lower <= 0 <= upper, and report min and max
 PetscErrorCode LDCCheckDCRanges(LDC ldc);
 
