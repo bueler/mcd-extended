@@ -11,7 +11,7 @@ static char help[] =
 //   ./obstaclesl -ob_initialbump 1.0 -da_refine 1 -ob_counts -ob_pngs -snes_converged_reason -npc_snes_ngs_max_it 1 -snes_monitor
 // or similar
 // do:
-//   ./nmcd -nm_bumpsize 1.0 -da_refine 1 -nm_levels 1 -nm_cycles 2
+//   ./nmcd -nm_bumpsize 1.0 -da_refine 1 -nm_levels 1 -nm_cycles 4
 // currently there is NO progress with -nm_levels 1
 
 // FIXME possible ways to describe the current issues:
@@ -236,17 +236,23 @@ int main(int argc,char **argv) {
     // FIXME also CR residual?
 
     // one NMCD V-cycle with one smoother iteration at each level
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"solving using %d V-cycles with %d levels ...\n",
-                          cycles,totlevs));
+    if (totlevs == 1)
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"single-level solving using %d smoother iterations ...\n",
+                              cycles));
+    else
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"solving using %d V-cycles with %d levels ...\n",
+                              cycles,totlevs));
     PetscCall(VecSet(levs[jtop].ell,0.0));
     for (viter = 0; viter < cycles; viter++) {
-        // set-up of LDC stack for complete V-cycle, from initial iterate w
+        // set-up finest-level chiupp,chilow from initial iterate w
         PetscCall(LDCSetFinestUpDCs(w,NULL,gamlow,&(levs[jtop].ldc)));
-        PetscCall(LDCGenerateDCsVCycle(&(levs[jtop].ldc)));
         // initialize iterate at top level
         PetscCall(VecCopy(w,levs[jtop].g));
         // downward direction
         for (j = jtop; j >= 1; j--) {
+            // compute LDCs:  chiupp,chilow for levs[j-1]  by mono restrict
+            //                phiupp,philow for levs[j]    by subtraction
+            PetscCall(LDCSetLevel(&(levs[j].ldc)));
             // get allocated temporaries
             PetscCall(DMGetGlobalVector(levs[j].ldc.dal,&gplusy));
             PetscCall(DMGetGlobalVector(levs[j].ldc.dal,&tmpfine));
@@ -274,6 +280,9 @@ int main(int argc,char **argv) {
             PetscCall(DMRestoreGlobalVector(levs[j-1].ldc.dal,&tmpcoarse));
         }
         // coarse solve in U^0 to compute z^0
+        if (levs[0].ldc._printinfo) {
+            PetscCall(LDCCheckDCRanges(levs[0].ldc));
+        }
         PetscCall(VecSet(levs[0].z,0.0));
         for (k = 0; k < csweeps; k++) {
             PetscCall(ProjectedNGS(&(levs[0].ldc),PETSC_TRUE,levs[0].ell,
