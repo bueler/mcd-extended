@@ -3,9 +3,11 @@ static char help[] =
 "decomposition (NMCD) method using Q1 finite elements in 2D square (-2,2)^2\n"
 "on a structured-grid (DMDA):\n"
 "  - nabla^2 u = f(x,y),  u >= psi(x,y),\n"
-"subject to Dirichlet boundary conditions u=g.  Smoother and coarse-level\n"
-"solver is projected, nonlinear Gauss-Seidel (PNGS) sweeps.  Option prefix\n"
-"nm_.  Compare obstaclesl.c.\n\n";
+"subject to Dirichlet boundary conditions u=g.  Optional problem (-nm_bratu)\n"
+"is unconstrained Bratu equation  - nabla^2 u - e^u = 0,  with Liouville\n"
+"exact solution, on square (0,1)^2.\n"
+"Smoother and coarse-level solver are both projected, nonlinear Gauss-Seidel\n"
+"(PNGS) sweeps.  Option prefix nm_.  Compare obstaclesl.c and bratu.c.\n\n";
 
 // FIXME add unconstrained bratu case, and compare to FAS solves
 // (w/o line search) from bratu.c
@@ -14,7 +16,7 @@ static char help[] =
 //   * the iterate w is only slowly falling toward the obstacle
 //   * the corrections are always negative
 // see stdout and foo.m from
-//   $ ./nmcd -nm_monitor -nm_view foo.m -nm_levels 7 -nm_cycles 1 -nm_bumpsize 1.0
+//   $ ./nmcd -nm_monitor -nm_monitor_ranges -nm_monitor_vcycles -nm_view foo.m -nm_levels 7 -nm_cycles 1 -nm_bumpsize 1.0
 
 #include <petsc.h>
 #include "src/utilities.h"
@@ -46,7 +48,7 @@ typedef struct {
 } Level;
 
 // z = gamma_lower(x,y) is the hemispherical obstacle, but made C^1 using
-// "skirt" at r=r0
+// "skirt" at r=r0; on square (-2,2)^2
 PetscReal gamma_lower(PetscReal x, PetscReal y, void *ctx) {
     const PetscReal  r = PetscSqrtReal(x * x + y * y),
                      r0 = 0.9,
@@ -57,12 +59,6 @@ PetscReal gamma_lower(PetscReal x, PetscReal y, void *ctx) {
     } else {
         return psi0 + dpsi0 * (r - r0);
     }
-}
-
-// z = bump(x,y) is zero along boundary of Omega=(-2,2)^2 and reaches maximum
-// of bump(0,0) = 1.0 in center
-PetscReal bump(PetscReal x, PetscReal y, void *ctx) {
-    return (x + 2.0) * (2.0 - x) * (y + 2.0) * (2.0 - y) / 16.0;
 }
 
 /*  This exact solution solves a 1D radial free-boundary problem for the
@@ -76,7 +72,7 @@ can then be reduced to a root-finding problem for a:
     a^2 (log(2) - log(a)) = 1 - a^2
 The solution is a = 0.697965148223374 (giving residual 1.5e-15).  Then
 A = a^2*(1-a^2)^(-0.5) and B = A*log(2) are given below in the code.  */
-PetscReal u_exact(PetscReal x, PetscReal y, void *ctx) {
+PetscReal uexact_obstacle(PetscReal x, PetscReal y, void *ctx) {
     const PetscReal afree = 0.697965148223374,
                     A     = 0.680259411891719,
                     B     = 0.471519893402112,
@@ -85,12 +81,31 @@ PetscReal u_exact(PetscReal x, PetscReal y, void *ctx) {
                         : - A * PetscLogReal(r) + B; // solves laplace eqn
 }
 
-static PetscReal fg_zero(PetscReal x, PetscReal y, void *ctx) {
+// exact solution to bratu problem with lambda = 1; on square (0,1)^2
+static PetscReal uexact_liouville(PetscReal x, PetscReal y, void *ctx) {
+    PetscReal r2 = (x + 1.0) * (x + 1.0) + (y + 1.0) * (y + 1.0),
+              qq = r2 * r2 + 1.0,
+              omega = r2 / (qq * qq);
+    return PetscLogReal(32.0 * omega);
+}
+
+static PetscReal zero_fcn(PetscReal x, PetscReal y, void *ctx) {
     return 0.0;
 }
 
+// z = bump1_fcn(x,y) is zero along boundary of Omega=(0,1)^2 and reaches
+// maximum of bump1_fcn(0.5,0.5) = 1.0 in center
+PetscReal bump1_fcn(PetscReal x, PetscReal y, void *ctx) {
+    return 16.0 * x * (1.0 - x) * y * (1.0 - y);
+}
+
+// z = bump4_fcn(x,y) is zero along boundary of Omega=(-2,2)^2 and reaches
+// maximum of bump4_fcn(0,0) = 1.0 in center
+PetscReal bump4_fcn(PetscReal x, PetscReal y, void *ctx) {
+    return (x + 2.0) * (2.0 - x) * (y + 2.0) * (2.0 - y) / 16.0;
+}
+
 extern PetscErrorCode AssertBoundaryValuesAdmissible(DM, ObsCtx*);
-extern PetscErrorCode FormExact(DM, Vec, ObsCtx*);
 extern PetscErrorCode MonitorCRNorm(DM, Vec, Vec, Vec, PetscInt, ObsCtx*);
 extern PetscErrorCode MonitorRanges(DM, Vec, PetscInt, ObsCtx*);
 extern PetscErrorCode ApplyOperatorF(DM, Vec, Vec, ObsCtx*);
@@ -99,28 +114,29 @@ extern PetscErrorCode ProjectedNGS(LDC*, PetscBool, Vec, Vec, Vec, ObsCtx*);
 int main(int argc,char **argv) {
     ObsCtx         ctx;
     Level          *levs;
-    Vec            gamlow, w, uexact, F,
-                   gplusy, tmpfine, tmpcoarse;
+    Vec            gamlow, w, uexact, F, Fhat, gplusy, tmpfine, tmpcoarse;
     DMDALocalInfo  finfo;
     PetscInt       totlevs=2, cycles=1, csweeps=1, jtop, viter, j, k;
-    PetscBool      ldcinfo = PETSC_FALSE, counts = PETSC_FALSE,
-                   monitor = PETSC_FALSE, monitorranges = PETSC_FALSE,
-                   monitorvcycles = PETSC_FALSE, view = PETSC_FALSE,
-                   admis;
+    PetscBool      bratu = PETSC_FALSE, counts = PETSC_FALSE,
+                   ldcinfo = PETSC_FALSE, monitor = PETSC_FALSE,
+                   monitorranges = PETSC_FALSE, monitorvcycles = PETSC_FALSE,
+                   view = PETSC_FALSE, admis;
     PetscLogDouble lflops, flops;
     PetscReal      bumpsize=0.0, errinf;
     char           viewname[PETSC_MAX_PATH_LEN];
 
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
     ctx.gamma_lower = &gamma_lower;
-    ctx.f_rhs = &fg_zero;
-    ctx.g_bdry = &u_exact;
+    ctx.f_rhs = &zero_fcn;
+    ctx.g_bdry = &uexact_obstacle;
     ctx.maxits = 1;
     ctx.quadpts = 2;
     ctx.sweeps = 1;
     ctx.residualcount = 0;
     ctx.ngscount = 0;
-    PetscOptionsBegin(PETSC_COMM_WORLD,"nm_","obstacle problem NMCD solver options","");
+    PetscOptionsBegin(PETSC_COMM_WORLD,"nm_","NMCD solver options","");
+    PetscCall(PetscOptionsBool("-bratu","solve unconstrained Bratu equation problem (vs default linear obstacle problem)",
+                            "nmcd.c",bratu,&bratu,NULL));
     PetscCall(PetscOptionsReal("-bumpsize","initialization from exact solution plus this much bump",
                             "nmcd.c",bumpsize,&bumpsize,NULL));
     PetscCall(PetscOptionsBool("-counts","print counts for calls to call-back functions",
@@ -170,10 +186,15 @@ int main(int argc,char **argv) {
         SETERRQ(PETSC_COMM_SELF,6,"quadrature points n=1,2,3 only");
     }
 
+    if (bratu) {
+        ctx.gamma_lower = NULL;
+        ctx.g_bdry = &uexact_liouville;
+    }
+
     // allocate Level stack
     PetscCall(PetscMalloc1(totlevs,&levs));
 
-    // create DMDA for coarsest level: 3x3 grid on on Omega = (-2,2)x(-2,2)
+    // create DMDA for coarsest level: 3x3 grid on square Omega
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
                            DMDA_STENCIL_BOX,
                            3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&(levs[0].ldc.dal)));
@@ -182,7 +203,10 @@ int main(int argc,char **argv) {
     PetscCall(DMSetFromOptions(levs[0].ldc.dal));
     PetscCall(DMSetUp(levs[0].ldc.dal));  // must be called BEFORE SetUniformCoordinates
     // note LDCRefine() duplicates bounding box for finer-level DMDA
-    PetscCall(DMDASetUniformCoordinates(levs[0].ldc.dal,-2.0,2.0,-2.0,2.0,0.0,0.0));
+    if (bratu)
+        PetscCall(DMDASetUniformCoordinates(levs[0].ldc.dal,0.0,1.0,0.0,1.0,0.0,0.0));
+    else
+        PetscCall(DMDASetUniformCoordinates(levs[0].ldc.dal,-2.0,2.0,-2.0,2.0,0.0,0.0));
 
     // create Level stack by creating coarsest LDC using levs[0].dmda,
     // then refining jtop times; note:
@@ -210,14 +234,23 @@ int main(int argc,char **argv) {
     PetscCall(AssertBoundaryValuesAdmissible(levs[jtop].ldc.dal,&ctx));
 
     // generate finest-level obstacle gamlow as Vec
-    PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&gamlow));
-    PetscCall(LDCVecFromFormula(levs[jtop].ldc,gamma_lower,gamlow,&ctx));
+    if (bratu)
+        gamlow = NULL;
+    else {
+        PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&gamlow));
+        PetscCall(VecFromFormula(levs[jtop].ldc.dal,gamma_lower,gamlow,&ctx));
+    }
 
     // create finest-level initial iterate w^J:  w^J = uexact + bumpsize * bump
     PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&w));
-    PetscCall(FormExact(levs[jtop].ldc.dal,w,&ctx));
     PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&tmpfine));
-    PetscCall(LDCVecFromFormula(levs[jtop].ldc,bump,tmpfine,&ctx));
+    if (bratu) {
+        PetscCall(VecFromFormula(levs[jtop].ldc.dal,uexact_liouville,w,&ctx));
+        PetscCall(VecFromFormula(levs[jtop].ldc.dal,bump1_fcn,tmpfine,&ctx));
+    } else {
+        PetscCall(VecFromFormula(levs[jtop].ldc.dal,uexact_obstacle,w,&ctx));
+        PetscCall(VecFromFormula(levs[jtop].ldc.dal,bump4_fcn,tmpfine,&ctx));
+    }
     PetscCall(VecAXPY(w,bumpsize,tmpfine));  // w <- bumpsize * tmpfine + w
     PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&tmpfine));
     // PetscCall(VecSet(w,0.0));  // not really an alternative because we
@@ -235,12 +268,12 @@ int main(int argc,char **argv) {
 
     // one NMCD V-cycle with one smoother iteration at each level
     if (totlevs == 1)
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"single-level solving using %d smoother iterations ...\n",
-                              cycles));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+            "single-level solving using %d smoother iterations ...\n",cycles));
     else
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"solving using %d V-cycles with %d levels ...\n",
-                              cycles,totlevs));
-    PetscCall(VecSet(levs[jtop].ell,0.0));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+            "solving using %d V-cycles with %d levels ...\n",cycles,totlevs));
+    PetscCall(VecSet(levs[jtop].ell,0.0)); // assumes f(x,y)=0 on RHS
     for (viter = 0; viter < cycles; viter++) {
         // report norm of CR residual
         if (monitor)
@@ -314,10 +347,9 @@ int main(int argc,char **argv) {
     // report final norm of CR residual
     if (monitor)
         PetscCall(MonitorCRNorm(levs[jtop].ldc.dal,NULL,gamlow,w,viter,&ctx));
-    PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&gamlow));
 
     if (counts) {
-        // note calls to FormResidualOrCRLocal() and ProjectedNGS() are
+        // note calls to ApplyOperatorF() and ProjectedNGS() are
         // collective but flops are per-process, so we need a reduction
         PetscCall(PetscGetFlops(&lflops));
         PetscCall(MPI_Allreduce(&lflops,&flops,1,MPIU_REAL,MPIU_SUM,
@@ -330,7 +362,7 @@ int main(int argc,char **argv) {
     if (view) {
         PetscViewer  file;
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "viewing solution,residual,cr into ascii_matlab file %s\n",viewname));
+            "viewing iterate, exact solution, residual, CR residual into ascii_matlab file %s\n",viewname));
         PetscCall(PetscViewerCreate(PETSC_COMM_WORLD,&file));
         PetscCall(PetscViewerSetType(file,PETSCVIEWERASCII));
         PetscCall(PetscViewerFileSetMode(file,FILE_MODE_WRITE));
@@ -338,31 +370,34 @@ int main(int argc,char **argv) {
         PetscCall(PetscViewerPushFormat(file,PETSC_VIEWER_ASCII_MATLAB));
         PetscCall(PetscObjectSetName((PetscObject)w,"w"));
         PetscCall(VecView(w,file));
+        PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&uexact));
+        if (bratu)
+            PetscCall(VecFromFormula(levs[jtop].ldc.dal,uexact_liouville,uexact,&ctx));
+        else
+            PetscCall(VecFromFormula(levs[jtop].ldc.dal,uexact_obstacle,uexact,&ctx));
+        PetscCall(PetscObjectSetName((PetscObject)uexact,"uexact"));
+        PetscCall(VecView(uexact,file));
         PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&F));
         PetscCall(ApplyOperatorF(levs[jtop].ldc.dal,w,F,&ctx));
         PetscCall(PetscObjectSetName((PetscObject)F,"F"));
         PetscCall(VecView(F,file));
-        PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&uexact));
-        PetscCall(FormExact(levs[jtop].ldc.dal,uexact,&ctx));
-        PetscCall(PetscObjectSetName((PetscObject)uexact,"uexact"));
-        PetscCall(VecView(uexact,file));
-        PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&uexact));
-#if 0
-        PetscCall(DMDAVecGetArray(da, F, &aF));
-        PetscCall(CRLocal(&info,au,aF,aF,&ctx));
-        PetscCall(DMDAVecRestoreArray(da, F, &aF));
-        PetscCall(DMDAVecRestoreArray(da, u, &au));
+        PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&Fhat));
+        PetscCall(CRFromResidual(levs[jtop].ldc.dal,NULL,gamlow,w,F,Fhat));
         PetscCall(PetscObjectSetName((PetscObject)F,"Fhat"));
-        PetscCall(VecView(F,file));
-#endif
+        PetscCall(VecView(Fhat,file));
+        PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&uexact));
         PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&F));
+        PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&Fhat));
         PetscCall(PetscViewerPopFormat(file));
         PetscCall(PetscViewerDestroy(&file));
     }
 
     // report on numerical error
     PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&uexact));
-    PetscCall(FormExact(levs[jtop].ldc.dal,uexact,&ctx));
+    if (bratu)
+        PetscCall(VecFromFormula(levs[jtop].ldc.dal,uexact_liouville,uexact,&ctx));
+    else
+        PetscCall(VecFromFormula(levs[jtop].ldc.dal,uexact_obstacle,uexact,&ctx));
     PetscCall(VecAXPY(w,-1.0,uexact));    // u <- u + (-1.0) uexact
     PetscCall(VecNorm(w,NORM_INFINITY,&errinf));
     PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&uexact));
@@ -372,6 +407,8 @@ int main(int argc,char **argv) {
                           finfo.mx,finfo.my,errinf));
 
     // restore or destroy it all
+    if (gamlow)
+        PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&gamlow));
     PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&w));
     for (j=0; j<totlevs; j++) {
         PetscCall(DMRestoreGlobalVector(levs[j].ldc.dal,&(levs[j].g)));
@@ -391,6 +428,8 @@ PetscErrorCode AssertBoundaryValuesAdmissible(DM da, ObsCtx* user) {
     DMDALocalInfo  info;
     PetscInt       i, j;
     PetscReal      hx, hy, x, y;
+    if (user->gamma_lower == NULL)  // so gamma_lower=-infty
+        return 0;
     PetscCall(DMDAGetLocalInfo(da,&info));
     hx = 4.0 / (PetscReal)(info.mx - 1);
     hy = 4.0 / (PetscReal)(info.my - 1);
@@ -407,25 +446,6 @@ PetscErrorCode AssertBoundaryValuesAdmissible(DM da, ObsCtx* user) {
             }
         }
     }
-    return 0;
-}
-
-PetscErrorCode FormExact(DM da, Vec u, ObsCtx* user) {
-    DMDALocalInfo  info;
-    PetscInt       i, j;
-    PetscReal      hx, hy, x, y, **au;
-    PetscCall(DMDAGetLocalInfo(da,&info));
-    hx = 4.0 / (PetscReal)(info.mx - 1);
-    hy = 4.0 / (PetscReal)(info.my - 1);
-    PetscCall(DMDAVecGetArray(da, u, &au));
-    for (j=info.ys; j<info.ys+info.ym; j++) {
-        y = -2.0 + j * hy;
-        for (i=info.xs; i<info.xs+info.xm; i++) {
-            x = -2.0 + i * hx;
-            au[j][i] = u_exact(x,y,user);
-        }
-    }
-    PetscCall(DMDAVecRestoreArray(da, u, &au));
     return 0;
 }
 
@@ -463,35 +483,6 @@ PetscErrorCode MonitorRanges(DM da, Vec w, PetscInt iter, ObsCtx *ctx) {
 PetscBool _NodeOnBdry(DMDALocalInfo info, PetscInt i, PetscInt j) {
     return (i == 0 || i == info.mx-1 || j == 0 || j == info.my-1);
 }
-
-#if 0
-// FIXME untested code block
-// compute complementarity residual Fhat from conventional residual F:
-//     Fhat_ij = F_ij         if u_ij > gamma_lower(x_i,y_j)
-//               min{F_ij,0}  if u_ij <= gamma_lower(x_i,y_j)
-// note arrays aF and aFhat can be the same, giving in-place calculation
-// note this op is idempotent if u,gamma_lower unchanged:  CRLocal(CRLocal()) = CRLocal()
-PetscErrorCode _CRLocal(DMDALocalInfo *info, PetscReal **au, PetscReal **aF,
-                        PetscReal **aFhat, ObsCtx *user) {
-    const PetscReal hx = 4.0 / (PetscReal)(info->mx - 1),
-                    hy = 4.0 / (PetscReal)(info->my - 1);
-    PetscInt        i, j;
-    PetscReal       x, y;
-    for (j = info->ys; j < info->ys + info->ym; j++) {
-        y = -2.0 + j * hy;
-        for (i = info->xs; i < info->xs + info->xm; i++) {
-            if (!_NodeOnBdry(*info,i,j)) {
-                x = -2.0 + i * hx;
-                if (au[j][i] > user->gamma_lower(x,y,user))
-                     aFhat[j][i] = aF[j][i];
-                else
-                     aFhat[j][i] = PetscMin(aF[j][i],0.0);
-            }
-        }
-    }
-    return 0;
-}
-#endif
 
 // FLOPS: 2 + (16 + 5 + 7) = 30
 PetscReal _IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
