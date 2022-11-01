@@ -1,0 +1,7 @@
+  0 SNES Function norm 4.011388562085e+00 
+  1 SNES Function norm 1.601138011697e+00 
+  2 SNES Function norm 4.165007330340e-01 
+  3 SNES Function norm 4.676987983238e-02 
+  4 SNES Function norm 1.859676966483e-16 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
+done on 5 x 5 grid:   error |u-uexact|_inf = 2.421e-01

@@ -13,17 +13,17 @@ using iterate w=2 to generate finest-level up defect constraints
   LDC info: chiupp=NULL is +infty because gamupp=NULL at level 1
   LDC info: creating chilow and setting chilow=gamlow-w at level 1
 generating defect constraints for V-cycle
-  LDC info: generating V-cycle from finest level 1
   LDC info: chiupp=NULL is +infty at level 0
   LDC info: setting chilow at level 0 using monotone restriction from level 1
   LDC info: phiupp=NULL is +infty at level 1
   LDC info: creating and setting philow=chilow-chilow_coarse at level 1
-  LDC info: phiupp=NULL is +infty (coarsest case) at level 0
-  LDC info: creating and setting philow=chilow (coarsest case) at level 0
-  LDC info: calling LDCCheckDCRanges() on all levels
+  LDC info: calling LDCCheckDCRanges() on level 1
 zero bracket checks PASS (level 1):
    -2.000000 <= chilow <=  -1.000000  [[[   chiupp=NULL is +infty   ]]]
    -0.750000 <= philow <=   0.000000  [[[   phiupp=NULL is +infty   ]]]
+  LDC info: phiupp=NULL is +infty (coarsest case) at level 0
+  LDC info: creating and setting philow=chilow (coarsest case) at level 0
+  LDC info: calling LDCCheckDCRanges() on level 0
 zero bracket checks PASS (level 0):
    -1.437500 <= chilow <=  -1.000000  [[[   chiupp=NULL is +infty   ]]]
    -1.437500 <= philow <=  -1.000000  [[[   phiupp=NULL is +infty   ]]]

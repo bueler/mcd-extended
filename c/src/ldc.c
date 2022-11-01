@@ -282,29 +282,22 @@ PetscErrorCode _LDCDownDCs(LDC *coarse, LDC *fine) {
     return 0;
 }
 
-PetscErrorCode LDCGenerateDCsVCycle(LDC *finest) {
-    LDC *ldc = finest,
-        *coarse;
-    if (finest->_printinfo)
+PetscErrorCode LDCSetLevel(LDC *fine) {
+    LDC *coarse;
+    if (fine->_coarser) {
+        coarse = (LDC*)(fine->_coarser);
+        // generate chiupp, chilow on level fine
+        PetscCall(_LDCUpDCsMonotoneRestrict(*fine,coarse));
+        // generate phiupp, philow on level fine
+        PetscCall(_LDCDownDCs(coarse,fine));
+    } else
+        // generate chiupp, chilow on coarsest level
+        PetscCall(_LDCDownDCs(NULL,fine));
+    if (fine->_printinfo) {
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-        "  LDC info: generating V-cycle from finest level %d\n",finest->_level));
-    while (ldc->_coarser) {
-        coarse = (LDC*)(ldc->_coarser);
-        PetscCall(_LDCUpDCsMonotoneRestrict(*ldc,coarse));
-        PetscCall(_LDCDownDCs(coarse,ldc));
-        ldc = coarse;
-    }
-    PetscCall(_LDCDownDCs(NULL,ldc));
-    if (finest->_printinfo) {
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-        "  LDC info: calling LDCCheckDCRanges() on all levels\n"));
-        ldc = finest;
-        while (PETSC_TRUE) {
-            PetscCall(LDCCheckDCRanges(*ldc));
-            if (!ldc->_coarser)
-                break;
-            ldc = (LDC*)(ldc->_coarser);
-        }
+            "  LDC info: calling LDCCheckDCRanges() on level %d\n",
+            fine->_level));
+        PetscCall(LDCCheckDCRanges(*fine));
     }
     return 0;
 }

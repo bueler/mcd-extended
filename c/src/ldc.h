@@ -27,24 +27,35 @@
 // +infty or -infty accordingly, but if an LDC Vec is not null then it is
 // assumed that *all* values of it are finite.
 //
-// The following gives canonical V-cycle usage with nontrivial upper and
-// lower finest-level obstacles defined by Vecs vgamupp, vgamlow.  Note
-// ldc[0] is coarse while ldc[N] is finest:
+// The following gives canonical V-cycle usage.  Note ldc[0] is coarse
+// level while ldc[N] is finest level.  We do maxiters V-cycles.  We
+// start with
+//   * upper and lower finest-level obstacles (Vecs) gamupp, gamlow
+//   * an admissible finest-level iterate w:  gamlow <= w <= gamupp
 //
 //     LDC       ldc[N+1];
-//     DMDA      cdmda
-//     PetscInt  k;
+//
 //     [  use DMDACreate2d() to create ldc[0].dal, and fully configure it  ]
 //     LDCCreateCoarsest(PETSC_TRUE,&(ldc[0]));
-//     for (k=0; k<N; k++)
-//         LDCRefine(ldc[k],&(ldc[k+1]));
-//     [  a box-constrained solver on finest level returns fine-level iterate w  ]
-//     LDCSetFinestUpDCs(w,vgamupp,vgamlow,&(ldc[N]));
-//     LDCGenerateDCsVCycle(&(ldc[N]));
-//     [  continue with the solver  ]
-//     for (k=0; k<N+1; k++)
-//         LDCDestroy(&(ldc[k]));
-
+//     for (j=0; j<N; j++) {
+//         LDCRefine(ldc[j],&(ldc[j+1]));
+//     }
+//     [  create admissible finest-level initial iterate w  ]
+//     for (iter=0; iter<maxiters; iter++) {
+//         LDCSetFinestUpDCs(w,gamupp,gamlow,&(ldc[N]));
+//         for (j=N; j>=1; j--) {
+//             LDCSetLevel(&(ldc[j]))
+//             [  do level j solver actions including down-smoother  ]
+//         }
+//         [  do level 0 (coarsest level) solver  ]
+//         for (j=1; j<=N; j++) {
+//             [  do level j solver actions including up-smoother  ]
+//         }
+//         [  compute updated finest-level iterate w  ]
+//     }
+//     for (j=0; j<=N; j++) {
+//         LDCDestroy(&(ldc[j]));
+//     }
 
 #ifndef LDC_H_
 #define LDC_H_
@@ -80,9 +91,10 @@ PetscErrorCode LDCRefine(LDC *coarse, LDC *fine);
 // and current iterate w
 PetscErrorCode LDCSetFinestUpDCs(Vec w, Vec gamupp, Vec gamlow, LDC *ldc);
 
-// FIXME    GET RID OF THIS AND GENERATE UP/DOWN LDCs AS WE DO V-CYCLE
-// after finest up DCs are created, generate up and down DCs on all levels
-PetscErrorCode LDCGenerateDCsVCycle(LDC *finest);
+// assuming LDC fine has chiupp, chilow set,
+//     * set up chiupp, chilow on fine->_coarser using monotone restriction
+//     * set up phiupp, philow on fine using subtraction
+PetscErrorCode LDCSetLevel(LDC *fine);
 
 // compute complementarity residual Fhat from ordinary residual F and
 // defect z, for up DCs
