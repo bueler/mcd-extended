@@ -212,6 +212,7 @@ int main(int argc,char **argv) {
     PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&tmpfine));
     PetscCall(LDCVecFromFormula(levs[jtop].ldc,bump,tmpfine,&ctx));
     PetscCall(VecAXPY(w,bumpsize,tmpfine));  // w <- bumpsize * tmpfine + w
+    PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&tmpfine));
     // PetscCall(VecSet(w,0.0));  // not really an alternative because we
                                   // require w^J admissible to start
 
