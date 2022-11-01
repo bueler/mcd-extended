@@ -13,6 +13,8 @@ PetscErrorCode Q1Restrict(DM daf, DM dac, Vec vfine, Vec *vcoarse) {
     Mat Ainterp;
     Vec vscale;
     PetscCall(DMCreateInterpolation(dac,daf,&Ainterp,&vscale));
+    //PetscCall(PetscPrintf(PETSC_COMM_WORLD,"DMCreateInterpolation() gives Vec vscale:\n"));
+    //PetscCall(VecView(vscale,PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(MatRestrict(Ainterp,vfine,*vcoarse));
     PetscCall(VecPointwiseMult(*vcoarse,vscale,*vcoarse));
     PetscCall(VecDestroy(&vscale));
