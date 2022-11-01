@@ -9,14 +9,21 @@ static char help[] =
 "Smoother and coarse-level solver are both projected, nonlinear Gauss-Seidel\n"
 "(PNGS) sweeps.  Option prefix nm_.  Compare obstaclesl.c and bratu.c.\n\n";
 
-// FIXME add unconstrained bratu case, and compare to FAS solves
-// (w/o line search) from bratu.c
+// FIXME unconstrained bratu case partially implemented; to compare single-level
+// solves compare (for example)
+//   ./bratu  -lb_fem -lb_exact -snes_converged_reason -snes_type nrichardson -npc_snes_type ngs -npc_snes_ngs_max_it 1 -npc_snes_ngs_sweeps 1 -da_refine 1 -snes_monitor -snes_max_it 7 -snes_linesearch_type basic
+// to
+//   ./nmcd -nm_monitor -nm_cycles 7 -nm_bratu -nm_levels 1 -da_refine 1 -nm_counts
+// BUT FIXME bratu.c initial iterate currently zero, so need to allow bratu.c
+// to initialize with (exact + bump) as in nmcd.c
+
+// FIXME compare FAS in bratu.c with NMCD on -nm_bratu
 
 // FIXME possible ways to describe possible current issues:
 //   * the iterate w is only slowly falling toward the obstacle
 //   * the corrections are always negative
 // see stdout and foo.m from
-//   $ ./nmcd -nm_monitor -nm_monitor_ranges -nm_monitor_vcycles -nm_view foo.m -nm_levels 7 -nm_cycles 1 -nm_bumpsize 1.0
+//   ./nmcd -nm_monitor -nm_monitor_ranges -nm_monitor_vcycles -nm_view foo.m -nm_levels 7 -nm_cycles 1 -nm_bumpsize 1.0
 
 #include <petsc.h>
 #include "src/utilities.h"
@@ -35,6 +42,7 @@ typedef struct {
             maxits,      // in PNGS, number of Newton iterations at each point
             sweeps,      // in PNGS, number of sweeps over the grid
             residualcount, ngscount; // for performance reporting
+  PetscBool bratu;
 } ObsCtx;
 
 typedef struct {
@@ -118,7 +126,7 @@ int main(int argc,char **argv) {
     Vec            gamlow, w, uexact, gplusy, tmpfine, tmpcoarse;
     DMDALocalInfo  finfo;
     PetscInt       totlevs=2, cycles=1, csweeps=1, jtop, viter, j, k;
-    PetscBool      bratu = PETSC_FALSE, counts = PETSC_FALSE,
+    PetscBool      counts = PETSC_FALSE,
                    ldcinfo = PETSC_FALSE, monitor = PETSC_FALSE,
                    monitorranges = PETSC_FALSE, monitorvcycles = PETSC_FALSE,
                    view = PETSC_FALSE, admis;
@@ -135,9 +143,10 @@ int main(int argc,char **argv) {
     ctx.sweeps = 1;
     ctx.residualcount = 0;
     ctx.ngscount = 0;
+    ctx.bratu = PETSC_FALSE;
     PetscOptionsBegin(PETSC_COMM_WORLD,"nm_","NMCD solver options","");
     PetscCall(PetscOptionsBool("-bratu","solve unconstrained Bratu equation problem (vs default linear obstacle problem)",
-                            "nmcd.c",bratu,&bratu,NULL));
+                            "nmcd.c",ctx.bratu,&(ctx.bratu),NULL));
     PetscCall(PetscOptionsReal("-bumpsize","initialization from exact solution plus this much bump",
                             "nmcd.c",bumpsize,&bumpsize,NULL));
     PetscCall(PetscOptionsBool("-counts","print counts for calls to call-back functions",
@@ -187,7 +196,7 @@ int main(int argc,char **argv) {
         SETERRQ(PETSC_COMM_SELF,6,"quadrature points n=1,2,3 only");
     }
 
-    if (bratu) {
+    if (ctx.bratu) {
         ctx.gamma_lower = NULL;
         ctx.g_bdry = &uexact_liouville;
     }
@@ -204,7 +213,7 @@ int main(int argc,char **argv) {
     PetscCall(DMSetFromOptions(levs[0].ldc.dal));
     PetscCall(DMSetUp(levs[0].ldc.dal));  // must be called BEFORE SetUniformCoordinates
     // note LDCRefine() duplicates bounding box for finer-level DMDA
-    if (bratu)
+    if (ctx.bratu)
         PetscCall(DMDASetUniformCoordinates(levs[0].ldc.dal,0.0,1.0,0.0,1.0,0.0,0.0));
     else
         PetscCall(DMDASetUniformCoordinates(levs[0].ldc.dal,-2.0,2.0,-2.0,2.0,0.0,0.0));
@@ -235,7 +244,7 @@ int main(int argc,char **argv) {
     PetscCall(AssertBoundaryValuesAdmissible(levs[jtop].ldc.dal,&ctx));
 
     // generate finest-level obstacle gamlow as Vec
-    if (bratu)
+    if (ctx.bratu)
         gamlow = NULL;
     else {
         PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&gamlow));
@@ -245,7 +254,7 @@ int main(int argc,char **argv) {
     // create finest-level initial iterate w^J:  w^J = uexact + bumpsize * bump
     PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&w));
     PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&tmpfine));
-    if (bratu) {
+    if (ctx.bratu) {
         PetscCall(VecFromFormula(levs[jtop].ldc.dal,uexact_liouville,w,&ctx));
         PetscCall(VecFromFormula(levs[jtop].ldc.dal,bump1_fcn,tmpfine,&ctx));
     } else {
@@ -362,7 +371,7 @@ int main(int argc,char **argv) {
 
     // compute exact solution
     PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&uexact));
-    if (bratu)
+    if (ctx.bratu)
         PetscCall(VecFromFormula(levs[jtop].ldc.dal,uexact_liouville,uexact,&ctx));
     else
         PetscCall(VecFromFormula(levs[jtop].ldc.dal,uexact_obstacle,uexact,&ctx));
@@ -489,14 +498,21 @@ PetscBool _NodeOnBdry(DMDALocalInfo info, PetscInt i, PetscInt j) {
     return (i == 0 || i == info.mx-1 || j == 0 || j == info.my-1);
 }
 
-// FLOPS: 2 + (16 + 5 + 7) = 30
-PetscReal _IntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
-                        const PetscReal uu[4], const PetscReal ff[4],
+// FLOPS: 2 + (16 + 5 + 7) = 30  (classical obstacle case)
+PetscReal _IntegrandRef(PetscInt L, const PetscReal uu[4], const PetscReal ff[4],
                         PetscInt r, PetscInt s, ObsCtx *user) {
     const Q1GradRef  du    = Q1DEval(uu,r,s),
                      dchiL = Q1dchi[L][r][s];
-    return Q1GradInnerProd(du,dchiL)
-           - Q1Eval(ff,r,s) * Q1chi[L][r][s];
+    PetscReal        z = Q1GradInnerProd(du,dchiL)
+                         - Q1Eval(ff,r,s) * Q1chi[L][r][s],
+                     Ru[4];
+    PetscInt         k;
+    if (user->bratu) {
+        for (k = 0; k < 4; k++)
+            Ru[k] = PetscExpScalar(uu[k]); // lambda=1.0 case
+        z -= Q1Eval(Ru,r,s) * Q1chi[L][r][s];
+    }
+    return z;
 }
 
 // compute F_ij, the discretized nonlinear operator:
@@ -513,27 +529,37 @@ PetscErrorCode ApplyOperatorF(DM da, Vec u, Vec F, ObsCtx *user) {
     const PetscInt   li[4] = {0,-1,-1,0},  lj[4] = {0,0,-1,-1};
     PetscInt         i, j, l, PP, QQ, r, s;
     const PetscReal  **au;
-    PetscReal        hx, hy, detj, **FF, x, y, uu[4], ff[4];
+    PetscReal        hx, hy, detj, x0, y0, **FF, x, y, uu[4], ff[4];
 
     // grid info and arrays
     PetscCall(DMDAGetLocalInfo(da,&info));
-    hx = 4.0 / (PetscReal)(info.mx - 1),
-    hy = 4.0 / (PetscReal)(info.my - 1),
-    detj = 0.25 * hx * hy;
     PetscCall(DMGetLocalVector(da,&uloc));
     PetscCall(DMGlobalToLocal(da,u,INSERT_VALUES,uloc));
     PetscCall(DMDAVecGetArrayRead(da, uloc, &au));
     PetscCall(DMDAVecGetArray(da, F, &FF));
 
-    // set up Q1 FEM tools for this grid
-    PetscCall(Q1Setup(user->quadpts,da,-2.0,2.0,-2.0,2.0));
+    // set up coordinates and Q1 FEM tools for this grid
+    if (user->bratu) {
+        hx = 1.0 / (PetscReal)(info.mx - 1);
+        hy = 1.0 / (PetscReal)(info.my - 1);
+        PetscCall(Q1Setup(user->quadpts,da,0.0,1.0,0.0,1.0));
+        x0 = 0.0;
+        y0 = 0.0;
+    } else {
+        hx = 4.0 / (PetscReal)(info.mx - 1);
+        hy = 4.0 / (PetscReal)(info.my - 1);
+        PetscCall(Q1Setup(user->quadpts,da,-2.0,2.0,-2.0,2.0));
+        x0 = -2.0;
+        y0 = -2.0;
+    }
+    detj = 0.25 * hx * hy;
 
     // clear residuals (because we sum over elements)
     // or assign F for Dirichlet nodes
     for (j = info.ys; j < info.ys + info.ym; j++) {
-        y = -2.0 + j * hy;
+        y = y0 + j * hy;
         for (i = info.xs; i < info.xs + info.xm; i++) {
-            x = -2.0 + i * hx;
+            x = x0 + i * hx;
             FF[j][i] = (_NodeOnBdry(info,i,j)) ? au[j][i] - user->g_bdry(x,y,user)
                                                : 0.0;
         }
@@ -547,11 +573,11 @@ PetscErrorCode ApplyOperatorF(DM da, Vec u, Vec F, ObsCtx *user) {
     for (j = info.ys; j <= info.ys + info.ym; j++) {
         if ((j == 0) || (j > info.my-1))  // does element actually exist?
             continue;
-        y = -2.0 + j * hy;
+        y = y0 + j * hy;
         for (i = info.xs; i <= info.xs + info.xm; i++) {
             if ((i == 0) || (i > info.mx-1))  // does element actually exist?
                 continue;
-            x = -2.0 + i * hx;
+            x = x0 + i * hx;
             // this element, down or left of node i,j, is adjacent to an owned
             // and interior node; so get values of rhs f at corners of element
             ff[0] = user->f_rhs(x,y,user);
@@ -582,7 +608,7 @@ PetscErrorCode ApplyOperatorF(DM da, Vec u, Vec F, ObsCtx *user) {
                     for (r = 0; r < q.n; r++) {
                         for (s = 0; s < q.n; s++) {
                             FF[QQ][PP] += detj * q.w[r] * q.w[s]
-                                          * _IntegrandRef(hx,hy,l,uu,ff,r,s,user);
+                                          * _IntegrandRef(l,uu,ff,r,s,user);
                         }
                     }
                 }
@@ -601,8 +627,6 @@ PetscErrorCode ApplyOperatorF(DM da, Vec u, Vec F, ObsCtx *user) {
     (user->residualcount)++;
     return 0;
 }
-
-// FIXME want complementarity residual too?
 
 // for owned, interior nodes i,j, we define the pointwise residual corresponding
 // to the hat function psi_ij:
@@ -634,18 +658,32 @@ PetscErrorCode ApplyOperatorF(DM da, Vec u, Vec F, ObsCtx *user) {
 
 // evaluate integrand of rho(c) at a point xi,eta in the reference element,
 // for the hat function at corner L (i.e. chi_L = psi_ij from caller)
-// FLOPS: 2 + (16 + 5 + 4 + 7 + 5) = 39
-PetscErrorCode _rhoIntegrandRef(PetscReal hx, PetscReal hy, PetscInt L,
+// FLOPS: 2 + (16 + 5 + 4 + 7 + 5) = 39  (classical obstacle case)
+PetscErrorCode _rhoIntegrandRef(PetscInt L,
                  PetscReal c, const PetscReal uu[4], const PetscReal ff[4],
                  PetscInt r, PetscInt s,
                  PetscReal *rho, PetscReal *drhodc, ObsCtx *user) {
     const Q1GradRef du    = Q1DEval(uu,r,s),
                     dchiL = Q1dchi[L][r][s];
-    if (rho)
+    const PetscReal chiL = Q1chi[L][r][s];
+    PetscReal       Ru[4], RuL;
+    PetscInt        k;
+    if (user->bratu) {
+        for (k = 0; k < 4; k++)
+            Ru[k] = PetscExpScalar(uu[k] + c * chiL); // lambda=1.0 case
+        RuL = Q1Eval(Ru,r,s);
+    }
+    if (rho) {
         *rho = Q1GradInnerProd(Q1GradAXPY(c,dchiL,du),dchiL)
-               - Q1Eval(ff,r,s) * Q1chi[L][r][s];
-    if (drhodc)
+               - Q1Eval(ff,r,s) * chiL;
+        if (user->bratu)
+            *rho -= RuL * chiL;
+    }
+    if (drhodc) {
         *drhodc = Q1GradInnerProd(dchiL,dchiL);
+        if (user->bratu) // NOTE: next line uses special optimization for Bratu
+            *drhodc -= RuL * chiL * chiL;
+    }
     return 0;
 }
 
@@ -658,12 +696,23 @@ PetscErrorCode _rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
     const PetscInt  oi[4] = {1, 0, 0, 1},
                     oj[4] = {1, 1, 0, 0},
                     ll[4] = {2, 3, 0, 1};
-    const PetscReal hx = 4.0 / (PetscReal)(info->mx - 1),
-                    hy = 4.0 / (PetscReal)(info->my - 1),
-                    detj = 0.25 * hx * hy;
     const Q1Quad1D  q = Q1gausslegendre[user->quadpts-1];
-    PetscInt  k, ii, jj, r, s;
-    PetscReal x, y, ff[4], uu[4], prho, pdrhodc, tmp;
+    PetscInt        k, ii, jj, r, s;
+    PetscReal       hx, hy, x0, y0, detj, x, y, ff[4], uu[4], prho, pdrhodc, tmp;
+
+    // coordinates for this grid
+    if (user->bratu) {
+        hx = 1.0 / (PetscReal)(info->mx - 1);
+        hy = 1.0 / (PetscReal)(info->my - 1);
+        x0 = 0.0;
+        y0 = 0.0;
+    } else {
+        hx = 4.0 / (PetscReal)(info->mx - 1);
+        hy = 4.0 / (PetscReal)(info->my - 1);
+        x0 = -2.0;
+        y0 = -2.0;
+    }
+    detj = 0.25 * hx * hy;
 
     *rho = 0.0;
     if (drhodc)
@@ -674,8 +723,8 @@ PetscErrorCode _rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
         ii = i + oi[k];
         jj = j + oj[k];
         // field values for f and u = g + z on this element
-        x = -2.0 + ii * hx;
-        y = -2.0 + jj * hy;
+        x = x0 + ii * hx;
+        y = y0 + jj * hy;
         ff[0] = user->f_rhs(x,y,user);
         ff[1] = user->f_rhs(x-hx,y,user);
         ff[2] = user->f_rhs(x-hx,y-hy,user);
@@ -692,7 +741,7 @@ PetscErrorCode _rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
         for (r = 0; r < q.n; r++) {
             for (s = 0; s < q.n; s++) {
                 // ll[k] is local (elementwise) index of the corner (= i,j)
-                _rhoIntegrandRef(hx,hy,ll[k],c,uu,ff,r,s,&prho,&pdrhodc,user);
+                _rhoIntegrandRef(ll[k],c,uu,ff,r,s,&prho,&pdrhodc,user);
                 tmp = detj * q.w[r] * q.w[s];
                 *rho += tmp * prho;
                 if (drhodc)
@@ -700,7 +749,7 @@ PetscErrorCode _rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
             }
         }
     }
-    // FLOPS per quadrature point in the four elements: 6 + 39 = 45
+    // FLOPS per quadrature point in the four elements: 6 + 39 = 45  (for classical obstacle problem)
     PetscCall(PetscLogFlops(45.0 * q.n * q.n * 4.0));
     return 0;
 }
@@ -709,7 +758,7 @@ PetscErrorCode _rhoFcn(DMDALocalInfo *info, PetscInt i, PetscInt j,
 //     F(g + z)[psi_ij] = ell_ij   for all nodes i,j
 // in defect form, i.e. for z, with g fixed, and subject to bi-obstacle constraints
 //     lower <= z <= upper
-// note psi_ij is the hat function and
+// note psi_ij is the hat function and, for classical obstacle problem,
 //     F(u)[v] = int_Omega grad u . grad v - f v,
 // and ell is a nodal field (linear functional)
 // for each interior node i,j we define
@@ -731,7 +780,11 @@ PetscErrorCode ProjectedNGS(LDC *ldc, PetscBool updcs, Vec ell, Vec g, Vec z,
     const PetscReal **aell, **ag, **aupper, **alower;
     PetscReal       c, rho, drhodc, **az;
 
-    PetscCall(Q1Setup(user->quadpts,ldc->dal,-2.0,2.0,-2.0,2.0)); // set up quadrature
+    // set up Q1 FEM tools for this grid
+    if (user->bratu)
+        PetscCall(Q1Setup(user->quadpts,ldc->dal,0.0,1.0,0.0,1.0));
+    else
+        PetscCall(Q1Setup(user->quadpts,ldc->dal,-2.0,2.0,-2.0,2.0));
     PetscCall(DMDAGetLocalInfo(ldc->dal,&info));
 
     // need local vector for stencil width of g and z in parallel
