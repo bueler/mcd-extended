@@ -7,6 +7,9 @@ static char help[] =
 "solver is projected, nonlinear Gauss-Seidel (PNGS) sweeps.  Option prefix\n"
 "nm_.  Compare obstaclesl.c.\n\n";
 
+// FIXME add unconstrained bratu case, and compare to FAS solves
+// (w/o line search) from bratu.c
+
 // FIXME possible ways to describe possible current issues:
 //   * the iterate w is only slowly falling toward the obstacle
 //   * the corrections are always negative
