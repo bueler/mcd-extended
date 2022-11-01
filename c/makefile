@@ -67,13 +67,13 @@ runobstaclesl_4:
 test_obstaclesl: runobstaclesl_1 runobstaclesl_2 runobstaclesl_3 runobstaclesl_4
 
 runnmcd_1:
-	-@./testit.sh nmcd "-nm_counts -nm_ldcinfo -nm_levels 3 -da_grid_x 4 -da_grid_y 4" 1 1
+	-@./testit.sh nmcd "-nm_monitor_ranges -nm_counts -nm_ldcinfo -nm_levels 3 -da_grid_x 4 -da_grid_y 4" 1 1
 
 runnmcd_2:
-	-@./testit.sh nmcd "-nm_counts -nm_bumpsize 1.0 -nm_monitor -nm_levels 4 -nm_cycles 2" 1 2
+	-@./testit.sh nmcd "-nm_monitor_ranges -nm_monitor_vcycles -nm_counts -nm_bumpsize 1.0 -nm_levels 4 -nm_cycles 2" 1 2
 
 runnmcd_3:
-	-@./testit.sh nmcd "-nm_bumpsize 1.0 -da_refine 1 -nm_levels 1 -nm_cycles 4" 1 3
+	-@./testit.sh nmcd "-nm_monitor_ranges -nm_bumpsize 1.0 -da_refine 1 -nm_levels 1 -nm_cycles 4" 1 3
 
 test_nmcd: runnmcd_1 runnmcd_2 runnmcd_3
 

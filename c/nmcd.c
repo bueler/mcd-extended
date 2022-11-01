@@ -7,6 +7,8 @@ static char help[] =
 "solver is projected, nonlinear Gauss-Seidel (PNGS) sweeps.  Option prefix\n"
 "nm_.  Compare obstaclesl.c.\n\n";
 
+// FIXME add monitoring of CR residual, to match -ob_pngs behavior of obstaclesl.c
+
 // FIXME add unconstrained bratu case, and compare to FAS solves
 // (w/o line search) from bratu.c
 
@@ -89,8 +91,10 @@ static PetscReal fg_zero(PetscReal x, PetscReal y, void *ctx) {
     return 0.0;
 }
 
-extern PetscErrorCode AssertBoundaryValuesAdmissible(DM da, ObsCtx*);
-extern PetscErrorCode FormExact(DM da, Vec, ObsCtx*);
+extern PetscErrorCode AssertBoundaryValuesAdmissible(DM, ObsCtx*);
+extern PetscErrorCode FormExact(DM, Vec, ObsCtx*);
+extern PetscErrorCode MonitorCRNorm(DM, Vec, Vec, Vec, PetscInt, ObsCtx*);
+extern PetscErrorCode MonitorRanges(DM, Vec, PetscInt, ObsCtx*);
 extern PetscErrorCode ApplyOperatorF(DM, Vec, Vec, ObsCtx*);
 extern PetscErrorCode ProjectedNGS(LDC*, PetscBool, Vec, Vec, Vec, ObsCtx*);
 
@@ -102,7 +106,8 @@ int main(int argc,char **argv) {
     DMDALocalInfo  finfo;
     PetscInt       totlevs=2, cycles=1, csweeps=1, jtop, viter, j, k;
     PetscBool      ldcinfo = PETSC_FALSE, counts = PETSC_FALSE,
-                   monitor = PETSC_FALSE, view = PETSC_FALSE,
+                   monitor = PETSC_FALSE, monitorranges = PETSC_FALSE,
+                   monitorvcycles = PETSC_FALSE, view = PETSC_FALSE,
                    admis;
     PetscLogDouble lflops, flops;
     PetscReal      bumpsize=0.0, errinf;
@@ -132,8 +137,12 @@ int main(int argc,char **argv) {
                             "nmcd.c",totlevs,&totlevs,NULL));
     PetscCall(PetscOptionsInt("-maxits","in PNGS, number of Newton iterations at each point",
                             "nmcd.c",ctx.maxits,&(ctx.maxits),NULL));
-    PetscCall(PetscOptionsBool("-monitor","print info on V cycles",
+    PetscCall(PetscOptionsBool("-monitor","print CR residual norm for each V-cycle",
                             "nmcd.c",monitor,&monitor,NULL));
+    PetscCall(PetscOptionsBool("-monitor_ranges","print iterate and (raw) residual ranges",
+                            "nmcd.c",monitorranges,&monitorranges,NULL));
+    PetscCall(PetscOptionsBool("-monitor_vcycles","print info on CR residual norm and V cycles",
+                            "nmcd.c",monitorvcycles,&monitorvcycles,NULL));
     // WARNING: coarse problems are badly solved with -nm_quadpts 1
     PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only)",
                             "nmcd.c",ctx.quadpts,&(ctx.quadpts),NULL));
@@ -223,13 +232,8 @@ int main(int argc,char **argv) {
     }
 
     // report ranges for initial w and corresponding residual f^J(w)
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"initial:\n"));
-    PetscCall(VecPrintRange(w,"iterate w","",PETSC_TRUE));
-    PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&F));
-    PetscCall(ApplyOperatorF(levs[jtop].ldc.dal,w,F,&ctx));
-    PetscCall(VecPrintRange(F,"residual f^J(w)","",PETSC_TRUE));
-    PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&F));
-    // FIXME also CR residual?
+    if (monitorranges)
+        PetscCall(MonitorRanges(levs[jtop].ldc.dal,w,0,&ctx));
 
     // one NMCD V-cycle with one smoother iteration at each level
     if (totlevs == 1)
@@ -240,6 +244,9 @@ int main(int argc,char **argv) {
                               cycles,totlevs));
     PetscCall(VecSet(levs[jtop].ell,0.0));
     for (viter = 0; viter < cycles; viter++) {
+        // report norm of CR residual
+        if (monitor)
+            PetscCall(MonitorCRNorm(levs[jtop].ldc.dal,NULL,gamlow,w,viter,&ctx));
         // set-up finest-level chiupp,chilow from initial iterate w
         PetscCall(LDCSetFinestUpDCs(w,NULL,gamlow,&(levs[jtop].ldc)));
         // initialize iterate at top level
@@ -257,7 +264,7 @@ int main(int argc,char **argv) {
             PetscCall(VecSet(levs[j].y,0.0));
             PetscCall(ProjectedNGS(&(levs[j].ldc),PETSC_FALSE,levs[j].ell,
                                    levs[j].g,levs[j].y,&ctx));
-            if (monitor)
+            if (monitorvcycles)
                 PetscCall(UpdateIndentPrintRange(levs[j].y,"y",jtop,j));
             // compute g^j-1 using injection:
             //   g^j-1 = R^dot(g^j + y^j)
@@ -284,7 +291,7 @@ int main(int argc,char **argv) {
             PetscCall(ProjectedNGS(&(levs[0].ldc),PETSC_TRUE,levs[0].ell,
                                    levs[0].g,levs[0].z,&ctx));
         }
-        if (monitor)
+        if (monitorvcycles)
             PetscCall(UpdateIndentPrintRange(levs[0].z,"z",jtop,0));
         // upward direction
         for (j = 1; j <= jtop; j++) {
@@ -295,7 +302,7 @@ int main(int argc,char **argv) {
             // smooth in U^j to compute z^j
             PetscCall(ProjectedNGS(&(levs[j].ldc),PETSC_TRUE,levs[j].ell,
                                    levs[j].g,levs[j].z,&ctx));
-            if (monitor)
+            if (monitorvcycles)
                 PetscCall(UpdateIndentPrintRange(levs[j].z,"z",jtop,j));
         }
         // update fine-level iterate:
@@ -303,14 +310,12 @@ int main(int argc,char **argv) {
         PetscCall(VecAXPY(w,1.0,levs[jtop].z));
 
         // report range on current w and f^J(w)
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"iterate %2d result:\n",viter+1));
-        PetscCall(VecPrintRange(w,"iterate w","",PETSC_TRUE));
-        PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&F));
-        PetscCall(ApplyOperatorF(levs[jtop].ldc.dal,w,F,&ctx));
-        PetscCall(VecPrintRange(F,"residual f^J(w)","",PETSC_TRUE));
-        PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&F));
-        // FIXME also CR residual?
+        if (monitorranges)
+            PetscCall(MonitorRanges(levs[jtop].ldc.dal,w,viter+1,&ctx));
     } // for viter ...
+    // report final norm of CR residual
+    if (monitor)
+        PetscCall(MonitorCRNorm(levs[jtop].ldc.dal,NULL,gamlow,w,viter,&ctx));
     PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&gamlow));
 
     if (counts) {
@@ -423,6 +428,37 @@ PetscErrorCode FormExact(DM da, Vec u, ObsCtx* user) {
         }
     }
     PetscCall(DMDAVecRestoreArray(da, u, &au));
+    return 0;
+}
+
+PetscErrorCode MonitorCRNorm(DM da, Vec gamupp, Vec gamlow, Vec w,
+                             PetscInt iter, ObsCtx *ctx) {
+    Vec        F, Fhat;
+    PetscReal  Fnorm;
+    PetscCall(DMGetGlobalVector(da,&F));
+    PetscCall(DMGetGlobalVector(da,&Fhat));
+    PetscCall(ApplyOperatorF(da,w,F,ctx));
+    PetscCall(CRFromResidual(da,NULL,gamlow,w,F,Fhat));
+    PetscCall(VecNorm(Fhat,NORM_2,&Fnorm));
+    PetscCall(DMRestoreGlobalVector(da,&F));
+    PetscCall(DMRestoreGlobalVector(da,&Fhat));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  %d CR norm %12.10f\n",iter,Fnorm));
+    return 0;
+}
+
+PetscErrorCode MonitorRanges(DM da, Vec w, PetscInt iter, ObsCtx *ctx) {
+    Vec F;
+    if (iter == 0)
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  initial ranges:\n"));
+    else
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  iterate %2d ranges:\n",iter));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"    "));
+    PetscCall(VecPrintRange(w,"w","",PETSC_TRUE));
+    PetscCall(DMGetGlobalVector(da,&F));
+    PetscCall(ApplyOperatorF(da,w,F,ctx));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"    "));
+    PetscCall(VecPrintRange(F,"f^J(w)","",PETSC_TRUE));
+    PetscCall(DMRestoreGlobalVector(da,&F));
     return 0;
 }
 
