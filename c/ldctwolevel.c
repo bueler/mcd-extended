@@ -23,7 +23,7 @@ extern PetscErrorCode VecViewMatlabStdout(Vec);
 
 int main(int argc,char **argv) {
     Vec            gamlow, gamupp, w, v;
-    PetscBool      unilateral, admis;
+    PetscBool      unilateral = PETSC_FALSE, admis;
     LDC            ldc[2];
 
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
