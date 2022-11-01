@@ -1,17 +1,7 @@
-  initial ranges:
-       -0.235760 <= w <=   2.000000
-        0.000000 <= f^J(w) <=   2.640294
 single-level solving using 4 smoother iterations ...
-  iterate  1 ranges:
-       -0.235760 <= w <=   1.000000
-        0.000000 <= f^J(w) <=   1.444675
-  iterate  2 ranges:
-       -0.235760 <= w <=   1.000000
-       -0.000000 <= f^J(w) <=   2.070770
-  iterate  3 ranges:
-       -0.235760 <= w <=   1.000000
-       -0.000000 <= f^J(w) <=   2.175884
-  iterate  4 ranges:
-       -0.235760 <= w <=   1.000000
-       -0.000000 <= f^J(w) <=   2.182233
+  0 CR norm 4.011388562085e+00
+  1 CR norm 1.601138011697e+00
+  2 CR norm 4.165007330340e-01
+  3 CR norm 4.676987983238e-02
+  4 CR norm 1.859676966483e-16
 done on 5 x 5 grid:   error |u-uexact|_inf = 2.421e-01

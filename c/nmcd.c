@@ -7,8 +7,6 @@ static char help[] =
 "solver is projected, nonlinear Gauss-Seidel (PNGS) sweeps.  Option prefix\n"
 "nm_.  Compare obstaclesl.c.\n\n";
 
-// FIXME add monitoring of CR residual, to match -ob_pngs behavior of obstaclesl.c
-
 // FIXME add unconstrained bratu case, and compare to FAS solves
 // (w/o line search) from bratu.c
 
@@ -442,7 +440,7 @@ PetscErrorCode MonitorCRNorm(DM da, Vec gamupp, Vec gamlow, Vec w,
     PetscCall(VecNorm(Fhat,NORM_2,&Fnorm));
     PetscCall(DMRestoreGlobalVector(da,&F));
     PetscCall(DMRestoreGlobalVector(da,&Fhat));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  %d CR norm %12.10f\n",iter,Fnorm));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  %d CR norm %14.12e\n",iter,Fnorm));
     return 0;
 }
 

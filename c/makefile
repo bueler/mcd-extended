@@ -73,7 +73,7 @@ runnmcd_2:
 	-@./testit.sh nmcd "-nm_monitor_ranges -nm_monitor_vcycles -nm_counts -nm_bumpsize 1.0 -nm_levels 4 -nm_cycles 2" 1 2
 
 runnmcd_3:
-	-@./testit.sh nmcd "-nm_monitor_ranges -nm_bumpsize 1.0 -da_refine 1 -nm_levels 1 -nm_cycles 4" 1 3
+	-@./testit.sh nmcd "-nm_monitor -nm_bumpsize 1.0 -da_refine 1 -nm_levels 1 -nm_cycles 4" 1 3
 
 test_nmcd: runnmcd_1 runnmcd_2 runnmcd_3
 
