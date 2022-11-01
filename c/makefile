@@ -1,9 +1,9 @@
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
-bratu: bratu.o src/q1fem.o
-	-${CLINKER} -o bratu bratu.o src/q1fem.o ${PETSC_LIB}
-	${RM} bratu.o src/q1fem.o
+bratu: bratu.o src/utilities.o src/q1fem.o
+	-${CLINKER} -o bratu bratu.o src/utilities.o src/q1fem.o ${PETSC_LIB}
+	${RM} bratu.o src/utilities.o src/q1fem.o
 
 obstaclesl: obstaclesl.o src/q1fem.o
 	-${CLINKER} -o obstaclesl obstaclesl.o src/q1fem.o ${PETSC_LIB}
@@ -60,7 +60,7 @@ runobstaclesl_2:
 runobstaclesl_3:
 	-@./testit.sh obstaclesl "-ob_initialzero -ob_pngs -da_refine 1 -ob_view tmpview.m" 1 3
 
-# compare following run to single-level run of NMCD in runnmcd_3
+# compare following run to single-level run of nmcd.c in runnmcd_3
 runobstaclesl_4:
 	-@./testit.sh obstaclesl "-ob_initialbump 1.0 -da_refine 1 -ob_pngs -snes_converged_reason -npc_snes_ngs_max_it 1 -snes_monitor" 1 4
 
@@ -72,6 +72,7 @@ runnmcd_1:
 runnmcd_2:
 	-@./testit.sh nmcd "-nm_monitor_ranges -nm_monitor_vcycles -nm_counts -nm_bumpsize 1.0 -nm_levels 4 -nm_cycles 2" 1 2
 
+# compare following run to single-level run of obstaclesl.c in runobstaclesl_4
 runnmcd_3:
 	-@./testit.sh nmcd "-nm_monitor -nm_bumpsize 1.0 -da_refine 1 -nm_levels 1 -nm_cycles 4" 1 3
 

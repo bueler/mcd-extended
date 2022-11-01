@@ -13,6 +13,7 @@ static char help[] =
 
 #include <petsc.h>
 #include "src/q1fem.h"
+#include "src/utilities.h"
 
 typedef struct {
   // nonlinear reaction R(u)
@@ -37,8 +38,14 @@ static PetscReal R_bratu(PetscReal u, void *ctx) {
     return user->lambda * PetscExpScalar(u);
 }
 
-static PetscReal fg_zero(PetscReal x, PetscReal y, void *ctx) {
+static PetscReal zero_fcn(PetscReal x, PetscReal y, void *ctx) {
     return 0.0;
+}
+
+// z = bump_fcn(x,y) is zero along boundary of Omega=(0,1)^2 and reaches
+// maximum of bump1_fcn(0.5,0.5) = 1.0 in center
+PetscReal bump_fcn(PetscReal x, PetscReal y, void *ctx) {
+    return 16.0 * x * (1.0 - x) * y * (1.0 - y);
 }
 
 static PetscReal u_mms(PetscReal x, PetscReal y, void *ctx) {
@@ -61,15 +68,11 @@ static PetscReal g_liouville(PetscReal x, PetscReal y, void *ctx) {
     return PetscLogReal(32.0 * omega);
 }
 
-extern PetscErrorCode FormExact(PetscReal (*)(PetscReal,PetscReal,void*),
-                                DMDALocalInfo*, Vec, BratuCtx*);
 extern PetscBool NodeOnBdry(DMDALocalInfo*, PetscInt, PetscInt);
-
 extern PetscErrorCode FormFunctionLocalFD(DMDALocalInfo*, PetscReal **,
                                           PetscReal**, BratuCtx*);
 extern PetscErrorCode FormFunctionLocalFEM(DMDALocalInfo*, PetscReal **,
                                            PetscReal**, BratuCtx*);
-
 extern PetscErrorCode NGSFD(SNES, Vec, Vec, void*);
 extern PetscErrorCode NJacFD(SNES, Vec, Vec, void*);
 extern PetscErrorCode NGSFEM(SNES, Vec, Vec, void*);
@@ -78,19 +81,20 @@ extern PetscErrorCode NJacFEM(SNES, Vec, Vec, void*);
 int main(int argc,char **argv) {
     DM             da;
     SNES           snes;
-    Vec            u, uexact;
+    Vec            u, uexact, vtmp;
     BratuCtx       bctx;
     DMDALocalInfo  info;
     PetscBool      exact = PETSC_FALSE, mms = PETSC_FALSE, counts = PETSC_FALSE,
-                   fd = PETSC_FALSE, fem = PETSC_FALSE, njac = PETSC_FALSE;
+                   fd = PETSC_FALSE, fem = PETSC_FALSE, njac = PETSC_FALSE,
+                   initialexact = PETSC_FALSE;
     PetscLogDouble lflops, flops, gexpcount;
-    PetscReal      errinf;
+    PetscReal      bumpsize = 0.0, errinf;
 
     PetscCall(PetscInitialize(&argc,&argv,NULL,help));
     bctx.R_fcn = &R_bratu;
     bctx.dRdu_fcn = &R_bratu;
-    bctx.f_rhs = &fg_zero;
-    bctx.g_bdry = &fg_zero;
+    bctx.f_rhs = &zero_fcn;
+    bctx.g_bdry = &zero_fcn;
     bctx.lambda = 1.0;
     bctx.njacalpha = 0.8;    // standard choice for Jacobi as smoother in 2D
     bctx.expcount = 0.0;
@@ -98,12 +102,16 @@ int main(int argc,char **argv) {
     bctx.ngscount = 0;
     bctx.quadpts = 2;
     PetscOptionsBegin(PETSC_COMM_WORLD,"lb_","Liouville-Bratu equation solver options","");
+    PetscCall(PetscOptionsReal("-bumpsize","add this much bump to initial condition",
+                            "nmcd.c",bumpsize,&bumpsize,NULL));
     PetscCall(PetscOptionsBool("-exact","use Liouville exact solution",
                             "bratu.c",exact,&exact,NULL));
     PetscCall(PetscOptionsBool("-fd","use finite differences",
                             "bratu.c",fd,&fd,NULL));
     PetscCall(PetscOptionsBool("-fem","use Q1 finite elements",
                             "bratu.c",fem,&fem,NULL));
+    PetscCall(PetscOptionsBool("-initial_exact","initialize from Liouville exact solution",
+                            "bratu.c",initialexact,&initialexact,NULL));
     PetscCall(PetscOptionsReal("-lambda","coefficient of e^u (reaction) term",
                             "bratu.c",bctx.lambda,&(bctx.lambda),NULL));
     PetscCall(PetscOptionsBool("-mms","use MMS exact solution",
@@ -129,17 +137,18 @@ int main(int argc,char **argv) {
     if (exact && mms) {
         SETERRQ(PETSC_COMM_SELF,3,"invalid option combination -lb_exact -lb_mms; choose one or neither\n");
     }
-    if (exact) {
-        if (bctx.lambda != 1.0) {
-            SETERRQ(PETSC_COMM_SELF,4,"Liouville exact solution only implemented for lambda = 1.0\n");
-        }
-        bctx.g_bdry = &g_liouville;  // and keep zero for f_rhs()
+    if (exact && (bctx.lambda != 1.0)) {
+        SETERRQ(PETSC_COMM_SELF,4,"Liouville exact solution only implemented for lambda = 1.0\n");
     }
-    if (mms)
-        bctx.f_rhs = &f_mms;  // and keep zero for g_bdry()
     if (bctx.quadpts < 1 || bctx.quadpts > 3) {
         SETERRQ(PETSC_COMM_SELF,5,"quadrature points n=1,2,3 only");
     }
+
+    // set functions from options
+    if (exact)
+        bctx.g_bdry = &g_liouville;  // and keep zero for f_rhs()
+    if (mms)
+        bctx.f_rhs = &f_mms;  // and keep zero for g_bdry()
 
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
                            fd ? DMDA_STENCIL_STAR : DMDA_STENCIL_BOX,
@@ -163,9 +172,20 @@ int main(int argc,char **argv) {
     }
     PetscCall(SNESSetFromOptions(snes));
 
-    // solve the problem
+    // initialize
     PetscCall(DMGetGlobalVector(da,&u));
-    PetscCall(VecSet(u,0.0));  // initialize to zero
+    if (initialexact)
+        PetscCall(VecFromFormula(da,g_liouville,u,&bctx));
+    else
+        PetscCall(VecSet(u,0.0));
+    if (bumpsize != 0.0) {
+        PetscCall(DMGetGlobalVector(da,&vtmp));
+        PetscCall(VecFromFormula(da,bump_fcn,vtmp,&bctx));
+        PetscCall(VecAXPY(u,bumpsize,vtmp));  // u <- bumpsize * vtmp + u
+        PetscCall(DMRestoreGlobalVector(da,&vtmp));
+    }
+
+    // solve the problem
     PetscCall(SNESSolve(snes,NULL,u));
     PetscCall(DMRestoreGlobalVector(da,&u));
     PetscCall(DMDestroy(&da));
@@ -189,9 +209,9 @@ int main(int argc,char **argv) {
         PetscCall(SNESGetSolution(snes,&u));  // SNES owns u; we do not destroy it
         PetscCall(DMCreateGlobalVector(da,&uexact));
         if (exact)
-            PetscCall(FormExact(g_liouville,&info,uexact,&bctx));
+            PetscCall(VecFromFormula(da,g_liouville,uexact,&bctx));
         else
-            PetscCall(FormExact(u_mms,&info,uexact,&bctx));
+            PetscCall(VecFromFormula(da,u_mms,uexact,&bctx));
         PetscCall(VecAXPY(u,-1.0,uexact));    // u <- u + (-1.0) uexact
         PetscCall(VecDestroy(&uexact));
         PetscCall(VecNorm(u,NORM_INFINITY,&errinf));
