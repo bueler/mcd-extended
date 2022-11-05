@@ -4,15 +4,13 @@ static char help[] =
 "on a structured-grid (DMDA):\n"
 "  - nabla^2 u = f(x,y),  u >= psi(x,y),\n"
 "subject to Dirichlet boundary conditions u=g.\n"
-"Optional problem (-nm_bratu) is unconstrained Bratu equation\n"
-"  - nabla^2 u - e^u = 0,\n"
-"with Liouville exact solution, on square (0,1)^2.\n"
+"Optional problem (-nm_bratu) is unconstrained nonlinear Bratu equation\n"
+"  - nabla^2 u - R(u) = 0,\n"
+"where R(u)=e^u [lambda=1 case], with Liouville exact solution, on (0,1)^2.\n"
 "Smoother and coarse-level solver are both projected, nonlinear Gauss-Seidel\n"
 "(PNGS) sweeps.  Option prefix nm_.  Compare obstaclesl.c and bratu.c.\n\n";
 
-// FIXME compare single-level unconstrained bratu solves with NGS sweeps:
-//   ./bratu -lb_fem -lb_exact -lb_initial_exact -snes_converged_reason -snes_type ngs -snes_ngs_max_it 1 -snes_ngs_sweeps 1 -da_refine 1 -snes_monitor -snes_max_it 7 -lb_counts
-//   ./nmcd -nm_monitor -nm_cycles 7 -nm_bratu -nm_levels 1 -da_refine 1 -nm_counts
+// FIXME try initialization using w^J which is *below* the exact solution, but still admissible, e.g. w^J=gamlow^J (except at boundary)
 
 // FIXME compare FAS in bratu.c with NMCD on -nm_bratu
 
@@ -76,7 +74,7 @@ The solution is  u(r) = - A log(r) + B   on  r > a.  The boundary conditions
 can then be reduced to a root-finding problem for a:
     a^2 (log(2) - log(a)) = 1 - a^2
 The solution is a = 0.697965148223374 (giving residual 1.5e-15).  Then
-A = a^2*(1-a^2)^(-0.5) and B = A*log(2) are given below in the code.  */
+A = a^2*(1-a^2)^(-0.5) and B = A*log(2) have given values below.  */
 PetscReal uexact_obstacle(PetscReal x, PetscReal y, void *ctx) {
     const PetscReal afree = 0.697965148223374,
                     A     = 0.680259411891719,
@@ -122,7 +120,7 @@ int main(int argc,char **argv) {
     Level          *levs;
     Vec            gamlow, w, uexact, gplusy, tmpfine, tmpcoarse;
     DMDALocalInfo  finfo;
-    PetscInt       totlevs=2, cycles=1, csweeps=1, jtop, viter, j, k;
+    PetscInt       totlevs=2, cycles=1, csweeps=1, JJ, viter, j, k;
     PetscBool      counts = PETSC_FALSE,
                    ldcinfo = PETSC_FALSE, monitor = PETSC_FALSE,
                    monitorranges = PETSC_FALSE, monitorvcycles = PETSC_FALSE,
@@ -200,25 +198,24 @@ int main(int argc,char **argv) {
 
     // allocate Level stack
     PetscCall(PetscMalloc1(totlevs,&levs));
+    JJ = totlevs - 1;   // finest level is levs[JJ]
 
     // create DMDA for coarsest level: 3x3 grid on square Omega
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
                            DMDA_STENCIL_BOX,
                            3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&(levs[0].ldc.dal)));
-    // next line allows  -da_grid_x mx -da_grid_y my  or  -da_refine L  to set
-    // coarsest level
+    // coarsest level set with "-da_grid_x mx -da_grid_y my" or "-da_refine L"
     PetscCall(DMSetFromOptions(levs[0].ldc.dal));
     PetscCall(DMSetUp(levs[0].ldc.dal));  // must be called BEFORE SetUniformCoordinates
-    // note LDCRefine() duplicates bounding box for finer-level DMDA
     if (ctx.bratu)
         PetscCall(DMDASetUniformCoordinates(levs[0].ldc.dal,0.0,1.0,0.0,1.0,0.0,0.0));
     else
         PetscCall(DMDASetUniformCoordinates(levs[0].ldc.dal,-2.0,2.0,-2.0,2.0,0.0,0.0));
+    // note LDCRefine() below will duplicate bounding box for finer-level DMDA
 
-    // create Level stack by creating coarsest LDC using levs[0].dmda,
-    // then refining jtop times; note:
-    //   * each Level has an LDC
-    //   * each level has allocated g,ell,y,z Vecs, except level 0 has no y
+    // create Level stack by creating coarsest LDC, using levs[0].ldc.dal,
+    // then refining JJ times; each Level has an LDC and allocated Vecs
+    // g,ell,y,z; except level 0 which has no y
     for (j=0; j<totlevs; j++) {
         levs[j]._level = j;
         if (j == 0) {
@@ -235,62 +232,64 @@ int main(int argc,char **argv) {
         else
             PetscCall(DMGetGlobalVector(levs[j].ldc.dal,&(levs[j].y)));
     }
-    jtop = totlevs - 1;
 
     // check admissibility of the finest-level boundary condition
-    PetscCall(AssertBoundaryValuesAdmissible(levs[jtop].ldc.dal,&ctx));
+    PetscCall(AssertBoundaryValuesAdmissible(levs[JJ].ldc.dal,&ctx));
 
     // generate finest-level obstacle gamlow as Vec
     if (ctx.bratu)
         gamlow = NULL;
     else {
-        PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&gamlow));
-        PetscCall(VecFromFormula(levs[jtop].ldc.dal,gamma_lower,gamlow,&ctx));
+        PetscCall(DMGetGlobalVector(levs[JJ].ldc.dal,&gamlow));
+        PetscCall(VecFromFormula(levs[JJ].ldc.dal,gamma_lower,gamlow,&ctx));
     }
 
     // create finest-level initial iterate w^J:  w^J = uexact + bumpsize * bump
-    PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&w));
-    PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&tmpfine));
+    PetscCall(DMGetGlobalVector(levs[JJ].ldc.dal,&w));
+    PetscCall(DMGetGlobalVector(levs[JJ].ldc.dal,&tmpfine));
     if (ctx.bratu) {
-        PetscCall(VecFromFormula(levs[jtop].ldc.dal,uexact_liouville,w,&ctx));
-        PetscCall(VecFromFormula(levs[jtop].ldc.dal,bump1_fcn,tmpfine,&ctx));
+        PetscCall(VecFromFormula(levs[JJ].ldc.dal,uexact_liouville,w,&ctx));
+        PetscCall(VecFromFormula(levs[JJ].ldc.dal,bump1_fcn,tmpfine,&ctx));
     } else {
-        PetscCall(VecFromFormula(levs[jtop].ldc.dal,uexact_obstacle,w,&ctx));
-        PetscCall(VecFromFormula(levs[jtop].ldc.dal,bump4_fcn,tmpfine,&ctx));
+        PetscCall(VecFromFormula(levs[JJ].ldc.dal,uexact_obstacle,w,&ctx));
+        PetscCall(VecFromFormula(levs[JJ].ldc.dal,bump4_fcn,tmpfine,&ctx));
     }
     PetscCall(VecAXPY(w,bumpsize,tmpfine));  // w <- bumpsize * tmpfine + w
-    PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&tmpfine));
+    PetscCall(DMRestoreGlobalVector(levs[JJ].ldc.dal,&tmpfine));
     // PetscCall(VecSet(w,0.0));  // not really an alternative because we
                                   // require w^J admissible to start
 
     // check admissibility of w^J
-    PetscCall(VecLessThanOrEqual(levs[jtop].ldc.dal,gamlow,w,&admis));
+    PetscCall(VecLessThanOrEqual(levs[JJ].ldc.dal,gamlow,w,&admis));
+    // FIXME add compare to gamupp
     if (!admis) {
         SETERRQ(PETSC_COMM_SELF,3,"initial iterate is not admissible\n");
     }
 
     // report ranges for initial w and corresponding residual f^J(w)
     if (monitorranges)
-        PetscCall(MonitorRanges(levs[jtop].ldc.dal,w,0,&ctx));
+        PetscCall(MonitorRanges(levs[JJ].ldc.dal,w,0,&ctx));
 
-    // one NMCD V-cycle with one smoother iteration at each level
+    // one NMCD V-cycle with sweeps smoother iterations at each level,
+    // except csweeps on coarsest
+    // FIXME make the coarse solver be a SNES
     if (totlevs == 1)
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "single-level solving using %d smoother iterations ...\n",cycles));
+            "single-level solver = %d coarse-level smoother iterations ...\n",cycles));
     else
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "solving using %d V-cycles with %d levels ...\n",cycles,totlevs));
-    PetscCall(VecSet(levs[jtop].ell,0.0)); // assumes f(x,y)=0 on RHS
+            "%d level solver = %d V-cycles ...\n",totlevs,cycles));
+    PetscCall(VecSet(levs[JJ].ell,0.0)); // assumes JJ-level equations F(u)=0 not F(u)=ell
     for (viter = 0; viter < cycles; viter++) {
         // report norm of CR residual
         if (monitor)
-            PetscCall(MonitorCRNorm(levs[jtop].ldc.dal,NULL,gamlow,w,viter,&ctx));
+            PetscCall(MonitorCRNorm(levs[JJ].ldc.dal,NULL,gamlow,w,viter,&ctx));
         // set-up finest-level chiupp,chilow from initial iterate w
-        PetscCall(LDCSetFinestUpDCs(w,NULL,gamlow,&(levs[jtop].ldc)));
+        PetscCall(LDCSetFinestUpDCs(w,NULL,gamlow,&(levs[JJ].ldc)));
         // initialize iterate at top level
-        PetscCall(VecCopy(w,levs[jtop].g));
+        PetscCall(VecCopy(w,levs[JJ].g));
         // downward direction
-        for (j = jtop; j >= 1; j--) {
+        for (j = JJ; j >= 1; j--) {
             // compute LDCs:  chiupp,chilow for levs[j-1]  by mono restrict
             //                phiupp,philow for levs[j]    by subtraction
             PetscCall(LDCSetLevel(&(levs[j].ldc)));
@@ -303,7 +302,7 @@ int main(int argc,char **argv) {
             PetscCall(ProjectedNGS(&(levs[j].ldc),PETSC_FALSE,levs[j].ell,
                                    levs[j].g,levs[j].y,&ctx));
             if (monitorvcycles)
-                PetscCall(UpdateIndentPrintRange(levs[j].y,"y",jtop,j));
+                PetscCall(UpdateIndentPrintRange(levs[j].y,"y",JJ,j));
             // compute g^j-1 using injection:
             //   g^j-1 = R^dot(g^j + y^j)
             PetscCall(VecWAXPY(gplusy,1.0,levs[j].g,levs[j].y));
@@ -321,18 +320,15 @@ int main(int argc,char **argv) {
             PetscCall(DMRestoreGlobalVector(levs[j-1].ldc.dal,&tmpcoarse));
         }
         // coarse solve in U^0 to compute z^0
-        if (levs[0].ldc._printinfo) {
-            PetscCall(LDCCheckDCRanges(levs[0].ldc));
-        }
         PetscCall(VecSet(levs[0].z,0.0));
         for (k = 0; k < csweeps; k++) {
             PetscCall(ProjectedNGS(&(levs[0].ldc),PETSC_TRUE,levs[0].ell,
                                    levs[0].g,levs[0].z,&ctx));
         }
         if (monitorvcycles)
-            PetscCall(UpdateIndentPrintRange(levs[0].z,"z",jtop,0));
+            PetscCall(UpdateIndentPrintRange(levs[0].z,"z",JJ,0));
         // upward direction
-        for (j = 1; j <= jtop; j++) {
+        for (j = 1; j <= JJ; j++) {
             // compute z^j using prolongation:
             //   z^j = P z^j-1 + y^j
             PetscCall(Q1Interpolate(levs[j-1].ldc.dal,levs[j].ldc.dal,levs[j-1].z,&(levs[j].z)));
@@ -341,19 +337,19 @@ int main(int argc,char **argv) {
             PetscCall(ProjectedNGS(&(levs[j].ldc),PETSC_TRUE,levs[j].ell,
                                    levs[j].g,levs[j].z,&ctx));
             if (monitorvcycles)
-                PetscCall(UpdateIndentPrintRange(levs[j].z,"z",jtop,j));
+                PetscCall(UpdateIndentPrintRange(levs[j].z,"z",JJ,j));
         }
         // update fine-level iterate:
         //   w <- w + z^J
-        PetscCall(VecAXPY(w,1.0,levs[jtop].z));
+        PetscCall(VecAXPY(w,1.0,levs[JJ].z));
 
         // report range on current w and f^J(w)
         if (monitorranges)
-            PetscCall(MonitorRanges(levs[jtop].ldc.dal,w,viter+1,&ctx));
+            PetscCall(MonitorRanges(levs[JJ].ldc.dal,w,viter+1,&ctx));
     } // for viter ...
     // report final norm of CR residual
     if (monitor)
-        PetscCall(MonitorCRNorm(levs[jtop].ldc.dal,NULL,gamlow,w,viter,&ctx));
+        PetscCall(MonitorCRNorm(levs[JJ].ldc.dal,NULL,gamlow,w,viter,&ctx));
 
     if (counts) {
         // note calls to ApplyOperatorF() and ProjectedNGS() are
@@ -367,29 +363,29 @@ int main(int argc,char **argv) {
     }
 
     // compute exact solution
-    PetscCall(DMGetGlobalVector(levs[jtop].ldc.dal,&uexact));
+    PetscCall(DMGetGlobalVector(levs[JJ].ldc.dal,&uexact));
     if (ctx.bratu)
-        PetscCall(VecFromFormula(levs[jtop].ldc.dal,uexact_liouville,uexact,&ctx));
+        PetscCall(VecFromFormula(levs[JJ].ldc.dal,uexact_liouville,uexact,&ctx));
     else
-        PetscCall(VecFromFormula(levs[jtop].ldc.dal,uexact_obstacle,uexact,&ctx));
+        PetscCall(VecFromFormula(levs[JJ].ldc.dal,uexact_obstacle,uexact,&ctx));
 
     // optionally view to Matlab file
     if (view)
-        PetscCall(ViewResultsMatlab(levs[jtop].ldc.dal,w,NULL,gamlow,uexact,viewname,&ctx));
+        PetscCall(ViewResultsMatlab(levs[JJ].ldc.dal,w,NULL,gamlow,uexact,viewname,&ctx));
 
     // report on numerical error
     PetscCall(VecAXPY(w,-1.0,uexact));    // u <- u + (-1.0) uexact
     PetscCall(VecNorm(w,NORM_INFINITY,&errinf));
-    PetscCall(DMDAGetLocalInfo(levs[jtop].ldc.dal,&finfo));
+    PetscCall(DMDAGetLocalInfo(levs[JJ].ldc.dal,&finfo));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,
                           "done on %d x %d grid:   error |u-uexact|_inf = %.3e\n",
                           finfo.mx,finfo.my,errinf));
 
     // restore or destroy it all
-    PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&w));
-    PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&uexact));
+    PetscCall(DMRestoreGlobalVector(levs[JJ].ldc.dal,&w));
+    PetscCall(DMRestoreGlobalVector(levs[JJ].ldc.dal,&uexact));
     if (gamlow)
-        PetscCall(DMRestoreGlobalVector(levs[jtop].ldc.dal,&gamlow));
+        PetscCall(DMRestoreGlobalVector(levs[JJ].ldc.dal,&gamlow));
     for (j=0; j<totlevs; j++) {
         PetscCall(DMRestoreGlobalVector(levs[j].ldc.dal,&(levs[j].g)));
         PetscCall(DMRestoreGlobalVector(levs[j].ldc.dal,&(levs[j].ell)));
