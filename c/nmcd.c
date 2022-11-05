@@ -495,25 +495,17 @@ PetscBool _NodeOnBdry(DMDALocalInfo info, PetscInt i, PetscInt j) {
     return (i == 0 || i == info.mx-1 || j == 0 || j == info.my-1);
 }
 
-// FLOPS: 2 + (16 + 5 + 7) = 30  (classical obstacle case)
-PetscReal _IntegrandRef(PetscInt L, const PetscReal uu[4], const PetscReal ff[4],
-                        PetscInt r, PetscInt s, ObsCtx *user) {
-    const Q1GradRef  du    = Q1DEval(uu,r,s),
-                     dchiL = Q1dchi[L][r][s];
-    PetscReal        z = Q1GradInnerProd(du,dchiL)
-                         - Q1Eval(ff,r,s) * Q1chi[L][r][s],
-                     Ru[4];
-    PetscInt         k;
-    if (user->bratu) {
-        for (k = 0; k < 4; k++)
-            Ru[k] = PetscExpScalar(uu[k]); // lambda=1.0 case
-        z -= Q1Eval(Ru,r,s) * Q1chi[L][r][s];
-    }
-    return z;
+// using Q1 finite elements, evaluate the integrand of the residual on
+// the reference element; L for vertex, r,s for quadrature point
+// FLOPS: 5 + 3 = 8
+PetscReal _IntegrandRef(PetscInt L, PetscInt r, PetscInt s,
+                       const PetscReal Ru, const Q1GradRef du,
+                       const PetscReal f, ObsCtx *user) {
+    return Q1GradInnerProd(du,Q1dchi[L][r][s]) - (Ru + f) * Q1chi[L][r][s];
 }
 
 // compute F_ij, the discretized nonlinear operator:
-//     F(u)[v] = int_Omega grad u . grad v - f v
+//     F(u)[v] = int_Omega grad u . grad v - (R(u) + f) v
 // giving the vector of nodal values (residuals w/o ell)
 //     F_ij = F(u)[psi_ij]
 // where i,j is a node and psi_ij is the hat function
@@ -526,7 +518,9 @@ PetscErrorCode ApplyOperatorF(DM da, Vec u, Vec F, ObsCtx *user) {
     const PetscInt   li[4] = {0,-1,-1,0},  lj[4] = {0,0,-1,-1};
     PetscInt         i, j, l, PP, QQ, r, s;
     const PetscReal  **au;
-    PetscReal        hx, hy, detj, x0, y0, **FF, x, y, uu[4], ff[4];
+    PetscReal        hx, hy, detj, x0, y0, **FF, x, y, uu[4], ff[4],
+                     Rurs, frs, crs;
+    Q1GradRef        durs;
 
     // grid info and arrays
     PetscCall(DMDAGetLocalInfo(da,&info));
@@ -591,22 +585,26 @@ PetscErrorCode ApplyOperatorF(DM da, Vec u, Vec F, ObsCtx *user) {
                     ? user->g_bdry(x-hx,y-hy,user) : au[j-1][i-1];
             uu[3] = _NodeOnBdry(info,i,  j-1)
                     ? user->g_bdry(x,y-hy,user)    : au[j-1][i];
-            // loop over corners of element i,j; l is local (elementwise)
-            // index of the corner and PP,QQ are global indices of same corner
-            for (l = 0; l < 4; l++) {
-                PP = i + li[l];
-                QQ = j + lj[l];
-                // only update residual if we own node and it is not boundary
-                if (PP >= info.xs && PP < info.xs + info.xm
-                    && QQ >= info.ys && QQ < info.ys + info.ym
-                    && !_NodeOnBdry(info,PP,QQ)) {
-                    // loop over quadrature points to contribute to residual
-                    // for this l corner of this i,j element
-                    for (r = 0; r < q.n; r++) {
-                        for (s = 0; s < q.n; s++) {
-                            FF[QQ][PP] += detj * q.w[r] * q.w[s]
-                                          * _IntegrandRef(l,uu,ff,r,s,user);
-                        }
+            // loop over quadrature points of this element
+            for (r = 0; r < q.n; r++) {
+                for (s = 0; s < q.n; s++) {
+                    // compute quantities that depend on r,s but not l (= test function)
+                    Rurs = (user->bratu) ? PetscExpScalar(Q1Eval(uu,r,s)) :
+                                           0.0;
+                    durs = Q1DEval(uu,r,s);
+                    frs = Q1Eval(ff,r,s);
+                    crs = detj * q.w[r] * q.w[s];
+                    // loop over corners of element; l is local (elementwise)
+                    // index of the corner, i.e. test function, and PP,QQ are
+                    // global indices of same corner
+                    for (l = 0; l < 4; l++) {
+                        PP = i + li[l];
+                        QQ = j + lj[l];
+                        // only update residual if we own node and it is not boundary
+                        if (PP >= info.xs && PP < info.xs + info.xm
+                                && QQ >= info.ys && QQ < info.ys + info.ym
+                                && !_NodeOnBdry(info,PP,QQ))
+                            FF[QQ][PP] += crs * _IntegrandRef(l,r,s,Rurs,durs,frs,user);
                     }
                 }
             }
@@ -618,9 +616,9 @@ PetscErrorCode ApplyOperatorF(DM da, Vec u, Vec F, ObsCtx *user) {
     PetscCall(DMRestoreLocalVector(da,&uloc));
 
     // FLOPS: only count flops per quadrature point in residual computations:
-    //   4 + 30 = 34
-    // note q.n^2 quadrature points per element
-    PetscCall(PetscLogFlops(34.0 * q.n * q.n * info.xm * info.ym));
+    //     q.n^2 quadrature points per element
+    //     16 + 7 + 2 + 4 * (2 + 8) = 65 flops per quadrature point
+    PetscCall(PetscLogFlops(65.0 * q.n * q.n * info.xm * info.ym));
     (user->residualcount)++;
     return 0;
 }
