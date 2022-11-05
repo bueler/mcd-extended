@@ -665,20 +665,18 @@ PetscErrorCode _rhoIntegrandRef(PetscInt L,
     const PetscReal chiL = Q1chi[L][r][s];
     PetscReal       Ru[4], RuL;
     PetscInt        k;
+    if (rho)
+        *rho = Q1GradInnerProd(Q1GradAXPY(c,dchiL,du),dchiL)
+               - Q1Eval(ff,r,s) * chiL;
+    if (drhodc)
+        *drhodc = Q1GradInnerProd(dchiL,dchiL);
     if (user->bratu) {
         for (k = 0; k < 4; k++)
             Ru[k] = PetscExpScalar(uu[k] + c * chiL); // lambda=1.0 case
         RuL = Q1Eval(Ru,r,s);
-    }
-    if (rho) {
-        *rho = Q1GradInnerProd(Q1GradAXPY(c,dchiL,du),dchiL)
-               - Q1Eval(ff,r,s) * chiL;
-        if (user->bratu)
+        if (rho)
             *rho -= RuL * chiL;
-    }
-    if (drhodc) {
-        *drhodc = Q1GradInnerProd(dchiL,dchiL);
-        if (user->bratu) // NOTE: next line uses special optimization for Bratu
+        if (drhodc) // NOTE: next line uses special optimization for Bratu
             *drhodc -= RuL * chiL * chiL;
     }
     return 0;
