@@ -661,17 +661,14 @@ PetscErrorCode _rhoIntegrandRef(PetscInt L,
     const Q1GradRef du    = Q1DEval(uu,r,s),
                     dchiL = Q1dchi[L][r][s];
     const PetscReal chiL = Q1chi[L][r][s];
-    PetscReal       Ru[4], RuL;
-    PetscInt        k;
+    PetscReal       RuL;
     if (rho)
         *rho = Q1GradInnerProd(Q1GradAXPY(c,dchiL,du),dchiL)
                - Q1Eval(ff,r,s) * chiL;
     if (drhodc)
         *drhodc = Q1GradInnerProd(dchiL,dchiL);
     if (user->bratu) {
-        for (k = 0; k < 4; k++)
-            Ru[k] = PetscExpScalar(uu[k] + c * chiL); // lambda=1.0 case
-        RuL = Q1Eval(Ru,r,s);
+        RuL = PetscExpScalar(Q1Eval(uu,r,s) + c * chiL); // lambda=1.0 case
         if (rho)
             *rho -= RuL * chiL;
         if (drhodc) // NOTE: next line uses special optimization for Bratu
