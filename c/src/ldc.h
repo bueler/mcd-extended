@@ -96,6 +96,7 @@ PetscErrorCode LDCSetFinestUpDCs(Vec w, Vec gamupp, Vec gamlow, LDC *ldc);
 // assuming LDC fine has chiupp, chilow set,
 //     * set up chiupp, chilow on fine->_coarser using monotone restriction
 //     * set up phiupp, philow on fine using subtraction
+// no need to call this on coarsest level if it was called on next-finer
 PetscErrorCode LDCSetLevel(LDC *fine);
 
 // compute complementarity residual Fhat from ordinary residual F and

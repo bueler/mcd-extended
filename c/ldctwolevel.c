@@ -72,10 +72,9 @@ int main(int argc,char **argv) {
     }
     PetscCall(VecDestroy(&w));
 
-    // generate up and down defect constraints for each levels
+    // generate up and down defect constraints for each level
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"generating defect constraints for V-cycle\n"));
     PetscCall(LDCSetLevel(&(ldc[1])));
-    PetscCall(LDCSetLevel(&(ldc[0])));
 
 #if 0
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"printing lower defect constraints in Matlab format\n"));

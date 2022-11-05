@@ -85,10 +85,12 @@ PetscErrorCode LDCCheckDCRanges(LDC ldc) {
         PetscCall(VecMin(ldc.chilow,NULL,&clmax));
     if (ldc.chiupp)
         PetscCall(VecMin(ldc.chiupp,NULL,&cumin));
-    if (ldc.philow)
-        PetscCall(VecMin(ldc.philow,NULL,&plmax));
-    if (ldc.phiupp)
-        PetscCall(VecMin(ldc.phiupp,NULL,&pumin));
+    if (ldc._level > 0) {
+        if (ldc.philow)
+            PetscCall(VecMin(ldc.philow,NULL,&plmax));
+        if (ldc.phiupp)
+            PetscCall(VecMin(ldc.phiupp,NULL,&pumin));
+    }
     if ((clmax <= 0.0) && (0.0 <= cumin) && (plmax <= 0.0) && (0.0 <= pumin))
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,"zero bracket checks PASS (level %d):\n",
                               ldc._level));
@@ -99,8 +101,10 @@ PetscErrorCode LDCCheckDCRanges(LDC ldc) {
     }
     PetscCall(VecPrintRange(ldc.chilow,"chilow","-infty",PETSC_FALSE));
     PetscCall(VecPrintRange(ldc.chiupp,"chiupp","+infty",PETSC_TRUE));
-    PetscCall(VecPrintRange(ldc.philow,"philow","-infty",PETSC_FALSE));
-    PetscCall(VecPrintRange(ldc.phiupp,"phiupp","+infty",PETSC_TRUE));
+    if (ldc._level > 0) {
+        PetscCall(VecPrintRange(ldc.philow,"philow","-infty",PETSC_FALSE));
+        PetscCall(VecPrintRange(ldc.phiupp,"phiupp","+infty",PETSC_TRUE));
+    }
     return retval;
 }
 
@@ -262,7 +266,7 @@ PetscErrorCode _LDCDownDCs(LDC *coarse, LDC *fine) {
 }
 
 PetscErrorCode LDCSetLevel(LDC *fine) {
-    LDC *coarse;
+    LDC *coarse = NULL;
     if (fine->_coarser) {
         coarse = (LDC*)(fine->_coarser);
         // generate chiupp, chilow on level fine
@@ -277,6 +281,12 @@ PetscErrorCode LDCSetLevel(LDC *fine) {
             "  LDC info: calling LDCCheckDCRanges() on level %d\n",
             fine->_level));
         PetscCall(LDCCheckDCRanges(*fine));
+    }
+    if ((coarse) && (!coarse->_coarser) && (coarse->_printinfo)) {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+            "  LDC info: calling LDCCheckDCRanges() on level %d\n",
+            coarse->_level));
+        PetscCall(LDCCheckDCRanges(*coarse));
     }
     return 0;
 }
