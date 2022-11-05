@@ -1,7 +1,7 @@
   initial ranges:
        -0.235760 <= w <=   2.000000
         0.000000 <= f^J(w) <=   0.227166
-solving using 2 V-cycles with 4 levels ...
+4 level solver = 2 V-cycles ...
   -7.8028e-02 <= y^3 <= 0.0000e+00
     -7.7988e-02 <= y^2 <= 0.0000e+00
       0.0000e+00 <= y^1 <= 0.0000e+00
@@ -22,5 +22,5 @@ solving using 2 V-cycles with 4 levels ...
   iterate  2 ranges:
        -0.235760 <= w <=   1.355703
         0.000000 <= f^J(w) <=   0.138136
-flops = 1.104e+06,  residual calls = 15,  PNGS calls = 14
+flops = 1.338e+06,  residual calls = 15,  PNGS calls = 14
 done on 17 x 17 grid:   error |u-uexact|_inf = 4.545e-01

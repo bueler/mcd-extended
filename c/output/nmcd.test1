@@ -5,7 +5,7 @@
   initial ranges:
        -0.235760 <= w <=   1.000000
        -0.002833 <= f^J(w) <=   0.274846
-solving using 1 V-cycles with 3 levels ...
+3 level solver = 1 V-cycles ...
   LDC info: chiupp=NULL is +infty because gamupp=NULL at level 2
   LDC info: creating chilow and setting chilow=gamlow-w at level 2
   LDC info: chiupp=NULL is +infty at level 1
@@ -24,13 +24,13 @@ zero bracket checks PASS (level 2):
 zero bracket checks PASS (level 1):
    -2.460751 <= chilow <=   0.000000  [[[   chiupp=NULL is +infty   ]]]
    -1.599163 <= philow <=   0.000000  [[[   phiupp=NULL is +infty   ]]]
+  LDC info: calling LDCCheckDCRanges() on level 0
 zero bracket checks PASS (level 0):
    -0.861588 <= chilow <=   0.000000  [[[   chiupp=NULL is +infty   ]]]
-  [[[   philow=NULL is -infty   ]]]  [[[   phiupp=NULL is +infty   ]]]
   iterate  1 ranges:
        -0.235760 <= w <=   1.000000
        -0.000310 <= f^J(w) <=   0.281781
-flops = 3.066e+05,  residual calls = 6,  PNGS calls = 5
+flops = 3.836e+05,  residual calls = 6,  PNGS calls = 5
 done on 13 x 13 grid:   error |u-uexact|_inf = 1.125e-02
   LDC info: destroying LDC at level 0
   LDC info: destroying LDC at level 1
