@@ -1,0 +1,11 @@
+single-level solver = 7 coarse-level smoother iterations ...
+  0 CR norm 1.177874917059e-03
+  1 CR norm 2.367461073513e-04
+  2 CR norm 1.085843390515e-04
+  3 CR norm 4.843009841832e-05
+  4 CR norm 1.932241955006e-05
+  5 CR norm 7.471902849388e-06
+  6 CR norm 2.880328933767e-06
+  7 CR norm 1.110124276183e-06
+flops = 9.861e+04,  residual calls = 8,  PNGS calls = 7
+done on 5 x 5 grid:   error |u-uexact|_inf = 3.479e-04

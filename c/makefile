@@ -49,7 +49,10 @@ runbratu_8: # FEM, FAS-multigrid full cycles, NGS smoother, Richardson with NGS 
 runbratu_9: # FEM, FAS-multigrid V-cycles, NJacobi smoother, Newton-Krylov-CGICC coarse solver
 	-@./testit.sh bratu "-lb_fem -lb_mms -snes_converged_reason -lb_counts -snes_type fas -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 1 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type newtonls -fas_coarse_snes_fd_color -fas_coarse_ksp_type cg -fas_coarse_pc_type icc -snes_rtol 1.0e-3 -da_refine 2 -lb_njac" 1 9
 
-test_bratu: runbratu_1 runbratu_2 runbratu_3 runbratu_4 runbratu_5 runbratu_6 runbratu_7 runbratu_8 runbratu_9
+runbratu_10: # FEM, single-level using NGS sweeps; compare to runnmcd_4 below
+	-@./testit.sh bratu "-lb_fem -lb_exact -lb_initial_exact -snes_converged_reason -snes_type ngs -snes_ngs_max_it 1 -snes_ngs_sweeps 1 -da_refine 1 -snes_monitor -snes_max_it 7 -lb_counts" 1 10
+
+test_bratu: runbratu_1 runbratu_2 runbratu_3 runbratu_4 runbratu_5 runbratu_6 runbratu_7 runbratu_8 runbratu_9 runbratu_10
 
 runobstaclesl_1:
 	-@./testit.sh obstaclesl "-ob_initialzero -ob_counts -pc_type mg -snes_converged_reason -ksp_converged_reason -snes_grid_sequence 2" 1 1
@@ -72,11 +75,15 @@ runnmcd_1:
 runnmcd_2:
 	-@./testit.sh nmcd "-nm_monitor_ranges -nm_monitor_vcycles -nm_counts -nm_bumpsize 1.0 -nm_levels 4 -nm_cycles 2" 1 2
 
-# compare following run to single-level run of obstaclesl.c in runobstaclesl_4
+# compare following to single-level run of obstaclesl.c in runobstaclesl_4
 runnmcd_3:
 	-@./testit.sh nmcd "-nm_monitor -nm_bumpsize 1.0 -da_refine 1 -nm_levels 1 -nm_cycles 4" 1 3
 
-test_nmcd: runnmcd_1 runnmcd_2 runnmcd_3
+# compare following to single-level run of bratu.c in runbratu_10
+runnmcd_4:
+	-@./testit.sh nmcd "-nm_monitor -nm_cycles 7 -nm_bratu -nm_levels 1 -da_refine 1 -nm_counts" 1 4
+
+test_nmcd: runnmcd_1 runnmcd_2 runnmcd_3 runnmcd_4
 
 runldctwolevel_1:
 	-@./testit.sh ldctwolevel "-unilateral" 1 1
@@ -92,7 +99,7 @@ test_transfers: runtransfers_1
 
 test: test_bratu test_obstaclesl test_nmcd test_ldctwolevel test_transfers
 
-.PHONY: clean test test_bratu test_obstaclesl test_nmcd test_ldctwolevel test_transfers runbratu_1 runbratu_2 runbratu_3 runbratu_4 runbratu_5 runbratu_6 runbratu_7 runbratu_8 runbratu_9 runobstaclesl_1 runobstaclesl_2 runobstaclesl_3 runobstaclesl_4 runnmcd_1 runnmcd_2 runnmcd_3 runldctwolevel_1 runtransfers_1
+.PHONY: clean test test_bratu test_obstaclesl test_nmcd test_ldctwolevel test_transfers runbratu_1 runbratu_2 runbratu_3 runbratu_4 runbratu_5 runbratu_6 runbratu_7 runbratu_8 runbratu_9 runbratu_10 runobstaclesl_1 runobstaclesl_2 runobstaclesl_3 runobstaclesl_4 runnmcd_1 runnmcd_2 runnmcd_3 runnmcd_4 runldctwolevel_1 runtransfers_1
 
 clean::
 	@rm -f bratu obstaclesl nmcd ldctwolevel transfers *tmp tmpview.m

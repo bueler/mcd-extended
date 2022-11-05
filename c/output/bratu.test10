@@ -1,0 +1,11 @@
+  0 SNES Function norm 1.177874917059e-03 
+  1 SNES Function norm 2.367461073513e-04 
+  2 SNES Function norm 1.085843390515e-04 
+  3 SNES Function norm 4.843009841832e-05 
+  4 SNES Function norm 1.932241955006e-05 
+  5 SNES Function norm 7.471902849388e-06 
+  6 SNES Function norm 2.880328933767e-06 
+  7 SNES Function norm 1.110124276183e-06 
+Nonlinear solve did not converge due to DIVERGED_MAX_IT iterations 7
+flops = 1.455e+05,  exps = 1.520e+03,  residual calls = 8,  NGS calls = 7
+done on 5 x 5 grid:   error |u-uexact|_inf = 3.479e-04
