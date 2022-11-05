@@ -10,8 +10,8 @@ static char help[] =
 "Smoother and coarse-level solver are both projected, nonlinear Gauss-Seidel\n"
 "(PNGS) sweeps.  Option prefix nm_.  Compare obstaclesl.c and bratu.c.\n\n";
 
-// FIXME compare single-level unconstrained bratu solves:
-//   ./bratu -lb_fem -lb_exact -lb_initial_exact -snes_converged_reason -snes_type nrichardson -npc_snes_type ngs -npc_snes_ngs_max_it 1 -npc_snes_ngs_sweeps 1 -da_refine 1 -snes_monitor -snes_max_it 7 -snes_linesearch_type basic -lb_counts
+// FIXME compare single-level unconstrained bratu solves with NGS sweeps:
+//   ./bratu -lb_fem -lb_exact -lb_initial_exact -snes_converged_reason -snes_type ngs -snes_ngs_max_it 1 -snes_ngs_sweeps 1 -da_refine 1 -snes_monitor -snes_max_it 7 -lb_counts
 //   ./nmcd -nm_monitor -nm_cycles 7 -nm_bratu -nm_levels 1 -da_refine 1 -nm_counts
 
 // FIXME compare FAS in bratu.c with NMCD on -nm_bratu
