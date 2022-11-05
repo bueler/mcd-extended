@@ -187,8 +187,9 @@ int main(int argc,char **argv) {
 
     // solve the problem
     PetscCall(SNESSolve(snes,NULL,u));
-    PetscCall(DMRestoreGlobalVector(da,&u));
+    PetscCall(SNESGetSolution(snes,&u));
     PetscCall(DMDestroy(&da));
+    PetscCall(SNESGetDM(snes,&da));
 
     if (counts) {
         PetscCall(PetscGetFlops(&lflops));
@@ -201,7 +202,6 @@ int main(int argc,char **argv) {
                               flops,gexpcount,bctx.residualcount,bctx.ngscount));
     }
 
-    PetscCall(SNESGetDM(snes,&da));
     PetscCall(DMDAGetLocalInfo(da,&info));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"done on %d x %d grid",
                           info.mx,info.my));
@@ -220,6 +220,7 @@ int main(int argc,char **argv) {
     } else
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n"));
 
+    PetscCall(DMRestoreGlobalVector(da,&u));
     PetscCall(SNESDestroy(&snes));
     PetscCall(PetscFinalize());
     return 0;
