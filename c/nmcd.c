@@ -12,7 +12,10 @@ static char help[] =
 
 // FIXME try initialization using w^J which is *below* the exact solution, but still admissible, e.g. w^J=gamlow^J (except at boundary)
 
-// FIXME compare FAS in bratu.c with NMCD on -nm_bratu
+// FIXME compare FAS V-cycles in bratu.c with NMCD V-cycles (-nm_bratu):
+//  ./bratu -lb_fem -lb_exact -lb_initial_exact -snes_converged_reason -lb_counts -snes_type fas -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 1 -fas_levels_snes_ngs_max_it 1 -fas_levels_snes_norm_schedule none -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 4 -fas_coarse_snes_ngs_max_it 1 -fas_coarse_snes_norm_schedule none -fas_levels_snes_converged_reason -fas_coarse_snes_converged_reason -snes_max_it 2 -da_refine 3 -lb_bumpsize XX
+//  ./nmcd -nm_monitor_vcycles -nm_counts -nm_levels 4 -nm_cycles 2 -nm_csweeps 4 -nm_bratu -nm_counts -nm_bumpsize XX
+// if XX=0.0 (initialization with exact solution) then results look good, but if XX=1.0 then nmcd is not looking good; so nmcd.c is not yet doing FAS V-cycles
 
 // FIXME possible ways to describe possible current issues:
 //   * the iterate w is only slowly falling toward the obstacle

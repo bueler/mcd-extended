@@ -22,10 +22,10 @@ transfers: transfers.o src/utilities.o src/q1transfers.o src/ldc.o
 	${RM} transfers.o src/utilities.o src/q1transfers.o src/ldc.o
 
 # testing
-runbratu_1: # FD, Newton-Krlov-multigrid
+runbratu_1: # FD, Newton-Krylov-multigrid
 	-@./testit.sh bratu "-lb_fd  -lb_exact -snes_converged_reason -lb_counts -ksp_converged_reason -da_refine 1 -pc_type mg" 1 1
 
-runbratu_2: # FEM, Newton-Krlov-multigrid
+runbratu_2: # FEM, Newton-Krylov-multigrid
 	-@./testit.sh bratu "-lb_fem -lb_exact -snes_converged_reason -lb_counts -ksp_converged_reason -da_refine 1 -pc_type mg" 1 2
 
 runbratu_3: # FD, NGS sweeps as solver, parallel
