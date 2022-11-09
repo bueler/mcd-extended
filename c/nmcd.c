@@ -12,7 +12,14 @@ static char help[] =
 
 // FIXME try initialization using w^J which is *below* the exact solution, but still admissible, e.g. w^J=gamlow^J (except at boundary)
 
-// FIXME compare FAS V-cycles in bratu.c with NMCD V-cycles (-nm_bratu):
+// FIXME make -monitor_vcycles comparable to -snes_fas_monitor
+
+// FIXME compare two-level FAS V-cycles in bratu.c with NMCD V-cycles (-nm_bratu):
+// ./bratu -lb_fem -lb_exact -lb_initial_exact -snes_converged_reason -lb_counts -snes_type fas -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 1 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 1 -fas_coarse_snes_ngs_max_it 1 -fas_levels_snes_converged_reason -fas_coarse_snes_converged_reason -snes_max_it 1 -da_refine 1 -lb_bumpsize 1.0 -snes_fas_monitor
+// vs
+// ./nmcd -nm_monitor_vcycles -nm_counts -nm_levels 2 -nm_cycles 1 -nm_csweeps 1 -nm_bratu -nm_counts -nm_bumpsize 1.0 -nm_monitor
+
+// FIXME compare deeper cycles?:
 //  ./bratu -lb_fem -lb_exact -lb_initial_exact -snes_converged_reason -lb_counts -snes_type fas -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 1 -fas_levels_snes_ngs_max_it 1 -fas_levels_snes_norm_schedule none -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 4 -fas_coarse_snes_ngs_max_it 1 -fas_coarse_snes_norm_schedule none -fas_levels_snes_converged_reason -fas_coarse_snes_converged_reason -snes_max_it 2 -da_refine 3 -lb_bumpsize XX
 //  ./nmcd -nm_monitor_vcycles -nm_counts -nm_levels 4 -nm_cycles 2 -nm_csweeps 4 -nm_bratu -nm_counts -nm_bumpsize XX
 // if XX=0.0 (initialization with exact solution) then results look good, but if XX=1.0 then nmcd is not looking good; so nmcd.c is not yet doing FAS V-cycles
@@ -163,7 +170,7 @@ int main(int argc,char **argv) {
                             "nmcd.c",monitor,&monitor,NULL));
     PetscCall(PetscOptionsBool("-monitor_ranges","print iterate and (raw) residual ranges",
                             "nmcd.c",monitorranges,&monitorranges,NULL));
-    PetscCall(PetscOptionsBool("-monitor_vcycles","print info on CR residual norm and V cycles",
+    PetscCall(PetscOptionsBool("-monitor_vcycles","print ranges of corrections in V cycles",
                             "nmcd.c",monitorvcycles,&monitorvcycles,NULL));
     // WARNING: coarse problems are badly solved with -nm_quadpts 1
     PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only)",
