@@ -52,6 +52,7 @@ urlcolor=black    % ...
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
 \newtheorem{assumptions}[theorem]{Assumptions}
 
 \newtheoremstyle{cstyle*}% name
@@ -437,6 +438,9 @@ The Lagrange multipliers $\lambda \in \RR^{m_D}$ are free (unconstrained).  Let 
 \end{itemize}
 These cases might be labeled \emph{inactive}, \emph{lower active}, \emph{upper active}, and \emph{boundary}, respectively.  Where case \emph{boundary} applies, $\lambda_p=\ip{f^J(u^J)-\ell^J}{\psi_p}\in\RR$ has any value.
 
+
+\section{Multilevel transfer operators} \label{sec:transfers}
+
 The multilevel algorithm defined in the next two Sections, a solver for finite-dimensional problem \eqref{eq:fe:vi}, requires transfer operators between meshes.  We use five such operators, three of which are standard within multigrid methods \cite{Trottenbergetal2001}.  Table \ref{tab:transfers} will help the reader keep track.
 
 \begin{table}[H]
@@ -532,39 +536,60 @@ downward above        & ${\Large \strut} \overline{\phi}^j = \overline{\chi}^j -
 
 \section{Multilevel CD} \label{sec:cdmultilevel}
 
-A multilevel V-cycle is defined in the next Section.  For the downward side of the V-cycle we will use the LDCs $\underline{\phi}^j,\overline{\phi}^j$ as constraints, and for the upward side the LDCs $\underline{\chi}^j,\overline{\chi}^j$; see \eqref{eq:fe:philevels} and \eqref{eq:fe:chilevels}, respectively.  In the current Section we show how these level defect constraint functions generate constraint sets and constraint decompositions (CDs).
+A multilevel V-cycle is defined in the next Section.  For the downward side of the V-cycle we will use the LDCs $\underline{\phi}^j,\overline{\phi}^j$ as constraints, and for the upward side the LDCs $\underline{\chi}^j,\overline{\chi}^j$.  Here we consider the corresponding constraint sets and decompositions (CDs; Section \ref{sec:cd}).
 
 Let
 \begin{align}
 \mathcal{D}^j = \left\{v \in \mathcal{V}^j \,:\, \underline{\phi}^j \le v \le \overline{\phi}^j \text{ and } \, v|_{\partial_D\Omega} = 0\right\}, \label{eq:fe:constraintsets} \\
 \mathcal{U}^j = \left\{v \in \mathcal{V}^j \,:\, \underline{\chi}^j \le v \le \overline{\chi}^j \text{ and } \, v|_{\partial_D\Omega} = 0\right\}, \notag
 \end{align}
-be the \emph{downward} and \emph{upward defect constraint subsets}, respectively, of the FE subspaces $\mathcal{V}^j$, for $j=0,1,\dots,J$.  Again these subsets are closed and convex.  Observe that the upward sets are larger.  By \eqref{eq:fe:telescoping}, we have $\mathcal{D}^j \subset \mathcal{U}^j$ and set decompositions
-\begin{equation}
-\mathcal{U}^j = \sum_{i=0}^j \mathcal{D}^i \label{eq:fe:constraintdecomp}
-\end{equation}
-in the sense of \eqref{eq:constraintdecomp}.  Also note that the finest-level upward constraint set $\mathcal{U}^J$ is equivalent to the original constraint set $\mathcal{K}^J$: for all $z^J \in \mathcal{V}^J$,
+be the \emph{downward} and \emph{upward defect constraint sets}, respectively, which are closed and convex subsets of the FE subspaces $\mathcal{V}^j$, for $j=0,1,\dots,J$.  Because $\underline{\chi}^j \le \underline{\phi}^j \le 0 \le \overline{\phi}^j \le \overline{\chi}^j$, it follows that $\mathcal{D}^j \subset \mathcal{U}^j$; the upward sets are larger.
+
+The finest-level upward constraint set $\mathcal{U}^J$ is equivalent to the original constraint set $\mathcal{K}^J$: for all $z^J \in \mathcal{V}^J$,
 \begin{equation}
 z^J \in \mathcal{U}^J \quad \iff \quad w^J+z^J \in \mathcal{K}^J. \label{eq:fe:finestlevelequivalent}
 \end{equation}
 
-Recalling definitions \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum}, we now have two varieties of multilevel CDs of each upward defect constraint set $\mathcal{U}^j$.
+Our multilevel strategy is based on CDs of $\mathcal{U}^J$, or incomplete CDs thereof.  First, each upward set $\mathcal{U}^j$ can be decomposed in an inclusion sense, which becomes a true CD in unilateral cases.  The following Lemma is based on the CD construction for Algorithm 4.7 in \cite{GraeserKornhuber2009}; see also equation (59) in \cite{Tai2003}.  It is the explanation of downward-side admissibility of the V-cycle.
 
-\begin{lemma}  For any $j=0,1,\dots,J$ and $0\le k\le j$ the decomposition sums
-\begin{align}
-\mathcal{U}^j &= \mathcal{D}^j + \mathcal{D}^{j-1} + \dots + \mathcal{D}^0, \label{eq:fe:downwardsumcd} \\
-\mathcal{U}^j &= \mathcal{D}^j + \mathcal{D}^{j-1} + \dots + \mathcal{D}^{k+1} + \mathcal{U}^k \label{eq:fe:upwardsumcd}
-\end{align}
-are CDs of\, $\mathcal{U}^j$ over subspace decompositions $\cV^j=\sum_{i=0}^j \cV^i$ and $\cV^j=\sum_{i=k}^j \cV^i$, respectively.
+\begin{lemma}  For arbitrary box constraints $\underline{\gamma}^J,\overline{\gamma}^J$ and any $j=0,1,\dots,J$,
+\begin{equation}
+\mathcal{U}^j \supseteq \mathcal{D}^j + \mathcal{D}^{j-1} + \dots + \mathcal{D}^0. \label{eq:fe:downwardsuminclusion}
+\end{equation}
+In unilateral cases, where either $\underline{\gamma}^J=-\infty$ or $\overline{\gamma}^J=+\infty$, inclusion \eqref{eq:fe:downwardsuminclusion} is a full CD \eqref{eq:constraintdecomp} of\, $\mathcal{U}^j$ over the subspace decomposition $\cV^j=\sum_{i=0}^j \cV^i$.
 \end{lemma}
 
-\begin{proof}  Subspace decomposition \eqref{eq:subspacedecomp} holds, definition \eqref{eq:fe:constraintsets} shows $\mathcal{D}^i \subset \cV^i$ and $\mathcal{U}^i \subset \cV^i$, and \eqref{eq:fe:constraintdecomp} implies \eqref{eq:constraintdecomp}.  It remains to find decomposition operators $\Pi_i$ and show \eqref{eq:constraintrestrictionsum}.
+\begin{proof}  Subspace decomposition \eqref{eq:subspacedecomp} already holds by nesting \eqref{eq:fe:nestedspaces}, and definition \eqref{eq:fe:constraintsets} shows $\mathcal{D}^i \subset \cV^i$ and $\mathcal{U}^i \subset \cV^i$.  If $y^i \in \mathcal{D}^i$ for $i=0,\dots,J$ then
+   $$\underline{\chi}^j = \sum_{i=0}^j \underline{\phi}^i \le \sum_{i=0}^j y^i \le \sum_{i=0}^j \overline{\phi}^i \le \overline{\chi}^j$$
+by \eqref{eq:fe:telescoping} and \eqref{eq:fe:constraintsets}, thus \eqref{eq:fe:downwardsuminclusion} holds for any box constraints.
 
-For $v \in \mathcal{V}^j$ define the coarsening decomposition (projection) operator
-    $$\Pi_j^{j-1} v = \min\{\max\{\iR v, \underline{\chi}^{j-1}\}, \overline{\chi}^{j-1}\}.$$
-It is easy to see that $\Pi_j^{j-1}:\mathcal{U}^j \to \mathcal{U}^{j-1}$ because $\iR v \in \mathcal{V}^{j-1}$ and $\underline{\chi}^{j-1} \le \Pi_j^{j-1} v \le \overline{\chi}^{j-1}$.  It also holds that $I-\Pi_j^{j-1}:\mathcal{U}^j \to \mathcal{D}^{j}$ because
-    $$v - \Pi_j^{j-1} v FIXME$$
+It remains to consider unilateral cases.  Here we can construct decomposition operators and show \eqref{eq:constraintrestrictionsum}.  For example, suppose $\overline{\gamma}^J=+\infty$, thus $\overline{\chi}^j=+\infty$ and $\overline{\phi}^i = +\infty$ for all levels.  (The case where $\underline{\gamma}^J=-\infty$ is similar.)  For $v\in \mathcal{V}^j$ and $0\le i \le j$, let $I_{j\to i}^\ominus$ denote the operation applying the minimum (monotone) restriction $j-i$ times to map (nonlinearly) into $\mathcal{V}^i$:
+\begin{equation}
+I_{j\to i}^\ominus v = \minR(\dots(\minR v)\dots)
+\end{equation}
+Then we define decomposition operators $\Pi_i:\mathcal{U}^j \to \mathcal{D}^j$ which will make \eqref{eq:fe:downwardsuminclusion} a true CD:
+\begin{equation}
+\Pi_i z^j = I_{j\to i}^\ominus(z^j - \underline{\chi}^j) - I_{j\to i}^\ominus(z^j - \underline{\chi}^j) + \underline{\phi}^j.  \label{eq:fe:unilateraldecompositionoperator}
+\end{equation}
+(Compare equation (4.9) in \cite{GraeserKornhuber2009}.)  Property FIXME implies $\Pi_i z^j \in \mathcal{D}^i$.  On the other hand, observe that \eqref{eq:fe:telescoping} generates a telescoping sum:
+\begin{align*}
+\sum_{i=0}^j \Pi_i z^j &= 
+\end{align*}
+
+FIXME finish up
 \end{proof}
+
+FIXME it would be tempting to try to show a full CD for arbitrary box constraints.  however it should be observed that $\Pi_i z^j$ may exceed $z^j$ pointwise, so the strategy of splitting $z^j = \min\{z_j,0\} + \max\{z_j,0\} = (z_j)_- + (z_j)_+$ and applying the unilateral formula \eqref{eq:fe:unilateraldecompositionoperator} to each part will not apparently work
+
+Second, logically trivial but important to state, each upward defect constraint set $\mathcal{U}^j$ can also be be decomposed down to an arbitrary level where an upward set $\mathcal{U}^k$ is the base.  This Corollary is the foundation of the upward side of the V-cycle.
+
+\begin{corollary}  For any $j=0,1,\dots,J$ and $0\le k\le j$,
+\begin{equation}
+\mathcal{U}^j \supseteq \mathcal{D}^j + \mathcal{D}^{j-1} + \dots + \mathcal{D}^{k+1} + \mathcal{U}^k \label{eq:fe:upwardsuminclusion}
+\end{equation}
+In unilateral cases, where either $\underline{\gamma}^J=-\infty$ or $\overline{\gamma}^J=+\infty$, inclusion \eqref{eq:fe:upwardsumcd} is a full CD.
+\end{corollary}
+
 
 
 \section{Nonlinear multilevel constraint decomposition (NMCD) V-cycle} \label{sec:vcycle}
