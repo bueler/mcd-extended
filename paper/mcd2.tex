@@ -534,62 +534,70 @@ downward above        & ${\Large \strut} \overline{\phi}^j = \overline{\chi}^j -
 \end{table}
 
 
-\section{Multilevel CD} \label{sec:cdmultilevel}
+\section{Multilevel CDs} \label{sec:cdmultilevel}
 
-A multilevel V-cycle is defined in the next Section.  For the downward side of the V-cycle we will use the LDCs $\underline{\phi}^j,\overline{\phi}^j$ as constraints, and for the upward side the LDCs $\underline{\chi}^j,\overline{\chi}^j$.  Here we consider the corresponding constraint sets and decompositions (CDs; Section \ref{sec:cd}).
-
-Let
+A multilevel V-cycle solver is defined in the next Section.  For the downward side of the V-cycle we will use the LDCs $\underline{\phi}^j,\overline{\phi}^j$ as constraints, and $\underline{\chi}^j,\overline{\chi}^j$ for the upward side.  The corresponding constraint sets are
 \begin{align}
 \mathcal{D}^j = \left\{v \in \mathcal{V}^j \,:\, \underline{\phi}^j \le v \le \overline{\phi}^j \text{ and } \, v|_{\partial_D\Omega} = 0\right\}, \label{eq:fe:constraintsets} \\
-\mathcal{U}^j = \left\{v \in \mathcal{V}^j \,:\, \underline{\chi}^j \le v \le \overline{\chi}^j \text{ and } \, v|_{\partial_D\Omega} = 0\right\}, \notag
+\mathcal{U}^j = \left\{v \in \mathcal{V}^j \,:\, \underline{\chi}^j \le v \le \overline{\chi}^j \text{ and } \, v|_{\partial_D\Omega} = 0\right\}. \notag
 \end{align}
-be the \emph{downward} and \emph{upward defect constraint sets}, respectively, which are closed and convex subsets of the FE subspaces $\mathcal{V}^j$, for $j=0,1,\dots,J$.  Because $\underline{\chi}^j \le \underline{\phi}^j \le 0 \le \overline{\phi}^j \le \overline{\chi}^j$, it follows that $\mathcal{D}^j \subset \mathcal{U}^j$; the upward sets are larger.
-
-The finest-level upward constraint set $\mathcal{U}^J$ is equivalent to the original constraint set $\mathcal{K}^J$: for all $z^J \in \mathcal{V}^J$,
+These are the \emph{downward} and \emph{upward defect constraint sets}, respectively, closed and convex subsets of the FE spaces $\mathcal{V}^j$, for $j=0,1,\dots,J$.  Because $\underline{\chi}^j \le \underline{\phi}^j \le 0 \le \overline{\phi}^j \le \overline{\chi}^j$, it follows that $\mathcal{D}^j \subset \mathcal{U}^j$; the upward sets are larger.  Note that the finest-level set $\mathcal{U}^J$ is equivalent to the original constraint set $\mathcal{K}^J$: for all $z^J \in \mathcal{V}^J$,
 \begin{equation}
 z^J \in \mathcal{U}^J \quad \iff \quad w^J+z^J \in \mathcal{K}^J. \label{eq:fe:finestlevelequivalent}
 \end{equation}
 
-Our multilevel strategy is based on CDs of $\mathcal{U}^J$, or incomplete CDs thereof.  First, each upward set $\mathcal{U}^j$ can be decomposed in an inclusion sense, which becomes a true CD in unilateral cases.  The following Lemma is based on the CD construction for Algorithm 4.7 in \cite{GraeserKornhuber2009}; see also equation (59) in \cite{Tai2003}.  It is the explanation of downward-side admissibility of the V-cycle.
+Our multilevel strategy is based on constraint decompositions (CDs; Section \ref{sec:cd}) of $\mathcal{U}^J$, or rather incomplete CDs as we now explain.  Each upward set $\mathcal{U}^j$ can be decomposed in an inclusion sense, which becomes a true CD in unilateral cases.  The following Lemma is based on the unilateral CD construction underlying Algorithm 4.7 in \cite{GraeserKornhuber2009}; see also equation (59) in \cite{Tai2003}.  It explains downward admissibility in the V-cycle Algorithm \ref{alg:nmcd} in Section \ref{sec:vcycle}.
 
-\begin{lemma}  For arbitrary box constraints $\underline{\gamma}^J,\overline{\gamma}^J$ and any $j=0,1,\dots,J$,
+\begin{lemma}  \label{lem:downwardadmissibility}  For arbitrary upper and lower obstacles $\underline{\gamma}^J,\overline{\gamma}^J$ satisfying \eqref{eq:fe:boxconstraintrequirements}, and any $j=0,1,\dots,J$,
 \begin{equation}
 \mathcal{U}^j \supseteq \mathcal{D}^j + \mathcal{D}^{j-1} + \dots + \mathcal{D}^0. \label{eq:fe:downwardsuminclusion}
 \end{equation}
-In unilateral cases, where either $\underline{\gamma}^J=-\infty$ or $\overline{\gamma}^J=+\infty$, inclusion \eqref{eq:fe:downwardsuminclusion} is a full CD \eqref{eq:constraintdecomp} of\, $\mathcal{U}^j$ over the subspace decomposition $\cV^j=\sum_{i=0}^j \cV^i$.
+In unilateral cases, where either $\underline{\gamma}^J=-\infty$ or $\overline{\gamma}^J=+\infty$, inclusion \eqref{eq:fe:downwardsuminclusion} becomes a full CD \eqref{eq:constraintdecomp}, namely $\mathcal{U}^j=\sum_{i=0}^j \mathcal{D}^i$, over the subspace decomposition $\cV^j=\sum_{i=0}^j \cV^i$.
 \end{lemma}
 
-\begin{proof}  Subspace decomposition \eqref{eq:subspacedecomp} already holds by nesting \eqref{eq:fe:nestedspaces}, and definition \eqref{eq:fe:constraintsets} shows $\mathcal{D}^i \subset \cV^i$ and $\mathcal{U}^i \subset \cV^i$.  If $y^i \in \mathcal{D}^i$ for $i=0,\dots,J$ then
-   $$\underline{\chi}^j = \sum_{i=0}^j \underline{\phi}^i \le \sum_{i=0}^j y^i \le \sum_{i=0}^j \overline{\phi}^i \le \overline{\chi}^j$$
+\begin{proof}  Subspace decomposition \eqref{eq:subspacedecomp} holds---see nesting \eqref{eq:fe:nestedspaces}---and definition \eqref{eq:fe:constraintsets} shows $\mathcal{D}^i \subset \cV^i$ and $\mathcal{U}^i \subset \cV^i$.  If $y^i \in \mathcal{D}^i$ for $i=0,\dots,J$ then
+\begin{equation}
+\underline{\chi}^j = \sum_{i=0}^j \underline{\phi}^i \le \sum_{i=0}^j y^i \le \sum_{i=0}^j \overline{\phi}^i \le \overline{\chi}^j \label{eq:fe:lemmaordering}
+\end{equation}
 by \eqref{eq:fe:telescoping} and \eqref{eq:fe:constraintsets}, thus \eqref{eq:fe:downwardsuminclusion} holds for any box constraints.
 
-It remains to consider unilateral cases.  Here we can construct decomposition operators and show \eqref{eq:constraintrestrictionsum}.  For example, suppose $\overline{\gamma}^J=+\infty$, thus $\overline{\chi}^j=+\infty$ and $\overline{\phi}^i = +\infty$ for all levels.  (The case where $\underline{\gamma}^J=-\infty$ is similar.)  For $v\in \mathcal{V}^j$ and $0\le i \le j$, let $I_{j\to i}^\ominus$ denote the operation applying the minimum (monotone) restriction $j-i$ times to map (nonlinearly) into $\mathcal{V}^i$:
+It remains to consider unilateral cases.  Here we can construct decomposition operators and show \eqref{eq:constraintrestrictionsum}.  Suppose $\overline{\gamma}^J=+\infty$, thus $\overline{\chi}^j=+\infty$ and $\overline{\phi}^i = +\infty$ for all levels.  For $v\in \mathcal{V}^j$ and $0\le i \le j$, let $I_{j\to i}^\ominus$ be the operator applying the minimum (monotone) restriction $j-i$ times, mapping into $\mathcal{V}^i$:
 \begin{equation}
-I_{j\to i}^\ominus v = \minR(\dots(\minR v)\dots)
+I_{j\to i}^\ominus v = \minR(\dots(\minR v)\dots)  \label{eq:fe:minimummaps}
 \end{equation}
-Then we define decomposition operators $\Pi_i:\mathcal{U}^j \to \mathcal{D}^j$ which will make \eqref{eq:fe:downwardsuminclusion} a true CD:
+Note that $I_{j\to j}^\ominus v = v$, and set $I_{j\to -1}^\ominus=0$ by definition.  From operators \eqref{eq:fe:minimummaps} we define the nonlinear decomposition operators $\Pi_i:\mathcal{U}^j \to \mathcal{D}^i$:
 \begin{equation}
-\Pi_i z^j = I_{j\to i}^\ominus(z^j - \underline{\chi}^j) - I_{j\to i}^\ominus(z^j - \underline{\chi}^j) + \underline{\phi}^j.  \label{eq:fe:unilateraldecompositionoperator}
+\Pi_i z^j = I_{j\to i}^\ominus(z^j - \underline{\chi}^j) - I_{j\to i-1}^\ominus(z^j - \underline{\chi}^j) + \underline{\phi}^i.  \label{eq:fe:unilateraldecompositionoperator}
 \end{equation}
-(Compare equation (4.9) in \cite{GraeserKornhuber2009}.)  Property FIXME implies $\Pi_i z^j \in \mathcal{D}^i$.  On the other hand, observe that \eqref{eq:fe:telescoping} generates a telescoping sum:
+(Compare equation (4.9) in \cite{GraeserKornhuber2009}.)  Property \eqref{eq:fe:monotonerestrictionprops} implies $I_{j\to i}^\ominus(z^j - \underline{\chi}^j) \ge I_{j\to i-1}^\ominus(z^j - \underline{\chi}^j)$, thus $\Pi_i z^j \ge \underline{\phi}^i$, so $\Pi_i z^j \in \mathcal{D}^i$ (in this unilateral case).  On the other hand, the following sum telescopes, leaving only its first term plus the sum in \eqref{eq:fe:telescoping}:
 \begin{align*}
-\sum_{i=0}^j \Pi_i z^j &= 
+\sum_{i=0}^j \Pi_i z^j &= z^j - \underline{\chi}^j + \sum_{i=0}^j \underline{\phi}^i = z^j.
 \end{align*}
+This shows \eqref{eq:constraintrestrictionsum}, thus that \eqref{eq:fe:downwardsuminclusion} is equality, a true CD \eqref{eq:constraintdecomp}.
 
-FIXME finish up
+The case where $\underline{\gamma}^J=-\infty$ is similar.
 \end{proof}
 
-FIXME it would be tempting to try to show a full CD for arbitrary box constraints.  however it should be observed that $\Pi_i z^j$ may exceed $z^j$ pointwise, so the strategy of splitting $z^j = \min\{z_j,0\} + \max\{z_j,0\} = (z_j)_- + (z_j)_+$ and applying the unilateral formula \eqref{eq:fe:unilateraldecompositionoperator} to each part will not apparently work
+It is tempting to try to turn \eqref{eq:fe:downwardsuminclusion} into a full CD for arbitrary box constraints by using decomposition maps like $\Pi_i$.  Specifically, one might split $z^j = \min\{z^j,0\} + \max\{z^j,0\}$ and apply unilateral formulas like \eqref{eq:fe:unilateraldecompositionoperator} to $\min\{z^j,0\}$ and $\max\{z^j,0\}$ separately, with $\Pi_i$ applied to $\min\{z^j,0\}$ and a straightforward variant operator to $\max\{z^j,0\}$.  In fact, the lower bound $\Pi_i (\min\{z^j,0\}) \ge \underline{\phi}^i$ holds, as shown in the above proof.  However, the following Example shows why $\Pi_i(\min\{z^j,0\})$ may have an arbitrarily large maximum, and thus exceed any finite upper LDC $\overline{\phi}^i$, so unfortunately $\Pi_i$ does not map even non-positive functions to $\mathcal{D}^i$ in the presence of a finite upper LDC.  While the proposed splitting strategy does not work, without redefinition of a formula which is adequate in the unilateral case, the existence of an entirely-different strategy for showing a full CD is also not excluded.
 
-Second, logically trivial but important to state, each upward defect constraint set $\mathcal{U}^j$ can also be be decomposed down to an arbitrary level where an upward set $\mathcal{U}^k$ is the base.  This Corollary is the foundation of the upward side of the V-cycle.
+\begin{example}  \label{ex:notfullcd}
+Let $a\ge 0$ be an arbitrary positive number.  Consider a 2-level hierarchy ($J=1$), and suppose the lower defect constraint is the constant function $\underline{\chi}^1=-a$.  Recalling Table \ref{tab:ldcs}, note $\underline{\chi}^0=\maxR \underline{\chi}^1=-a$ also, so $\underline{\phi}^1=0$ and $\underline{\phi}^0=-a$.  Suppose $z^1$ is a ``sawtooth'' function which takes on value $-a$ on the coarse nodes and value $0$ on the other fine-level nodes.  Then $\overline{\chi}^1 \ge 0 \ge z^1\ge \underline{\chi}^1$, for any valid $\overline{\chi}^1$, so $z^j \in \mathcal{U}^1$.  However, $I_{1\to 0}^\ominus(z^1 - \underline{\chi}^1) = \minR(z^1 - \underline{\chi}^1) = 0$ identically.  From \eqref{eq:fe:unilateraldecompositionoperator}, $\Pi_1 z^1$ simplifies to $\Pi_1 z^1 = z^1 - \underline{\chi}^1$.  But then $\Pi_1 z^1$ attains a maximum $a\ge 0$.  This maximum can be chosen to exceed any upper defect obstacle $\overline{\phi}^1$.  Thus, for general $w^1 \in \mathcal{U}^1$ and general LDCs, $\Pi_1$ does not map $\min\{w^1,0\}$ into $\mathcal{D}^1$.
+\end{example}
 
-\begin{corollary}  For any $j=0,1,\dots,J$ and $0\le k\le j$,
+Each upward defect constraint set $\mathcal{U}^j$ can also be be decomposed down to an arbitrary level $k$ where an upward set $\mathcal{U}^k$ is used as the coarsest set.  The next Lemma, similar to Lemma \ref{lem:downwardadmissibility} but not following from it, explains upward admissibility in V-cycle Algorithm \ref{alg:nmcd}.
+
+\begin{lemma}  \label{lem:upwardadmissibility}  For any $j=0,1,\dots,J$ and $0\le k\le j$,
 \begin{equation}
 \mathcal{U}^j \supseteq \mathcal{D}^j + \mathcal{D}^{j-1} + \dots + \mathcal{D}^{k+1} + \mathcal{U}^k \label{eq:fe:upwardsuminclusion}
 \end{equation}
-In unilateral cases, where either $\underline{\gamma}^J=-\infty$ or $\overline{\gamma}^J=+\infty$, inclusion \eqref{eq:fe:upwardsumcd} is a full CD.
-\end{corollary}
+In unilateral cases, where either $\underline{\gamma}^J=-\infty$ or $\overline{\gamma}^J=+\infty$, inclusion \eqref{eq:fe:upwardsuminclusion} is a full CD \eqref{eq:constraintdecomp}. \end{lemma}
 
+\begin{proof}  Definition \eqref{eq:fe:philevels} shows that $\underline{\chi}^j = \underline{\phi}^j + \dots + \underline{\phi}^{k+1} + \underline{\chi}^k$ and $\overline{\chi}^j = \overline{\phi}^j + \dots + \overline{\phi}^{k+1} + \overline{\chi}^k$.  (These facts replace \eqref{eq:fe:telescoping}.)  If $y^i \in \mathcal{D}^i$ for $i=k+1,\dots,j$ and $z^k \in \mathcal{U}^k$ then it is easy to show, as in \eqref{eq:fe:lemmaordering}, that $\underline{\chi}^j \le y^j + \dots + y^{k+1} + z^k \le \overline{\chi}^j$, thus \eqref{eq:fe:upwardsuminclusion} holds.
+
+In unilateral cases we follow the proof of Lemma \ref{lem:downwardadmissibility}.  Definition \eqref{eq:fe:minimummaps} is unchanged.  We use \eqref{eq:fe:unilateraldecompositionoperator} unchanged for $i=k+1,\dots,j$, but modify it in the $i=k$ case: $\Pi_k z^j = I_{j\to k}^\ominus(z^j - \underline{\chi}^j) + \underline{\chi}^k$.  The remainder of the proof goes through as for Lemma \ref{lem:downwardadmissibility}.
+\end{proof}
+
+In summary, inclusions \eqref{eq:fe:downwardsuminclusion} and \eqref{eq:fe:upwardsuminclusion} suffice to show the admissibility of all iterates and corrections in V-cycle Algorithm \ref{alg:nmcd}.  However, a convergence analysis following \cite{Tai2003} or \cite{GraeserKornhuber2009}, somehow extending their arguments to VIs \eqref{eq:vi} which are not of minimization type, or to box constraints, would seem to require full CDs, and perhaps new ideas.
 
 
 \section{Nonlinear multilevel constraint decomposition (NMCD) V-cycle} \label{sec:vcycle}
