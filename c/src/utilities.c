@@ -16,7 +16,7 @@ PetscErrorCode VecPrintRange(Vec X, const char *name, const char *infcase,
     return 0;
 }
 
-PetscErrorCode UpdateIndentPrintRange(Vec v, const char* name, PetscInt jtop, PetscInt j) {
+PetscErrorCode IndentPrintRange(Vec v, const char* name, PetscInt jtop, PetscInt j) {
     PetscInt   k;
     PetscReal  vmin, vmax;
     PetscCall(VecMin(v,NULL,&vmin));

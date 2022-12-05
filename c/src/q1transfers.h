@@ -4,7 +4,7 @@
 #define Q1TRANSFERS_H_
 
 typedef enum {
-    Q1_MAX, Q1_MIN
+    MONOTONE_MAX, MONOTONE_MIN
 } Q1MonotoneType;
 
 PetscErrorCode Q1Interpolate(DM dac, DM daf, Vec vcoarse, Vec *vfine);

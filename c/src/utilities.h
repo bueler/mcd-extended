@@ -7,9 +7,8 @@
 // to print if X==NULL
 PetscErrorCode VecPrintRange(Vec X, const char *name, const char *infcase, PetscBool newline);
 
-// for a multigrid correction ("update"), print the name, level j, and
-// range of values, indenting jtop-j levels
-PetscErrorCode UpdateIndentPrintRange(Vec v, const char* name, PetscInt jtop, PetscInt j);
+// print the name, level j, and range of values, indenting jtop-j levels
+PetscErrorCode IndentPrintRange(Vec v, const char* name, PetscInt jtop, PetscInt j);
 
 // set flg=PETSC_TRUE if  u <= v  everywhere, otherwise flg=PETSC_FALSE
 // extended reals rule:  if u=NULL (-infty) or v=NULL (+infty) then flg=PETSC_TRUE

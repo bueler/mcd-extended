@@ -57,7 +57,7 @@ PetscReal _Q1OptNeighbors(Q1MonotoneType opt, _DirectionType dir,
     PetscReal       x = au[j][i];
     for (q=qs[(int)dir]; q<=qe[(int)dir]; q++) {
         for (p=ps[(int)dir]; p<=pe[(int)dir]; p++) {
-            if (opt == Q1_MAX)
+            if (opt == MONOTONE_MAX)
                 x = PetscMax(x, au[j+q][i+p]);
             else
                 x = PetscMin(x, au[j+q][i+p]);

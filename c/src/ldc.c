@@ -157,7 +157,7 @@ PetscErrorCode _LDCUpDCsMonotoneRestrict(LDC fine, LDC *coarse) {
             coarse->_level,fine._level));
         if (!coarse->chiupp)
             PetscCall(DMCreateGlobalVector(coarse->dal,&(coarse->chiupp)));
-        PetscCall(Q1MonotoneRestrict(Q1_MIN,fine.dal,coarse->dal,
+        PetscCall(Q1MonotoneRestrict(MONOTONE_MIN,fine.dal,coarse->dal,
                                      fine.chiupp,&(coarse->chiupp)));
     } else {
         if (coarse->chiupp) {
@@ -175,7 +175,7 @@ PetscErrorCode _LDCUpDCsMonotoneRestrict(LDC fine, LDC *coarse) {
             coarse->_level,fine._level));
         if (!coarse->chilow)
             PetscCall(DMCreateGlobalVector(coarse->dal,&(coarse->chilow)));
-        PetscCall(Q1MonotoneRestrict(Q1_MAX,fine.dal,coarse->dal,
+        PetscCall(Q1MonotoneRestrict(MONOTONE_MAX,fine.dal,coarse->dal,
                                      fine.chilow,&(coarse->chilow)));
     } else {
         if (coarse->chilow) {
