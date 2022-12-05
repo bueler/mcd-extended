@@ -475,6 +475,7 @@ PetscErrorCode _SmootherFD(PetscBool njac, SNES snes, Vec u, Vec b, void *ctx) {
     }
     PetscCall(PetscLogFlops(22.0 * totalits));
     (user->ngscount)++;
+    //PetscCall(PetscPrintf(PETSC_COMM_WORLD,"NGS called on %dx%d level\n",info.mx,info.my));
     return 0;
 }
 
@@ -681,6 +682,7 @@ PetscErrorCode NGSFEM(SNES snes, Vec u, Vec b, void *ctx) {
     // add flops for Newton iteration arithmetic; note rhoFcn() already counts flops
     PetscCall(PetscLogFlops(6.0 * totalits));
     (user->ngscount)++;
+    //PetscCall(PetscPrintf(PETSC_COMM_WORLD,"NGS called on %dx%d level\n",info.mx,info.my));
     return 0;
 }
 
@@ -844,5 +846,6 @@ PetscErrorCode NJacFEM(SNES snes, Vec u, Vec b, void *ctx) {
     PetscCall(DMRestoreLocalVector(da,&uloc));
 
     (user->ngscount)++;
+    //PetscCall(PetscPrintf(PETSC_COMM_WORLD,"NGS called on %dx%d level\n",info.mx,info.my));
     return 0;
 }
