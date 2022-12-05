@@ -2,10 +2,7 @@
             with bounding box [ -2.000000,  2.000000, -2.000000,  2.000000]
   LDC info: refining level 0 LDC, yielding LDC with 7 x 7 DMDA at level 1
   LDC info: refining level 1 LDC, yielding LDC with 13 x 13 DMDA at level 2
-  initial ranges:
-       -0.235760 <= w <=   1.000000
-       -0.002833 <= f^J(w) <=   0.274846
-3 level solver = 1 V-cycles ...
+3 level solver using 1 V-cycles ...
   LDC info: chiupp=NULL is +infty because gamupp=NULL at level 2
   LDC info: creating chilow and setting chilow=gamlow-w at level 2
   LDC info: chiupp=NULL is +infty at level 1
@@ -27,10 +24,7 @@ zero bracket checks PASS (level 1):
   LDC info: calling LDCCheckDCRanges() on level 0
 zero bracket checks PASS (level 0):
    -0.861588 <= chilow <=   0.000000  [[[   chiupp=NULL is +infty   ]]]
-  iterate  1 ranges:
-       -0.235760 <= w <=   1.000000
-       -0.000310 <= f^J(w) <=   0.281781
-flops = 3.836e+05,  residual calls = 6,  PNGS calls = 5
+flops = 2.957e+05,  residual calls = 4,  PNGS calls = 5
 done on 13 x 13 grid:   error |u-uexact|_inf = 1.125e-02
   LDC info: destroying LDC at level 0
   LDC info: destroying LDC at level 1

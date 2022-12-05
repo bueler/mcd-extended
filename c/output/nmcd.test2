@@ -1,7 +1,7 @@
   initial ranges:
        -0.235760 <= w <=   2.000000
         0.000000 <= f^J(w) <=   0.227166
-4 level solver = 2 V-cycles ...
+4 level solver using 2 V-cycles ...
   -7.8028e-02 <= y^3 <= 0.0000e+00
     -7.7988e-02 <= y^2 <= 0.0000e+00
       0.0000e+00 <= y^1 <= 0.0000e+00

@@ -1,34 +1,36 @@
 static char help[] =
 "Solve classical, unilateral obstacle problem by nonlinear multilevel constraint\n"
-"decomposition (NMCD) method using Q1 finite elements in 2D square (-2,2)^2\n"
-"on a structured-grid (DMDA):\n"
+"decomposition (NMCD) method using Q1 finite elements in 2D square using\n"
+"a structured-grid (DMDA):\n"
 "  - nabla^2 u = f(x,y),  u >= psi(x,y),\n"
 "subject to Dirichlet boundary conditions u=g.\n"
 "Optional problem (-nm_bratu) is unconstrained nonlinear Bratu equation\n"
 "  - nabla^2 u - R(u) = 0,\n"
-"where R(u)=e^u [lambda=1 case], with Liouville exact solution, on (0,1)^2.\n"
+"where R(u)=e^u [lambda=1 case], with Liouville exact solution.\n"
 "Smoother and coarse-level solver are both projected, nonlinear Gauss-Seidel\n"
 "(PNGS) sweeps.  Option prefix nm_.  Compare obstaclesl.c and bratu.c.\n\n";
 
 // FIXME try initialization using w^J which is *below* the exact solution, but still admissible, e.g. w^J=gamlow^J (except at boundary)
 
-// FIXME make -monitor_vcycles comparable to -snes_fas_monitor
+// FIXME try different down-sweeps and up-sweeps (move sweeps from ObsCtx to ProjectedNGS() call)
+
+// FIXME factor NMCDVCycle() out of main()
 
 // FIXME compare two-level FAS V-cycles in bratu.c with NMCD V-cycles (-nm_bratu):
-// ./bratu -lb_fem -lb_exact -lb_initial_exact -snes_converged_reason -lb_counts -snes_type fas -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 1 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 1 -fas_coarse_snes_ngs_max_it 1 -fas_levels_snes_converged_reason -fas_coarse_snes_converged_reason -snes_max_it 1 -da_refine 1 -lb_bumpsize 1.0 -snes_fas_monitor
+// ./bratu -lb_fem -lb_exact -lb_initial_exact -snes_converged_reason -lb_counts -snes_type fas -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 1 -fas_levels_snes_ngs_max_it 1 -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 1 -fas_coarse_snes_ngs_max_it 1 -fas_levels_snes_converged_reason -fas_coarse_snes_converged_reason -snes_max_it 1 -da_refine 1 -lb_bumpsize 1.0 -snes_fas_monitor -fas_coarse_snes_max_it 1
 // vs
-// ./nmcd -nm_monitor_vcycles -nm_counts -nm_levels 2 -nm_cycles 1 -nm_csweeps 1 -nm_bratu -nm_counts -nm_bumpsize 1.0 -nm_monitor
+// ./nmcd -nm_counts -nm_levels 2 -nm_cycles 1 -nm_csweeps 1 -nm_bratu -nm_counts -nm_bumpsize 1.0 -nm_monitor
 
 // FIXME compare deeper cycles?:
 //  ./bratu -lb_fem -lb_exact -lb_initial_exact -snes_converged_reason -lb_counts -snes_type fas -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 1 -fas_levels_snes_ngs_max_it 1 -fas_levels_snes_norm_schedule none -fas_coarse_snes_type ngs -fas_coarse_snes_ngs_sweeps 4 -fas_coarse_snes_ngs_max_it 1 -fas_coarse_snes_norm_schedule none -fas_levels_snes_converged_reason -fas_coarse_snes_converged_reason -snes_max_it 2 -da_refine 3 -lb_bumpsize XX
-//  ./nmcd -nm_monitor_vcycles -nm_counts -nm_levels 4 -nm_cycles 2 -nm_csweeps 4 -nm_bratu -nm_counts -nm_bumpsize XX
+//  ./nmcd -nm_monitor -nm_counts -nm_levels 4 -nm_cycles 2 -nm_csweeps 4 -nm_bratu -nm_counts -nm_bumpsize XX
 // if XX=0.0 (initialization with exact solution) then results look good, but if XX=1.0 then nmcd is not looking good; so nmcd.c is not yet doing FAS V-cycles
 
 // FIXME possible ways to describe possible current issues:
 //   * the iterate w is only slowly falling toward the obstacle
 //   * the corrections are always negative
 // see stdout and foo.m from
-//   ./nmcd -nm_monitor -nm_monitor_ranges -nm_monitor_vcycles -nm_view foo.m -nm_levels 7 -nm_cycles 1 -nm_bumpsize 1.0
+//   ./nmcd -nm_monitor -nm_monitor_ranges -nm_view foo.m -nm_levels 7 -nm_cycles 1 -nm_bumpsize 1.0
 
 #include <petsc.h>
 #include "src/utilities.h"
@@ -84,7 +86,8 @@ The solution is  u(r) = - A log(r) + B   on  r > a.  The boundary conditions
 can then be reduced to a root-finding problem for a:
     a^2 (log(2) - log(a)) = 1 - a^2
 The solution is a = 0.697965148223374 (giving residual 1.5e-15).  Then
-A = a^2*(1-a^2)^(-0.5) and B = A*log(2) have given values below.  */
+A = a^2*(1-a^2)^(-0.5) and B = A*log(2) have given values below.
+This function evaluates the radial exact solution in cartesian x,y.  */
 PetscReal uexact_obstacle(PetscReal x, PetscReal y, void *ctx) {
     const PetscReal afree = 0.697965148223374,
                     A     = 0.680259411891719,
@@ -121,6 +124,7 @@ PetscReal bump4_fcn(PetscReal x, PetscReal y, void *ctx) {
 extern PetscErrorCode AssertBoundaryValuesAdmissible(DM, ObsCtx*);
 extern PetscErrorCode MonitorCRNorm(DM, Vec, Vec, Vec, PetscInt, ObsCtx*);
 extern PetscErrorCode MonitorRanges(DM, Vec, PetscInt, ObsCtx*);
+extern PetscErrorCode LevelMonitorCRNorm(Level, PetscBool, PetscInt, PetscInt, ObsCtx*);
 extern PetscErrorCode ViewResultsMatlab(DM, Vec, Vec, Vec, Vec, char*, ObsCtx*);
 extern PetscErrorCode ApplyOperatorF(DM, Vec, Vec, ObsCtx*);
 extern PetscErrorCode ProjectedNGS(LDC*, PetscBool, Vec, Vec, Vec, ObsCtx*);
@@ -128,12 +132,11 @@ extern PetscErrorCode ProjectedNGS(LDC*, PetscBool, Vec, Vec, Vec, ObsCtx*);
 int main(int argc,char **argv) {
     ObsCtx         ctx;
     Level          *levs;
-    Vec            gamlow, w, uexact, gplusy, tmpfine, tmpcoarse;
+    Vec            gamlow, w, uexact, gplusy, tmpf, tmpc;
     DMDALocalInfo  finfo;
     PetscInt       totlevs=2, cycles=1, csweeps=1, JJ, viter, j, k;
-    PetscBool      counts = PETSC_FALSE,
-                   ldcinfo = PETSC_FALSE, monitor = PETSC_FALSE,
-                   monitorranges = PETSC_FALSE, monitorvcycles = PETSC_FALSE,
+    PetscBool      counts = PETSC_FALSE, ldcinfo = PETSC_FALSE,
+                   monitor = PETSC_FALSE, monitorranges = PETSC_FALSE,
                    view = PETSC_FALSE, admis;
     PetscLogDouble lflops, flops;
     PetscReal      bumpsize=0.0, errinf;
@@ -150,9 +153,9 @@ int main(int argc,char **argv) {
     ctx.ngscount = 0;
     ctx.bratu = PETSC_FALSE;
     PetscOptionsBegin(PETSC_COMM_WORLD,"nm_","NMCD solver options","");
-    PetscCall(PetscOptionsBool("-bratu","solve unconstrained Bratu equation problem (vs default linear obstacle problem)",
+    PetscCall(PetscOptionsBool("-bratu","solve unconstrained Bratu equation problem",
                             "nmcd.c",ctx.bratu,&(ctx.bratu),NULL));
-    PetscCall(PetscOptionsReal("-bumpsize","initialization from exact solution plus this much bump",
+    PetscCall(PetscOptionsReal("-bumpsize","initialization from exact solution plus this size bump",
                             "nmcd.c",bumpsize,&bumpsize,NULL));
     PetscCall(PetscOptionsBool("-counts","print counts for calls to call-back functions",
                             "nmcd.c",counts,&counts,NULL));
@@ -166,12 +169,10 @@ int main(int argc,char **argv) {
                             "nmcd.c",totlevs,&totlevs,NULL));
     PetscCall(PetscOptionsInt("-maxits","in PNGS, number of Newton iterations at each point",
                             "nmcd.c",ctx.maxits,&(ctx.maxits),NULL));
-    PetscCall(PetscOptionsBool("-monitor","print CR residual norm for each V-cycle",
+    PetscCall(PetscOptionsBool("-monitor","print CR residual norm in each V-cycle (like -snes_fas_monitor)",
                             "nmcd.c",monitor,&monitor,NULL));
-    PetscCall(PetscOptionsBool("-monitor_ranges","print iterate and (raw) residual ranges",
+    PetscCall(PetscOptionsBool("-monitor_ranges","print ranges on: iterate, (raw) residual, corrections",
                             "nmcd.c",monitorranges,&monitorranges,NULL));
-    PetscCall(PetscOptionsBool("-monitor_vcycles","print ranges of corrections in V cycles",
-                            "nmcd.c",monitorvcycles,&monitorvcycles,NULL));
     // WARNING: coarse problems are badly solved with -nm_quadpts 1
     PetscCall(PetscOptionsInt("-quadpts","number n of quadrature points (= 1,2,3 only)",
                             "nmcd.c",ctx.quadpts,&(ctx.quadpts),NULL));
@@ -181,7 +182,7 @@ int main(int argc,char **argv) {
                             "nmcd",viewname,viewname,sizeof(viewname),&view));
     PetscOptionsEnd();
 
-    // options consistency checking
+    // options checking
     if (csweeps < 1) {
         SETERRQ(PETSC_COMM_SELF,1,"do at least 1 sweep over points at coarsest level in PNGS");
     }
@@ -200,7 +201,6 @@ int main(int argc,char **argv) {
     if (ctx.quadpts < 1 || ctx.quadpts > 3) {
         SETERRQ(PETSC_COMM_SELF,6,"quadrature points n=1,2,3 only");
     }
-
     if (ctx.bratu) {
         ctx.gamma_lower = NULL;
         ctx.g_bdry = &uexact_liouville;
@@ -208,7 +208,6 @@ int main(int argc,char **argv) {
 
     // allocate Level stack
     PetscCall(PetscMalloc1(totlevs,&levs));
-    JJ = totlevs - 1;   // finest level is levs[JJ]
 
     // create DMDA for coarsest level: 3x3 grid on square Omega
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
@@ -224,7 +223,7 @@ int main(int argc,char **argv) {
     // note LDCRefine() below will duplicate bounding box for finer-level DMDA
 
     // create Level stack by creating coarsest LDC, using levs[0].ldc.dal,
-    // then refining JJ times; each Level has an LDC and allocated Vecs
+    // then refining totlevs-1 times; each Level has an LDC and allocated Vecs
     // g,ell,y,z; except level 0 which has no y
     for (j=0; j<totlevs; j++) {
         levs[j]._level = j;
@@ -242,11 +241,10 @@ int main(int argc,char **argv) {
         else
             PetscCall(DMGetGlobalVector(levs[j].ldc.dal,&(levs[j].y)));
     }
+    JJ = totlevs - 1;   // finest level is levs[JJ]
 
-    // check admissibility of the finest-level boundary condition
+    // finest-level setup: BCs and obstacle
     PetscCall(AssertBoundaryValuesAdmissible(levs[JJ].ldc.dal,&ctx));
-
-    // generate finest-level obstacle gamlow as Vec
     if (ctx.bratu)
         gamlow = NULL;
     else {
@@ -256,16 +254,16 @@ int main(int argc,char **argv) {
 
     // create finest-level initial iterate w^J:  w^J = uexact + bumpsize * bump
     PetscCall(DMGetGlobalVector(levs[JJ].ldc.dal,&w));
-    PetscCall(DMGetGlobalVector(levs[JJ].ldc.dal,&tmpfine));
+    PetscCall(DMGetGlobalVector(levs[JJ].ldc.dal,&tmpf));
     if (ctx.bratu) {
         PetscCall(VecFromFormula(levs[JJ].ldc.dal,uexact_liouville,w,&ctx));
-        PetscCall(VecFromFormula(levs[JJ].ldc.dal,bump1_fcn,tmpfine,&ctx));
+        PetscCall(VecFromFormula(levs[JJ].ldc.dal,bump1_fcn,tmpf,&ctx));
     } else {
         PetscCall(VecFromFormula(levs[JJ].ldc.dal,uexact_obstacle,w,&ctx));
-        PetscCall(VecFromFormula(levs[JJ].ldc.dal,bump4_fcn,tmpfine,&ctx));
+        PetscCall(VecFromFormula(levs[JJ].ldc.dal,bump4_fcn,tmpf,&ctx));
     }
-    PetscCall(VecAXPY(w,bumpsize,tmpfine));  // w <- bumpsize * tmpfine + w
-    PetscCall(DMRestoreGlobalVector(levs[JJ].ldc.dal,&tmpfine));
+    PetscCall(VecAXPY(w,bumpsize,tmpf));  // w <- w + bumpsize * tmpf
+    PetscCall(DMRestoreGlobalVector(levs[JJ].ldc.dal,&tmpf));
     // PetscCall(VecSet(w,0.0));  // not really an alternative because we
                                   // require w^J admissible to start
 
@@ -280,18 +278,17 @@ int main(int argc,char **argv) {
     if (monitorranges)
         PetscCall(MonitorRanges(levs[JJ].ldc.dal,w,0,&ctx));
 
-    // one NMCD V-cycle with sweeps smoother iterations at each level,
-    // except csweeps on coarsest
+    // one NMCD V-cycle with ctx.sweeps smoother iterations at each level,
+    // except ctx.csweeps on coarsest (and on single level)
     // FIXME make the coarse solver be a SNES
     if (totlevs == 1)
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "single-level solver = %d coarse-level smoother iterations ...\n",cycles));
+            "single-level solver using %d smoother iterations ...\n",cycles));
     else
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "%d level solver = %d V-cycles ...\n",totlevs,cycles));
-    PetscCall(VecSet(levs[JJ].ell,0.0)); // assumes JJ-level equations F(u)=0 not F(u)=ell
+            "%d level solver using %d V-cycles ...\n",totlevs,cycles));
+    PetscCall(VecSet(levs[JJ].ell,0.0)); // assumes JJ-level equations F(u)=ell has ell=0
     for (viter = 0; viter < cycles; viter++) {
-        // report norm of CR residual
         if (monitor)
             PetscCall(MonitorCRNorm(levs[JJ].ldc.dal,NULL,gamlow,w,viter,&ctx));
         // set-up finest-level chiupp,chilow from initial iterate w
@@ -303,51 +300,60 @@ int main(int argc,char **argv) {
             // compute LDCs:  chiupp,chilow for levs[j-1]  by mono restrict
             //                phiupp,philow for levs[j]    by subtraction
             PetscCall(LDCSetLevel(&(levs[j].ldc)));
-            // get allocated temporaries
-            PetscCall(DMGetGlobalVector(levs[j].ldc.dal,&gplusy));
-            PetscCall(DMGetGlobalVector(levs[j].ldc.dal,&tmpfine));
-            PetscCall(DMGetGlobalVector(levs[j-1].ldc.dal,&tmpcoarse));
             // smooth in D^j to compute y^j
             PetscCall(VecSet(levs[j].y,0.0));
+            if (monitor && (j<JJ))
+                PetscCall(LevelMonitorCRNorm(levs[j],PETSC_TRUE,JJ,0,&ctx));
             PetscCall(ProjectedNGS(&(levs[j].ldc),PETSC_FALSE,levs[j].ell,
                                    levs[j].g,levs[j].y,&ctx));
-            if (monitorvcycles)
-                PetscCall(UpdateIndentPrintRange(levs[j].y,"y",JJ,j));
+            if (monitorranges)
+                PetscCall(IndentPrintRange(levs[j].y,"y",JJ,j));
             // compute g^j-1 using injection:
-            //   g^j-1 = R^dot(g^j + y^j)
-            PetscCall(VecWAXPY(gplusy,1.0,levs[j].g,levs[j].y));
+            //   g^{j-1} = R^dot(g^j + y^j)
+            PetscCall(DMGetGlobalVector(levs[j].ldc.dal,&gplusy));
+            PetscCall(VecWAXPY(gplusy,1.0,levs[j].g,levs[j].y)); // gplusy = g^j + y^j
             PetscCall(Q1Inject(levs[j].ldc.dal,levs[j-1].ldc.dal,gplusy,&(levs[j-1].g)));
             // construct ell^j-1:
-            //   ell^j-1 = f^j-1(g^j-1) + R (ell^j - f^j(g^j + y^j))
-            PetscCall(ApplyOperatorF(levs[j-1].ldc.dal,levs[j-1].g,levs[j-1].ell,&ctx));
-            PetscCall(ApplyOperatorF(levs[j].ldc.dal,gplusy,tmpfine,&ctx));
-            PetscCall(VecAYPX(tmpfine,-1.0,levs[j].ell));
-            PetscCall(Q1Restrict(levs[j].ldc.dal,levs[j-1].ldc.dal,tmpfine,&tmpcoarse));
-            PetscCall(VecAXPY(levs[j-1].ell,1.0,tmpcoarse));
+            //   ell^{j-1} = f^{j-1}(g^{j-1}) + R (ell^j - f^j(g^j + y^j))
+            PetscCall(DMGetGlobalVector(levs[j].ldc.dal,&tmpf));
+            PetscCall(DMGetGlobalVector(levs[j-1].ldc.dal,&tmpc));
+            PetscCall(ApplyOperatorF(levs[j-1].ldc.dal,levs[j-1].g,
+                                     levs[j-1].ell,&ctx)); // ell^{j-1} = f^{j-1}(g^{j-1})
+            PetscCall(ApplyOperatorF(levs[j].ldc.dal,gplusy,
+                                     tmpf,&ctx)); // tmpf = f^j(g^j+y^j)
+            PetscCall(VecAYPX(tmpf,-1.0,levs[j].ell)); // tmpf <- ell^j - tmpf
+            PetscCall(Q1Restrict(levs[j].ldc.dal,levs[j-1].ldc.dal,tmpf,&tmpc)); // tmpc = R(tmpf)
+            PetscCall(VecAXPY(levs[j-1].ell,1.0,tmpc)); // ell^{j-1} <- ell^{j-1} + tmpc
             // restore temporaries
             PetscCall(DMRestoreGlobalVector(levs[j].ldc.dal,&gplusy));
-            PetscCall(DMRestoreGlobalVector(levs[j].ldc.dal,&tmpfine));
-            PetscCall(DMRestoreGlobalVector(levs[j-1].ldc.dal,&tmpcoarse));
+            PetscCall(DMRestoreGlobalVector(levs[j].ldc.dal,&tmpf));
+            PetscCall(DMRestoreGlobalVector(levs[j-1].ldc.dal,&tmpc));
         }
         // coarse solve in U^0 to compute z^0
         PetscCall(VecSet(levs[0].z,0.0));
+        if (monitor && (0<JJ))
+            PetscCall(LevelMonitorCRNorm(levs[0],PETSC_FALSE,JJ,0,&ctx));
         for (k = 0; k < csweeps; k++) {
             PetscCall(ProjectedNGS(&(levs[0].ldc),PETSC_TRUE,levs[0].ell,
                                    levs[0].g,levs[0].z,&ctx));
         }
-        if (monitorvcycles)
-            PetscCall(UpdateIndentPrintRange(levs[0].z,"z",JJ,0));
+        if (monitor && (0<JJ))
+            PetscCall(LevelMonitorCRNorm(levs[0],PETSC_FALSE,JJ,1,&ctx));
+        if (monitorranges)
+            PetscCall(IndentPrintRange(levs[0].z,"z",JJ,0));
         // upward direction
         for (j = 1; j <= JJ; j++) {
             // compute z^j using prolongation:
-            //   z^j = P z^j-1 + y^j
+            //   z^j = P z^{j-1} + y^j
             PetscCall(Q1Interpolate(levs[j-1].ldc.dal,levs[j].ldc.dal,levs[j-1].z,&(levs[j].z)));
-            PetscCall(VecAXPY(levs[j].z,1.0,levs[j].y));
+            PetscCall(VecAXPY(levs[j].z,1.0,levs[j].y)); // z^j <- z^j + y^j
             // smooth in U^j to compute z^j
             PetscCall(ProjectedNGS(&(levs[j].ldc),PETSC_TRUE,levs[j].ell,
                                    levs[j].g,levs[j].z,&ctx));
-            if (monitorvcycles)
-                PetscCall(UpdateIndentPrintRange(levs[j].z,"z",JJ,j));
+            if (monitor && (j<JJ))
+                PetscCall(LevelMonitorCRNorm(levs[j],PETSC_FALSE,JJ,1,&ctx));
+            if (monitorranges)
+                PetscCall(IndentPrintRange(levs[j].z,"z",JJ,j));
         }
         // update fine-level iterate:
         //   w <- w + z^J
@@ -435,6 +441,7 @@ PetscErrorCode AssertBoundaryValuesAdmissible(DM da, ObsCtx* user) {
     return 0;
 }
 
+// prints norm of finest-level hatr(w^J), assuming ell^J=0
 PetscErrorCode MonitorCRNorm(DM da, Vec gamupp, Vec gamlow, Vec w,
                              PetscInt iter, ObsCtx *ctx) {
     Vec        F, Fhat;
@@ -450,6 +457,7 @@ PetscErrorCode MonitorCRNorm(DM da, Vec gamupp, Vec gamlow, Vec w,
     return 0;
 }
 
+// prints ranges of finest-level iterate w^J and f^J(w^J)
 PetscErrorCode MonitorRanges(DM da, Vec w, PetscInt iter, ObsCtx *ctx) {
     Vec F;
     if (iter == 0)
@@ -463,6 +471,39 @@ PetscErrorCode MonitorRanges(DM da, Vec w, PetscInt iter, ObsCtx *ctx) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"    "));
     PetscCall(VecPrintRange(F,"f^J(w)","",PETSC_TRUE));
     PetscCall(DMRestoreGlobalVector(da,&F));
+    return 0;
+}
+
+// prints norm of hatr(g^j + y^j) if down, or hatr(g^j + z^j) otherwise,
+// with indent
+PetscErrorCode LevelMonitorCRNorm(Level lev, PetscBool down, PetscInt JJ,
+                                  PetscInt iter, ObsCtx *ctx) {
+    Vec        F, Fhat, wyz;
+    PetscReal  Fnorm;
+    PetscInt   k;
+    PetscCall(DMGetGlobalVector(lev.ldc.dal,&F));
+    PetscCall(DMGetGlobalVector(lev.ldc.dal,&Fhat));
+    PetscCall(DMGetGlobalVector(lev.ldc.dal,&wyz));
+    if (down)
+        PetscCall(VecWAXPY(wyz,1.0,lev.g,lev.y)); // wyz = g + y
+    else
+        PetscCall(VecWAXPY(wyz,1.0,lev.g,lev.z)); // wyz = g + z
+    PetscCall(ApplyOperatorF(lev.ldc.dal,wyz,F,ctx)); // F = F(wyz)
+    PetscCall(VecAXPY(F,-1.0,lev.ell)); // F <- F - ell
+    if (down)
+        PetscCall(CRFromResidual(lev.ldc.dal,lev.ldc.phiupp,lev.ldc.philow,
+                                 wyz,F,Fhat));
+    else
+        PetscCall(CRFromResidual(lev.ldc.dal,lev.ldc.chiupp,lev.ldc.chilow,
+                                 wyz,F,Fhat));
+    PetscCall(VecNorm(Fhat,NORM_2,&Fnorm));
+    PetscCall(DMRestoreGlobalVector(lev.ldc.dal,&F));
+    PetscCall(DMRestoreGlobalVector(lev.ldc.dal,&Fhat));
+    PetscCall(DMRestoreGlobalVector(lev.ldc.dal,&wyz));
+    for (k = 0; k < JJ - lev._level; k++)
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  "));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  %d CR norm %14.12e\n",
+                          iter,Fnorm));
     return 0;
 }
 
