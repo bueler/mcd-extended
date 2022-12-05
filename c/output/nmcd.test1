@@ -9,21 +9,21 @@
   LDC info: setting chilow at level 1 using monotone restriction from level 2
   LDC info: phiupp=NULL is +infty at level 2
   LDC info: creating and setting philow=chilow-chilow_coarse at level 2
-  LDC info: calling LDCCheckDCRanges() on level 2
-zero bracket checks PASS (level 2):
-   -3.310054 <= chilow <=   0.000000  [[[   chiupp=NULL is +infty   ]]]
-   -0.849303 <= philow <=   0.000000  [[[   phiupp=NULL is +infty   ]]]
+  LDC info: DC ranges on level 2:
+            -3.310054 <= chilow <=   0.000000    [[[  chiupp=NULL is +infty  ]]]
+            -0.849303 <= philow <=   0.000000    [[[  phiupp=NULL is +infty  ]]]
+  LDC info: zero bracketed checks PASS on level 2
   LDC info: chiupp=NULL is +infty at level 0
   LDC info: setting chilow at level 0 using monotone restriction from level 1
   LDC info: phiupp=NULL is +infty at level 1
   LDC info: creating and setting philow=chilow-chilow_coarse at level 1
-  LDC info: calling LDCCheckDCRanges() on level 1
-zero bracket checks PASS (level 1):
-   -2.460751 <= chilow <=   0.000000  [[[   chiupp=NULL is +infty   ]]]
-   -1.599163 <= philow <=   0.000000  [[[   phiupp=NULL is +infty   ]]]
-  LDC info: calling LDCCheckDCRanges() on level 0
-zero bracket checks PASS (level 0):
-   -0.861588 <= chilow <=   0.000000  [[[   chiupp=NULL is +infty   ]]]
+  LDC info: DC ranges on level 1:
+            -2.460751 <= chilow <=   0.000000    [[[  chiupp=NULL is +infty  ]]]
+            -1.599163 <= philow <=   0.000000    [[[  phiupp=NULL is +infty  ]]]
+  LDC info: zero bracketed checks PASS on level 1
+  LDC info: DC ranges on level 0:
+            -0.861588 <= chilow <=   0.000000    [[[  chiupp=NULL is +infty  ]]]
+  LDC info: zero bracketed checks PASS on level 0
 flops = 2.957e+05,  residual calls = 4,  PNGS calls = 5
 done on 13 x 13 grid:   error |u-uexact|_inf = 1.125e-02
   LDC info: destroying LDC at level 0

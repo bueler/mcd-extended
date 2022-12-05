@@ -461,15 +461,15 @@ PetscErrorCode MonitorCRNorm(DM da, Vec gamupp, Vec gamlow, Vec w,
 PetscErrorCode MonitorRanges(DM da, Vec w, PetscInt iter, ObsCtx *ctx) {
     Vec F;
     if (iter == 0)
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  initial ranges:\n"));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  initial ranges: "));
     else
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  iterate %2d ranges:\n",iter));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"    "));
-    PetscCall(VecPrintRange(w,"w","",PETSC_TRUE));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  iterate %2d ranges: ",iter));
+    PetscCall(VecPrintRange(w,"w","",PETSC_FALSE));
     PetscCall(DMGetGlobalVector(da,&F));
     PetscCall(ApplyOperatorF(da,w,F,ctx));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"    "));
-    PetscCall(VecPrintRange(F,"f^J(w)","",PETSC_TRUE));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,", "));
+    PetscCall(VecPrintRange(F,"f^J(w)","",PETSC_FALSE));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n"));
     PetscCall(DMRestoreGlobalVector(da,&F));
     return 0;
 }

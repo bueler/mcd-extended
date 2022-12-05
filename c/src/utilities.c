@@ -6,10 +6,10 @@ PetscErrorCode VecPrintRange(Vec X, const char *name, const char *infcase,
     if (X) {
         PetscCall(VecMin(X,NULL,&vmin));
         PetscCall(VecMax(X,NULL,&vmax));
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  %10.6f <= %s <= %10.6f",
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%10.6f <= %s <= %10.6f",
                               vmin,name,vmax));
     } else
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"  [[[   %s=NULL is %s   ]]]",
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"[[[  %s=NULL is %s  ]]]",
                               name,infcase));
     if (newline)
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n"));

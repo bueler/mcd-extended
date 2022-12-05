@@ -17,13 +17,13 @@ generating defect constraints for V-cycle
   LDC info: setting chilow at level 0 using monotone restriction from level 1
   LDC info: phiupp=NULL is +infty at level 1
   LDC info: creating and setting philow=chilow-chilow_coarse at level 1
-  LDC info: calling LDCCheckDCRanges() on level 1
-zero bracket checks PASS (level 1):
-   -2.000000 <= chilow <=  -1.000000  [[[   chiupp=NULL is +infty   ]]]
-   -0.750000 <= philow <=   0.000000  [[[   phiupp=NULL is +infty   ]]]
-  LDC info: calling LDCCheckDCRanges() on level 0
-zero bracket checks PASS (level 0):
-   -1.437500 <= chilow <=  -1.000000  [[[   chiupp=NULL is +infty   ]]]
+  LDC info: DC ranges on level 1:
+            -2.000000 <= chilow <=  -1.000000    [[[  chiupp=NULL is +infty  ]]]
+            -0.750000 <= philow <=   0.000000    [[[  phiupp=NULL is +infty  ]]]
+  LDC info: zero bracketed checks PASS on level 1
+  LDC info: DC ranges on level 0:
+            -1.437500 <= chilow <=  -1.000000    [[[  chiupp=NULL is +infty  ]]]
+  LDC info: zero bracketed checks PASS on level 0
 checking admissibility of constant vectors:
     z0=0     admissible up   defect? 1
     z0=-1.25 admissible up   defect? 0

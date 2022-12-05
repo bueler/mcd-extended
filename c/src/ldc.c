@@ -77,10 +77,9 @@ PetscErrorCode LDCRefine(LDC *coarse, LDC *fine) {
     return 0;
 }
 
-PetscErrorCode LDCCheckDCRanges(LDC ldc) {
+PetscErrorCode LDCCheckDCRanges(LDC ldc, PetscBool *zerobracket) {
     PetscReal clmax = PETSC_NINFINITY, cumin = PETSC_INFINITY,
               plmax = PETSC_NINFINITY, pumin = PETSC_INFINITY;
-    PetscInt  retval = 0;
     if (ldc.chilow)
         PetscCall(VecMin(ldc.chilow,NULL,&clmax));
     if (ldc.chiupp)
@@ -91,21 +90,18 @@ PetscErrorCode LDCCheckDCRanges(LDC ldc) {
         if (ldc.phiupp)
             PetscCall(VecMin(ldc.phiupp,NULL,&pumin));
     }
-    if ((clmax <= 0.0) && (0.0 <= cumin) && (plmax <= 0.0) && (0.0 <= pumin))
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"zero bracket checks PASS (level %d):\n",
-                              ldc._level));
-    else {
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"zero bracket checks FAIL (level %d):\n",
-                              ldc._level));
-        retval = 1;
-    }
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"           "));
     PetscCall(VecPrintRange(ldc.chilow,"chilow","-infty",PETSC_FALSE));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"    "));
     PetscCall(VecPrintRange(ldc.chiupp,"chiupp","+infty",PETSC_TRUE));
     if (ldc._level > 0) {
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"           "));
         PetscCall(VecPrintRange(ldc.philow,"philow","-infty",PETSC_FALSE));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,"    "));
         PetscCall(VecPrintRange(ldc.phiupp,"phiupp","+infty",PETSC_TRUE));
     }
-    return retval;
+    *zerobracket = ((clmax <= 0.0) && (0.0 <= cumin) && (plmax <= 0.0) && (0.0 <= pumin));
+    return 0;
 }
 
 PetscErrorCode LDCSetFinestUpDCs(Vec w, Vec vgamupp, Vec vgamlow, LDC *ldc) {
@@ -266,7 +262,8 @@ PetscErrorCode _LDCDownDCs(LDC *coarse, LDC *fine) {
 }
 
 PetscErrorCode LDCSetLevel(LDC *fine) {
-    LDC *coarse = NULL;
+    LDC       *coarse = NULL;
+    PetscBool bracket;
     if (fine->_coarser) {
         coarse = (LDC*)(fine->_coarser);
         // generate chiupp, chilow on level fine
@@ -278,15 +275,19 @@ PetscErrorCode LDCSetLevel(LDC *fine) {
         PetscCall(_LDCDownDCs(NULL,fine));
     if (fine->_printinfo) {
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "  LDC info: calling LDCCheckDCRanges() on level %d\n",
-            fine->_level));
-        PetscCall(LDCCheckDCRanges(*fine));
+            "  LDC info: DC ranges on level %d:\n",fine->_level));
+        PetscCall(LDCCheckDCRanges(*fine,&bracket));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+            "  LDC info: zero bracketed checks %s on level %d\n",
+            bracket ? "PASS" : "FALL", fine->_level));
     }
     if ((coarse) && (!coarse->_coarser) && (coarse->_printinfo)) {
         PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-            "  LDC info: calling LDCCheckDCRanges() on level %d\n",
-            coarse->_level));
-        PetscCall(LDCCheckDCRanges(*coarse));
+            "  LDC info: DC ranges on level %d:\n",coarse->_level));
+        PetscCall(LDCCheckDCRanges(*coarse,&bracket));
+        PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+            "  LDC info: zero bracketed checks %s on level %d\n",
+            bracket ? "PASS" : "FALL", coarse->_level));
     }
     return 0;
 }
