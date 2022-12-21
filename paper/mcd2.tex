@@ -310,9 +310,9 @@ Again note that $\cK_i \not\subset \cK$ in these cases; informally speaking, the
 
 \section{Basic CD iterations} \label{sec:cditers}
 
-Associated to a constraint decomposition (CD) are certain basic iterative methods.  Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below are functions which improve a current iterate $u \in \cK$, generating output $w\in\cK$ which should be closer to the solution $u^* \in \cK$ of \eqref{eq:vi}, by solving smaller VI problems over each CD subset $\cK_i$.   The two Algorithms each permit a damping parameter $0<\alpha\le 1$, and they generalize the Jacobi and Gauss-Seidel iterations, respectively.
+Associated to a constraint decomposition (CD) are certain basic iterative methods.  Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below are functions which improve a current iterate $u \in \cK$, generating output $w\in\cK$ which should be closer to the solution $u^* \in \cK$ of \eqref{eq:vi}, by solving smaller VI problems over each CD subset $\cK_i$.  Note that each Algorithm permits a damping parameter $0<\alpha\le 1$.
 
-In Algorithm \ref{alg:basiccd-add}, the additive or parallel CD method, ``\textbf{for all}'' can be computed in any order.  Note that the expression ``$u-\Pi_iu+\hat w_i$'' removes the part of $u$ which lies in $\mathcal{K}_i$ before adding-back the improved subset solution $\hat w_i \in \mathcal{K}_i$.
+Algorithm \ref{alg:basiccd-add}, the additive or parallel CD method, generalizes the classical Jacobi iteration.  Here ``\textbf{for all}'' can be computed in any order.  Note that the expression ``$u-\Pi_iu+\hat w_i$'' removes the part of $u$ which lies in $\mathcal{K}_i$ before adding-back the improved subset solution $\hat w_i \in \mathcal{K}_i$.
 
 \begin{pseudofloat}[H]
 \begin{pseudo*}
@@ -327,7 +327,7 @@ In Algorithm \ref{alg:basiccd-add}, the additive or parallel CD method, ``\textb
 \label{alg:basiccd-add}
 \end{pseudofloat}
 
-In the multiplicative (successive) version, Algorithm \ref{alg:basiccd-mult}, each $\mathcal{K}_i$ solution corrects the global iterate immediately, and the $\mathcal{K}_i$ are addressed in a fixed order.  The sum ``$\sum_{j>i} \Pi_j u$'' should be read as keeping the parts of the input $u$ which have not yet improved.   Note we must update the subset iterate $w_i$ using the same damping that is applied to the final output $w$.
+Algorithm \ref{alg:basiccd-mult} is the multiplicative (successive) version which generalizes the Gauss-Seidel iteration.  Each $\mathcal{K}_i$ solution corrects the global iterate immediately, and the order in which the $\mathcal{K}_i$ are addressed matters.  The sum ``$\sum_{j>i} \Pi_j u$'' should be read as ``parts of the input $u$ which have not yet improved''.
 
 \begin{pseudofloat}
 \begin{pseudo*}
@@ -343,38 +343,36 @@ In the multiplicative (successive) version, Algorithm \ref{alg:basiccd-mult}, ea
 \label{alg:basiccd-mult}
 \end{pseudofloat}
 
-In each boxed VI the argument of $f$ is an element of $\cK$, as the reader should confirm.  On the other hand, by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may also write the test vector $v_i - \hat w_i \in \cV_i$ as a difference of admissible vectors from $\cK$.  For the two Algorithms respectively:
+In each boxed VI the argument of $f$ is an element of $\cK$, as the reader should confirm.  By \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may also write the test vector $v_i - \hat w_i \in \cV_i$ as a difference of admissible vectors from $\cK$.  For the two Algorithms respectively:
 \begin{align*}
 [u - \Pi_i u + v_i] - [u - \Pi_i u + \hat w_i] &= v_i - \hat w_i, \label{eq:admissibledifference} \\
 \left[\sum_{j<i} w_j + v_i + \sum_{j>i} \Pi_j u\right] - \left[\sum_{j<i} w_j + \hat w_i + \sum_{j>i} \Pi_j u\right] &= v_i - \hat w_i.  \notag
 \end{align*}
-In this sense the boxed VIs are for the same problem as the original VI \eqref{eq:vi}.
+In this sense the boxed VIs are for the same problem as the original VI \eqref{eq:vi}.  We define the $i$th \emph{subset update} as $e_i = \hat w_i - \Pi_i u \in \cV_i$, and the reader may check that $\hat w = u + \sum_{i} e_i$ and $w = u + \alpha \sum_i e_i$.
 
-For either Algorithm we define the $i$th \emph{subset update} as
-\begin{equation}
-e_i = \hat w_i - \Pi_i u \in \cV_i. \label{eq:ithupdate}
-\end{equation}
-The reader may check that $\hat w = u + \sum_{i} e_i$ and $w = u + \alpha \sum_i e_i$.  Trivially, $\hat w = u^* + \sum_i \hat w_i - \Pi_i u^*$ also holds.
+We will refer to Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} as the \emph{basic CD iterations}.
 
-We will refer to Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} as the \emph{basic CD iterations}.  These iterations are meaningful even when $f$ is nonlinear, non-local, or defined only on $\cK$.  However, practical and efficient FE implementation for such general operators $f$ seems not to have been addressed in the literature, and doing so will require new notions.  In particular, references \cite{GraeserKornhuber2009,Tai2003} only apply the CD method to the classical obstacle problem for which $f$ is linear, local, and defined for all inputs (i.e.~$f$ is defined on all of $\mathcal{V}$).  The following example exposes the implementation simplifications available in that easier case.
+FIXME show that if $f=F'$ then $F$ is reduced by each Alg \ref{alg:basiccd-mult} iteration; also reduced by Alg \ref{alg:basiccd-add} if $m\alpha=1$ by Jensen's inequality?; $\cK_i$ problems are a type of line search when the corresponding subspaces $\cV_i$ are one-dimensional
 
-\begin{example}  \label{ex:fnice} Suppose $f:\cV \to \cV'$ is linear.  Furthermore suppose $f$ is a differential operator, thus local in the sense that for any $z\in\mathcal{V}$ the value $\ip{f(\phi)}{z}$ can be computed by an integral over the support of $\phi \in \mathcal{V}$.  Considering additive Algorithm \ref{alg:basiccd-add} for concreteness, by linearity the boxed VI can be written as
+The basic CD iterations are meaningful even when $f$ is nonlinear, non-local, or defined only on $\cK$.  However, practical and efficient FE implementation for such general operators $f$ seems not to have been addressed in the literature.  References \cite{GraeserKornhuber2009,Tai2003} only apply the CD method to the classical obstacle problem for which $f$ is linear, local, and defined for all inputs (i.e.~$f$ is defined on all of $\mathcal{V}$).  The following example exposes the implementation simplifications available in that easier case.
+
+\begin{example}  \label{ex:fnice} Suppose $f:\cV \to \cV'$ is linear.  Furthermore suppose $f$ is a differential operator, thus local in the sense that for any $z\in\mathcal{V}$ the value $\ip{f(\phi)}{z}$ can be computed by an integral over the support of $\phi$.  Considering additive Algorithm \ref{alg:basiccd-add} for concreteness, by linearity the boxed VI can be written as
 \begin{equation}
 \ip{f(e_i)}{v_i-\hat w_i} \ge \ip{\tilde\ell}{v_i-\hat w_i}, \label{eq:linearlocalvi}
 \end{equation}
-for all $v_i \in \mathcal{K}_i$, where $\tilde\ell = \ell - f(u)$.  Note $e_i = \hat w_i - \Pi_i u \in \cV_i$ is not generally admissible ($e_i \notin \cK$), but \eqref{eq:linearlocalvi} makes sense because $f$ is defined over $\cV$.  Each problem \eqref{eq:linearlocalvi} can be solved using a stored residual $f(u)$, now included into $\tilde\ell$.  If a hat function basis exists for $\cV_i$, namely a basis of small-support functions, then by linearity of $f$ a solver for VI \eqref{eq:linearlocalvi} can be implemented using only integrals over the hat function supports.\footnote{Compare equations (2.31) and (2.32) in \cite{Farrelletal2021}, which describe the same sense of locality.}
+for all $v_i \in \mathcal{K}_i$, where $\tilde\ell = \ell - f(u)$.  Each problem \eqref{eq:linearlocalvi} can be solved using a stored residual $f(u)$, now included into $\tilde\ell$.  Note $e_i = \hat w_i - \Pi_i u \in \cV_i$ is not generally admissible ($e_i \notin \cK$), but \eqref{eq:linearlocalvi} is meaningful because $f$ is defined over $\cV$.  If a hat function basis exists for $\cV_i$, namely a basis of small-support functions, then by linearity of $f$ a solver for VI \eqref{eq:linearlocalvi} can be implemented using only integrals over the hat function supports.\footnote{Compare equations (2.31) and (2.32) in \cite{Farrelletal2021}, which describe the same sense of locality.}
 \end{example}
 
 When $f$ has all the nice properties listed in Example \ref{ex:fnice} then a solver can take advantage of implementation efficiencies which are unavailable in general.  An FE approximation of VI \eqref{eq:vi}---see Sections \ref{sec:femultilevel} and \ref{sec:vcycle}---can then be solved in any incremental and efficient manner following the techniques in \cite{GraeserKornhuber2009,Tai2003}, namely by computations over hat function supports.  The actual solution process for VI \eqref{eq:linearlocalvi} is not really the concern here; we are observing that the storage needed for problem \eqref{eq:linearlocalvi}, and the cost of residual evaluation, are substantially smaller than in the general case.
 
-For general problems lacking the niceties of Example \ref{ex:fnice}, certain additional ideas are needed for practical implementation.  Section \ref{sec:vcycle} constructs a multilevel CD iteration for functions $f:\cK\to\cV'$, i.e.~defined only on the constraint set, and assuming neither linearity nor locality, by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}.
+For general problems lacking the niceties of Example \ref{ex:fnice}, certain additional ideas are needed for practical implementation.  With a non-local integral operator $f$, for example, the expression $\ip{f(\phi)}{z}$ requires an integral over $\Omega$ even if $\phi$ is a function with small support, such as a hat function; cf.~subsection 4.5 in \cite{Bueler2021conservation}.
 
-Specifically for a non-local integral operator $f$, the expression $\ip{f(\phi)}{z}$ requires an integral over $\Omega$ even if $\phi$ is a function with small support (such as a hat function); cf.~subsection 4.5 in \cite{Bueler2021conservation}.  While Algorithm \ref{alg:nmcd} applies, as stated, to such $f$, practical extension of multilevel CD methods to non-local operators is a topic for future research.
+Section \ref{sec:vcycle} constructs a multilevel CD iteration for functions $f:\cK\to\cV'$, i.e.~defined only on the constraint set, and assuming neither linearity nor locality, by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}.
 
 
 \section{Multilevel finite elements} \label{sec:femultilevel}
 
-From now on we are concerned with the approximate solution of certain nonlinear VI problems over 2D computational domains.  Suppose $\Omega \subset \RR^2$ is a (open) bounded polygon and that $\mathcal{V}=W^{1,p}(\Omega)$ is a Sobolev space of once-differentiable functions.  In addition to the free boundaries defined by inequality constraints (below), fixed boundary conditions may be Dirichlet or mixed.  Suppose that the domain boundary is split into disjoint, measurable sets, $\partial\Omega = \partial_D \Omega \cup \partial_N \Omega$, with $\partial_D \Omega$ of positive measure for simplicity, to permit well-posedness \cite{Evans2010}, and $\partial_N \Omega$ possibly empty.  Suppose that the provided Dirichlet data $g_D:\partial_D \Omega \to \RR$ is sufficiently-regular so that the VI problem \eqref{eq:boxdirichletvi} below is well posed.
+From now on we are concerned with the approximate solution of certain nonlinear VI problems over 2D computational domains.  Suppose $\Omega \subset \RR^2$ is a (open) bounded polygon and let $\mathcal{V}=W^{1,p}(\Omega)$.  In addition to the free boundaries defined by inequality constraints (below), fixed boundary conditions may be Dirichlet or mixed.  Suppose that the domain boundary is split into disjoint, measurable sets, $\partial\Omega = \partial_D \Omega \cup \partial_N \Omega$, with $\partial_D \Omega$ of positive measure for simplicity, to permit well-posedness \cite{Evans2010}, and $\partial_N \Omega$ possibly empty.  Suppose that the provided Dirichlet data $g_D:\partial_D \Omega \to \RR$ is sufficiently-regular so that the VI problem \eqref{eq:boxdirichletvi} below is well posed.
 
 We restrict to the case of \emph{box constraints} \cite{BensonMunson2006,FerrisPang1997}, equivalently \emph{bi-obstacle problems}.  The \emph{lower obstacle} $\underline{\gamma}$ and the \emph{upper obstacle} $\overline{\gamma}$ are given measurable functions on the closure $\overline{\Omega}$ which take their values in the extended real line $\tilde\RR = [-\infty,+\infty]$.  Specifically suppose $\underline{\gamma} : \overline{\Omega} \to [-\infty,+\infty)$ and $\overline{\gamma} : \overline{\Omega} \to (-\infty,+\infty]$ are measurable, satisfying $\underline{\gamma} \le \overline{\gamma}$ on $\overline{\Omega}$ and $\underline{\gamma} \le g_D \le \overline{\gamma}$ on $\partial_D \Omega$.
 
