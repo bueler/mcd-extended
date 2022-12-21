@@ -312,7 +312,7 @@ Again note that $\cK_i \not\subset \cK$ in these cases; informally speaking, the
 
 Associated to a constraint decomposition (CD) are certain basic iterative methods.  Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below are functions which improve a current iterate $u \in \cK$, generating output $w\in\cK$ which should be closer to the solution $u^* \in \cK$ of \eqref{eq:vi}, by solving smaller VI problems over each CD subset $\cK_i$.  Note that each Algorithm permits a damping parameter $0<\alpha\le 1$.
 
-Algorithm \ref{alg:basiccd-add}, the additive or parallel CD method, generalizes the classical Jacobi iteration.  Here ``\textbf{for all}'' can be computed in any order.  Note that the expression ``$u-\Pi_iu+\hat w_i$'' removes the part of $u$ which lies in $\mathcal{K}_i$ before adding-back the improved subset solution $\hat w_i \in \mathcal{K}_i$.
+\pr{cd-add}, the additive or parallel CD method, generalizes the classical Jacobi iteration.  Here ``\textbf{for all}'' can be computed in any order.  Note that the expression ``$u-\Pi_iu+\hat w_i$'' removes the part of $u$ which lies in $\mathcal{K}_i$ before adding-back the improved subset solution $\hat w_i \in \mathcal{K}_i$.
 
 \begin{pseudofloat}[H]
 \begin{pseudo*}
@@ -327,7 +327,7 @@ Algorithm \ref{alg:basiccd-add}, the additive or parallel CD method, generalizes
 \label{alg:basiccd-add}
 \end{pseudofloat}
 
-Algorithm \ref{alg:basiccd-mult} is the multiplicative (successive) version which generalizes the Gauss-Seidel iteration.  Each $\mathcal{K}_i$ solution corrects the global iterate immediately, and the order in which the $\mathcal{K}_i$ are addressed matters.  The sum ``$\sum_{j>i} \Pi_j u$'' should be read as ``parts of the input $u$ which have not yet improved''.
+\pr{cd-mult} is the multiplicative (successive) version which generalizes the Gauss-Seidel iteration.  Each $\mathcal{K}_i$ solution corrects the global iterate immediately, and the order in which the $\mathcal{K}_i$ are addressed matters.  The sum ``$\sum_{j>i} \Pi_j u$'' should be read as ``parts of the input $u$ which have not yet improved''.
 
 \begin{pseudofloat}
 \begin{pseudo*}
@@ -343,31 +343,54 @@ Algorithm \ref{alg:basiccd-mult} is the multiplicative (successive) version whic
 \label{alg:basiccd-mult}
 \end{pseudofloat}
 
-In each boxed VI the argument of $f$ is an element of $\cK$, as the reader should confirm.  By \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may also write the test vector $v_i - \hat w_i \in \cV_i$ as a difference of admissible vectors from $\cK$.  For the two Algorithms respectively:
-\begin{align*}
-[u - \Pi_i u + v_i] - [u - \Pi_i u + \hat w_i] &= v_i - \hat w_i, \label{eq:admissibledifference} \\
-\left[\sum_{j<i} w_j + v_i + \sum_{j>i} \Pi_j u\right] - \left[\sum_{j<i} w_j + \hat w_i + \sum_{j>i} \Pi_j u\right] &= v_i - \hat w_i.  \notag
-\end{align*}
+In each boxed VI the argument of $f$ is an element of $\cK$, as the reader should confirm.  By \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may also write the test vector $v_i - \hat w_i \in \cV_i$ as a difference of admissible vectors from $\cK$.  For \pr{cd-add} and \pr{cd-mult} respectively:
+\begin{align}
+[u - \Pi_i u + v_i] - [u - \Pi_i u + \hat w_i] &= v_i - \hat w_i, \label{eq:admissibledifferenceadd} \\
+\left[\sum_{j<i} w_j + v_i + \sum_{j>i} \Pi_j u\right] - \left[\sum_{j<i} w_j + \hat w_i + \sum_{j>i} \Pi_j u\right] &= v_i - \hat w_i.  \label{eq:admissibledifferencemult}
+\end{align}
 In this sense the boxed VIs are for the same problem as the original VI \eqref{eq:vi}.  We define the $i$th \emph{subset update} as $e_i = \hat w_i - \Pi_i u \in \cV_i$, and the reader may check that $\hat w = u + \sum_{i} e_i$ and $w = u + \alpha \sum_i e_i$.
 
-We will refer to Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} as the \emph{basic CD iterations}.
+We will refer to \pr{cd-add} and \pr{cd-mult} as the \emph{basic CD iterations}.  Under appropriate assumptions on the damping, these iterations generate monotonically-decreasing objective function values whenever VI problem \eqref{eq:vi} corresponds to convex optimization as in problem \eqref{eq:minimization}.  In this sense the boxed VI problems in the basic CD iterations are analogous to constrained line searches; they reduce to line searches when the $\cV_i$ are one-dimensional.
 
-FIXME show that if $f=F'$ then $F$ is reduced by each Alg \ref{alg:basiccd-mult} iteration; also reduced by Alg \ref{alg:basiccd-add} if $m\alpha=1$ by Jensen's inequality?; $\cK_i$ problems are a type of line search when the corresponding subspaces $\cV_i$ are one-dimensional
+\begin{lemma}  Suppose $f=F'$ for $F:\cK\to\RR$ convex and differentiable and let $u\in\cK$.  For any damping $0<\alpha\le 1$, the output $w \in \cK$ from \pr{cd-mult} satisfies
+\begin{equation}
+F(w) - \ip{\ell}{w} \le F(u) - \ip{\ell}{u}.  \label{eq:monotone}
+\end{equation}
+If also $\alpha \le 1/m$ then the output of \pr{cd-add} likewise satisfies \eqref{eq:monotone}.
+\end{lemma}
+
+\begin{proof}  We assume $\ell=0$ without loss of generality; otherwise define $\tilde F(u)=F(u) - \ip{\ell}{u}$ and observe that the proof goes through for $\tilde F$ essentially unchanged.
+
+If $w$ is computed from \pr{cd-mult} then actually each iteration of the \textbf{for} loop lowers the objective value.  To show this let $z_{i} = \sum_{j\le i} w_j + \sum_{j > i} \Pi_j u \in \cK$ be the state at the end of the $i$th iteration.  Using convexity, observation \eqref{eq:admissibledifferencemult} with $v_i=\Pi_i u$, and the boxed inequality we find:
+\begin{equation*}
+F(z_{i-1}) - F\left(\sum_{j<i} w_j + \hat w_i + \sum_{j > i} \Pi_j u\right) \ge \ip{f\left(\sum_{j<i} w_j + \hat w_i + \sum_{j > i} \Pi_j u\right)}{\Pi_i u - \hat w_i} \ge 0.
+\end{equation*}
+Using convexity (again), and the above inequality, gives
+\begin{align*}
+F(z_i) &= F\left((1-\alpha) z_{i-1} + \alpha \left(\sum_{j<i} w_j + \hat w_i + \sum_{j > i} \Pi_j u\right)\right) \\
+&\le  (1-\alpha) F(z_{i-1}) + \alpha F\left(\sum_{j<i} w_j + \hat w_i + \sum_{j > i} \Pi_j u\right) \le F(z_{i-1}).
+\end{align*}
+Noting that $w = \sum_{i=0}^{m-1} w_i = z_{m-1}$, the result for \pr{cd-mult} follows.
+
+FIXME $\alpha \le 1/m$ argument
+\end{proof}
+
+When $\alpha=1/m$ exactly then the logic of the proof of monotonicity for \pr{cd-add} is clearer.  In this case each VI solution over $\cK_i$ lowers the objective value from $F(u)$ to $F(u+e_i)$.  (As noted, these VI solutions can occur in parallel.)  Then the convex combination of points $\{u+e_i\} \subset \cK$, with equal coefficients $1/m$, is $w=u+\frac{1}{m}\sum_i e_i$.  By convexity of $F$ it follows that $F(w)$ is lower than the average $\frac{1}{m} \sum_i F(u+e_i)$, which is lower than $F(u)$.
 
 The basic CD iterations are meaningful even when $f$ is nonlinear, non-local, or defined only on $\cK$.  However, practical and efficient FE implementation for such general operators $f$ seems not to have been addressed in the literature.  References \cite{GraeserKornhuber2009,Tai2003} only apply the CD method to the classical obstacle problem for which $f$ is linear, local, and defined for all inputs (i.e.~$f$ is defined on all of $\mathcal{V}$).  The following example exposes the implementation simplifications available in that easier case.
 
-\begin{example}  \label{ex:fnice} Suppose $f:\cV \to \cV'$ is linear.  Furthermore suppose $f$ is a differential operator, thus local in the sense that for any $z\in\mathcal{V}$ the value $\ip{f(\phi)}{z}$ can be computed by an integral over the support of $\phi$.  Considering additive Algorithm \ref{alg:basiccd-add} for concreteness, by linearity the boxed VI can be written as
+\begin{example}  \label{ex:fnice} Suppose $f:\cV \to \cV'$ is linear.  Furthermore suppose $f$ is a differential operator, thus local in the sense that for any $z\in\mathcal{V}$ the value $\ip{f(\phi)}{z}$ can be computed by an integral over the support of $\phi$.  Considering \pr{cd-add} for concreteness, by linearity the boxed VI can be written as
 \begin{equation}
 \ip{f(e_i)}{v_i-\hat w_i} \ge \ip{\tilde\ell}{v_i-\hat w_i}, \label{eq:linearlocalvi}
 \end{equation}
 for all $v_i \in \mathcal{K}_i$, where $\tilde\ell = \ell - f(u)$.  Each problem \eqref{eq:linearlocalvi} can be solved using a stored residual $f(u)$, now included into $\tilde\ell$.  Note $e_i = \hat w_i - \Pi_i u \in \cV_i$ is not generally admissible ($e_i \notin \cK$), but \eqref{eq:linearlocalvi} is meaningful because $f$ is defined over $\cV$.  If a hat function basis exists for $\cV_i$, namely a basis of small-support functions, then by linearity of $f$ a solver for VI \eqref{eq:linearlocalvi} can be implemented using only integrals over the hat function supports.\footnote{Compare equations (2.31) and (2.32) in \cite{Farrelletal2021}, which describe the same sense of locality.}
 \end{example}
 
-When $f$ has all the nice properties listed in Example \ref{ex:fnice} then a solver can take advantage of implementation efficiencies which are unavailable in general.  An FE approximation of VI \eqref{eq:vi}---see Sections \ref{sec:femultilevel} and \ref{sec:vcycle}---can then be solved in any incremental and efficient manner following the techniques in \cite{GraeserKornhuber2009,Tai2003}, namely by computations over hat function supports.  The actual solution process for VI \eqref{eq:linearlocalvi} is not really the concern here; we are observing that the storage needed for problem \eqref{eq:linearlocalvi}, and the cost of residual evaluation, are substantially smaller than in the general case.
+When $f$ has all the nice properties listed in Example \ref{ex:fnice} then a solver based on CD iterations can take advantage of implementation efficiencies which are unavailable in general.  An FE approximation of VI \eqref{eq:vi}---see Sections \ref{sec:femultilevel} and \ref{sec:vcycle}---can then be solved in any incremental and efficient manner following the techniques in \cite{GraeserKornhuber2009,Tai2003}, namely by computations over hat function supports.  The actual solution process for VI \eqref{eq:linearlocalvi} is not really the concern here; we are observing that the storage needed for problem \eqref{eq:linearlocalvi}, and the cost of residual evaluation, are substantially smaller than in the general case.
 
-For general problems lacking the niceties of Example \ref{ex:fnice}, certain additional ideas are needed for practical implementation.  With a non-local integral operator $f$, for example, the expression $\ip{f(\phi)}{z}$ requires an integral over $\Omega$ even if $\phi$ is a function with small support, such as a hat function; cf.~subsection 4.5 in \cite{Bueler2021conservation}.
+For general problems lacking the niceties of Example \ref{ex:fnice}, certain additional ideas are needed for practical implementation of \pr{cd-add} or \pr{cd-mult}.  With a non-local integral operator $f$, for example, the expression $\ip{f(\phi)}{z}$ requires an integral over $\Omega$ even if $\phi$ is a function with small support, such as a hat function; cf.~subsection 4.5 in \cite{Bueler2021conservation}.
 
-Section \ref{sec:vcycle} constructs a multilevel CD iteration for functions $f:\cK\to\cV'$, i.e.~defined only on the constraint set, and assuming neither linearity nor locality, by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}.
+Section \ref{sec:vcycle} constructs a multiplicative multilevel CD iteration for functions $f:\cK\to\cV'$, and assuming neither linearity nor locality, by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}.
 
 
 \section{Multilevel finite elements} \label{sec:femultilevel}
