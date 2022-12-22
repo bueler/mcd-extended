@@ -350,7 +350,7 @@ In each boxed VI the argument of $f$ is an element of $\cK$, as the reader shoul
 \end{align}
 In this sense the boxed VIs are for the same problem as the original VI \eqref{eq:vi}.  We define the $i$th \emph{subset update} as $e_i = \hat w_i - \Pi_i u \in \cV_i$, and the reader may check that $\hat w = u + \sum_{i} e_i$ and $w = u + \alpha \sum_i e_i$.
 
-We will refer to \pr{cd-add} and \pr{cd-mult} as the \emph{basic CD iterations}.  Under appropriate assumptions on the damping, these iterations generate monotonically-decreasing objective function values whenever VI problem \eqref{eq:vi} corresponds to convex optimization as in problem \eqref{eq:minimization}.  In this sense the boxed VI problems in the basic CD iterations are analogous to constrained line searches; they reduce to line searches when the $\cV_i$ are one-dimensional.
+We will refer to \pr{cd-add} and \pr{cd-mult} as the \emph{basic CD iterations}.  According to damping assumptions, these iterations generate monotonically-decreasing objective values if VI problem \eqref{eq:vi} corresponds to convex optimization (problem \eqref{eq:minimization}), as shown in the following Lemma.  Thus the boxed VI problems in the \pr{cd-add} and \pr{cd-mult} algorithms are analogous to constrained line searches, and in fact they reduce to such when the $\cV_i$ are one-dimensional.
 
 \begin{lemma}  Suppose $f=F'$ for $F:\cK\to\RR$ convex and differentiable and let $u\in\cK$.  For any damping $0<\alpha\le 1$, the output $w \in \cK$ from \pr{cd-mult} satisfies
 \begin{equation}
@@ -361,7 +361,7 @@ If also $\alpha \le 1/m$ then the output of \pr{cd-add} likewise satisfies \eqre
 
 \begin{proof}  We assume $\ell=0$ without loss of generality; otherwise define $\tilde F(u)=F(u) - \ip{\ell}{u}$ and observe that the proof goes through for $\tilde F$ essentially unchanged.
 
-If $w$ is computed from \pr{cd-mult} then actually each iteration of the \textbf{for} loop lowers the objective value.  To show this let $z_{i} = \sum_{j\le i} w_j + \sum_{j > i} \Pi_j u \in \cK$ be the state at the end of the $i$th iteration.  Using convexity, observation \eqref{eq:admissibledifferencemult} with $v_i=\Pi_i u$, and the boxed inequality we find:
+Each iteration of the \textbf{for} loop in \pr{cd-mult} lowers the objective value.  To show this let $z_{i} = \sum_{j\le i} w_j + \sum_{j > i} \Pi_j u \in \cK$ be the state at the end of the $i$th iteration.  Using convexity, observation \eqref{eq:admissibledifferencemult} with $v_i=\Pi_i u$, and the boxed VI we find:
 \begin{equation*}
 F(z_{i-1}) - F\left(\sum_{j<i} w_j + \hat w_i + \sum_{j > i} \Pi_j u\right) \ge \ip{f\left(\sum_{j<i} w_j + \hat w_i + \sum_{j > i} \Pi_j u\right)}{\Pi_i u - \hat w_i} \ge 0.
 \end{equation*}
@@ -372,10 +372,19 @@ F(z_i) &= F\left((1-\alpha) z_{i-1} + \alpha \left(\sum_{j<i} w_j + \hat w_i + \
 \end{align*}
 Noting that $w = \sum_{i=0}^{m-1} w_i = z_{m-1}$, the result for \pr{cd-mult} follows.
 
-FIXME $\alpha \le 1/m$ argument
+Suppose $w=u+\alpha\sum_i e_i$ is computed by \pr{cd-add}.  Considering each $e_i=\hat w_i - \Pi_i u$ separately we have, by convexity and the boxed VI,
+\begin{equation*}
+F(u) - F(u+e_i) \ge \ip{f(u+e_i)}{u-(u+e_i)} = \ip{f(u-\Pi_i u + \hat w_i)}{\Pi_i u - \hat w_i} \ge 0.
+\end{equation*}
+If $z = u+ \frac{1}{m} \sum_i e_i$ then, again using convexity (Jensen's inequality),
+\begin{align*}
+F(u) - F(z) &= \frac{1}{m} \sum_{i=0}^{m-1} F(u) - F\left(u + \frac{1}{m} \sum_{i=0}^{m-1} e_i\right) \\
+&\ge \frac{1}{m} \sum_{i=0}^{m-1} F(u+e_i) - F\left(\frac{1}{m} \sum_{i=0}^{m-1} (u+e_i)\right) \ge 0.
+\end{align*}
+Now suppose $\alpha \le 1/m$ and define $\lambda = m\alpha$ so $0<\lambda\le 1$ and $w = (1-\lambda) u + \lambda z$.  Thus by convexity and the above result, $F(w) \le (1-\lambda) F(u) + \lambda F(z) \le F(u)$.
 \end{proof}
 
-When $\alpha=1/m$ exactly then the logic of the proof of monotonicity for \pr{cd-add} is clearer.  In this case each VI solution over $\cK_i$ lowers the objective value from $F(u)$ to $F(u+e_i)$.  (As noted, these VI solutions can occur in parallel.)  Then the convex combination of points $\{u+e_i\} \subset \cK$, with equal coefficients $1/m$, is $w=u+\frac{1}{m}\sum_i e_i$.  By convexity of $F$ it follows that $F(w)$ is lower than the average $\frac{1}{m} \sum_i F(u+e_i)$, which is lower than $F(u)$.
+When $\alpha=1/m$ then the logic of the above proof for \pr{cd-add} is simpler.  Because each boxed VI over $\cK_i$ reduces the objective value from $F(u)$ to $F(u+e_i)$, we have $F(w)$ less than $\frac{1}{m} \sum_i F(u+e_i)$, which is lower than $F(u)$.
 
 The basic CD iterations are meaningful even when $f$ is nonlinear, non-local, or defined only on $\cK$.  However, practical and efficient FE implementation for such general operators $f$ seems not to have been addressed in the literature.  References \cite{GraeserKornhuber2009,Tai2003} only apply the CD method to the classical obstacle problem for which $f$ is linear, local, and defined for all inputs (i.e.~$f$ is defined on all of $\mathcal{V}$).  The following example exposes the implementation simplifications available in that easier case.
 
