@@ -558,12 +558,12 @@ downward        & ${\Large \strut} \underline{\phi}^j = \underline{\chi}^j - \un
 
 \section{Multilevel CDs} \label{sec:cdmultilevel}
 
-A multilevel V-cycle solver is defined in the next Section.  For the downward side of the V-cycle we will use the LDCs $\underline{\phi}^j,\overline{\phi}^j$ as constraints, and $\underline{\chi}^j,\overline{\chi}^j$ for the upward side.  The corresponding constraint sets are
+A multilevel V-cycle solver is defined in the next Section, which uses LDCs $\underline{\phi}^j,\overline{\phi}^j$ for the downward side of the V-cycle and $\underline{\chi}^j,\overline{\chi}^j$ for the upward side.  The corresponding \emph{downward} and \emph{upward defect constraint sets}, respectively, are
 \begin{align}
 \mathcal{D}^j = \left\{v \in \mathcal{V}^j \,:\, \underline{\phi}^j \le v \le \overline{\phi}^j \text{ and } \, v|_{\partial_D\Omega} = 0\right\}, \label{eq:fe:constraintsets} \\
 \mathcal{U}^j = \left\{v \in \mathcal{V}^j \,:\, \underline{\chi}^j \le v \le \overline{\chi}^j \text{ and } \, v|_{\partial_D\Omega} = 0\right\}. \notag
 \end{align}
-These are the \emph{downward} and \emph{upward defect constraint sets}, respectively, closed and convex subsets of the FE spaces $\mathcal{V}^j$, for $j=0,1,\dots,J$.  Because $\underline{\chi}^j \le \underline{\phi}^j \le 0 \le \overline{\phi}^j \le \overline{\chi}^j$, it follows that $\mathcal{D}^j \subset \mathcal{U}^j$; the upward sets are larger.  Note that the finest-level set $\mathcal{U}^J$ is equivalent to the original constraint set $\mathcal{K}^J$: for all $z^J \in \mathcal{V}^J$,
+These are closed and convex subsets of the FE spaces $\mathcal{V}^j$, for $j=0,1,\dots,J$.  Because $\underline{\chi}^j \le \underline{\phi}^j \le 0 \le \overline{\phi}^j \le \overline{\chi}^j$, it follows that $\mathcal{D}^j \subset \mathcal{U}^j$; the upward sets are larger.  Note that the finest-level set $\mathcal{U}^J$ is equivalent to the original constraint set $\mathcal{K}^J$: for all $z^J \in \mathcal{V}^J$,
 \begin{equation}
 z^J \in \mathcal{U}^J \quad \iff \quad w^J+z^J \in \mathcal{K}^J. \label{eq:fe:finestlevelequivalent}
 \end{equation}
