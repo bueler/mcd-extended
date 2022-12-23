@@ -4,8 +4,7 @@
 
 \usepackage{times,bm,bbm,empheq,fancyvrb,graphicx,amsthm,amssymb}
 \usepackage[dvipsnames]{xcolor}
-\usepackage{longtable}
-\usepackage{booktabs}
+\usepackage{longtable,booktabs,xspace}
 
 \usepackage{tabto}
 \TabPositions{1.5cm}
@@ -164,16 +163,16 @@ For coercive variational inequality (VI) problems which arise from minimization 
 We extend the multilevel CD method by implementing fully-nonlinear corrections, and we apply it to a new set of nonlinear VI problems which are coercive but which do not necessarily arise from minimization.  Specifically, for finite element (FE) solvers the algorithms in \cite{GraeserKornhuber2009} and \cite{Tai2003} are extended here in three practical ways:
 \renewcommand{\labelenumi}{\emph{(\roman{enumi})}}
 \begin{enumerate}
-\item We apply a full approximation storage (FAS; see \cite{Brandt1977,Bruneetal2015}) approach which avoids global (Newton) linearization.  Section \ref{sec:results} shows results from this \emph{nonlinear multilevel constraint decomposition} (NMCD) algorithm  for several nonlinear problems.
-\item Our implementation permits ``box'' constraints, namely upper and lower obstacles; see Section \ref{sec:femultilevel}.
-\item In Sections \ref{sec:femultilevel} and \ref{sec:vcycle} we explain why, given the manner in which constraint sets are decomposed in the multilevel context \cite{GraeserKornhuber2009}, ``up-smoothing'' is more efficient than ``down-smoothing''.  A strong preference for up-smoothing is special to multilevel CD methods and does not arise in unconstrained problems.
+\item We apply a full approximation storage (FAS; see \cite{Brandt1977,Bruneetal2015}) approach which avoids global (Newton) linearization.  Section \ref{sec:results} shows results from this \pr{fascd} algorithm for several nonlinear problems.
+\item The \pr{fascd} implementation permits ``box'' constraints, namely upper and lower obstacles; see Section \ref{sec:femultilevel}.
+\item In Sections \ref{sec:ldcs}--\ref{sec:vcycle} we explain why, given the manner in which constraint sets are decomposed in the multilevel context \cite{GraeserKornhuber2009}, ``up-smoothing'' is more efficient than ``down-smoothing''.  A strong preference for up-smoothing is special to multilevel CD methods and does not arise in unconstrained problems.
 \end{enumerate}
 
-The iterates from a CD method are always admissible, and thus the nonlinear operator in the VI needs only be defined for admissible states.  Our NMCD scheme is designed for such admissible-only problems, some of which require the solution of an auxiliary PDE on a domain determined inside the VI residual evaluation, as discussed in \cite{Bueler2021conservation}.  NMCD methods should permit direct solutions of those VI problems for which non-admissible methods, including semi-smooth methods \cite{BensonMunson2006}, require unnatural modifications of the operator formula.
+The iterates from a CD method are always admissible, and thus the nonlinear operator in the VI needs only be defined for admissible states.  \pr{fascd} is designed for such admissible-only problems, some of which require the solution of an auxiliary PDE on a domain determined inside the VI residual evaluation, as discussed in \cite{Bueler2021conservation}.  \pr{fascd} should permit direct solutions of those VI problems for which non-admissible methods, including semi-smooth methods \cite{BensonMunson2006}, require unnatural modifications of the operator formula.
 
-One of our examples (Section \ref{sec:results}) demonstrates the application of the NMCD method to a nonlinear operator of porous-media type.  By ``freezing'' the solution-dependent coefficient, the operator is approximated by a coercive operator for the duration of the V-cycle.  This scheme is also effective for doubly-nonlinear diffusion operators \cite[for example]{Bueler2021conservation,Calvoetal2002}.
+One of our examples (Section \ref{sec:results}) demonstrates the application of the \pr{fascd} method to a nonlinear operator of porous-media type.  By ``freezing'' the solution-dependent coefficient, the operator is approximated by a coercive operator for the duration of the V-cycle.  This scheme is also effective for doubly-nonlinear diffusion operators \cite[for example]{Bueler2021conservation,Calvoetal2002}.
 
-For the classical obstacle problem with a Laplacian operator, certain multilevel techniques, such as the truncated monotone multigrid method \cite{Kornhuber1994}, are known to improve performance relative to the original multilevel CD method from \cite{Tai2003}; see also \cite{GraeserKornhuber2009}.  These improved methods either track the active set in the discretization or modify the nodal basis functions, and in this sense they are discrete algorithms.  By contrast a CD method applies essentially at the level of the continuum problem; see Section \ref{sec:cd}.  Acceleration of the NMCD method via active-set and/or basis-level manipulations is a topic for future research.
+For the classical obstacle problem with a Laplacian operator, certain multilevel techniques, such as the truncated monotone multigrid method \cite{Kornhuber1994}, are known to improve performance relative to the original multilevel CD method from \cite{Tai2003}; see also \cite{GraeserKornhuber2009}.  These improved methods either track the active set in the discretization or modify the nodal basis functions, and in this sense they are discrete algorithms.  By contrast a CD method applies essentially at the level of the continuum problem; see Section \ref{sec:cd}.  Acceleration of the \pr{fascd} method via active-set and/or basis-level manipulations is a topic for future research.
 
 
 \section{Coercive variational inequalities} \label{sec:vi}
@@ -558,32 +557,32 @@ downward        & ${\Large \strut} \underline{\phi}^j = \underline{\chi}^j - \un
 
 \section{Multilevel CDs} \label{sec:cdmultilevel}
 
-A multilevel V-cycle solver is defined in the next Section, which uses LDCs $\underline{\phi}^j,\overline{\phi}^j$ for the downward side of the V-cycle and $\underline{\chi}^j,\overline{\chi}^j$ for the upward side.  The corresponding \emph{downward} and \emph{upward defect constraint sets}, respectively, are
+A multilevel V-cycle solver is defined in the next Section.  This V-cycle uses LDCs $\underline{\phi}^j,\overline{\phi}^j$ for the downward side and $\underline{\chi}^j,\overline{\chi}^j$ for the upward side.  The corresponding \emph{downward} and \emph{upward defect constraint sets}, respectively, are
 \begin{align}
 \mathcal{D}^j = \left\{v \in \mathcal{V}^j \,:\, \underline{\phi}^j \le v \le \overline{\phi}^j \text{ and } \, v|_{\partial_D\Omega} = 0\right\}, \label{eq:fe:constraintsets} \\
 \mathcal{U}^j = \left\{v \in \mathcal{V}^j \,:\, \underline{\chi}^j \le v \le \overline{\chi}^j \text{ and } \, v|_{\partial_D\Omega} = 0\right\}. \notag
 \end{align}
-These are closed and convex subsets of the FE spaces $\mathcal{V}^j$, for $j=0,1,\dots,J$.  Because $\underline{\chi}^j \le \underline{\phi}^j \le 0 \le \overline{\phi}^j \le \overline{\chi}^j$, it follows that $\mathcal{D}^j \subset \mathcal{U}^j$; the upward sets are larger.  Note that the finest-level set $\mathcal{U}^J$ is equivalent to the original constraint set $\mathcal{K}^J$: for all $z^J \in \mathcal{V}^J$,
+These are closed and convex subsets of the FE spaces $\mathcal{V}^j$.  Because $\underline{\chi}^j \le \underline{\phi}^j \le 0 \le \overline{\phi}^j \le \overline{\chi}^j$, it follows that $\mathcal{D}^j \subset \mathcal{U}^j$.  Note that the finest-level set $\mathcal{U}^J$ is equivalent to the original constraint set $\mathcal{K}^J$: for all $z^J \in \mathcal{V}^J$,
 \begin{equation}
 z^J \in \mathcal{U}^J \quad \iff \quad w^J+z^J \in \mathcal{K}^J. \label{eq:fe:finestlevelequivalent}
 \end{equation}
 
-Our multilevel strategy is based on constraint decompositions (CDs; Section \ref{sec:cd}) of $\mathcal{U}^J$, or rather incomplete CDs as we now explain.  Each upward set $\mathcal{U}^j$ can be decomposed in an inclusion sense, which becomes a true CD in unilateral cases.  The following Lemma is based on the unilateral CD construction underlying Algorithm 4.7 in \cite{GraeserKornhuber2009}; see also equation (59) in \cite{Tai2003}.  It explains downward admissibility in the V-cycle Algorithm \ref{alg:nmcd} in Section \ref{sec:vcycle}.
+Our multilevel strategy is based on incomplete constraint decompositions (CDs; Section \ref{sec:cd}) of $\mathcal{U}^J$, as we now explain.  Each upward set $\mathcal{U}^j$ can be decomposed in an inclusion sense, becoming a true CD in unilateral cases.  The following Lemma is based on the unilateral CD construction underlying Algorithm 4.7 in \cite{GraeserKornhuber2009}; see also equation (59) in \cite{Tai2003}.
 
-\begin{lemma}  \label{lem:downwardadmissibility}  For arbitrary upper and lower obstacles $\underline{\gamma}^J,\overline{\gamma}^J$ satisfying \eqref{eq:fe:boxconstraintrequirements}, and any $j=0,1,\dots,J$,
+\begin{lemma}  \label{lem:downwardadmissibility}  For arbitrary upper and lower obstacles $\underline{\gamma}^J,\overline{\gamma}^J$ satisfying \eqref{eq:fe:boxconstraintrequirements}, and $j=0,1,\dots,J$,
 \begin{equation}
-\mathcal{U}^j \supseteq \mathcal{D}^j + \mathcal{D}^{j-1} + \dots + \mathcal{D}^0. \label{eq:fe:downwardsuminclusion}
+\mathcal{U}^j \supset \mathcal{D}^j + \mathcal{D}^{j-1} + \dots + \mathcal{D}^0. \label{eq:fe:downwardsuminclusion}
 \end{equation}
-In unilateral cases, where either $\underline{\gamma}^J=-\infty$ or $\overline{\gamma}^J=+\infty$, inclusion \eqref{eq:fe:downwardsuminclusion} becomes a full CD \eqref{eq:constraintdecomp}, namely $\mathcal{U}^j=\sum_{i=0}^j \mathcal{D}^i$, over the subspace decomposition $\cV^j=\sum_{i=0}^j \cV^i$.
+In unilateral cases, where either $\underline{\gamma}^J=-\infty$ or $\overline{\gamma}^J=+\infty$, inclusion \eqref{eq:fe:downwardsuminclusion} becomes a full CD \eqref{eq:constraintdecomp}, namely $\mathcal{U}^j=\sum_{i=0}^j \mathcal{D}^i$.
 \end{lemma}
 
-\begin{proof}  Subspace decomposition \eqref{eq:subspacedecomp} holds---see nesting \eqref{eq:fe:nestedspaces}---and definition \eqref{eq:fe:constraintsets} shows $\mathcal{D}^i \subset \cV^i$ and $\mathcal{U}^i \subset \cV^i$.  If $y^i \in \mathcal{D}^i$ for $i=0,\dots,J$ then
+\begin{proof}  Subspace decomposition \eqref{eq:subspacedecomp} holds---see nesting \eqref{eq:fe:nestedspaces}---and definition \eqref{eq:fe:constraintsets} shows $\mathcal{D}^i \subset \mathcal{U}^i \subset \cV^i$.  If $y^i \in \mathcal{D}^i$ for $0 \le i \le j$ then by \eqref{eq:fe:telescoping},
 \begin{equation}
 \underline{\chi}^j = \sum_{i=0}^j \underline{\phi}^i \le \sum_{i=0}^j y^i \le \sum_{i=0}^j \overline{\phi}^i \le \overline{\chi}^j \label{eq:fe:lemmaordering}
 \end{equation}
-by \eqref{eq:fe:telescoping} and \eqref{eq:fe:constraintsets}, thus \eqref{eq:fe:downwardsuminclusion} holds for any box constraints.
+thus \eqref{eq:fe:downwardsuminclusion} holds for any box constraints.
 
-It remains to consider unilateral cases.  Here we can construct decomposition operators and show \eqref{eq:constraintrestrictionsum}.  Suppose $\overline{\gamma}^J=+\infty$, thus $\overline{\chi}^j=+\infty$ and $\overline{\phi}^i = +\infty$ for all levels.  For $v\in \mathcal{V}^j$ and $0\le i \le j$, let $I_{j\to i}^\ominus$ be the operator applying the minimum (monotone) restriction $j-i$ times, mapping into $\mathcal{V}^i$:
+In unilateral cases we can also construct decomposition operators $\Pi_i$ and show \eqref{eq:constraintrestrictionsum}.  Suppose $\overline{\gamma}^J=+\infty$, thus $\overline{\chi}^j=+\infty$ and $\overline{\phi}^i = +\infty$ for all levels.  For $v\in \mathcal{V}^j$ and $0\le i \le j$, let $I_{j\to i}^\ominus$ be the operator applying the minimum (monotone) restriction $j-i$ times, mapping into $\mathcal{V}^i$:
 \begin{equation}
 I_{j\to i}^\ominus v = \minR(\dots(\minR v)\dots)  \label{eq:fe:minimummaps}
 \end{equation}
@@ -595,18 +594,16 @@ Note that $I_{j\to j}^\ominus v = v$, and set $I_{j\to -1}^\ominus=0$ by definit
 \begin{align*}
 \sum_{i=0}^j \Pi_i z^j &= z^j - \underline{\chi}^j + \sum_{i=0}^j \underline{\phi}^i = z^j.
 \end{align*}
-This shows \eqref{eq:constraintrestrictionsum}, thus that \eqref{eq:fe:downwardsuminclusion} is equality, a true CD \eqref{eq:constraintdecomp}.
-
-The case where $\underline{\gamma}^J=-\infty$ is similar.
+This shows \eqref{eq:constraintrestrictionsum}, thus that \eqref{eq:fe:downwardsuminclusion} is equality, a true CD \eqref{eq:constraintdecomp}.  The $\underline{\gamma}^J=-\infty$ case is similar.
 \end{proof}
 
-It is tempting to try to turn \eqref{eq:fe:downwardsuminclusion} into a full CD for arbitrary box constraints by using decomposition maps like $\Pi_i$.  Specifically, one might split $z^j = \min\{z^j,0\} + \max\{z^j,0\}$ and apply unilateral formulas like \eqref{eq:fe:unilateraldecompositionoperator} to $\min\{z^j,0\}$ and $\max\{z^j,0\}$ separately, with $\Pi_i$ applied to $\min\{z^j,0\}$ and a straightforward variant operator to $\max\{z^j,0\}$.  In fact, the lower bound $\Pi_i (\min\{z^j,0\}) \ge \underline{\phi}^i$ holds, as shown in the above proof.  However, the following Example shows why $\Pi_i(\min\{z^j,0\})$ may have an arbitrarily large maximum, and thus exceed any finite upper LDC $\overline{\phi}^i$, so unfortunately $\Pi_i$ does not map even non-positive functions to $\mathcal{D}^i$ in the presence of a finite upper LDC.  While the proposed splitting strategy does not work, without redefinition of a formula which is adequate in the unilateral case, the existence of an entirely-different strategy for showing a full CD is also not excluded.
+It is tempting to try to turn \eqref{eq:fe:downwardsuminclusion} into a full CD for arbitrary box constraints by using decomposition maps like $\Pi_i$.  Specifically, one might split $z^j = \min\{z^j,0\} + \max\{z^j,0\}$ and apply unilateral formulas like \eqref{eq:fe:unilateraldecompositionoperator} to $\min\{z^j,0\}$ and $\max\{z^j,0\}$ separately, with $\Pi_i$ applied to $\min\{z^j,0\}$ and a straightforward variant operator to $\max\{z^j,0\}$.  In fact, the lower bound $\Pi_i (\min\{z^j,0\}) \ge \underline{\phi}^i$ holds, as shown in the above proof.  However, the following Example shows why $\Pi_i(\min\{z^j,0\})$ may have an arbitrarily large maximum, and thus exceed any finite upper LDC $\overline{\phi}^i$, so unfortunately $\Pi_i$ does not map even non-positive functions to $\mathcal{D}^i$ in the presence of a finite upper LDC.  On the other hand, the existence of an entirely-different strategy for showing a full CD is not excluded.
 
 \begin{example}  \label{ex:notfullcd}
 Let $a\ge 0$ be an arbitrary positive number.  Consider a 2-level hierarchy ($J=1$), and suppose the lower defect constraint is the constant function $\underline{\chi}^1=-a$.  Recalling Table \ref{tab:ldcs}, note $\underline{\chi}^0=\maxR \underline{\chi}^1=-a$ also, so $\underline{\phi}^1=0$ and $\underline{\phi}^0=-a$.  Suppose $z^1$ is a ``sawtooth'' function which takes on value $-a$ on the coarse nodes and value $0$ on the other fine-level nodes.  Then $\overline{\chi}^1 \ge 0 \ge z^1\ge \underline{\chi}^1$, for any valid $\overline{\chi}^1$, so $z^j \in \mathcal{U}^1$.  However, $I_{1\to 0}^\ominus(z^1 - \underline{\chi}^1) = \minR(z^1 - \underline{\chi}^1) = 0$ identically.  From \eqref{eq:fe:unilateraldecompositionoperator}, $\Pi_1 z^1$ simplifies to $\Pi_1 z^1 = z^1 - \underline{\chi}^1$.  But then $\Pi_1 z^1$ attains a maximum $a\ge 0$.  This maximum can be chosen to exceed any upper defect obstacle $\overline{\phi}^1$.  Thus, for general $w^1 \in \mathcal{U}^1$ and general LDCs, $\Pi_1$ does not map $\min\{w^1,0\}$ into $\mathcal{D}^1$.
 \end{example}
 
-Each upward defect constraint set $\mathcal{U}^j$ can also be be decomposed down to an arbitrary level $k$ where an upward set $\mathcal{U}^k$ is used as the coarsest set.  The next Lemma, similar to Lemma \ref{lem:downwardadmissibility} but not following from it, explains upward admissibility in V-cycle Algorithm \ref{alg:nmcd}.
+Each upward defect constraint set $\mathcal{U}^j$ can also be be decomposed down to an arbitrary level $k$ where an upward set $\mathcal{U}^k$ is used as the coarsest set.  While similar to Lemma \ref{lem:downwardadmissibility}, the next Lemma does not follow logically from it.
 
 \begin{lemma}  \label{lem:upwardadmissibility}  For any $j=0,1,\dots,J$ and $0\le k\le j$,
 \begin{equation}
@@ -614,31 +611,33 @@ Each upward defect constraint set $\mathcal{U}^j$ can also be be decomposed down
 \end{equation}
 In unilateral cases, where either $\underline{\gamma}^J=-\infty$ or $\overline{\gamma}^J=+\infty$, inclusion \eqref{eq:fe:upwardsuminclusion} is a full CD \eqref{eq:constraintdecomp}. \end{lemma}
 
-\begin{proof}  Definition \eqref{eq:fe:philevels} shows that $\underline{\chi}^j = \underline{\phi}^j + \dots + \underline{\phi}^{k+1} + \underline{\chi}^k$ and $\overline{\chi}^j = \overline{\phi}^j + \dots + \overline{\phi}^{k+1} + \overline{\chi}^k$.  (These facts replace \eqref{eq:fe:telescoping}.)  If $y^i \in \mathcal{D}^i$ for $i=k+1,\dots,j$ and $z^k \in \mathcal{U}^k$ then it is easy to show, as in \eqref{eq:fe:lemmaordering}, that $\underline{\chi}^j \le y^j + \dots + y^{k+1} + z^k \le \overline{\chi}^j$, thus \eqref{eq:fe:upwardsuminclusion} holds.
+\begin{proof}  Definition \eqref{eq:fe:philevels} shows that $\underline{\chi}^j = \underline{\phi}^j + \dots + \underline{\phi}^{k+1} + \underline{\chi}^k$ and $\overline{\chi}^j = \overline{\phi}^j + \dots + \overline{\phi}^{k+1} + \overline{\chi}^k$.  (These facts replace \eqref{eq:fe:telescoping}.)  If $y^i \in \mathcal{D}^i$ for $k+1 \le i \le j$ and $z^k \in \mathcal{U}^k$ then it is easy to show, as in \eqref{eq:fe:lemmaordering}, that $\underline{\chi}^j \le y^j + \dots + y^{k+1} + z^k \le \overline{\chi}^j$, thus \eqref{eq:fe:upwardsuminclusion} holds.
 
-In unilateral cases we follow the proof of Lemma \ref{lem:downwardadmissibility}.  Definition \eqref{eq:fe:minimummaps} is unchanged.  We use \eqref{eq:fe:unilateraldecompositionoperator} unchanged for $i=k+1,\dots,j$, but modify it in the $i=k$ case: $\Pi_k z^j = I_{j\to k}^\ominus(z^j - \underline{\chi}^j) + \underline{\chi}^k$.  The remainder of the proof goes through as for Lemma \ref{lem:downwardadmissibility}.
+In unilateral cases we follow the proof of Lemma \ref{lem:downwardadmissibility}.  Definition \eqref{eq:fe:minimummaps} is unchanged.  We can use \eqref{eq:fe:unilateraldecompositionoperator} unchanged for $i=k+1,\dots,j$, but it must be modified in the $i=k$ case: $\Pi_k z^j = I_{j\to k}^\ominus(z^j - \underline{\chi}^j) + \underline{\chi}^k$.  The remainder of the proof goes through as for Lemma \ref{lem:downwardadmissibility}.
 \end{proof}
 
-In summary, inclusions \eqref{eq:fe:downwardsuminclusion} and \eqref{eq:fe:upwardsuminclusion} suffice to show the admissibility of all iterates and corrections in V-cycle Algorithm \ref{alg:nmcd}.  However, a convergence analysis following \cite{Tai2003} or \cite{GraeserKornhuber2009}, somehow extending their arguments to VIs \eqref{eq:vi} which are not of minimization type, or to box constraints, would seem to require full CDs, and perhaps new ideas.
+In summary, inclusions \eqref{eq:fe:downwardsuminclusion} and \eqref{eq:fe:upwardsuminclusion} suffice to show the admissibility of all iterates and corrections in V-cycle Algorithm \ref{alg:nmcd}.  Lemma \ref{lem:downwardadmissibility} explains downward admissibility, and Lemma \ref{lem:upwardadmissibility} upward admissibility, in Algorithm \ref{alg:nmcd}.  However, a convergence analysis following \cite{Tai2003} or \cite{GraeserKornhuber2009}, somehow extending their arguments to VIs \eqref{eq:vi} which are not of minimization type, and/or to box constraints, would seem to require full CDs, and perhaps new ideas.
 
 
-\section{Nonlinear multilevel constraint decomposition (NMCD) V-cycle} \label{sec:vcycle}
+\newcommand{\fascd}{\pr{fascd}\xspace}
 
-The \emph{nonlinear multilevel constraint decomposition} (NMCD) V-cycle algorithm in this section uses CDs \eqref{eq:fe:downwardsumcd} and \eqref{eq:fe:upwardsumcd}.  It does smoothing in $\mathcal{D}^j$ for the downward direction, and $\mathcal{U}^j$ for the upward direction, respectively, in the V-cycle.  The algorithm generalizes the multilevel CD schemes of Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear \emph{full approximation scheme} (FAS) approach \cite{BrandtLivne2011}.  We coarsen the solution iterate itself, using injection, in constrast to classical linear multigrid wherein only the residual is coarsened.
+\section{Full approximation scheme constraint decomposition (\fascd) V-cycle} \label{sec:vcycle}
+
+The \fascd V-cycle algorithm in this section uses Lemmas \ref{lem:downwardadmissibility} and \ref{lem:upwardadmissibility}, that is, it smooths in $\mathcal{D}^j$ during the downward stages, and in $\mathcal{U}^j$ for the upward stages, respectively.  The algorithm extends the multilevel CD schemes of Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear FAS approach \cite{BrandtLivne2011}.  We coarsen the solution iterate itself, using injection, in constrast to classical linear multigrid wherein only the residual is coarsened.
 
 The finest-level iterate $w^J \in \mathcal{K}^J$ will be corrected by perturbations from each coarser subspace $\mathcal{V}^j$,\footnote{By nesting \eqref{eq:fe:nestedspaces} these corrections also live in the fine-level subspace $\mathcal{V}^J$.  Later we will use prolongation $P$ to indicate where a change in computer representation would be needed.} but the corrected iterate needs to be admissible.  In detail, suppose $y^J \in \mathcal{D}^J, y^{J-1} \in \mathcal{D}^{J-1}, \dots, y^{j+1} \in \mathcal{D}^{j+1}$ are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:nmcdvcycle}).  By \eqref{eq:fe:downwardsumcd} the corrected iterate at this point is admissible, namely $y^J + \dots + y^{j+1} \in \mathcal{U}^J$, equivalently $w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$.  Smoothing then happens at the next-coarser level $j$, i.e.~we incompletely-solve VI problem \eqref{eq:fe:downvi} below.  At the bottom the coarsest-level VI is then (accurately) solved, to generate the full downslash correction $y^J + \dots + y^1 + z^0 \in \mathcal{U}^J$.  Starting upward, however, we can use $y^1+ z^0 \in \mathcal{U}^1$ as an initial iterate on level $j=1$, and then smooth by incompletely-solving VI problem \eqref{eq:fe:upvi} (below) in $\mathcal{U}^1$, yielding admissible total correction $y^J + \dots + y^2 + z^1 \in \mathcal{U}^J$ using \eqref{eq:fe:upwardsumcd}.  Continuing in this ``telescoping'' way, up-smoothing in the constraint sets $\mathcal{U}^j$ from initial iterate $y^j+z^{j-1}$, eventually generates $z^J\in \mathcal{U}^J$ as the full V-cycle correction, yielding the new iterate $w^J + z^J \in \mathcal{K}^J$.
 
 \begin{figure}[ht]
 \begin{center}
-\input{tikz/nmcdvcycle.tex}
+\input{tikz/fascdvcycle.tex}
 \end{center}
-\caption{An NMCD V-cycle computes downward corrections $y_j \in \mathcal{D}^j$ and upward corrections $z_j\in\mathcal{U}^j$.  The latter live in larger constraint subsets.}
-\label{fig:nmcdvcycle}
+\caption{A \fascd V-cycle computes downward corrections $y_j \in \mathcal{D}^j$ and upward corrections $z_j\in\mathcal{U}^j$.  The latter live in larger constraint subsets.}
+\label{fig:fascdvcycle}
 \end{figure}
 
 A key idea, implicit in the above paragraph, is that the up-smoothing stages solve less-restricted VI problems than down-smoothing stages.  Intuitively-speaking, downward one does not know what the coarse corrections will be, so they must be in such small sets ($\mathcal{D}^j$) that their sum is admissible once we return to the current level.  However, going upward smoothing can occur in the larger admissible-sum sets ($\mathcal{U}^j$; see \eqref{eq:fe:constraintdecomp}) because there are no forthcoming coarser corrections which could violate admissibility.
 
-To justify the NMCD algorithm---see Algorithm \ref{alg:nmcd} below---we must state the problems solved at each mesh level.\footnote{Smoothers/solvers for these problems are proposed in Section \ref{sec:smoothers}.}  As in classical FAS multigrid for nonlinear PDEs \cite{BrandtLivne2011,Bruneetal2015,Trottenbergetal2001}, both the solution approximation and the residual must be coarsened, along with creating a source functional.  Recall that Table \ref{tab:transfers} summarizes the needed transfer operators.
+To justify \fascd, namely Algorithm \ref{alg:nmcd} below, we must state the problems solved at each mesh level.\footnote{Smoothers/solvers for these problems are proposed in Section \ref{sec:smoothers}.}  As in classical FAS multigrid for nonlinear PDEs \cite{BrandtLivne2011,Bruneetal2015,Trottenbergetal2001}, both the solution approximation and the residual must be coarsened, along with creating a source functional.  Recall that Table \ref{tab:transfers} summarizes the needed transfer operators.
 
 Let $j$ denote the mesh level of the coarsened problem.  We assume a (re-)discretized nonlinear operator $f^j$, with output in $(\cV^j)'$, an FE discretization of $f$ in \eqref{eq:boxdirichletvi}, using quadrature and etc., presumably by the same scheme which generated $f^J$ in \eqref{eq:fe:vi}.
 
@@ -698,8 +697,8 @@ We will regard the smoothers for VI problems \eqref{eq:fe:downvi} and \eqref{eq:
 These ideas come together in Algorithm \ref{alg:nmcd}, below.  The \pr{nmcd-vcycle} procedure acts in-place on $w^J$, but it leaves its other inputs unchanged.
 
 \begin{pseudofloat}[ht]
-\begin{pseudo} \label{ps:nmcd-vcycle}
-\pr{nmcd-vcycle}(\ell^J,\underline{\gamma}^J,\overline{\gamma}^J;w^J)\text{:} \\+
+\begin{pseudo} \label{ps:fascd-vcycle}
+\pr{fascd-vcycle}(\ell^J,\underline{\gamma}^J,\overline{\gamma}^J;w^J)\text{:} \\+
     $\underline{\chi}^J = \underline{\gamma}^J - w^J {\large \strut}$ \\
     $\overline{\chi}^J = \overline{\gamma}^J - w^J {\large \strut}$ \\
     $g^J = w^J$ \\
@@ -719,7 +718,7 @@ These ideas come together in Algorithm \ref{alg:nmcd}, below.  The \pr{nmcd-vcyc
       $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j,\underline{\chi}^j,\overline{\chi}^j,g^j;z^j)$  \ct{smoothing of \eqref{eq:fe:upvi} in $\mathcal{U}^j$} \\-
     $w^J \gets w^J+z^J$
 \end{pseudo}
-\caption{Nonlinear multilevel constraint decomposition V-cycle as an iterative solver for FE VI problem \eqref{eq:fe:vi}.  $f^j$ denotes an FE discretization of $f$ in problem \eqref{eq:boxdirichletvi}.}
+\caption{The \fascd V-cycle as an iterative solver for FE VI problem \eqref{eq:fe:vi}.  $f^j$ denotes an FE discretization of $f$ in problem \eqref{eq:boxdirichletvi}.}
 \label{alg:nmcd}
 \end{pseudofloat}
 
