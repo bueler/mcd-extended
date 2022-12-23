@@ -134,6 +134,9 @@ urlcolor=black    % ...
 \newcommand{\supp}{\operatorname{supp}}
 \newcommand{\Span}{\operatorname{span}}
 
+\newcommand{\fascd}{\pr{fascd}\xspace}
+
+
 
 \begin{document}
 \title[FAS for nonlinear variational inequalities]{A full approximation storage multilevel method \\ for nonlinear variational inequalities}
@@ -351,9 +354,9 @@ We will refer to \pr{cd-add} and \pr{cd-mult} as the \emph{basic CD iterations}.
 
 \begin{lemma}  Suppose $f=F'$ for $F:\cK\to\RR$ convex and differentiable, and let $u\in\cK$.  For $0<\alpha\le 1$ the output $w \in \cK$ from \pr{cd-mult} satisfies
 \begin{equation}
-F(w) - \ip{\ell}{w} \le F(u) - \ip{\ell}{u}.  \label{eq:monotone}
+F(w) - \ip{\ell}{w} \le F(u) - \ip{\ell}{u}.  \label{eq:objectivemonotone}
 \end{equation}
-If $0 < \alpha \le 1/m$ then \pr{cd-add} likewise satisfies \eqref{eq:monotone}.
+If $0 < \alpha \le 1/m$ then \pr{cd-add} likewise satisfies \eqref{eq:objectivemonotone}.
 \end{lemma}
 
 \begin{proof}  We assume $\ell=0$ without loss of generality; otherwise define $\tilde F(u)=F(u) - \ip{\ell}{u}$ and observe that the proof goes through for $\tilde F$ essentially unchanged.
@@ -619,23 +622,23 @@ In unilateral cases we follow the proof of Lemma \ref{lem:downwardadmissibility}
 In summary, inclusions \eqref{eq:fe:downwardsuminclusion} and \eqref{eq:fe:upwardsuminclusion} suffice to show the admissibility of all iterates and corrections in V-cycle Algorithm \ref{alg:nmcd}.  Lemma \ref{lem:downwardadmissibility} explains downward admissibility, and Lemma \ref{lem:upwardadmissibility} upward admissibility, in Algorithm \ref{alg:nmcd}.  However, a convergence analysis following \cite{Tai2003} or \cite{GraeserKornhuber2009}, somehow extending their arguments to VIs \eqref{eq:vi} which are not of minimization type, and/or to box constraints, would seem to require full CDs, and perhaps new ideas.
 
 
-\newcommand{\fascd}{\pr{fascd}\xspace}
-
 \section{Full approximation scheme constraint decomposition (\fascd) V-cycle} \label{sec:vcycle}
 
-The \fascd V-cycle algorithm in this section uses Lemmas \ref{lem:downwardadmissibility} and \ref{lem:upwardadmissibility}, that is, it smooths in $\mathcal{D}^j$ during the downward stages, and in $\mathcal{U}^j$ for the upward stages, respectively.  The algorithm extends the multilevel CD schemes of Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear FAS approach \cite{BrandtLivne2011}.  We coarsen the solution iterate itself, using injection, in constrast to classical linear multigrid wherein only the residual is coarsened.
+The \fascd V-cycle algorithm in this section uses Lemmas \ref{lem:downwardadmissibility} and \ref{lem:upwardadmissibility}, that is, it smooths in $\mathcal{D}^j$ and $\mathcal{U}^j$ during the downward and upward stages, respectively.  \fascd extends the multilevel CD schemes of Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear FAS approach \cite{BrandtLivne2011}.  Note that we coarsen both the residual and the solution iterate itself, in constrast to classical linear multigrid wherein only the residual is coarsened.  In fact, \fascd reduces to FAS for PDEs when inequality constraints are removed (Appendix \ref{app:reductions}).
 
-The finest-level iterate $w^J \in \mathcal{K}^J$ will be corrected by perturbations from each coarser subspace $\mathcal{V}^j$,\footnote{By nesting \eqref{eq:fe:nestedspaces} these corrections also live in the fine-level subspace $\mathcal{V}^J$.  Later we will use prolongation $P$ to indicate where a change in computer representation would be needed.} but the corrected iterate needs to be admissible.  In detail, suppose $y^J \in \mathcal{D}^J, y^{J-1} \in \mathcal{D}^{J-1}, \dots, y^{j+1} \in \mathcal{D}^{j+1}$ are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:nmcdvcycle}).  By \eqref{eq:fe:downwardsumcd} the corrected iterate at this point is admissible, namely $y^J + \dots + y^{j+1} \in \mathcal{U}^J$, equivalently $w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$.  Smoothing then happens at the next-coarser level $j$, i.e.~we incompletely-solve VI problem \eqref{eq:fe:downvi} below.  At the bottom the coarsest-level VI is then (accurately) solved, to generate the full downslash correction $y^J + \dots + y^1 + z^0 \in \mathcal{U}^J$.  Starting upward, however, we can use $y^1+ z^0 \in \mathcal{U}^1$ as an initial iterate on level $j=1$, and then smooth by incompletely-solving VI problem \eqref{eq:fe:upvi} (below) in $\mathcal{U}^1$, yielding admissible total correction $y^J + \dots + y^2 + z^1 \in \mathcal{U}^J$ using \eqref{eq:fe:upwardsumcd}.  Continuing in this ``telescoping'' way, up-smoothing in the constraint sets $\mathcal{U}^j$ from initial iterate $y^j+z^{j-1}$, eventually generates $z^J\in \mathcal{U}^J$ as the full V-cycle correction, yielding the new iterate $w^J + z^J \in \mathcal{K}^J$.
+The V-cycle generates a correction to a finest-level iterate $w^J \in \mathcal{K}^J$ based on perturbations from each coarser FE subspace $\mathcal{V}^j$.  By nesting \eqref{eq:fe:nestedspaces} these corrections also live in the fine-level subspace $\mathcal{V}^J$, but we will use prolongation $P$ to indicate where the computer representation changes.
+
+However, the corrected iterate needs to be admissible.  In detail, suppose $y^i \in \mathcal{D}^i$ for $i=J,\dots,j-1$ are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:fascdvcycle}).  By \eqref{eq:fe:downwardsuminclusion} the corrected iterate at this point is admissible, namely $y^J + \dots + y^{j+1} \in \mathcal{U}^J$, equivalently $w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$.  Smoothing, an incomplete solution process on a coarser-level VI problem (defined below), then occurs at the next-coarser level, yielding the next correction $y^j \in \mathcal{D}^j$.  At the bottom the coarsest-level VI is then solved, resulting in a downward correction $y^J + \dots + y^1 + z^0 \in \mathcal{U}^J$.  Starting upward, $y^1 + z^0 \in \mathcal{U}^1$ is an initial iterate for smoothing on level $j=1$.  Smoothing in $\mathcal{U}^1$ yields admissible correction $y^J + \dots + y^2 + z^1 \in \mathcal{U}^J$ using \eqref{eq:fe:upwardsuminclusion}.  Continuing in this ``telescoping'' way, up-smoothing in the constraint sets $\mathcal{U}^j$, starting from initial iterate $y^j+z^{j-1}$, finally generates $z^J\in \mathcal{U}^J$ as the full V-cycle correction.  Thus the next admissible iterate is $w^J + z^J \in \mathcal{K}^J$.
 
 \begin{figure}[ht]
 \begin{center}
 \input{tikz/fascdvcycle.tex}
 \end{center}
-\caption{A \fascd V-cycle computes downward corrections $y_j \in \mathcal{D}^j$ and upward corrections $z_j\in\mathcal{U}^j$.  The latter live in larger constraint subsets.}
+\caption{The \fascd V-cycle computes downward corrections $y_j \in \mathcal{D}^j$, but the upward corrections $z_j\in\mathcal{U}^j$ are in larger sets.}
 \label{fig:fascdvcycle}
 \end{figure}
 
-A key idea, implicit in the above paragraph, is that the up-smoothing stages solve less-restricted VI problems than down-smoothing stages.  Intuitively-speaking, downward one does not know what the coarse corrections will be, so they must be in such small sets ($\mathcal{D}^j$) that their sum is admissible once we return to the current level.  However, going upward smoothing can occur in the larger admissible-sum sets ($\mathcal{U}^j$; see \eqref{eq:fe:constraintdecomp}) because there are no forthcoming coarser corrections which could violate admissibility.
+A key idea is that, because $\mathcal{U}^j\supset \mathcal{D}^j$, up-smoothing solves less-restricted VI problems than down-smoothing.  Intuitively-speaking, going downward one does not know what the upcoming coarse corrections will be, so they must be in the sufficiently-small sets $\mathcal{D}^j$ so that their sum is admissible once we return to a level.  However, going upward no further \emph{coarser} corrections, relative to that level, can violate admissibility.
 
 To justify \fascd, namely Algorithm \ref{alg:nmcd} below, we must state the problems solved at each mesh level.\footnote{Smoothers/solvers for these problems are proposed in Section \ref{sec:smoothers}.}  As in classical FAS multigrid for nonlinear PDEs \cite{BrandtLivne2011,Bruneetal2015,Trottenbergetal2001}, both the solution approximation and the residual must be coarsened, along with creating a source functional.  Recall that Table \ref{tab:transfers} summarizes the needed transfer operators.
 
@@ -777,7 +780,7 @@ FIXME in Appendix we show how NMCD reduces to FAS if the obstacle is removed and
 
 
 \appendix
-\section{Reductions of NMCD to familiar multilevel algorithms}
+\section{Reductions of NMCD to familiar multilevel algorithms} \label{app:reductions}
 
 Algorithm \ref{alg:nmcd} in the main text, \pr{nmcd-vcycle}, generalizes two better-known multilevel algorithms.  First we show that it reduces to the FAS multigrid V-cycle for nonlinear PDEs (which itself generalizes the standard linear multigrid V-cycle \cite{Trottenbergetal2001}).  Second we reduce NMCD to an existing MCD V-cycle for unilateral linear variational inequalities \cite{GraeserKornhuber2009}.  This Appendix helps readers understand Algorithm \ref{alg:nmcd} by separating those assumptions which relate to nonlinear and FAS aspects from the nontrivial modifications of standard multigrid which are caused by inequality constraints.  The later arise even when $f$ in \eqref{eq:vi} is a linear operator.
 
