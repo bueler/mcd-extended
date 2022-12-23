@@ -1,4 +1,4 @@
-all: mcd2.pdf
+all: fascd.pdf
 
 _figures := cartoon
 figures := $(addprefix genfigs/, $(addsuffix .pdf, $(_figures)))
@@ -11,11 +11,11 @@ cropfigures: $(figures)
 genfigs/cartoon.pdf: genfigs/cartoon.py
 	(cd genfigs/ && python3 cartoon.py)
 
-mcd2.pdf: mcd2.tex mcd2.bib cropfigures
-	pdflatex mcd2
-	bibtex mcd2
-	pdflatex mcd2
-	pdflatex mcd2
+fascd.pdf: fascd.tex fascd.bib cropfigures
+	pdflatex fascd
+	bibtex fascd
+	pdflatex fascd
+	pdflatex fascd
 
 .PHONY: clean
 
