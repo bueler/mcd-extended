@@ -757,13 +757,12 @@ FIXME stopping criteria for smoother
 
 \section{Results and discussion} \label{sec:results}
 
-FIXME show results for 2D Firedrake implementation of NMCD for $p$-Laplacian obstacle problem (Example \ref{ex:plaplacian}), advection-diffusion obstacle problem (Example \ref{ex:advectiondiffusion}), and porous-media obstacle problem (Example \ref{ex:porous})
+FIXME show results for 2D Firedrake implementation of FASCD for $p$-Laplacian obstacle problem (Example \ref{ex:plaplacian}), advection-diffusion obstacle problem (Example \ref{ex:advectiondiffusion}), and porous-media obstacle problem (Example \ref{ex:porous})
 
 FIXME observe that up-smoothing is more efficient; this observation seems to be new; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}
 
 FIXME constrast the implemented examples in \cite{GraeserKornhuber2009,Tai2003} in which $f$ is linear
 
-FIXME in Appendix we show how NMCD reduces to FAS if the obstacle is removed and to MCD if $f$ is assumed to be linear
 
 % A BRIDGE TOO FAR:  \section{Results for a nonlocal variational inequality}
 
@@ -773,9 +772,9 @@ FIXME in Appendix we show how NMCD reduces to FAS if the obstacle is removed and
 
 
 \appendix
-\section{Reductions of NMCD to familiar multilevel algorithms} \label{app:reductions}
+\section{Reductions of FASCD to familiar multilevel algorithms} \label{app:reductions}
 
-Algorithm \ref{alg:fascd} in the main text, \pr{nmcd-vcycle}, generalizes two better-known multilevel algorithms.  First we show that it reduces to the FAS multigrid V-cycle for nonlinear PDEs (which itself generalizes the standard linear multigrid V-cycle \cite{Trottenbergetal2001}).  Second we reduce NMCD to an existing MCD V-cycle for unilateral linear variational inequalities \cite{GraeserKornhuber2009}.  This Appendix helps readers understand Algorithm \ref{alg:fascd} by separating those assumptions which relate to nonlinear and FAS aspects from the nontrivial modifications of standard multigrid which are caused by inequality constraints.  The later arise even when $f$ in \eqref{eq:vi} is a linear operator.
+Algorithm \ref{alg:fascd} in the main text, \pr{fascd-vcycle}, generalizes two better-known multilevel algorithms.  First we show that it reduces to the FAS multigrid V-cycle for nonlinear PDEs (which itself generalizes the standard linear multigrid V-cycle \cite{Trottenbergetal2001}).  Second we reduce FASCD to an existing MCD V-cycle for unilateral linear variational inequalities \cite{GraeserKornhuber2009}.  This Appendix helps readers understand Algorithm \ref{alg:fascd} by separating those assumptions which relate to nonlinear and FAS aspects from the nontrivial modifications of standard multigrid which are caused by inequality constraints.  The later arise even when $f$ in \eqref{eq:vi} is a linear operator.
 
 To derive the classical FAS multigrid V-cycle from Algorithm \ref{alg:fascd}, we remove the inequality constraints from VI problem \eqref{eq:fe:vi} and then simplify the pseudocode accordingly.  To do this we suppose that the finest-level obstacles $\underline{\gamma}^J$ and $\overline{\gamma}^J$ are very negative and positive, respectively, with magnitude exceeding $u^J$ or any prospective iterate $w^J$.  Finest-level problem \eqref{eq:fe:vi} is then unconstrained except for its Dirichlet boundary conditions.  Let $\mathcal{V}_0^J \subset \mathcal{V}^J$ denote the space with zero values on $\partial_D\Omega$.  By replacing ``$v-u^J$'' with an arbitrary $v \in \mathcal{V}_0^J$ we have the finest-level, weak form problem
 \begin{equation}
@@ -807,7 +806,7 @@ This is a standard FAS statement.  In fact, with the given modifications, we hav
       $w^j \gets w^j + P (w^{j-1} - \iR w^j)$ \\
       $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j;w^j)$ \\-
 \end{pseudo}
-\caption{An FAS V-cycle results from removing the inequality constraints from \pr{nmcd-vcycle}, and simplifying accordingly.}
+\caption{An FAS V-cycle results from removing the inequality constraints from \pr{fascd-vcycle}, and simplifying accordingly.}
 \label{alg:fas}
 \end{pseudofloat}
 
