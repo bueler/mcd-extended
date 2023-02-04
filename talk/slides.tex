@@ -121,13 +121,89 @@
 \end{frame}
 
 
-\section{obstacle problems, variational inequalities (VIs)}
+\section{variational inequalities (VIs) and obstacle problems}
 
-\section{nonlocal VIs for fluid layers}
+\begin{frame}{the classical obstacle problem}
 
-\section{what is FAS multigrid?  (for PDEs)}
+\begin{center}
+\includegraphics[width=0.6\textwidth]{images/obstacle65.pdf}
+\end{center}
 
-\section{scalable approaches to VIs}
+\begin{itemize}
+\item x
+\end{itemize}
+\end{frame}
+
+\begin{frame}{active sets, free boundaries}
+
+\begin{columns}
+\begin{column}{0.6\textwidth}
+\begin{itemize}
+\item x
+\end{itemize}
+\end{column}
+\begin{column}{0.4\textwidth}
+\includegraphics[width=0.6\textwidth]{images/obstacle-sets.png}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Newton iterations for VIs}
+
+\begin{columns}
+\begin{column}{0.6\textwidth}
+\begin{itemize}
+\item x
+\end{itemize}
+\end{column}
+\begin{column}{0.4\textwidth}
+\includegraphics[width=\textwidth]{images/vi-newton-gmg-bad.png}
+
+\includegraphics[width=\textwidth]{images/vi-newton-gmg-good.png}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Newton-multigrid for VIs}
+
+xxx
+\end{frame}
+
+
+\begin{frame}{optimality}
+
+\begin{columns}
+\begin{column}{0.6\textwidth}
+\begin{itemize}
+\item x
+\end{itemize}
+\end{column}
+\begin{column}{0.4\textwidth}
+\includegraphics[width=\textwidth]{images/obstacle-flops-per-n.png}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\section{the nonlocal VI for a fluid layer in a climate}
+
+\begin{frame}{problem: fluid layer in a climate}
+
+\begin{center}
+\includegraphics[width=0.6\textwidth]{images/fluid-in-climate.png}
+\end{center}
+
+\begin{itemize}
+\item x
+\end{itemize}
+\end{frame}
+
+
+\section{FAS multigrid for PDEs}
+
+\section{a possibly scalable approach to nonlocal VIs}
 
 
 \begin{frame}{the Stokes problem for ice}
@@ -181,10 +257,12 @@
 
 \begin{frame}{references}
 
-{\scriptsize
+{\tiny
 \begin{itemize}
-\item E.~Bueler (2021). \emph{Conservation laws for free-boundary fluid layers}, SIAM J.~Appl.~Math.~81 (5), 2007--2032, \href{https://doi.org/10.1137/20M135217X}{10.1137/20M135217X}
-\item T.~Isaac, G.~Stadler, \& O.~Ghattas (2015). \emph{Solution of nonlinear Stokes equations discretized by high-order finite elements on nonconforming and anisotropic meshes, with application to ice sheet dynamics}, SIAM J.~Sci.~Comput.~37 (6), B804--B833, \href{https://doi.org/10.1137/140974407}{10.1137/140974407}
+\item[] E.~Bueler (2021). \emph{Conservation laws for free-boundary fluid layers}, SIAM J.~Appl.~Math.~81 (5), 2007--2032, \href{https://doi.org/10.1137/20M135217X}{10.1137/20M135217X}
+\item[] E.~Bueler (2021). \emph{PETSc for Partial Differential Equations}, SIAM Press, Philadelphia, PA.
+\item[] E.~Bueler (2022). \emph{Performance analysis of high-resolution ice-sheet simulations}, J.~Glaciol., \href{https://doi.org/10.1017/jog.2022.113}{10.1017/jog.2022.113}
+\item[] T.~Isaac, G.~Stadler, \& O.~Ghattas (2015). \emph{Solution of nonlinear Stokes equations discretized by high-order finite elements on nonconforming and anisotropic meshes, with application to ice sheet dynamics}, SIAM J.~Sci.~Comput.~37 (6), B804--B833, \href{https://doi.org/10.1137/140974407}{10.1137/140974407}
 \end{itemize}
 }
 \end{frame}
