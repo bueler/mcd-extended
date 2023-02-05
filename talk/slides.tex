@@ -33,6 +33,11 @@
 \usepackage[kw]{pseudo}
 \pseudoset{left-margin=15mm,topsep=5mm,idfont=\texttt,st-left=,st-right=}
 
+\makeatletter
+%\newcommand\notsotiny{\@setfontsize\notsotiny\@vipt\@viipt}
+\newcommand\notsotiny{\@setfontsize\notsotiny\@viipt\@viiipt}
+\makeatother
+
 \newcommand{\eps}{\epsilon}
 \newcommand{\RR}{\mathbb{R}}
 
@@ -257,13 +262,9 @@ xxx
 
 \begin{frame}{references}
 
-{\tiny
-\begin{itemize}
-\item[] E.~Bueler (2021). \emph{Conservation laws for free-boundary fluid layers}, SIAM J.~Appl.~Math.~81 (5), 2007--2032, \href{https://doi.org/10.1137/20M135217X}{10.1137/20M135217X}
-\item[] E.~Bueler (2021). \emph{PETSc for Partial Differential Equations}, SIAM Press, Philadelphia, PA.
-\item[] E.~Bueler (2022). \emph{Performance analysis of high-resolution ice-sheet simulations}, J.~Glaciol., \href{https://doi.org/10.1017/jog.2022.113}{10.1017/jog.2022.113}
-\item[] T.~Isaac, G.~Stadler, \& O.~Ghattas (2015). \emph{Solution of nonlinear Stokes equations discretized by high-order finite elements on nonconforming and anisotropic meshes, with application to ice sheet dynamics}, SIAM J.~Sci.~Comput.~37 (6), B804--B833, \href{https://doi.org/10.1137/140974407}{10.1137/140974407}
-\end{itemize}
+{\scriptsize
+%{\notsotiny
+\input{references.tex}
 }
 \end{frame}
 
