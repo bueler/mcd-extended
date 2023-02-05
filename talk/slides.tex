@@ -71,7 +71,7 @@
 
 \newcommand{\rhoi}{\rho_{\text{i}}}
 
-\newcommand{\ip}[2]{\left(#1,#2\right)}
+\newcommand{\ip}[2]{\left<#1,#2\right>}
 
 \newcommand{\mR}{R^{\bm{\oplus}}}
 \newcommand{\iR}{R^{\bullet}}
@@ -126,31 +126,75 @@
 \end{frame}
 
 
-\section{variational inequalities (VIs) and obstacle problems}
+\section{variational inequalities (VIs)?}
 
-\begin{frame}{the classical obstacle problem}
+\begin{frame}{example: a classical obstacle problem}
 
-\begin{center}
-\includegraphics[width=0.6\textwidth]{images/obstacle65.pdf}
-\end{center}
+\includegraphics[width=0.6\textwidth]{images/obstacle65.pdf} \qquad \includegraphics[width=0.3\textwidth]{images/obstacle-sets.png}
 
+\bigskip
+\only<1>{
 \begin{itemize}
-\item x
+\item \emph{problem.} on a domain $\Omega \subset \RR^2$, find the displacement $u(x)$ of a membrane, with fixed value $u = g$ on $\partial \Omega$, above an \emph{obstacle} $\psi(x)$, which minimizes the elastic energy
+    $$J(u) = \int_\Omega \frac{1}{2} |\grad u|^2 - f\, u$$
+\item shown above: $\Omega=(-2,2)^2$, $\psi(x)$ a hemisphere
 \end{itemize}
+}
+\only<2>{
+\begin{itemize}
+\item i.e.~constrained optimization over an \emph{admissible set}
+	$$\mathcal{K} = \left\{v \in H^1(\Omega) \,:\, v\big|_{\partial \Omega} = g \text{ and } v \ge \psi\right\}$$
+\item informally, $J'(u)$ points directly into $\mathcal{K}$ (\emph{variational inequality}; VI):
+    $$\ip{J'(u)}{v-u} = \int_\Omega \grad u\cdot \grad (v-u) - f (v-u) \ge 0 \quad \text{for all } v \in \mathcal{K}$$
+\end{itemize}
+}
+\only<3>{
+\begin{itemize}
+\item the solution defines \emph{active} $A_u = \{u = \psi\}$ and \emph{inactive} $R_u = \{u> \psi\}$ subsets of $\Omega$, and a \emph{free boundary} $\Gamma_u=\partial R_u \cap \Omega$
+\item a naive strong form poses the problem in terms of its solution:
+{\small
+\begin{align*}
+-\grad^2 u &= f \text{ on $R_u$} \\
+u &= \psi \text{ on $A_u$}
+\end{align*}
+}
+\item by contrast, the weak form VI is meaningful
+\end{itemize}
+}
+\only<4>{
+\begin{itemize}
+\item a \emph{complementarity problem}, essentially KKT conditions, is a meaningful strong form:
+{\small
+\begin{align*}
+u - \psi &\ge 0 \\
+-\grad^2 u - f &\ge 0 \\
+(u - \psi)(-\grad^2 u - f) &= 0
+\end{align*}
+}
+\end{itemize}
+}
 \end{frame}
 
-\begin{frame}{active sets, free boundaries}
 
-\begin{columns}
-\begin{column}{0.6\textwidth}
+\begin{frame}{general VI problems}
+
 \begin{itemize}
-\item x
+\item let $\mathcal{K}$ be a closed and convex subset of a Banach space $\mathcal{V}$
+\item suppose $F:\mathcal{K} \to \mathcal{V}'$ is a continuous, generally nonlinear \emph{operator}
+    \begin{itemize}
+    \item[$\circ$] $F$ may be defined only on $\mathcal{K}$
+    \end{itemize}
+\item the general problem VI($F$,$\mathcal{K}$) is
+	$$\ip{F(u)}{v-u} \ge 0 \text{ for all } v \in \mathcal{K}$$
+
+\bigskip
+\item analogy:
+
+\begin{tabular}{l|l}
+x & y \\ \hline
+z & w
+\end{tabular}
 \end{itemize}
-\end{column}
-\begin{column}{0.4\textwidth}
-\includegraphics[width=0.6\textwidth]{images/obstacle-sets.png}
-\end{column}
-\end{columns}
 \end{frame}
 
 
@@ -192,6 +236,25 @@ xxx
 \end{frame}
 
 
+\section{full approximation scheme (FAS) multigrid for PDEs?}
+
+\begin{frame}{Bratu model problem: optimality}
+
+\begin{columns}
+\begin{column}{0.6\textwidth}
+\begin{itemize}
+\item x
+\end{itemize}
+\end{column}
+\begin{column}{0.4\textwidth}
+\includegraphics[width=\textwidth]{images/bratu-exps.png}
+
+\includegraphics[width=\textwidth]{images/bratu-time.png}
+\end{column}
+\end{columns}
+\end{frame}
+
+
 \section{the nonlocal VI for a fluid layer in a climate}
 
 \begin{frame}{problem: fluid layer in a climate}
@@ -205,8 +268,6 @@ xxx
 \end{itemize}
 \end{frame}
 
-
-\section{FAS multigrid for PDEs}
 
 \section{a possibly scalable approach to nonlocal VIs}
 
@@ -245,7 +306,6 @@ xxx
     \begin{itemize}
     \item[$\circ$] Poisson equation obstacle problem (Brandt \& Cryer 1983; Gr\"aeser \& Kornhuber 2009)
     \end{itemize}
-\item<2> \alert{help me}
 \end{itemize}
 \end{frame}
 
