@@ -1,0 +1,12 @@
+# see bratuscaling.sh for runs
+
+# NP=4 so process time ("user" from time) is 4 times wall clock
+# N = mx^2
+# mx=513 is DEPTH=7, mx=8193 is DEPTH=11
+
+#(mx)  (flops)    (exps)     (time)   (snesits)
+513    2.521e+08  1.126e+07  0.474    3
+1025   1.009e+09  4.525e+07  2.005    3
+2049   4.039e+09  1.814e+08  8.688    3
+4097   1.044e+10  4.674e+08  26.621   2
+8193   4.178e+10  1.871e+09  119.775  2

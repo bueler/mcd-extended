@@ -1,0 +1,48 @@
+NP=4
+DEPTHLIST="7 8 9 10 11"
+DISC=-lb_fd
+
+DEPTH=7
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+flops = 2.521e+08,  exps = 1.126e+07,  residual calls = 312,  NGS calls = 206
+done on 513 x 513 grid:   error |u-uexact|_inf = 7.947e-08
+
+real	0m0.515s
+user	0m0.474s
+sys	0m0.181s
+
+DEPTH=8
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+flops = 1.009e+09,  exps = 4.525e+07,  residual calls = 392,  NGS calls = 259
+done on 1025 x 1025 grid:   error |u-uexact|_inf = 1.987e-08
+
+real	0m0.915s
+user	0m2.005s
+sys	0m0.271s
+
+DEPTH=9
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+flops = 4.039e+09,  exps = 1.814e+08,  residual calls = 481,  NGS calls = 318
+done on 2049 x 2049 grid:   error |u-uexact|_inf = 4.967e-09
+
+real	0m2.667s
+user	0m8.688s
+sys	0m0.590s
+
+DEPTH=10
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+flops = 1.044e+10,  exps = 4.674e+08,  residual calls = 383,  NGS calls = 252
+done on 4097 x 4097 grid:   error |u-uexact|_inf = 1.242e-09
+
+real	0m7.624s
+user	0m26.621s
+sys	0m2.446s
+
+DEPTH=11
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+flops = 4.178e+10,  exps = 1.871e+09,  residual calls = 454,  NGS calls = 299
+done on 8193 x 8193 grid:   error |u-uexact|_inf = 3.105e-10
+
+real	0m33.279s
+user	1m59.775s
+sys	0m11.869s
