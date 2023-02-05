@@ -176,24 +176,58 @@ u - \psi &\ge 0 \\
 \end{frame}
 
 
-\begin{frame}{general VI problems}
+\begin{frame}{general variational inequalities}
 
 \begin{itemize}
 \item let $\mathcal{K}$ be a closed and convex subset of a Banach space $\mathcal{V}$
 \item suppose $F:\mathcal{K} \to \mathcal{V}'$ is a continuous, generally nonlinear \emph{operator}
     \begin{itemize}
     \item[$\circ$] $F$ may be defined only on $\mathcal{K}$
+    \item[$\circ$] $F$ may \emph{not} be the derivative of a $J(u)$
     \end{itemize}
-\item the general problem VI($F$,$\mathcal{K}$) is
-	$$\ip{F(u)}{v-u} \ge 0 \text{ for all } v \in \mathcal{K}$$
+\item the general problem {\color{FireBrick} VI($F$,$\mathcal{K}$)} is
+	$${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \text{ for all } v \in \mathcal{K}}$$
+\end{itemize}
+\end{frame}
 
-\bigskip
-\item analogy:
 
+\begin{frame}{VI $=$ ``constrained equation''}
+
+\begin{center}
 \begin{tabular}{l|l}
-x & y \\ \hline
-z & w
+\begin{minipage}[t][16mm][t]{0.4\textwidth}
+unconstrained optimization:
+$$\min_{u\in\mathcal{V}} J(u)$$
+\end{minipage}
+&
+\begin{minipage}[t][16mm][t]{0.4\textwidth}
+constrained optimization:
+$$\min_{u\in\mathcal{K}} J(u)$$
+\end{minipage}
+\\ \hline
+\begin{minipage}[t][16mm][t]{0.4\textwidth}
+solve equation for $u \in \mathcal{V}$: {\LARGE \strut}
+
+$$F(u)=0$$
+\end{minipage}
+&
+\begin{minipage}[t][16mm][t]{0.4\textwidth}
+
+\vspace{-2mm}
+solve {\color{FireBrick} VI($F$,$\mathcal{K}$)} for $u \in \mathcal{K}$:
+$${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \forall v \in \mathcal{K}}$$
+\end{minipage}
 \end{tabular}
+\end{center}
+\end{frame}
+
+
+\begin{frame}{most familiar case}
+
+\begin{itemize}
+\item we even teach VIs when we introduce calculus
+
+\includegraphics[width=\textwidth]{images/calcone.png}
 \end{itemize}
 \end{frame}
 
