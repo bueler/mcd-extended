@@ -139,12 +139,14 @@
     $$J(u) = \int_\Omega \frac{1}{2} |\grad u|^2 - f\, u$$
 \item shown above: $\Omega=(-2,2)^2$, $\psi(x)$ a hemisphere
 \end{itemize}
+
+\phantom{x}
 }
 \only<2>{
 \begin{itemize}
 \item i.e.~constrained optimization over an \emph{admissible set}
 	$$\mathcal{K} = \left\{v \in H^1(\Omega) \,:\, v\big|_{\partial \Omega} = g \text{ and } v \ge \psi\right\}$$
-\item informally, $J'(u)$ points directly into $\mathcal{K}$ (\emph{variational inequality}; VI):
+\item informally, $J'(u)$ points directly into $\mathcal{K}$ ({\color{FireBrick} \emph{variational inequality}; VI}):
     $$\ip{J'(u)}{v-u} = \int_\Omega \grad u\cdot \grad (v-u) - f (v-u) \ge 0 \quad \text{for all } v \in \mathcal{K}$$
 \end{itemize}
 }
@@ -159,11 +161,13 @@ u &= \psi \text{ on $A_u$}
 \end{align*}
 }
 \item by contrast, the weak form VI is meaningful
+
+\phantom{x}
 \end{itemize}
 }
 \only<4>{
 \begin{itemize}
-\item a \emph{complementarity problem}, essentially KKT conditions, is a meaningful strong form:
+\item a \emph{complementarity problem} (CP) is a meaningful strong form:
 {\small
 \begin{align*}
 u - \psi &\ge 0 \\
@@ -171,6 +175,11 @@ u - \psi &\ge 0 \\
 (u - \psi)(-\grad^2 u - f) &= 0
 \end{align*}
 }
+\item for optimization problems: CP $=$ KKT conditions
+
+\phantom{x}
+
+\phantom{x}
 \end{itemize}
 }
 \end{frame}
@@ -180,7 +189,7 @@ u - \psi &\ge 0 \\
 
 \begin{itemize}
 \item let $\mathcal{K}$ be a closed and convex subset of a Banach space $\mathcal{V}$
-\item suppose $F:\mathcal{K} \to \mathcal{V}'$ is a continuous, generally nonlinear \emph{operator}
+\item suppose $F:\mathcal{K} \to \mathcal{V}'$ is a continuous, generally nonlinear operator
     \begin{itemize}
     \item[$\circ$] $F$ may be defined only on $\mathcal{K}$
     \item[$\circ$] $F$ may \emph{not} be the derivative of a $J(u)$
@@ -206,7 +215,7 @@ $$\min_{u\in\mathcal{K}} J(u)$$
 \end{minipage}
 \\ \hline
 \begin{minipage}[t][16mm][t]{0.4\textwidth}
-solve equation for $u \in \mathcal{V}$: {\LARGE \strut}
+equation for $u \in \mathcal{V}$: {\LARGE \strut}
 
 $$F(u)=0$$
 \end{minipage}
@@ -214,7 +223,7 @@ $$F(u)=0$$
 \begin{minipage}[t][16mm][t]{0.4\textwidth}
 
 \vspace{-2mm}
-solve {\color{FireBrick} VI($F$,$\mathcal{K}$)} for $u \in \mathcal{K}$:
+{\color{FireBrick} VI($F$,$\mathcal{K}$)} for $u \in \mathcal{K}$:
 $${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \forall v \in \mathcal{K}}$$
 \end{minipage}
 \end{tabular}
@@ -222,15 +231,120 @@ $${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \forall v \in \mathcal{K}}$$
 \end{frame}
 
 
-\begin{frame}{most familiar case}
+\begin{frame}{applications of VIs}
 
 \begin{itemize}
-\item we even teach VIs when we introduce calculus
+\item elastic contact, Signorini problems (e.g.~Kikuchi \& Oden 1988)
+\item viscous contact problems (de Diego et al.~2022)
+\item pricing of American options in the Black-Scholes model
+\item the geometry of glaciers \dots \emph{more soon}
 
-\includegraphics[width=\textwidth]{images/calcone.png}
+\bigskip
+\item first-semester calculus
+\end{itemize}
+
+\begin{center}
+\includegraphics[width=0.9\textwidth]{images/calcone.png}
+\end{center}
+\end{frame}
+
+
+\AtBeginSection[]
+{
+  \begin{frame}{Outline}
+    \tableofcontents[currentsection]
+  \end{frame}
+}
+
+\section{full approximation scheme (FAS) multigrid for PDEs?}
+
+\begin{frame}{a nonlinear 2-grid scheme}
+
+\begin{center}
+\includegraphics[width=0.3\textwidth]{images/two-grids.png}
+\end{center}
+
+\bigskip
+\only<1>{
+\begin{itemize}
+\item suppose we have a nonlinear elliptic PDE problem:
+	$$F(u) = 0$$
+\end{itemize}
+
+\phantom{x}
+}
+\only<2>{
+\begin{itemize}
+\item x
+\end{itemize}
+}
+\end{frame}
+
+
+\begin{frame}{nonlinear multigrid}
+
+\mbox{
+\includegraphics[height=0.10\textheight]{images/mg-grids.png} \qquad \includegraphics[height=0.15\textheight]{images/mg-vcycle.png} \quad
+\includegraphics[height=0.15\textheight]{images/mg-fcycle.png}
+}
+
+\bigskip
+\only<1>{
+\begin{itemize}
+\item suppose we have a nonlinear elliptic PDE problem:
+	$$F(u) = 0$$
+\end{itemize}
+
+\phantom{x}
+}
+\only<2>{
+\begin{itemize}
+\item x
+\end{itemize}
+}
+\end{frame}
+
+
+\begin{frame}{nonlinear elliptic PDE problem}
+
+\begin{itemize}
+\item x
 \end{itemize}
 \end{frame}
 
+
+\begin{frame}{Bratu model problem: optimality}
+
+\begin{columns}
+\begin{column}{0.6\textwidth}
+\begin{itemize}
+\item x
+\end{itemize}
+\end{column}
+\begin{column}{0.4\textwidth}
+\includegraphics[width=\textwidth]{images/bratu-exps.png}
+
+\includegraphics[width=\textwidth]{images/bratu-time.png}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\section{the nonlocal VI for a fluid layer in a climate}
+
+\begin{frame}{problem: fluid layer in a climate}
+
+\begin{center}
+\includegraphics[width=0.6\textwidth]{images/fluid-in-climate.png}
+\end{center}
+
+\begin{itemize}
+\item x
+\end{itemize}
+\end{frame}
+
+
+\section{a possibly scalable approach to nonlocal VIs}
 
 \begin{frame}{Newton iterations for VIs}
 
@@ -268,42 +382,6 @@ xxx
 \end{column}
 \end{columns}
 \end{frame}
-
-
-\section{full approximation scheme (FAS) multigrid for PDEs?}
-
-\begin{frame}{Bratu model problem: optimality}
-
-\begin{columns}
-\begin{column}{0.6\textwidth}
-\begin{itemize}
-\item x
-\end{itemize}
-\end{column}
-\begin{column}{0.4\textwidth}
-\includegraphics[width=\textwidth]{images/bratu-exps.png}
-
-\includegraphics[width=\textwidth]{images/bratu-time.png}
-\end{column}
-\end{columns}
-\end{frame}
-
-
-\section{the nonlocal VI for a fluid layer in a climate}
-
-\begin{frame}{problem: fluid layer in a climate}
-
-\begin{center}
-\includegraphics[width=0.6\textwidth]{images/fluid-in-climate.png}
-\end{center}
-
-\begin{itemize}
-\item x
-\end{itemize}
-\end{frame}
-
-
-\section{a possibly scalable approach to nonlocal VIs}
 
 
 \begin{frame}{the Stokes problem for ice}
