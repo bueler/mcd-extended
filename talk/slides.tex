@@ -31,7 +31,7 @@
 \usepackage{tikz}
 \usetikzlibrary{shapes,arrows.meta,decorations.markings,decorations.pathreplacing,fadings,positioning}
 \usepackage[kw]{pseudo}
-\pseudoset{left-margin=15mm,topsep=5mm,idfont=\texttt,st-left=,st-right=}
+\pseudoset{left-margin=15mm,topsep=5mm,label=,idfont=\texttt,st-left=,st-right=}
 
 \makeatletter
 %\newcommand\notsotiny{\@setfontsize\notsotiny\@vipt\@viipt}
@@ -73,9 +73,6 @@
 
 \newcommand{\ip}[2]{\left<#1,#2\right>}
 
-\newcommand{\mR}{R^{\bm{\oplus}}}
-\newcommand{\iR}{R^{\bullet}}
-
 \newcommand{\nn}{{\text{n}}}
 \newcommand{\pp}{{\text{p}}}
 \newcommand{\qq}{{\text{q}}}
@@ -84,6 +81,10 @@
 \newcommand{\bus}{\bu|_s}
 \newcommand{\oo}[1]{\displaystyle O\left(#1\right)}
 \newcommand{\sold}{s_{\text{o}}}
+
+\newcommand{\maxR}{R^{\bm{\oplus}}}
+\newcommand{\minR}{R^{\bm{\ominus}}}
+\newcommand{\iR}{R^{\bullet}}
 
 
 \title[Multigrid for nonlinear VI]{Toward nonlinear multigrid \\ for nonlinear variational inequalities}
@@ -130,14 +131,14 @@
 
 \begin{frame}{example: a classical obstacle problem}
 
-\includegraphics[width=0.6\textwidth]{images/obstacle65.pdf} \qquad \includegraphics[width=0.3\textwidth]{images/obstacle-sets.png}
+\includegraphics[width=0.55\textwidth]{images/obstacle65.pdf} \qquad \includegraphics[width=0.35\textwidth]{images/obstacle-sets.png}
 
 \bigskip
 \only<1>{
 \begin{itemize}
 \item \emph{problem.} on a domain $\Omega \subset \RR^2$, find the displacement $u(x)$ of a membrane, with fixed value $u = g$ on $\partial \Omega$, above an \emph{obstacle} $\psi(x)$, which minimizes the elastic energy
-    $$J(u) = \int_\Omega \frac{1}{2} |\grad u|^2 - f\, u$$
-\item shown above: $\Omega=(-2,2)^2$, $\psi(x)$ a hemisphere
+    $$J(v) = \int_\Omega \frac{1}{2} |\grad v|^2 - f\, v$$
+\item shown above: \quad $\Omega=(-2,2)^2$, $\psi(x)$ a hemisphere, $f(x)=0$
 \end{itemize}
 
 \phantom{x}
@@ -146,36 +147,35 @@
 \begin{itemize}
 \item i.e.~constrained optimization over an \emph{admissible set}
 	$$\mathcal{K} = \left\{v \in H^1(\Omega) \,:\, v\big|_{\partial \Omega} = g \text{ and } v \ge \psi\right\}$$
-\item informally, $J'(u)$ points directly into $\mathcal{K}$ ({\color{FireBrick} \emph{variational inequality}; VI}):
+\item $J'(u)$ points directly into $\mathcal{K}$, the {\color{FireBrick} \emph{variational inequality} (VI)}:
     $$\ip{J'(u)}{v-u} = \int_\Omega \grad u\cdot \grad (v-u) - f (v-u) \ge 0 \quad \text{for all } v \in \mathcal{K}$$
 \end{itemize}
 }
 \only<3>{
 \begin{itemize}
 \item the solution defines \emph{active} $A_u = \{u = \psi\}$ and \emph{inactive} $R_u = \{u> \psi\}$ subsets of $\Omega$, and a \emph{free boundary} $\Gamma_u=\partial R_u \cap \Omega$
-\item a naive strong form poses the problem in terms of its solution:
-{\small
+\item naive strong form would pose the problem in terms of its solution:
 \begin{align*}
--\grad^2 u &= f \text{ on $R_u$} \\
-u &= \psi \text{ on $A_u$}
+-\grad^2 u &= f \quad \text{ on $R_u$} \\
+u &= \psi \quad \text{ on $A_u$}
 \end{align*}
-}
-\item by contrast, the weak form VI is meaningful
+
+\phantom{x}
 
 \phantom{x}
 \end{itemize}
 }
 \only<4>{
 \begin{itemize}
-\item a \emph{complementarity problem} (CP) is a meaningful strong form:
-{\small
+\item the \emph{complementarity problem} (CP) is meaningful as a strong form:
 \begin{align*}
 u - \psi &\ge 0 \\
 -\grad^2 u - f &\ge 0 \\
 (u - \psi)(-\grad^2 u - f) &= 0
 \end{align*}
-}
-\item for optimization problems: CP $=$ KKT conditions
+   \begin{itemize}
+   \item[$\circ$] for optimization problems: \quad CP $=$ KKT conditions
+   \end{itemize}
 
 \phantom{x}
 
@@ -192,7 +192,7 @@ u - \psi &\ge 0 \\
 \item suppose $F:\mathcal{K} \to \mathcal{V}'$ is a continuous, generally nonlinear operator
     \begin{itemize}
     \item[$\circ$] $F$ may be defined only on $\mathcal{K}$
-    \item[$\circ$] $F$ may \emph{not} be the derivative of a $J(u)$
+    \item[$\circ$] $F$ may \emph{not}\, be the derivative of an objective function $J$
     \end{itemize}
 \item the general problem {\color{FireBrick} VI($F$,$\mathcal{K}$)} is
 	$${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \text{ for all } v \in \mathcal{K}}$$
@@ -223,7 +223,7 @@ $$F(u)=0$$
 \begin{minipage}[t][16mm][t]{0.4\textwidth}
 
 \vspace{-2mm}
-{\color{FireBrick} VI($F$,$\mathcal{K}$)} for $u \in \mathcal{K}$:
+{\color{FireBrick} VI} for $u \in \mathcal{K}$:
 $${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \forall v \in \mathcal{K}}$$
 \end{minipage}
 \end{tabular}
@@ -237,7 +237,7 @@ $${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \forall v \in \mathcal{K}}$$
 \item elastic contact, Signorini problems (e.g.~Kikuchi \& Oden 1988)
 \item viscous contact problems (de Diego et al.~2022)
 \item pricing of American options in the Black-Scholes model
-\item the geometry of glaciers \dots \emph{more soon}
+\item the geometry of glaciers \hfill $\longleftarrow$ \emph{more soon}
 
 \bigskip
 \item first-semester calculus
@@ -258,50 +258,116 @@ $${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \forall v \in \mathcal{K}}$$
 
 \section{full approximation scheme (FAS) multigrid for PDEs?}
 
-\begin{frame}{a nonlinear 2-grid scheme}
+\begin{frame}{nonlinear 2-grid scheme}
 
 \begin{center}
-\includegraphics[width=0.3\textwidth]{images/two-grids.png}
+$\Omega^h$\, \includegraphics[height=0.16\textheight]{images/fine-grid.png} \hspace{25mm} \includegraphics[height=0.16\textheight]{images/coarse-grid.png} \,$\Omega^H$
 \end{center}
 
-\bigskip
 \only<1>{
 \begin{itemize}
-\item suppose we have a nonlinear elliptic PDE problem:
-	$$F(u) = 0$$
+\item consider a nonlinear elliptic PDE problem:
+	$$F(u) = \ell$$
+
 	\begin{itemize}
-	\item assume $F : H^1(\Omega) \to H^{-1}(\Omega)$ is differentiable
+	\item for example, $F : \mathcal{V} \to \mathcal{V}'$ for $\mathcal{V}=H^1(\Omega)$, with $\ell\in \mathcal{V}'$
 	\end{itemize}
-\item discretization (FD or FEM) gives nonlinear algebraic equations on the fine grid:
-    $$F^h(u^h) = 0$$
-\item 
+\item FEM/FD discretization gives algebraic system on fine grid $\Omega^h$:
+    $$F^h(u^h) = \ell^h$$
+\item suppose $w^h$ yields residual norm $\|\ell^h - F^h(w^h)\| > \text{TOL}$
 \end{itemize}
 
 \phantom{x}
 }
-\only<2>{
+\only<2-3>{
 \begin{itemize}
-\item x
+\item how can we improve $w^h$ \emph{without} globally linearizing $F^h$?
+
+are there alternatives to Newton's method?
+\item note the \emph{residual} $r^h(w^h) = \ell^h - F^h(w^h)$ is computable,
+
+while the \emph{error} $e^h = w^h-u^h$ is unknown
+\item the residual definition can be rewritten
+    $$F^h(w^h) - F^h(u^h) \stackrel{\ast}{=} -r^h(w^h)$$
+\only<2>{\item for $F^h$ linear, try to solve this \emph{error eqn} $F^h(e^h) = -r^h(w^h)$ for $\tilde e^h$, and correct $w^h \leftarrow w^h-\tilde e^h$ to improve $w^h$?}
+\only<3>{\item \st{for $F^h$ linear, try to solve this \emph{error eqn} $F^h(e^h) = -r^h(w^h)$ for $\tilde e^h$, and correct $w^h \leftarrow w^h-\tilde e^h$ to improve $w^h$?}}
+\end{itemize}
+}
+\only<4>{
+\begin{itemize}
+\item \emph{nodewise problem}: for $\psi_j^h$ a hat function or dof, solve for $c\in\RR$:
+	$${\color{FireBrick} \phi_j(c) = r^h(w^h + c \psi_j^h)[\psi_j^h] = 0}$$
+\item sweeping through and solving nodewise problems is a \emph{smoother}
+    \begin{itemize}
+    \item[$\circ$] Fourier analysis on linear PDEs shows smoothing property
+    \item[$\circ$] post-smoothing, $w^h-u^h$ and $r^h(w^h)$ have small high-frequency
+    \end{itemize}
+\item post-smoothing, both sides of $\ast$ should be accurately approximate-able on a coarser grid
+\end{itemize}
+}
+\only<5>{
+\begin{itemize}
+\item Brandt (1977) proposed to replace $F^h(w^h) - F^h(u^h) = -r^h(w^h)$ with a coarse-grid, re-discretized version
+\item \emph{full approximation storage} (FAS) \emph{equation}:
+	$${\color{FireBrick} F^H(w^H) - F^H(\iR w^h) = -R r^h(w^h)}$$
+
+    \begin{itemize}
+    \item[$\circ$] $\iR:\mathcal{V}^h \to \mathcal{V}^H$ is \emph{injection}
+    \item[$\circ$] $R:(\mathcal{V}^h)' \to (\mathcal{V}^H)'$ is \emph{canonical restriction}
+    \item[$\circ$] if $w^h=u^h$ exactly then $w^H = \iR w^h$
+    \end{itemize}
+
+FIXME CHECK CAREFULLY FROM HERE
+\item equivalently ${\color{FireBrick} F^H(w^H) = \ell^H}$ where ${\color{FireBrick} \ell^H = FIXME R\,F^h(u^h) - \iR\, r^h(w^h)}$
 \end{itemize}
 }
 \end{frame}
 
 
-\begin{frame}{nonlinear multigrid}
+\begin{frame}{FAS 2-grid solver}
 
-\mbox{
-\includegraphics[height=0.10\textheight]{images/mg-grids.png} \qquad \includegraphics[height=0.15\textheight]{images/mg-vcycle.png} \quad
+\begin{align*}
+&\text{smooth by sweeps over $j$:}  & &w^h \leftarrow \left[\phi_j(c) = 0 \,\forall j\right] \\
+&\text{evaluate:}                   & &\ell^H = R\,F^h(u^h) - \iR\, r^h(w^h) \\
+&\text{solve:}                       & &F^H(w^H) = \ell^H \\
+&\text{correct}:                    & &w^h \leftarrow w^h + P(w^H - \iR w^h) \\
+&\text{smooth by sweeps over $j$:}  & &w^h \leftarrow \left[\phi_j(c) = 0 \,\forall j\right]
+\end{align*}
+
+\bigskip
+\begin{itemize}
+\item evaluate$+$solve$+$correct \, $=$ \, \emph{coarse grid correction}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{nonlinear multigrid = FAS V-cycle or F-cycle}
+
+\includegraphics[height=0.15\textheight]{images/mg-grids.png}
+
+\bigskip
+
+\hfill \mbox{
+\includegraphics[height=0.15\textheight]{images/mg-vcycle.png} \quad
 \includegraphics[height=0.15\textheight]{images/mg-fcycle.png}
 }
 
-\bigskip
-\only<1>{
-\begin{itemize}
-\item suppose we have a nonlinear elliptic PDE problem:
-	$$F(u) = 0$$
-\end{itemize}
+\vspace{-3mm}
 
-\phantom{x}
+\only<1>{
+{\small
+\begin{pseudo}
+\pr{fas-vcycle}: \\+
+    for $j=J$ downto $j=1$ \\+
+      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j;u^j)$ \\
+      $u^{j-1} = \iR u^j$ \\
+      $\ell^{j-1} = f^{j-1}(u^{j-1}) + R \left(\ell^j - f^j(u^j)\right)$ \\-
+    $\text{\pr{solve}}(\ell^0;u^0)$ \\
+    for $j=1$ to $j=J$ \\+
+      $u^j \gets u^j + P (u^{j-1} - \iR u^j)$ \\
+      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j;u^j)$ \\-
+\end{pseudo}
+}
 }
 \only<2>{
 \begin{itemize}
