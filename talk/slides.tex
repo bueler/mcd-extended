@@ -17,7 +17,7 @@
 %\usepackage[svgnames]{xcolor}
 \usepackage{hyperref}
 \hypersetup{
-    pdftitle = {Toward nonlinear multigrid for nonlinear variational inequalities},
+    pdftitle = {Toward nonlinear multigrid for nonlinear and nonlocal variational inequalities},
     pdfauthor = {Ed Bueler},
     pdfsubject = {},
     pdfkeywords = {}
@@ -52,6 +52,7 @@
 \newcommand{\bbf}{\mathbf{f}}
 \newcommand{\bg}{\mathbf{g}}
 \newcommand{\bn}{\mathbf{n}}
+\newcommand{\bq}{\mathbf{q}}
 \newcommand{\br}{\mathbf{r}}
 \newcommand{\bu}{\mathbf{u}}
 \newcommand{\bv}{\mathbf{v}}
@@ -87,7 +88,7 @@
 \newcommand{\iR}{R^{\bullet}}
 
 
-\title[Multigrid for nonlinear VI]{Toward nonlinear multigrid \\ for nonlinear variational inequalities}
+\title[Multigrid for nonlinear VI]{Toward nonlinear multigrid \\ for nonlinear and nonlocal variational inequalities}
 
 %\subtitle{\emph{x}}
 
@@ -196,6 +197,7 @@ u - \psi &\ge 0 \\
     \end{itemize}
 \item the general problem {\color{FireBrick} VI($F$,$\mathcal{K}$)} is
 	$${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \text{ for all } v \in \mathcal{K}}$$
+\item when $\mathcal{K}$ is nontrivial the problem {\color{FireBrick} VI($F$,$\mathcal{K}$)} is nonlinear \emph{even when $F$ is a linear operator}
 \end{itemize}
 \end{frame}
 
@@ -405,10 +407,10 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
     \item[$\circ$] implement in C/Fortran/python/Julia(?)
     \end{itemize}
 \item multigrid solvers in PETSc are \emph{composed} from smoothers on each level, and a solver on the coarse mesh
-\item example parallel run with $J$ grid levels:
+\item example run using FD discretization and FAS F-cycle:
 \end{itemize}
 \begin{Verbatim}[xleftmargin=15mm,fontsize=\scriptsize]
-mpiexec -n P ./bratu -da_grid_x 5 -da_grid_y 5 -da_refine J \
+./bratu -da_grid_x 5 -da_grid_y 5 -da_refine J \
     -snes_rtol 1.0e-12 \
     -snes_type fas \
     -snes_fas_type full \
@@ -431,13 +433,15 @@ mpiexec -n P ./bratu -da_grid_x 5 -da_grid_y 5 -da_refine J \
 \begin{columns}
 \begin{column}{0.45\textwidth}
 \begin{itemize}
-\item runs on my laptop up to almost $N=10^8$ dofs
 \item observed optimality:
 \begin{align*}
 \text{flops} &= O(N^1) \\
 \text{exp evaluations} &= O(N^1) \\
 \text{processor time} &= O(N^1)
 \end{align*}
+\item<1-> up to almost $N=10^8$ dofs at $J=11$ refinements
+\item<2> on my 2022 laptop
+\item<2> compare $\approx 20\,\mu\,\text{s}/\text{N}$ for Poisson equation, $P_1$ elements, and geometric multigrid (in Firedrake)
 \end{itemize}
 \end{column}
 \begin{column}{0.55\textwidth}
@@ -449,20 +453,27 @@ mpiexec -n P ./bratu -da_grid_x 5 -da_grid_y 5 -da_refine J \
 \end{frame}
 
 
-\begin{frame}{Bratu model problem: optimality}
+\begin{frame}{benefits of FAS multigrid for nonlinear PDEs?}
 
-\begin{columns}
-\begin{column}{0.6\textwidth}
 \begin{itemize}
-\item x
-\end{itemize}
-\end{column}
-\begin{column}{0.4\textwidth}
-\includegraphics[width=\textwidth]{images/bratu-exps.png}
+\item \alert{benefits} of FAS multigrid?
+    \begin{enumerate}
+    \item[1.] minimal code, esp.~in from-scratch implementations
+        \begin{itemize}
+        \item[$\circ$] just write residual plus pointwise smoother!
+        \end{itemize}
+    \item[2.] composition with nonlinear preconditioners (Brune et al.~2015)
+    \end{enumerate}
+\item \alert{disadvantages?}
+    \begin{enumerate}
+    \item[1.] Firedrake/FENiCs \emph{do} automatically provide linearizations from UFL statements of weak forms
+    \item[2.] small literature of convergence or descriptive performance (see Trottenberg et al.~(2001), Reusken (1987))
+    \item[3.] not enough tutorial literature?
+    \end{enumerate}
 
-\includegraphics[width=\textwidth]{images/bratu-time.png}
-\end{column}
-\end{columns}
+\bigskip
+\item notable disadvantages relative to global linearization followed by linear multigrid (Newton-multigrid) for PDEs
+\end{itemize}
 \end{frame}
 
 
@@ -470,60 +481,67 @@ mpiexec -n P ./bratu -da_grid_x 5 -da_grid_y 5 -da_refine J \
 
 \begin{frame}{problem: fluid layer in a climate}
 
-\begin{center}
-\includegraphics[width=0.6\textwidth]{images/fluid-in-climate.png}
-\end{center}
-
 \begin{itemize}
-\item x
+\item let's not get stuck on textbook example problems!
+\item multigrid for a real-world VI problem?
+\item consider the steady state of a viscous layer of surface elevation $s(x,y)$ flowing with velocity $\bu(x,y,z)$ under its own weight, over fixed bed topography with elevation $b(x,y)$, in a \emph{climate} which adds or removes fluid at a signed rate $a(x,y)$ [$\text{m}\,\text{s}^{-1}$]
+    \begin{itemize}
+    \item[$\circ$] data $a,b$ defined on domain $\Omega \subset \RR^2$ (left figure)
+    \end{itemize}
+\item geophysical examples: \alert{glaciers and ice sheets}, sea ice, inland seas and lakes
 \end{itemize}
+
+\bigskip
+\hfill \mbox{\includegraphics[height=0.25\textheight]{images/domain-data.png} \hspace{7mm} \includegraphics[height=0.25\textheight]{images/domain-velocity.png}}
 \end{frame}
 
 
-\section{a possibly scalable approach to nonlocal VIs}
-
-\begin{frame}{Newton iterations for VIs}
-
-\begin{columns}
-\begin{column}{0.6\textwidth}
-\begin{itemize}
-\item x
-\end{itemize}
-\end{column}
-\begin{column}{0.4\textwidth}
-\includegraphics[width=\textwidth]{images/vi-newton-gmg-bad.png}
-
-\includegraphics[width=\textwidth]{images/vi-newton-gmg-good.png}
-\end{column}
-\end{columns}
-\end{frame}
-
-
-\begin{frame}{Newton-multigrid for VIs}
+\begin{frame}{glacier example}
 
 xxx
+
+\includegraphics[width=0.8\textwidth]{images/alps-seguinot2018.png}
 \end{frame}
 
 
-\begin{frame}{optimality}
+\begin{frame}{strong form}
 
-\begin{columns}
-\begin{column}{0.6\textwidth}
 \begin{itemize}
+\item inequality constraint generates free boundary: $s \ge b$
+    \begin{itemize}
+    \item[$\circ$] equivalently: layer thickness must be nonnegative
+    \item[$\circ$] a free boundary arises where ablative climate ($a(x) < 0$) forces surface down to bed
+    \end{itemize}
+\item the fluid velocity $\bu$ is a generally non-local function of the fluid geometry
+\item naive strong form of the steady model: % ($\bn_s = \left<-s_x,-s_y,1\right>$ is surface normal):
+\begin{align*}
+s &\ge b                    & &\text{everywhere in } \Omega \\
+-\bu|_s \cdot \bn_s &= a    & &\text{where } s(x) > b(x)
+\end{align*}
+\end{itemize}
+
+\bigskip
+\hfill \mbox{\includegraphics[height=0.2\textheight]{images/domain-data.png} \hspace{7mm} \includegraphics[height=0.2\textheight]{images/domain-velocity.png}}
+\end{frame}
+
+
+\begin{frame}{VI for fluid layer in a climate}
+
+\begin{itemize}
+\item define admissible thicknesses: $\mathcal{K} = \left\{v \in \mathcal{V} \,:\, v \ge 0\right\}$
+
+    \begin{itemize}
+    \item[$\circ$] $\mathcal{V}$ to be determined by viscosity model\footnote{in lubrication approximation for glaciers, $u^{8/3} \in W^{1,4}(\Omega)$ (Jouvet \& Bueler, 2012)}
+    \end{itemize}
 \item x
 \end{itemize}
-\end{column}
-\begin{column}{0.4\textwidth}
-\includegraphics[width=\textwidth]{images/obstacle-flops-per-n.png}
-\end{column}
-\end{columns}
 \end{frame}
 
 
 \begin{frame}{the Stokes problem for ice}
 
 \begin{itemize}
-\item whether explicit or implicit, a non-shallow model solves a Stokes problem at each step:
+\item non-shallow model solves a Stokes problem at each step:
 \begin{align*}
 - \nabla \cdot \left(2 \nu_\eps(D\bu)\, D\bu\right) + \nabla p - \rhoi \mathbf{g} &= \bzero && \text{in $\Lambda$} \\
 \nabla \cdot \bu &= 0 && \text{''} \\
@@ -532,33 +550,95 @@ xxx
 \left(2 \nu_\eps(D\bu) D\bu - pI\right) \bn &= \bzero && \text{on $\Gamma_s$}
 \end{align*}
 \item this is the \alert{stress balance} (conservation of momentum) problem which determines velocity $\bu$ and pressure $p$
-\item how fast is the numerical solution process?
-    \begin{itemize}
-    \item[$\circ$] how do solution algorithms \alert{scale with increasing resolution}?
-    \end{itemize}
 \end{itemize}
 \end{frame}
 
 
+\section{scalable approaches for VIs}
 
-
-\begin{frame}{multilevel NCP-coupled-to-Stokes solvers}
+\begin{frame}[fragile]
+\frametitle{Newton-multigrid for VIs}
 
 \begin{itemize}
-\item direct attack on the problem seems to require a \alert{multilevel} solver for \alert{variational inequalities} (VIs), but in the \alert{non-local residual case}
+\item multigrid for the classical obstacle problem?
     \begin{itemize}
-    \item[$\circ$] this seems not to exist
-    \item[$\circ$] the \alert{smoother} must compute an implicit-step SKE residual including surface-motion term $\Phi(s) = - \bu|_s\cdot \bn_s$ from a scalable Stokes solver
+    \item[$\circ$] a nonlinear problem, though $-\nabla^2$ is linear
     \end{itemize}
-\item near-optimal multilevel VI solvers exist for toy problems
+\item Newton-multigrid straightforward in PETSc:
+\begin{Verbatim}[xleftmargin=13mm,fontsize=\scriptsize]
+./obstacle -da_grid_x 3 -da_grid_y 3 \
+    -snes_type vinewtonrsls -ksp_type cg \
+    -pc_type mg -da_refine J
+\end{Verbatim}
     \begin{itemize}
-    \item[$\circ$] Poisson equation obstacle problem (Brandt \& Cryer 1983; Gr\"aeser \& Kornhuber 2009)
+    \item[$\circ$] linear solver applies to inactive variables
+    \end{itemize}
+\item the outer Newton iteration must determine the active set \alert{before} V-cycle multigrid can provide effective preconditioning
+    \begin{itemize}
+    \item[$\circ$] growing Newton (SNES) iterations
     \end{itemize}
 \end{itemize}
+
+
+\hfill \mbox{\includegraphics[height=0.2\textheight]{images/obstacle65.pdf} \hspace{15mm}
+\includegraphics[height=0.25\textheight]{images/vi-newton-gmg-bad.png}}
 \end{frame}
 
 
-\section{conclusion}
+\begin{frame}[fragile]
+\frametitle{Newton-multigrid for VIs: nested iteration}
+
+\begin{itemize}
+\item applying nested iteration (nonlinear F-cycle) resolves this:
+
+\vspace{2mm}
+\begin{Verbatim}[xleftmargin=13mm,fontsize=\scriptsize]
+./obstacle -da_grid_x 3 -da_grid_y 3 \
+    -snes_type vinewtonrsls -ksp_type cg \
+    -pc_type mg
+\end{Verbatim}
+
+\vspace{-4.9mm}
+\hspace{39mm} {\scriptsize \color{FireBrick} \texttt{-snes\_grid\_sequence J}}
+
+\vspace{2mm}
+    \begin{itemize}
+    \item[$\circ$] constant Newton (SNES) iterations
+    \item[$\circ$] grid-independent flops/time restored
+    \item[$\circ$] optimal $O(N^1)$ flops
+    \item[$\circ$] FIXME example in my book
+    \end{itemize}
+
+\vspace{-12mm}
+\hfill \includegraphics[width=0.25\textwidth]{images/mg-fcycle.png}
+\end{itemize}
+
+\bigskip
+\hspace{10mm} \includegraphics[height=0.25\textheight]{images/vi-newton-gmg-good.png} 
+
+\vspace{-22mm}
+\hfill \includegraphics[height=0.45\textheight]{images/obstacle-flops-per-n.png}
+\end{frame}
+
+
+
+\begin{frame}{Newton-multigrid for VIs: semi-smooth}
+
+xxx
+
+semi-smooth Newton with penalty
+
+scaling also restores optimal
+
+performance (Farrell et al.~2020)
+
+FIXME Ulrich (20xx)
+
+\end{frame}
+
+
+\section{scalable approaches for \emph{nonlocal} VIs}
+
 
 \begin{frame}{\alert{summary}}
 
