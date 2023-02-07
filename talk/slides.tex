@@ -272,7 +272,7 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{images/fine-grid.png} \hsp
 	\begin{itemize}
 	\item for example, $F : \mathcal{V} \to \mathcal{V}'$ for $\mathcal{V}=H^1(\Omega)$, with $\ell\in \mathcal{V}'$
 	\end{itemize}
-\item FEM/FD discretization gives algebraic system on fine grid $\Omega^h$:
+\item discretization gives algebraic system on fine grid $\Omega^h$:
     $$F^h(u^h) = \ell^h$$
 \item suppose $w^h$ yields residual norm $\|\ell^h - F^h(w^h)\| > \text{TOL}$
 \end{itemize}
@@ -283,42 +283,41 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{images/fine-grid.png} \hsp
 \begin{itemize}
 \item how can we improve $w^h$ \emph{without} globally linearizing $F^h$?
 
-are there alternatives to Newton's method?
+(are there alternatives to Newton's method?)
 \item note the \emph{residual} $r^h(w^h) = \ell^h - F^h(w^h)$ is computable,
 
 while the \emph{error} $e^h = w^h-u^h$ is unknown
 \item the residual definition can be rewritten
-    $$F^h(w^h) - F^h(u^h) \stackrel{\ast}{=} -r^h(w^h)$$
-\only<2>{\item for $F^h$ linear, try to solve this \emph{error eqn} $F^h(e^h) = -r^h(w^h)$ for $\tilde e^h$, and correct $w^h \leftarrow w^h-\tilde e^h$ to improve $w^h$?}
-\only<3>{\item \st{for $F^h$ linear, try to solve this \emph{error eqn} $F^h(e^h) = -r^h(w^h)$ for $\tilde e^h$, and correct $w^h \leftarrow w^h-\tilde e^h$ to improve $w^h$?}}
+    $$F^h(u^h) - F^h(w^h) = r^h(w^h)$$
+\only<2>{\item for $F^h$ linear, try to solve this \emph{error equation} $F^h(e^h) = -r^h(w^h)$ for $\tilde e^h$, and correct $w^h \leftarrow w^h-\tilde e^h$ to improve $w^h$?}
+\only<3>{\item \st{for $F^h$ linear, try to solve this \emph{error equation} $F^h(e^h) = -r^h(w^h)$ for $\tilde e^h$, and correct $w^h \leftarrow w^h-\tilde e^h$ to improve $w^h$?}}
 \end{itemize}
 }
 \only<4>{
 \begin{itemize}
-\item \emph{nodewise problem}: for $\psi_j^h$ a hat function or dof, solve for $c\in\RR$:
-	$${\color{FireBrick} \phi_j(c) = r^h(w^h + c \psi_j^h)[\psi_j^h] = 0}$$
+\item goal: use a coarser mesh to estimate the error
+\item \emph{nodewise problem}: for $\psi_i^h$ a hat function or dof, solve for $c\in\RR$:
+	$${\color{FireBrick} \phi_i(c) = r^h(w^h + c \psi_i^h)[\psi_i^h] = 0}$$
 \item sweeping through and solving nodewise problems is a \emph{smoother}
     \begin{itemize}
     \item[$\circ$] Fourier analysis on linear PDEs shows smoothing property
-    \item[$\circ$] post-smoothing, $w^h-u^h$ and $r^h(w^h)$ have small high-frequency
+    \item[$\circ$] post-smoothing, $e^h$ and $r^h(w^h)$ have smaller high-frequencies
     \end{itemize}
-\item post-smoothing, both sides of $\ast$ should be accurately approximate-able on a coarser grid
+\item Brandt (1977): post-smoothing, $F^h(u^h) - F^h(w^h) = r^h(w^h)$ should be accurately approximate-able on a coarser grid
 \end{itemize}
 }
 \only<5>{
 \begin{itemize}
-\item Brandt (1977) proposed to replace $F^h(w^h) - F^h(u^h) = -r^h(w^h)$ with a coarse-grid, re-discretized version
-\item \emph{full approximation storage} (FAS) \emph{equation}:
-	$${\color{FireBrick} F^H(w^H) - F^H(\iR w^h) = -R r^h(w^h)}$$
+\item \emph{full approximation storage} (FAS) equation:
+	$${\color{FireBrick} F^H(w^H) - F^H(\iR w^h) = R \, r^h(w^h)}$$
 
     \begin{itemize}
     \item[$\circ$] $\iR:\mathcal{V}^h \to \mathcal{V}^H$ is \emph{injection}
     \item[$\circ$] $R:(\mathcal{V}^h)' \to (\mathcal{V}^H)'$ is \emph{canonical restriction}
-    \item[$\circ$] if $w^h=u^h$ exactly then $w^H = \iR w^h$
+    \item[$\circ$] if $w^h=u^h$ exactly then $w^H = \iR w^h$ by well-posedness
     \end{itemize}
 
-FIXME CHECK CAREFULLY FROM HERE
-\item equivalently ${\color{FireBrick} F^H(w^H) = \ell^H}$ where ${\color{FireBrick} \ell^H = FIXME R\,F^h(u^h) - \iR\, r^h(w^h)}$
+\item rewritten: \quad ${\color{FireBrick} F^H(w^H) = \ell^H}$ where ${\color{FireBrick} \ell^H = F^H(\iR w^h) + R\, r^h(w^h)}$
 \end{itemize}
 }
 \end{frame}
@@ -327,21 +326,27 @@ FIXME CHECK CAREFULLY FROM HERE
 \begin{frame}{FAS 2-grid solver}
 
 \begin{align*}
-&\text{smooth by sweeps over $j$:}  & &w^h \leftarrow \left[\phi_j(c) = 0 \,\forall j\right] \\
-&\text{evaluate:}                   & &\ell^H = R\,F^h(u^h) - \iR\, r^h(w^h) \\
-&\text{solve:}                       & &F^H(w^H) = \ell^H \\
+&\text{smooth by sweeps over grid:} & &w^h \leftarrow \left[\phi_i(c) = 0 \,\forall i\right] \\
+&\text{restrict:}                   & &\ell^H = F^H(\iR w^h) + R\, r^h(w^h) \\
+&\text{solve coarse:}                      & &F^H(w^H) = \ell^H \\
 &\text{correct}:                    & &w^h \leftarrow w^h + P(w^H - \iR w^h) \\
-&\text{smooth by sweeps over $j$:}  & &w^h \leftarrow \left[\phi_j(c) = 0 \,\forall j\right]
+&\text{smooth by sweeps over grid:} & &w^h \leftarrow \left[\phi_i(c) = 0 \,\forall i\right]
 \end{align*}
 
 \bigskip
+{\small
 \begin{itemize}
-\item evaluate$+$solve$+$correct \, $=$ \, \emph{coarse grid correction}
+\item $P: \mathcal{V}^H \to \mathcal{V}^h$ is \emph{prolongation}
+\item recall: \quad $\phi_i(c) = r^h(w^h + c \psi_i^h)[\psi_i^h]$
+\item restrict$+$(solve coarse)$+$correct \, $=$ \, \emph{coarse grid correction}
 \end{itemize}
+}
 \end{frame}
 
 
-\begin{frame}{nonlinear multigrid = FAS V-cycle or F-cycle}
+\begin{frame}{nonlinear multigrid by FAS V-cycle or F-cycle}
+
+\bigskip
 
 \includegraphics[height=0.15\textheight]{images/mg-grids.png}
 
@@ -354,34 +359,93 @@ FIXME CHECK CAREFULLY FROM HERE
 
 \vspace{-3mm}
 
-\only<1>{
 {\small
 \begin{pseudo}
-\pr{fas-vcycle}: \\+
+\pr{fas-vcycle}$(\ell^J;w^J)$: \\+
     for $j=J$ downto $j=1$ \\+
-      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j;u^j)$ \\
-      $u^{j-1} = \iR u^j$ \\
-      $\ell^{j-1} = f^{j-1}(u^{j-1}) + R \left(\ell^j - f^j(u^j)\right)$ \\-
-    $\text{\pr{solve}}(\ell^0;u^0)$ \\
+      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j; w^j)$ \\
+      $w^{j-1} \gets \iR w^j$ \\
+      $\ell^{j-1} = F^{j-1}(w^{j-1}) + R \left(\ell^j - F^j(w^j)\right)$ \\-
+    $\text{\pr{solve}}(\ell^0;w^0)$ \\
     for $j=1$ to $j=J$ \\+
-      $u^j \gets u^j + P (u^{j-1} - \iR u^j)$ \\
-      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j;u^j)$ \\-
+      $w^j \gets w^j + P (w^{j-1} - \iR w^j)$ \\
+      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j;w^j)$ \\-
 \end{pseudo}
-}
-}
-\only<2>{
-\begin{itemize}
-\item x
-\end{itemize}
 }
 \end{frame}
 
 
-\begin{frame}{nonlinear elliptic PDE problem}
+\begin{frame}{does it work?}
 
 \begin{itemize}
-\item x
+\item FAS multigrid works well on the right nonlinear PDE problem!
+\item example: Liouville-Bratu equation\footnote{exact solution by Liouville (1853) makes a nice test case}
+    $$-\nabla^2 u - e^u = 0$$
+with Dirichlet boundary conditions on $\Omega=(0,1)^2$
+\item minimal problem-specific code:
+    \begin{enumerate}
+    \item[1.] residual evaluation on grid level: $F^j(\cdot)$
+    \item[2.] pointwise smoother: $\phi_i(c) = 0 \,\forall i$
+        \begin{itemize}
+        \item[$\circ$] e.g.~nonlinear Jacobi or Gauss-Seidel iteration
+        \end{itemize}
+    \item[3.] coarse solve can be same as smoother, or use Newton etc.
+    \end{enumerate}
 \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{multigrid solver composition in PETSc}
+
+\begin{itemize}
+\item implement using e.g.~the PETSc library\footnote{Portable Extensible Toolkit for Scientific computing \quad \href{https://petsc.org/release/}{\texttt{petsc.org}} \quad \includegraphics[height=3mm]{images/petsc.png}}
+    \begin{itemize}
+    \item[$\circ$] FAS multigrid is a nonlinear solver (SNES) type
+    \item[$\circ$] implement in C/Fortran/python/Julia(?)
+    \end{itemize}
+\item multigrid solvers in PETSc are \emph{composed} from smoothers on each level, and a solver on the coarse mesh
+\item example parallel run with $J$ grid levels:
+\end{itemize}
+\begin{Verbatim}[xleftmargin=15mm,fontsize=\scriptsize]
+mpiexec -n P ./bratu -da_grid_x 5 -da_grid_y 5 -da_refine J \
+    -snes_rtol 1.0e-12 \
+    -snes_type fas \
+    -snes_fas_type full \
+    -fas_levels_snes_type ngs \
+    -fas_levels_snes_ngs_sweeps 2 \
+    -fas_levels_snes_ngs_max_it 1 \
+    -fas_levels_snes_norm_schedule none \
+    -fas_coarse_snes_type ngs \
+    -fas_coarse_snes_max_it 1 \
+    -fas_coarse_snes_ngs_sweeps 4 \
+    -fas_coarse_snes_ngs_max_it 1 
+\end{Verbatim}
+
+%NOT IN MY BOOK \hfill \includegraphics[width=8mm]{images/frontcover.jpg}
+\end{frame}
+
+
+\begin{frame}{Bratu model problem: optimality}
+
+\begin{columns}
+\begin{column}{0.45\textwidth}
+\begin{itemize}
+\item runs on my laptop up to almost $N=10^8$ dofs
+\item observed optimality:
+\begin{align*}
+\text{flops} &= O(N^1) \\
+\text{exp evaluations} &= O(N^1) \\
+\text{processor time} &= O(N^1)
+\end{align*}
+\end{itemize}
+\end{column}
+\begin{column}{0.55\textwidth}
+\includegraphics<1>[width=\textwidth]{images/bratu-exps.png}
+
+\includegraphics<2>[width=\textwidth]{images/bratu-time.png}
+\end{column}
+\end{columns}
 \end{frame}
 
 
