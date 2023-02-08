@@ -88,7 +88,7 @@
 \newcommand{\iR}{R^{\bullet}}
 
 
-\title[Multigrid for nonlinear VI]{Toward nonlinear multigrid \\ for nonlinear and nonlocal variational inequalities}
+\title[Multigrid for nonlinear VI]{Toward nonlinear multigrid \\ for nonlinear and non-local variational inequalities}
 
 %\subtitle{\emph{x}}
 
@@ -401,13 +401,13 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \frametitle{multigrid solver composition in PETSc}
 
 \begin{itemize}
-\item implement using e.g.~the PETSc library\footnote{Portable Extensible Toolkit for Scientific computing \quad \href{https://petsc.org/release/}{\texttt{petsc.org}} \quad \includegraphics[height=3mm]{images/petsc.png}}
+\item implemented using an FD discretization and PETSc\footnote{Portable Extensible Toolkit for Scientific computing \quad \href{https://petsc.org/release/}{\texttt{petsc.org}} \quad \includegraphics[height=3mm]{images/petsc.png}}
     \begin{itemize}
     \item[$\circ$] FAS multigrid is a nonlinear solver (SNES) type
     \item[$\circ$] implement in C/Fortran/python/Julia(?)
     \end{itemize}
 \item multigrid solvers in PETSc are \emph{composed} from smoothers on each level, and a solver on the coarse mesh
-\item example run using FD discretization and FAS F-cycle:
+\item FAS F-cycle run:
 \end{itemize}
 \begin{Verbatim}[xleftmargin=15mm,fontsize=\scriptsize]
 ./bratu -da_grid_x 5 -da_grid_y 5 -da_refine J \
@@ -439,9 +439,11 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \text{exp evaluations} &= O(N^1) \\
 \text{processor time} &= O(N^1)
 \end{align*}
-\item<1-> up to almost $N=10^8$ dofs at $J=11$ refinements
-\item<2> on my 2022 laptop
-\item<2> compare $\approx 20\,\mu\,\text{s}/\text{N}$ for Poisson equation, $P_1$ elements, and geometric multigrid (in Firedrake)
+\item<1-> up to almost $N=10^8$ dofs ($J=11$)
+\item<2> compare $\approx 20\,\mu\,\text{s}/\text{N}$ for Poisson equation using Firedrake $P_1$ elements and geometric multigrid
+    \begin{itemize}
+    \item<2>[$\circ$] on my 2022 laptop
+    \end{itemize}
 \end{itemize}
 \end{column}
 \begin{column}{0.55\textwidth}
@@ -464,15 +466,14 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
         \end{itemize}
     \item[2.] composition with nonlinear preconditioners (Brune et al.~2015)
     \end{enumerate}
+
+\bigskip
 \item \alert{disadvantages?}
     \begin{enumerate}
     \item[1.] Firedrake/FENiCs \emph{do} automatically provide linearizations from UFL statements of weak forms
-    \item[2.] small literature of convergence or descriptive performance (see Trottenberg et al.~(2001), Reusken (1987))
+    \item[2.] small literature of convergence or descriptive performance for FAS (Trottenberg et al.~(2001), Reusken (1987))
     \item[3.] not enough tutorial literature?
     \end{enumerate}
-
-\bigskip
-\item notable disadvantages relative to global linearization followed by linear multigrid (Newton-multigrid) for PDEs
 \end{itemize}
 \end{frame}
 
@@ -488,7 +489,7 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
     \begin{itemize}
     \item[$\circ$] data $a,b$ defined on domain $\Omega \subset \RR^2$ (left figure)
     \end{itemize}
-\item geophysical examples: \alert{glaciers and ice sheets}, sea ice, inland seas and lakes
+\item geophysical examples: \alert{glaciers and ice sheets}, sea ice, oceans and lakes
 \end{itemize}
 
 \bigskip
@@ -496,11 +497,19 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \end{frame}
 
 
-\begin{frame}{glacier example}
+\begin{frame}{example: glacier ice coverage of the Alps in prior climates}
 
-xxx
+\includegraphics[width=1.02\textwidth]{images/alps-seguinot2018.png}
 
-\includegraphics[width=0.8\textwidth]{images/alps-seguinot2018.png}
+\vspace{-2mm}
+\hfill {\tiny Sequinot et al.~(2018)}
+
+%\vspace{-5mm}
+{\footnotesize
+\begin{itemize}
+\item<2> more ice sheet modeling at my Math.~Geoscience Seminar tomorrow 2pm L5
+\end{itemize}
+}
 \end{frame}
 
 
@@ -509,15 +518,19 @@ xxx
 \begin{itemize}
 \item inequality constraint generates free boundary: $s \ge b$
     \begin{itemize}
-    \item[$\circ$] equivalently: layer thickness must be nonnegative
-    \item[$\circ$] a free boundary arises where ablative climate ($a(x) < 0$) forces surface down to bed
+    \item[$\circ$] ablative climate $a(x) < 0$ forces surface down to bed
+    \item[$\circ$] $s\ge b$ $\iff$ thickness $s-b$ must be nonnegative
     \end{itemize}
-\item the fluid velocity $\bu$ is a generally non-local function of the fluid geometry
 \item naive strong form of the steady model: % ($\bn_s = \left<-s_x,-s_y,1\right>$ is surface normal):
 \begin{align*}
 s &\ge b                    & &\text{everywhere in } \Omega \\
 -\bu|_s \cdot \bn_s &= a    & &\text{where } s(x) > b(x)
 \end{align*}
+
+    \begin{itemize}
+    \item[$\circ$] surface velocity $\bu|_s$ is determined by fluid domain geometry
+    \item[$\circ$] true $\Phi(s) = -\bu|_s \cdot \bn_s$ is a \emph{non-local} function of $s$
+    \end{itemize}
 \end{itemize}
 
 \bigskip
@@ -525,15 +538,48 @@ s &\ge b                    & &\text{everywhere in } \Omega \\
 \end{frame}
 
 
+\begin{frame}{$\Phi(s) = - \bu|_s \cdot \bn_s$ for glacier ice?}
+
+\begin{itemize}
+\only<1>{
+\item \alert{Stokes model}
+
+solve the Stokes problem for $\bu,p$, then evaluate at surface:
+    $$\int_{\Lambda = \{b < z <s\}} 2 \nu(D\bu) D\bu : D\bv - p \Div\bv - (\Div\bu) q - \rhoi \bg \cdot \bv\,d\bx = 0 \quad \forall v,q$$
+    $$\Phi(s) = - \bu|_s \cdot \bn_s$$
+
+    \begin{itemize}
+    \item[$\circ$] also extend $\Phi(s)$ by 0 to all of $\Omega$
+    \item[$\circ$] non-Newtonian viscosity: $\nu(D\bu) = \frac{1}{2} \Gamma |D\bu|^{\pp-2}$ with e.g.~$\pp = \frac{4}{3}$
+    \item[$\circ$] well-posed problem for $\bu,p$
+    \item[$\circ$] near-optimal solvers available (Isaac et al 2015)
+    \end{itemize}
+}
+
+\only<2>{
+\item \alert{lubrication approximation model}
+
+apply a nonlinear differential operator to $s$:
+    $$\Phi(s) = - \frac{\gamma}{\qq} (s-b)^{\qq} |\grad_{\bx} s|^{\qq} - \grad_{\bx} \cdot\left(\frac{\gamma}{\qq+1} (s-b)^{\qq+1} |\grad_{\bx} s|^{\qq-2} \grad_{\bx} s\right)$$
+where $\qq = \nn+1$ and $\gamma>0$ is related to ice softness and density
+    \begin{itemize}
+    \item e.g.~$\qq = 4$
+    \item $\Phi(s)$ is a nonlinear differential operator only because membrane (longitudinal) stresses are not balanced in lubrication approximation
+    \end{itemize}
+}
+\end{itemize}
+\end{frame}
+
 \begin{frame}{VI for fluid layer in a climate}
 
 \begin{itemize}
-\item define admissible thicknesses: $\mathcal{K} = \left\{v \in \mathcal{V} \,:\, v \ge 0\right\}$
+\item admissible surface elevations: \quad $\mathcal{K} = \left\{r \in \mathcal{V} \,:\, r \ge b\right\}$
 
     \begin{itemize}
     \item[$\circ$] $\mathcal{V}$ to be determined by viscosity model\footnote{in lubrication approximation for glaciers, $u^{8/3} \in W^{1,4}(\Omega)$ (Jouvet \& Bueler, 2012)}
     \end{itemize}
-\item x
+\item VI problem:
+
 \end{itemize}
 \end{frame}
 
