@@ -18,7 +18,7 @@
 \usepackage{hyperref}
 \hypersetup{
     pdftitle = {Toward nonlinear multigrid for nonlinear and nonlocal variational inequalities},
-    pdfauthor = {Ed Bueler},
+    pdfauthor = {Ed Bueler and Patrick Farrell},
     pdfsubject = {},
     pdfkeywords = {}
 }
@@ -88,13 +88,13 @@
 \newcommand{\iR}{R^{\bullet}}
 
 
-\title[Multigrid for nonlinear VI]{Toward nonlinear multigrid \\ for nonlinear and non-local variational inequalities}
+\title[Multigrid for nonlinear and nonlocal VIs]{Toward nonlinear multigrid \\ for nonlinear and nonlocal variational inequalities}
 
 %\subtitle{\emph{x}}
 
-\author{Ed Bueler}
-
-\institute[UAF]{University of Alaska Fairbanks}
+\author[Bueler and Farrell]{Ed Bueler \inst{1} \and Patrick Farrell \inst{2}}
+\institute[]{\inst{1} University of Alaska Fairbanks \and %
+             \inst{2} Mathematical Institute, Oxford University}
 
 \date[]{February 2023}
 
@@ -103,7 +103,7 @@
 %  \end{picture}
 %}
 
-\titlegraphic{\hfill \includegraphics[width=0.15\textwidth]{images/uafbw.png}}
+\titlegraphic{\hfill \includegraphics[width=0.15\textwidth]{images/uafbw.png} \quad \includegraphics[width=0.10\textwidth]{images/oxford.png}}
 
 %% to start section counter at 0 see
 %% https://tex.stackexchange.com/questions/170222/change-the-numbering-in-beamers-table-of-content
@@ -478,7 +478,7 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \end{frame}
 
 
-\section{the nonlocal VI for a fluid layer in a climate}
+\section{the nonlinear and nonlocal VI for a fluid layer in a climate}
 
 \begin{frame}{problem: fluid layer in a climate}
 
@@ -585,7 +585,6 @@ where
     $$\Phi(s)=- \bu|_s \cdot \bn_s,$$
 with extension by 0 to all of $\Omega$, and $\bu$ is the velocity solution on
     $$\Lambda(s) = \{(x,y,z) : b(x,y) < z < s(x,y)\}$$
-
 \end{itemize}
 \end{frame}
 
@@ -628,16 +627,39 @@ s - b &\ge 0 && \text{ in $\Omega$} \\
 \end{frame}
 
 
-\section{multigrid approaches for VIs?}
+\begin{frame}{what's needed for multigrid to work here?}
+
+\begin{block}{viscous fluid layer geometry problem}
+	$$\ip{\Phi(s)}{r-s} \ge \ip{a}{r-s} \quad \text{ for all } r \in \mathcal{K}$$
+where
+\begin{itemize}
+\item $\mathcal{K} = \left\{r \in \mathcal{V} \,:\, r \ge b\right\}$
+\item $\Phi(s)=- \bu|_s \cdot \bn_s$
+\item $s$ is solution surface elevation
+\item $\bu$ is Stokes solution on $\Lambda(s) = \{b < z < s\}$
+\item $a$ (climate) and $b$ (bed elevation) are the input data
+\end{itemize} 
+\end{block}
+
+\bigskip
+\begin{itemize}
+\item what is needed for scalable multilevel solutions?
+    \begin{enumerate}
+    \item<2>[1.] iterates must be admissible
+    \item<2>[2.] global linearization must be avoided
+    \item<2>[3.] smoother cost must be comparable to one residual    
+    \end{enumerate}
+\end{itemize}
+\end{frame}
+
+
+\section{multigrid approaches for VIs}
 
 \begin{frame}[fragile]
-\frametitle{Newton-multigrid for VIs}
+\frametitle{Newton-multigrid for the classical obstacle problem}
 
 \begin{itemize}
-\item multigrid for the classical obstacle problem?
-    \begin{itemize}
-    \item[$\circ$] a nonlinear problem, though $-\nabla^2$ is linear
-    \end{itemize}
+\item VIs are nonlinear problems, even for linear operators like $-\nabla^2$
 \item Newton-multigrid is straightforward in PETSc:
 \begin{Verbatim}[xleftmargin=13mm,fontsize=\scriptsize]
 ./obstacle -da_grid_x 3 -da_grid_y 3 \
@@ -645,22 +667,28 @@ s - b &\ge 0 && \text{ in $\Omega$} \\
     -pc_type mg -da_refine J
 \end{Verbatim}
     \begin{itemize}
-    \item[$\circ$] CG-GMG V-cycles linear solver applies to inactive variables
+    \item[$\circ$] linear solver applies to inactive variables
+        \begin{itemize}
+        \item[] \texttt{rsls} = reduced space line search
+        \end{itemize}
+    \item[$\circ$] Newton step equations solved by CG with GMG V-cycles
     \end{itemize}
-\item the outer Newton iteration must converge on the active set \alert{before} multigrid can provide effective preconditioning
+\item issue: the outer Newton iteration must converge on the active set \alert{before} multigrid can provide effective preconditioning
     \begin{itemize}
-    \item[$\circ$] thus growing Newton (SNES) iterations!
+    \item[$\circ$] grid-dependent (growing) Newton iterations
     \end{itemize}
 \end{itemize}
 
+\medskip
+\hspace{10mm} \includegraphics[height=0.2\textheight]{images/obstacle65.pdf}
 
-\hfill \mbox{\includegraphics[height=0.2\textheight]{images/obstacle65.pdf} \hspace{15mm}
-\includegraphics[height=0.25\textheight]{images/vi-newton-gmg-bad.png}}
+\vspace{-20mm}
+\hfill \includegraphics[height=0.25\textheight]{images/vi-newton-gmg-bad.png}
 \end{frame}
 
 
 \begin{frame}[fragile]
-\frametitle{Newton-multigrid for VIs: nested iteration}
+\frametitle{nested iteration}
 
 \begin{itemize}
 \item applying nested iteration (nonlinear F-cycle) resolves this:
@@ -677,10 +705,9 @@ s - b &\ge 0 && \text{ in $\Omega$} \\
 
 \vspace{2mm}
     \begin{itemize}
-    \item[$\circ$] constant Newton (SNES) iterations
-    \item[$\circ$] grid-independent flops/time restored
-    \item[$\circ$] optimal $O(N^1)$ flops
-    \item[$\circ$] FIXME example in my book
+    \item[$\circ$] grid-independent Newton iterations
+    \item[$\circ$] optimal $O(N^1)$ flops and time
+    \item<2>[$\circ$] Chapter 12 example in my new book
     \end{itemize}
 
 \vspace{-12mm}
@@ -688,30 +715,112 @@ s - b &\ge 0 && \text{ in $\Omega$} \\
 \end{itemize}
 
 \bigskip
-\hspace{10mm} \includegraphics[height=0.25\textheight]{images/vi-newton-gmg-good.png} 
+\includegraphics[height=0.25\textheight]{images/vi-newton-gmg-good.png} 
 
 \vspace{-22mm}
-\hfill \includegraphics[height=0.45\textheight]{images/obstacle-flops-per-n.png}
+\hspace{40mm} \includegraphics[height=0.45\textheight]{images/obstacle-flops-per-n.png} \qquad \includegraphics<2>[width=20mm]{images/frontcover.jpg}
 \end{frame}
 
 
+\begin{frame}{multigrid strategies for VIs}
 
-\begin{frame}{Newton-multigrid for VIs: semi-smooth}
-
-xxx
-
-semi-smooth Newton with penalty
-
-scaling also restores optimal
-
-performance (Farrell et al.~2020)
-
-FIXME Ulrich (20xx)
-
+\begin{itemize}
+\item semi-smooth Newton can also yield mesh-independent iterations (Farrell et al.~2020)
+\item other VI multilevel strategies:
+    \begin{itemize}
+    \item[$\circ$] projected FAS multigrid for linear CPs (Brandt \& Cryer, 1983)
+    \item[$\circ$] monotone multigrid (Kornhuber, 1994)
+    \item[$\circ$] multilevel constraint decomposition (Tai, 2003)
+    \end{itemize}
+\end{itemize}
 \end{frame}
 
 
-\section{multigrid approaches for \emph{nonlocal} VIs?}
+\section{multigrid approaches for nonlinear and \emph{nonlocal} VIs?}
+
+\newcommand{\stacktwo}[2]{\begin{tabular}{c} #1 \\ #2 \end{tabular}}
+
+\begin{frame}{multigrid strategies for nonlinear VIs: feature table}
+
+{\small
+\begin{tabular}{l|ccccc}
+   & \stacktwo{admissible}{iterates} & \stacktwo{mesh-indep.}{rates}
+       & \stacktwo{no global}{linearization}
+         & \stacktwo{PETSc or}{Firedrake}  \\ \hline
+RS NM                      & $\checkmark$ &  & & $\checkmark$ \\
+\quad $+$ NI & $\checkmark$ & $\checkmark$ & & $\checkmark$ \\
+SS NM             &              & $\checkmark$ & & $\checkmark$ \\
+{\color{FireBrick} FASCD}  & $\checkmark$ & {\color{FireBrick} \textbf{?}} & $\checkmark$ & {\color{FireBrick} {\large $\checkmark$}}
+\end{tabular}
+}
+
+\bigskip
+{\scriptsize
+\begin{center}
+RS = reduced space, SS = semi-smooth, NM = Newton-multigrid, NI = nested iteration
+\end{center}
+}
+
+\vspace{5mm}
+\begin{itemize}
+\item for the non-local fluid layer VI problem we need all 4 checked
+\item we are trying-out a new algorithm,
+
+{\color{FireBrick} FASCD = full approximation storage constraint decomposition}
+
+    \begin{itemize}
+    \item[$\circ$] Firedrake implementation \only<2>{\dots as of yesterday}
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{constraint decomposition}
+
+CD gloss
+
+\begin{itemize}
+\item x
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{constraint decomposition}
+
+dishonest attempt figure
+
+\begin{itemize}
+\item x
+\end{itemize}
+
+\includegraphics[width=0.5\textwidth]{images/icedecomp.png}
+\end{frame}
+
+
+\begin{frame}{full approximation storage constraint decomposition}
+
+pseudocode
+\end{frame}
+
+
+\begin{frame}{evidence of mesh independence}
+
+\begin{itemize}
+\item 1D SIA
+\end{itemize}
+
+\includegraphics[width=0.5\textwidth]{images/sia-asymprates.pdf}
+\end{frame}
+
+
+\begin{frame}{2D SIA results (\emph{very fresh})}
+
+\begin{itemize}
+\item x
+\end{itemize}
+
+\includegraphics[width=0.5\textwidth]{images/fascd-firedrake-dome.png}
+\end{frame}
 
 
 \begin{frame}{\alert{summary}}
@@ -724,16 +833,16 @@ FIXME Ulrich (20xx)
 
 \begin{frame}{references}
 
-{\scriptsize
-%{\notsotiny
+%{\scriptsize
+{\notsotiny
 \input{references.tex}
 }
 \end{frame}
 
 \begin{frame}{additional background references}
 
-{\scriptsize
-%{\notsotiny
+%{\scriptsize
+{\notsotiny
 \input{background.tex}
 }
 \end{frame}
