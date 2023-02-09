@@ -641,12 +641,18 @@ where
 \end{itemize} 
 \end{block}
 
-\bigskip
 \begin{itemize}
-\item what is needed for scalable multilevel solutions?
+\item[]
+    \begin{itemize}
+    \item[$\circ$] for more on this problem see (Bueler, 2021)
+    \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\item {\color{FireBrick} what is needed for scalable multilevel solutions?}
     \begin{enumerate}
     \item<2>[1.] iterates must be admissible
-    \item<2>[2.] global linearization must be avoided
+    \item<2>[2.] global linearization of $\Phi(s)$ must be avoided
     \item<2>[3.] smoother cost must be comparable to one residual    
     \end{enumerate}
 \end{itemize}
@@ -725,12 +731,15 @@ where
 \begin{frame}{multigrid strategies for VIs}
 
 \begin{itemize}
-\item semi-smooth Newton can also yield mesh-independent iterations (Farrell et al.~2020)
+\item semi-smooth Newton also yields mesh-independent iterations
+    \begin{itemize}
+    \item[$\circ$] penalty scaling argument (Farrell et al.~2020)
+    \end{itemize}
 \item other VI multilevel strategies:
     \begin{itemize}
     \item[$\circ$] projected FAS multigrid for linear CPs (Brandt \& Cryer, 1983)
     \item[$\circ$] monotone multigrid (Kornhuber, 1994)
-    \item[$\circ$] multilevel constraint decomposition (Tai, 2003)
+    \item[$\circ$] multilevel constraint decomposition (Tai, 2003)  \hfill $\gets$ \emph{more below}
     \end{itemize}
 \end{itemize}
 \end{frame}
@@ -740,7 +749,7 @@ where
 
 \newcommand{\stacktwo}[2]{\begin{tabular}{c} #1 \\ #2 \end{tabular}}
 
-\begin{frame}{multigrid strategies for nonlinear VIs: feature table}
+\begin{frame}{multigrid strategies for VIs: feature table}
 
 {\small
 \begin{tabular}{l|ccccc}
@@ -750,7 +759,7 @@ where
 RS NM                      & $\checkmark$ &  & & $\checkmark$ \\
 \quad $+$ NI & $\checkmark$ & $\checkmark$ & & $\checkmark$ \\
 SS NM             &              & $\checkmark$ & & $\checkmark$ \\
-{\color{FireBrick} FASCD}  & $\checkmark$ & {\color{FireBrick} \textbf{?}} & $\checkmark$ & {\color{FireBrick} {\large $\checkmark$}}
+{\color{FireBrick} FASCD}  & $\checkmark$ & {\color{FireBrick} \textbf{?}} & $\checkmark$ & \only<2>{{\Large {\color{FireBrick} $\checkmark$}}} {\Large \strut}
 \end{tabular}
 }
 
@@ -777,50 +786,84 @@ RS = reduced space, SS = semi-smooth, NM = Newton-multigrid, NI = nested iterati
 
 \begin{frame}{constraint decomposition}
 
-CD gloss
-
 \begin{itemize}
-\item x
+\item Tai's (2003) \emph{constraint decomposition} (CD) for VIs follows subspace decomposition for PDEs (Xu 1992)
+\item 
 \end{itemize}
 \end{frame}
 
 
-\begin{frame}{constraint decomposition}
+\begin{frame}{as decomposition of the fluid layer}
 
 dishonest attempt figure
 
 \begin{itemize}
-\item x
+\item what does 
 \end{itemize}
 
-\includegraphics[width=0.5\textwidth]{images/icedecomp.png}
+\begin{center}
+\includegraphics[width=\textwidth]{images/icedecomp.png}
+\end{center}
 \end{frame}
 
 
 \begin{frame}{full approximation storage constraint decomposition}
 
-pseudocode
-\end{frame}
-
-
-\begin{frame}{evidence of mesh independence}
-
-\begin{itemize}
-\item 1D SIA
-\end{itemize}
-
-\includegraphics[width=0.5\textwidth]{images/sia-asymprates.pdf}
+% case of lower obstacle only
+\begin{pseudo}
+\pr{fascd-vcycle}(\ell^J,\underline{\gamma}^J; w^J)\text{:} \\+
+    $\underline{\chi}^J = \underline{\gamma}^J - w^J {\large \strut}$ \\
+    %$\overline{\chi}^J = \overline{\gamma}^J - w^J {\large \strut}$ \\
+    for $j=J$ downto $j=1$ \\+
+      $\underline{\chi}^{j-1} = \maxR \underline{\chi}^j {\large \strut}$ \\
+      %$\overline{\chi}^{j-1} = \minR \overline{\chi}^j {\large \strut}$ \\
+      $\underline{\phi}^j = \underline{\chi}^j - P\underline{\chi}^{j-1} {\large \strut}$ \\
+      %$\overline{\phi}^j = \overline{\chi}^j - P\overline{\chi}^{j-1} {\large \strut}$ \\
+      $y^j = 0$ \\
+      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j,\underline{\phi}^j,w^j;y^j)$ \hspace{8mm} \ct{smoothing in $\mathcal{D}^j$}\\
+      $w^{j-1} = \iR(w^j + y^j)$ \\
+      $\ell^{j-1} = f^{j-1}(w^{j-1}) + R \left(\ell^j - f^j(w^j+y^j)\right)$ \\-
+    $z^0 = 0$ \\
+    $\text{\pr{solve}}(\ell^0,\underline{\chi}^0,w^0;z^0)$ \hspace{10mm} \ct{coarse solve in $\mathcal{U}^0$} \\
+    for $j=1$ to $j=J$ \\+
+      $z^j = y^{j} + P z^{j-1}$ \\
+      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j,\underline{\chi}^j,w^j;z^j)$ \hspace{8mm} \ct{smoothing in $\mathcal{U}^j$} \\-
+    $w^J \gets w^J+z^J$
+\end{pseudo}
 \end{frame}
 
 
 \begin{frame}{2D SIA results (\emph{very fresh})}
 
 \begin{itemize}
-\item x
+\item preliminary results
+\item dome test case in lubrication approximation
+    \begin{itemize}
+    \item[$\circ$] \emph{shallow ice approximation} = SIA
+    \item[$\circ$] $\Phi(s) = -\bu|_s \cdot \bn_s$ is a differential operator
+    \item[$\circ$] $s^{8/3} \in W^{1,p}(\Omega)$ but not in $C^2$
+    \end{itemize}
+\item FASCD algorithm using a strong smoother (\texttt{vinewtonrsls})
+    \begin{itemize}
+    \item[$\circ$] Firedrake $P_1$ elements
+    \end{itemize}
 \end{itemize}
 
-\includegraphics[width=0.5\textwidth]{images/fascd-firedrake-dome.png}
+\begin{center}
+\includegraphics[width=0.7\textwidth]{images/fascd-firedrake-dome.png}
+\end{center}
 \end{frame}
+
+
+\begin{frame}{evidence of mesh independence}
+
+\begin{itemize}
+\item again in the lubrication approximation,
+\end{itemize}
+
+\includegraphics[width=0.5\textwidth]{images/sia-asymprates.pdf}
+\end{frame}
+
 
 
 \begin{frame}{\alert{summary}}
