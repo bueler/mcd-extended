@@ -354,9 +354,10 @@ while the \emph{error} $e^h = w^h-u^h$ is unknown
 
 \bigskip
 
-\hfill \mbox{
-\includegraphics[height=0.15\textheight]{images/mg-vcycle.png} \quad
-\includegraphics[height=0.15\textheight]{images/mg-fcycle.png}
+\only<1>{
+\hfill \includegraphics[height=0.15\textheight]{images/mg-vcycle.png}
+}
+\only<2>{\hfill \includegraphics[height=0.15\textheight]{images/mg-fcycle.png} \quad \begin{tabular}{l} F-cycle = \\ nested iteration \end{tabular}
 }
 
 \vspace{-3mm}
@@ -404,7 +405,7 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \item implemented using an FD discretization and PETSc\footnote{Portable Extensible Toolkit for Scientific computing \quad \href{https://petsc.org/release/}{\texttt{petsc.org}} \quad \includegraphics[height=3mm]{images/petsc.png}}
     \begin{itemize}
     \item[$\circ$] FAS multigrid is a nonlinear solver (SNES) type
-    \item[$\circ$] implement in C/Fortran/python/Julia(?)
+    \item[$\circ$] implement in C/Fortran/python
     \end{itemize}
 \item multigrid solvers in PETSc are \emph{composed} from smoothers on each level, and a solver on the coarse mesh
 \item FAS F-cycle run:
@@ -485,7 +486,7 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \begin{itemize}
 \item let's not get stuck on textbook example problems!
 \item multigrid for a real-world VI problem?
-\item consider a viscous layer with surface elevation $s(x,y)$ flowing with velocity $\bu(x,y,z)$, driven by gravity, over fixed bed topography with elevation $b(x,y)$, in a \emph{climate} which adds or removes fluid at a signed rate $a(x,y)$ [$\text{m}\,\text{s}^{-1}$]
+\item consider an incompressible, viscous layer with surface elevation $s(x,y)$, flowing with velocity $\bu(x,y,z)$, driven by gravity, over fixed bed topography with elevation $b(x,y)$, in a \emph{climate} which adds or removes fluid at a signed rate $a(x,y)$ [$\text{m}\,\text{s}^{-1}$]
     \begin{itemize}
     \item[$\circ$] data $a,b$ defined on domain $\Omega \subset \RR^2$
     \end{itemize}
@@ -527,7 +528,7 @@ s &\ge b                    & &\text{everywhere in } \Omega \\
     \item[$\circ$] $\bn_s=\left<-\grad s,1\right>$ is upward surface normal
     \item[$\circ$] generally: $-\bu|_s \cdot \bn_s$ is a \emph{non-local} function of $s$
     \end{itemize}
-\item<2> the inequality constraint $s \ge b$ \alert{generates a free boundary}
+\item the inequality constraint $s \ge b$ \alert{generates a free boundary}
 
 where the ablative climate $a < 0$ forces surface down to bed
 \end{itemize}
@@ -589,21 +590,21 @@ with extension by 0 to all of $\Omega$, and $\bu$ is the velocity solution on
 \end{frame}
 
 
-\begin{frame}{CP form (glacier ice in a climate)}
+\begin{frame}{CP form of viscous fluid layer in a climate}
 
 \begin{itemize}
 \item VI form on previous slide is too abstracted for clarity
 \item the strong form of the same problem is a \alert{complementarity problem (CP) coupled to a Stokes problem}:
 \begin{align*}
-s - b &\ge 0 && \text{ in $\Omega$} \\
+s - b &\ge 0 && \text{ in $\Omega \subset \RR^2$} \\
 - \bu|_s \cdot \bn_s - a &\ge 0 && \text{''} \\
 (s-b)(- \bu|_s \cdot \bn_s - a) &= 0 && \text{''} \\
-- \nabla \cdot \left(2 \nu(D\bu)\, D\bu\right) + \nabla p - \rhoi \mathbf{g} &= \bzero && \text{in $\Lambda(s)$} \\
+- \nabla \cdot \left(2 \nu(D\bu)\, D\bu\right) + \nabla p - \rhoi \mathbf{g} &= \bzero && \text{in $\Lambda(s) \subset \RR^3$} \\
 \nabla \cdot \bu &= 0 && \text{''} \\
 \left(2 \nu(D\bu) D\bu - pI\right) \bn &= \bzero && \{z=s\} \subset \partial \Lambda(s) \\
 \bu &= \bzero && \{z=b\} \subset \partial \Lambda(s)
 \end{align*}
-\item solve this for $s$ on $\Omega$, and simultaneously for $\bu,p$ on $\Lambda(s) = \{(x,y,z) : b(x,y) < z < s(x,y)\}$
+\item solve this for $s$ on $\Omega$, and simultaneously for $\bu,p$ on $\Lambda(s) = \{b < z < s\}$
 \end{itemize}
 \end{frame}
 
@@ -644,16 +645,16 @@ where
 \begin{itemize}
 \item[]
     \begin{itemize}
-    \item[$\circ$] for more on this problem see (Bueler, 2021)
+    \item[$\circ$] for more on this problem class see (Bueler, 2021)
     \end{itemize}
 \end{itemize}
 
 \begin{itemize}
 \item {\color{FireBrick} what is needed for scalable multilevel solutions?}
     \begin{enumerate}
-    \item<2>[1.] iterates must be admissible
-    \item<2>[2.] global linearization of $\Phi(s)$ must be avoided
-    \item<2>[3.] smoother cost must be comparable to one residual    
+    \item[1.] iterates must be admissible
+    \item[2.] global linearization of $\Phi(s)$ must be avoided
+    \item[3.] smoother cost must be comparable to one residual    
     \end{enumerate}
 \end{itemize}
 \end{frame}
@@ -669,8 +670,8 @@ where
 \item Newton-multigrid is straightforward in PETSc:
 \begin{Verbatim}[xleftmargin=13mm,fontsize=\scriptsize]
 ./obstacle -da_grid_x 3 -da_grid_y 3 \
-    -snes_type vinewtonrsls -ksp_type cg \
-    -pc_type mg -da_refine J
+    -snes_type vinewtonrsls -ksp_type cg -pc_type mg \
+    -da_refine J
 \end{Verbatim}
     \begin{itemize}
     \item[$\circ$] linear solver applies to inactive variables
@@ -702,12 +703,11 @@ where
 \vspace{2mm}
 \begin{Verbatim}[xleftmargin=13mm,fontsize=\scriptsize]
 ./obstacle -da_grid_x 3 -da_grid_y 3 \
-    -snes_type vinewtonrsls -ksp_type cg \
-    -pc_type mg
+    -snes_type vinewtonrsls -ksp_type cg -pc_type mg \
 \end{Verbatim}
 
-\vspace{-4.9mm}
-\hspace{39mm} {\scriptsize \color{FireBrick} \texttt{-snes\_grid\_sequence J}}
+\vspace{-1.5mm}
+\hspace{18.7mm} {\scriptsize \color{FireBrick} \texttt{-snes\_grid\_sequence J}}
 
 \vspace{2mm}
     \begin{itemize}
@@ -745,8 +745,6 @@ where
 \end{frame}
 
 
-\section{multigrid approaches for nonlinear and \emph{nonlocal} VIs?}
-
 \newcommand{\stacktwo}[2]{\begin{tabular}{c} #1 \\ #2 \end{tabular}}
 
 \begin{frame}{multigrid strategies for VIs: feature table}
@@ -783,6 +781,8 @@ RS = reduced space, SS = semi-smooth, NM = Newton-multigrid, NI = nested iterati
 \end{itemize}
 \end{frame}
 
+
+\section{multigrid approaches for nonlinear and \emph{nonlocal} VIs?}
 
 \begin{frame}{constraint decomposition}
 
