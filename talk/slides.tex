@@ -784,23 +784,60 @@ RS = reduced space, SS = semi-smooth, NM = Newton-multigrid, NI = nested iterati
 
 \section{multigrid approaches for nonlinear and \emph{nonlocal} VIs?}
 
+\newcommand{\cK}{\mathcal{K}}
+
 \begin{frame}{constraint decomposition}
 
 \begin{itemize}
-\item Tai's (2003) \emph{constraint decomposition} (CD) for VIs follows subspace decomposition for PDEs (Xu 1992)
-\item 
+\item Tai's (2003) \emph{constraint decomposition} (CD) for VIs follows the subspace decomposition idea (Xu 1992)
+\item suppose $\mathcal{K} \subset \mathcal{V}$ is a closed and convex admissible subset
+\item for a subspace decomposition $\mathcal{V} = \sum_i \mathcal{V}_i$, write the admissible subset as a sum
+    $$\mathcal{K} = \sum_i \mathcal{K}_i$$
+where $\mathcal{K}^i \subset \mathcal{V}^i$, with projections $\Pi_i : \mathcal{K} \to \mathcal{K}_i$
+\item CD additive and multiplicative iterations exist for $VI(F,\ell,\mathcal{K})$
+
+\begin{pseudo}
+\pr{cd-add}(u)\text{:} \\+
+    for $i \in \{0,\dots,m-1\}$: \\+
+        \rm{find} $\hat w_i\in \cK_i$ \rm{so that for all} $v_i\in \cK_i$, \\+
+            $\boxed{\ip{F(u - \Pi_i u + \hat w_i)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i}}$ \\--
+    $\hat w = \sum_i \hat w_i\in\cK$ \\
+    return $w=(1-\alpha) u + \alpha \hat w$
+\end{pseudo}
 \end{itemize}
+\end{frame}
+
+
+\begin{frame}{multilevel constraint decomposition}
+
+\begin{itemize}
+\item recall $\mathcal{K} = \{v \ge \psi\}$ in classical obstacle problem
+\item define \alert{defect obstacle} for a fine-level iterate $w^J$:
+    $$\chi^J = \psi^J - w^J$$
+\item \alert{monotone restriction} generates obstacles on each level:
+	$$\chi^j = R^{\oplus} \chi^{j+1}$$
+\item let $\mathcal{U}^j = \{z \ge \chi^j\}$, $\mathcal{D}^j = \{y \ge \chi^j - \chi^{j-1}\}$
+\item get CD of fine-level constraint set:
+	$$\mathcal{U}^J = \sum_{i=0}^J \mathcal{D}^i \phantom{KLDFJSKJDS SDF}$$
+\item multiplicative CD iteration $\to$ V-cycle
+\end{itemize}
+
+\vspace{-25mm}
+\hfill \includegraphics[width=0.4\textwidth]{images/fascd-vcycle.png}
 \end{frame}
 
 
 \begin{frame}{as decomposition of the fluid layer}
 
-dishonest attempt figure
-
 \begin{itemize}
-\item what does 
+\item again this is too abstract
+\item what does it look like for the fluid layer?
+    \begin{itemize}
+    \item[$\circ$] coarse grids have \emph{admissible} pieces of the fine-grid iterate
+    \end{itemize}
 \end{itemize}
 
+\bigskip
 \begin{center}
 \includegraphics[width=\textwidth]{images/icedecomp.png}
 \end{center}
@@ -811,46 +848,44 @@ dishonest attempt figure
 
 % case of lower obstacle only
 \begin{pseudo}
-\pr{fascd-vcycle}(\ell^J,\underline{\gamma}^J; w^J)\text{:} \\+
-    $\underline{\chi}^J = \underline{\gamma}^J - w^J {\large \strut}$ \\
-    %$\overline{\chi}^J = \overline{\gamma}^J - w^J {\large \strut}$ \\
+\pr{fascd-vcycle}(\ell^J,\psi^J; w^J)\text{:} \\+
+    $\chi^J = \psi^J - w^J {\large \strut}$ \\
     for $j=J$ downto $j=1$ \\+
-      $\underline{\chi}^{j-1} = \maxR \underline{\chi}^j {\large \strut}$ \\
-      %$\overline{\chi}^{j-1} = \minR \overline{\chi}^j {\large \strut}$ \\
-      $\underline{\phi}^j = \underline{\chi}^j - P\underline{\chi}^{j-1} {\large \strut}$ \\
-      %$\overline{\phi}^j = \overline{\chi}^j - P\overline{\chi}^{j-1} {\large \strut}$ \\
+      $\chi^{j-1} = \maxR \chi^j {\large \strut}$ \\
+      $\phi^j = \chi^j - P\chi^{j-1} {\large \strut}$ \\
       $y^j = 0$ \\
-      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j,\underline{\phi}^j,w^j;y^j)$ \hspace{8mm} \ct{smoothing in $\mathcal{D}^j$}\\
+      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j,\phi^j,w^j;y^j)$ \hspace{8mm} \ct{smoothing in $\mathcal{D}^j$}\\
       $w^{j-1} = \iR(w^j + y^j)$ \\
       $\ell^{j-1} = f^{j-1}(w^{j-1}) + R \left(\ell^j - f^j(w^j+y^j)\right)$ \\-
     $z^0 = 0$ \\
-    $\text{\pr{solve}}(\ell^0,\underline{\chi}^0,w^0;z^0)$ \hspace{10mm} \ct{coarse solve in $\mathcal{U}^0$} \\
+    $\text{\pr{solve}}(\ell^0,\chi^0,w^0;z^0)$ \hspace{10mm} \ct{coarse solve in $\mathcal{U}^0$} \\
     for $j=1$ to $j=J$ \\+
       $z^j = y^{j} + P z^{j-1}$ \\
-      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j,\underline{\chi}^j,w^j;z^j)$ \hspace{8mm} \ct{smoothing in $\mathcal{U}^j$} \\-
+      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j,\chi^j,w^j;z^j)$ \hspace{8mm} \ct{smoothing in $\mathcal{U}^j$} \\-
     $w^J \gets w^J+z^J$
 \end{pseudo}
 \end{frame}
 
 
-\begin{frame}{2D SIA results (\emph{very fresh})}
+\begin{frame}{2D shallow ice approximation results (\emph{very fresh})}
 
 \begin{itemize}
 \item preliminary results
 \item dome test case in lubrication approximation
     \begin{itemize}
-    \item[$\circ$] \emph{shallow ice approximation} = SIA
-    \item[$\circ$] $\Phi(s) = -\bu|_s \cdot \bn_s$ is a differential operator
-    \item[$\circ$] $s^{8/3} \in W^{1,p}(\Omega)$ but not in $C^2$
+    \item[$\circ$] here $\Phi(s)$ \emph{is} a differential operator
+    \item[$\circ$] note $s^{8/3} \in W^{1,4}(\Omega)$ but not in $C^2$
     \end{itemize}
-\item FASCD algorithm using a strong smoother (\texttt{vinewtonrsls})
+\item FASCD algorithm result
     \begin{itemize}
     \item[$\circ$] Firedrake $P_1$ elements
+    \item[$\circ$] strong smoother (\texttt{vinewtonrsls})
     \end{itemize}
 \end{itemize}
 
+\medskip
 \begin{center}
-\includegraphics[width=0.7\textwidth]{images/fascd-firedrake-dome.png}
+\includegraphics[width=0.8\textwidth]{images/fascd-firedrake-dome.png}
 \end{center}
 \end{frame}
 
@@ -858,10 +893,15 @@ dishonest attempt figure
 \begin{frame}{evidence of mesh independence}
 
 \begin{itemize}
-\item again in the lubrication approximation,
+\item same lubrication approximation, but in 1D
+\item FASCD V-cycles with NGS and NJacobi smoothers
+\item up-smoothing preferred: V(0,2) beats V(1,1)
+\item evidence of mesh independence of factors $\|r^{(k+1)}\| / \|r^{(k)}\|$
 \end{itemize}
 
+\begin{center}
 \includegraphics[width=0.5\textwidth]{images/sia-asymprates.pdf}
+\end{center}
 \end{frame}
 
 
