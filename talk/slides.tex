@@ -905,11 +905,29 @@ where $\mathcal{K}^i \subset \mathcal{V}^i$, with projections $\Pi_i : \mathcal{
 \end{frame}
 
 
-
-\begin{frame}{\alert{summary}}
+\begin{frame}{summary and outlook}
 
 \begin{itemize}
-\item x
+\item the \alert{variational inequality (VI)} problem class is good to know
+\item likewise \alert{full approximation storage (FAS) multigrid}
+    \begin{itemize}
+    \item[$\circ$] need for better support and documentation in PETSc/Firedrake
+    \end{itemize}
+\item multigrid treatment of nonlinear and \alert{nonlocal VIs}?
+    \begin{itemize}
+    \item[$\circ$] smoothers not obvious in nonlocal cases
+    \item[$\circ$] seeking practical evidence of mesh-independent convergence
+    \end{itemize}
+\item glacier evolution, as fluid-layer-in-climate problems, \alert{needs attention} from applied mathematicians and numerical analysts
+    \begin{itemize}
+    \item[$\circ$] VI form not widely recognized
+    \item[$\circ$] current state of the art $=$ explicit time stepping of surface
+        \begin{itemize}
+        \item[$\vartriangleright$] slow for science, intrinsically \emph{not} scalable
+        \end{itemize}
+    \item[$\circ$] to do: \alert{steady-state and implicit step VI problems}
+    \item[$\circ$] more on this view in my Math.~Geosci.~seminar tomorrow 2pm L5
+    \end{itemize}
 \end{itemize}
 \end{frame}
 
