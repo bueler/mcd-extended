@@ -146,7 +146,7 @@
 }
 \only<2>{
 \begin{itemize}
-\item i.e.~constrained optimization over an \emph{admissible set}
+\item i.e.~constrained optimization over a convex \emph{admissible set}
 	$$\mathcal{K} = \left\{v \in H^1(\Omega) \,:\, v\big|_{\partial \Omega} = g \text{ and } v \ge \psi\right\}$$
 \item $J'(u)$ points directly into $\mathcal{K}$, the {\color{FireBrick} \emph{variational inequality} (VI)}:
     $$\ip{J'(u)}{v-u} = \int_\Omega \grad u\cdot \grad (v-u) - f (v-u) \ge 0 \quad \text{for all } v \in \mathcal{K}$$
@@ -290,14 +290,14 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{images/fine-grid.png} \hsp
 
 while the \emph{error} $e^h = w^h-u^h$ is unknown
 \item the residual definition can be rewritten
-    $$F^h(u^h) - F^h(w^h) = r^h(w^h)$$
+    $$F^h(u^h) - F^h(w^h) \stackrel{*}{=} r^h(w^h)$$
 \only<2>{\item for $F^h$ linear, try to solve this \emph{error equation} $F^h(e^h) = -r^h(w^h)$ for $\tilde e^h$, and correct $w^h \leftarrow w^h-\tilde e^h$ to improve $w^h$?}
 \only<3>{\item \st{for $F^h$ linear, try to solve this \emph{error equation} $F^h(e^h) = -r^h(w^h)$ for $\tilde e^h$, and correct $w^h \leftarrow w^h-\tilde e^h$ to improve $w^h$?}}
 \end{itemize}
 }
 \only<4>{
 \begin{itemize}
-\item goal: use a coarser mesh to estimate the error
+\item \emph{goal}: use a coarser mesh to estimate the error in $\ast$
 \item \emph{nodewise problem}: for $\psi_i^h$ a hat function or dof, solve for $c\in\RR$:
 	$${\color{FireBrick} \phi_i(c) = r^h(w^h + c \psi_i^h)[\psi_i^h] = 0}$$
 \item sweeping through and solving nodewise problems is a \emph{smoother}
@@ -305,11 +305,12 @@ while the \emph{error} $e^h = w^h-u^h$ is unknown
     \item[$\circ$] Fourier analysis on linear PDEs shows smoothing property
     \item[$\circ$] post-smoothing, $e^h$ and $r^h(w^h)$ have smaller high-frequencies
     \end{itemize}
-\item Brandt (1977): post-smoothing, $F^h(u^h) - F^h(w^h) = r^h(w^h)$ should be accurately approximate-able on a coarser grid
+\item Brandt (1977): after smoothing, $F^h(u^h) - F^h(w^h) = r^h(w^h)$ should be accurately approximate-able on a coarser grid
 \end{itemize}
 }
 \only<5>{
 \begin{itemize}
+\item \emph{goal}: use a coarser mesh to estimate the error in $\ast$
 \item \emph{full approximation storage} (FAS) equation:
 	$${\color{FireBrick} F^H(w^H) - F^H(\iR w^h) = R \, r^h(w^h)}$$
 
@@ -320,6 +321,10 @@ while the \emph{error} $e^h = w^h-u^h$ is unknown
     \end{itemize}
 
 \item rewritten: \quad ${\color{FireBrick} F^H(w^H) = \ell^H}$ where ${\color{FireBrick} \ell^H = F^H(\iR w^h) + R\, r^h(w^h)}$
+
+\phantom{x}
+
+\phantom{x}
 \end{itemize}
 }
 \end{frame}
@@ -360,7 +365,7 @@ while the \emph{error} $e^h = w^h-u^h$ is unknown
 \only<2>{\hfill \includegraphics[height=0.15\textheight]{images/mg-fcycle.png} \quad \begin{tabular}{l} F-cycle = \\ nested iteration \end{tabular}
 }
 
-\vspace{-3mm}
+\only<2>{\vspace{-3mm}}
 
 {\small
 \begin{pseudo}
@@ -381,11 +386,11 @@ while the \emph{error} $e^h = w^h-u^h$ is unknown
 \begin{frame}{does it work?}
 
 \begin{itemize}
-\item FAS multigrid works well on the right nonlinear PDE problem!
+\item FAS multigrid works well on the right nonlinear PDE problem
 \item example: Liouville-Bratu equation\footnote{exact solution by Liouville (1853) makes a nice test case}
     $$-\nabla^2 u - e^u = 0$$
 with Dirichlet boundary conditions on $\Omega=(0,1)^2$
-\item minimal problem-specific code:
+\item implement with minimal problem-specific code:
     \begin{enumerate}
     \item[1.] residual evaluation on grid level: $F^j(\cdot)$
     \item[2.] pointwise smoother: $\phi_i(c) = 0 \,\forall i$
@@ -402,13 +407,13 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \frametitle{multigrid solver composition in PETSc}
 
 \begin{itemize}
-\item implemented using an FD discretization and PETSc\footnote{Portable Extensible Toolkit for Scientific computing \quad \href{https://petsc.org/release/}{\texttt{petsc.org}} \quad \includegraphics[height=3mm]{images/petsc.png}}
+\item implemented here using an FD discretization and PETSc:\footnote{Portable Extensible Toolkit for Scientific computing \quad \href{https://petsc.org/release/}{\texttt{petsc.org}} \quad \includegraphics[height=3mm]{images/petsc.png}}
     \begin{itemize}
+    \item[$\circ$] multigrid solvers in PETSc are \emph{composed} from smoothers on each level, and a coarse-level solver \dots here these are nonlinear GS
     \item[$\circ$] FAS multigrid is a nonlinear solver (SNES) type
-    \item[$\circ$] implement in C/Fortran/python
+    \item[$\circ$] PETSc $=$ C/Fortran/python
     \end{itemize}
-\item multigrid solvers in PETSc are \emph{composed} from smoothers on each level, and a solver on the coarse mesh
-\item FAS F-cycle run:
+\item FAS multigrid F-cycle:
 \end{itemize}
 \begin{Verbatim}[xleftmargin=15mm,fontsize=\scriptsize]
 ./bratu -da_grid_x 5 -da_grid_y 5 -da_refine J \
@@ -440,11 +445,12 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \text{exp evaluations} &= O(N^1) \\
 \text{processor time} &= O(N^1)
 \end{align*}
-\item<1-> up to almost $N=10^8$ dofs ($J=11$)
-\item<2> compare $\approx 20\,\mu\,\text{s}/\text{N}$ for Poisson equation using Firedrake $P_1$ elements and geometric multigrid
+\item<1-> up to $N\approx 10^8$ dofs
     \begin{itemize}
-    \item<2>[$\circ$] on my 2022 laptop
+    \item[$\circ$] $J=11$ refinements
+    \item[$\circ$] laptop is memory-limited
     \end{itemize}
+\item<2> compare $\approx 20\,\mu\,\text{s}/\text{N}$ for Poisson equation using Firedrake $P_1$ elements and geometric multigrid
 \end{itemize}
 \end{column}
 \begin{column}{0.55\textwidth}
@@ -524,13 +530,13 @@ s &\ge b                    & &\text{everywhere in } \Omega \\
 \end{align*}
 
     \begin{itemize}
-    \item[$\circ$] surface velocity $\bu|_s$ is determined by fluid domain geometry, including $s$ itself
+    \item[$\circ$] surface velocity $\bu|_s$ is determined by fluid domain geometry $s$
     \item[$\circ$] $\bn_s=\left<-\grad s,1\right>$ is upward surface normal
     \item[$\circ$] generally: $-\bu|_s \cdot \bn_s$ is a \emph{non-local} function of $s$
     \end{itemize}
 \item the inequality constraint $s \ge b$ \alert{generates a free boundary}
 
-where the ablative climate $a < 0$ forces surface down to bed
+if an ablative climate $a < 0$ forces surface down to bed
 \end{itemize}
 
 \bigskip
@@ -563,7 +569,7 @@ apply a nonlinear elliptic differential operator to $s$:
     \begin{itemize}
     \item $\qq = 4$
     \item $\grad$ is in $x,y$ only
-    \item $\Phi(s)$ is a nonlinear differential operator because membrane stresses are \emph{not} balanced in the approximation
+    \item $\Phi(s)$ is a nonlinear \alert{differential operator} in this model because membrane stresses are \emph{not} balanced
     \item $\Phi(s)$ is doubly-degenerate
     \end{itemize}
 }
@@ -782,7 +788,7 @@ RS = reduced space, SS = semi-smooth, NM = Newton-multigrid, NI = nested iterati
 \end{frame}
 
 
-\section{multigrid approaches for nonlinear and \emph{nonlocal} VIs?}
+\section{FAS multigrid for VIs?}
 
 \newcommand{\cK}{\mathcal{K}}
 
