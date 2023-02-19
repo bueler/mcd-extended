@@ -163,19 +163,19 @@ urlcolor=black    % ...
 
 For coercive variational inequality (VI) problems which arise from minimization of a convex functional over a convex set, the constraint decomposition (CD) method of Tai \cite{Tai2003} converges for multilevel and domain decompositions.  Furthermore the method has been shown to have almost grid-independent error bounds, and near-optimal complexity, for elliptic, linear obstacle problems \cite[Subsection 5.4]{Tai2003}; see also \cite[Theorem 4.6 and Algorithm 4.7]{GraeserKornhuber2009}.
 
-We extend the multilevel CD method by implementing fully-nonlinear corrections, and we apply it to a new set of nonlinear VI problems which are coercive but which do not necessarily arise from minimization.  Specifically, for finite element (FE) solvers the algorithms in \cite{GraeserKornhuber2009} and \cite{Tai2003} are extended here in three practical ways:
+We extend Tai's multilevel CD method by implementing fully-nonlinear corrections, and we apply it to a new set of nonlinear VI problems which do not arise from minimization.  Specifically, for finite element (FE) solvers the algorithms in \cite{GraeserKornhuber2009} and \cite{Tai2003} are extended here in three practical ways:
 \renewcommand{\labelenumi}{\emph{(\roman{enumi})}}
 \begin{enumerate}
 \item We apply a full approximation storage (FAS; see \cite{Brandt1977,Bruneetal2015}) approach which avoids global (Newton) linearization.  Section \ref{sec:results} shows results from this \pr{fascd} algorithm for several nonlinear problems.
-\item The \pr{fascd} implementation permits ``box'' constraints, namely upper and lower obstacles; see Section \ref{sec:femultilevel}.
+\item Our \pr{fascd} implementation permits ``box'' constraints, namely upper and lower obstacles; see Section \ref{sec:femultilevel}.
 \item In Sections \ref{sec:ldcs}--\ref{sec:vcycle} we explain why, given the manner in which constraint sets are decomposed in the multilevel context \cite{GraeserKornhuber2009}, ``up-smoothing'' is more efficient than ``down-smoothing''.  A strong preference for up-smoothing is special to multilevel CD methods and does not arise in unconstrained problems.
 \end{enumerate}
 
-The iterates from a CD method are always admissible, and thus the nonlinear operator in the VI needs only be defined for admissible states.  \pr{fascd} is designed for such admissible-only problems, some of which require the solution of an auxiliary PDE on a domain determined inside the VI residual evaluation, as discussed in \cite{Bueler2021conservation}.  \pr{fascd} should permit direct solutions of those VI problems for which non-admissible methods, including semi-smooth methods \cite{BensonMunson2006}, require unnatural modifications of the operator formula.
+For the classical obstacle problem, based on the linear, symmetric Laplacian operator, certain multilevel techniques, such as the truncated monotone multigrid method \cite{GraeserKornhuber2009,Kornhuber1994}, are known to improve performance relative to the original multilevel CD method of Tai \cite{Tai2003}.  These improved methods either track the active set in the discretization or modify the nodal basis functions, and in this sense they are discrete algorithms.  By contrast a CD method applies essentially at the level of the continuum problem; see Section \ref{sec:cd}.  Acceleration of the \pr{fascd} method via active-set and/or basis-level manipulations is an obvious topic for future research.
 
 One of our examples (Section \ref{sec:results}) demonstrates the application of the \pr{fascd} method to a nonlinear operator of porous-media type.  By ``freezing'' the solution-dependent coefficient, the operator is approximated by a coercive operator for the duration of the V-cycle.  This scheme is also effective for doubly-nonlinear diffusion operators \cite[for example]{Bueler2021conservation,Calvoetal2002}.
 
-For the classical obstacle problem with a Laplacian operator, certain multilevel techniques, such as the truncated monotone multigrid method \cite{Kornhuber1994}, are known to improve performance relative to the original multilevel CD method from \cite{Tai2003}; see also \cite{GraeserKornhuber2009}.  These improved methods either track the active set in the discretization or modify the nodal basis functions, and in this sense they are discrete algorithms.  By contrast a CD method applies essentially at the level of the continuum problem; see Section \ref{sec:cd}.  Acceleration of the \pr{fascd} method via active-set and/or basis-level manipulations is a topic for future research.
+The iterates from a CD method are admissible, and thus the nonlinear operator in the VI needs only be defined for admissible states.  \pr{fascd} is designed for such admissible-only problems.  Our target fluid-layer problems require the solution of an auxiliary PDE on a domain determined inside the VI residual evaluation \cite{Bueler2021conservation}, but these problems are not addressed herein.  Note that non-admissible methods, including semi-smooth methods \cite{BensonMunson2006}, require unnatural modifications of the operator formula in such a fluid-layer context.
 
 
 \section{Coercive variational inequalities} \label{sec:vi}
@@ -184,9 +184,9 @@ Suppose $\cV$ is a real and reflexive Banach space with norm $\|\cdot\|$ and top
 \begin{equation}
 \ip{f(u^*)}{v-u^*} \ge \ip{\ell}{v-u^*} \qquad \text{for all } v\in \cK. \label{eq:vi}
 \end{equation}
-Because $f$ is (generally) nonlinear, the source term $\ell$ is not strictly needed, and by redefining $f$ we may take $\ell=0$, but its presence clarifies the algorithm in Section \ref{sec:vcycle}.
+Because $f$ is (generally) nonlinear, the source term $\ell$ is not strictly needed in stating this class of problems.  In fact, by redefining $f$ we may take $\ell=0$.  However, allowing $\ell$ clarifies the algorithm in Section \ref{sec:vcycle}.
 
-VI \eqref{eq:vi} generalizes nonlinear systems of equations $f(u^*)=\ell$ to problems where $u^*$ is also constrained to be in $\cK$.  Informally, regarding the dual pairing as an inner product, \eqref{eq:vi} says that the angle between $f(u^*)-\ell$ and any arbitrary vector $v-u$ pointing from $u$ into $\cK$ is at most $90^\circ$.  While $f(u^*)-\ell$ may not be zero, it must point directly into $\cK$.  On the other hand, if $u^*\in\cK^\circ$, in the interior of the constraint set, then \eqref{eq:vi} implies $f(u^*)=\ell$.
+VI \eqref{eq:vi} generalizes nonlinear systems of equations $f(u^*)=\ell$ to problems where $u^*$ is also constrained to be in $\cK$.  Informally, pretending the dual pairing is an inner product, \eqref{eq:vi} says that the angle between $f(u^*)-\ell$ and any arbitrary vector $v-u^*$ pointing from $u^*$ into $\cK$ is at most $90^\circ$; while $f(u^*)-\ell$ may not be zero, it must point directly into $\cK$.  On the other hand, if $u^*\in\cK^\circ$ is in the interior of the constraint set then \eqref{eq:vi} implies $f(u^*)=\ell$.
 
 The following definitions are standard \cite{KinderlehrerStampacchia1980}.
 
@@ -200,7 +200,7 @@ The following definitions are standard \cite{KinderlehrerStampacchia1980}.
 \end{equation}
 \end{definition}
 
-It is well-known that if $f:\cK \to \cV'$ is continuous, monotone, and coercive then VI \eqref{eq:vi} has a solution \cite[Corollary III.1.8]{KinderlehrerStampacchia1980}, and that the solution is unique when $f$ is strictly monotone.  As in the calculus of variations \cite{Evans2010}, coercivity permits a compactness argument for unbounded sets $\cK$.  (Recall that the closed and bounded subsets of a reflexive Banach space are weakly compact.)  The condition of continuity can be weakened, e.g.~to only apply on finite-dimensional subspaces \cite{KinderlehrerStampacchia1980}, but the stronger condition will apply in our examples.
+It is well-known that if $f:\cK \to \cV'$ is continuous, monotone, and coercive then VI \eqref{eq:vi} has a solution \cite[Corollary III.1.8]{KinderlehrerStampacchia1980}, and that the solution is unique when $f$ is strictly monotone.  As is standard in the calculus of variations \cite{Evans2010}, coercivity permits a compactness argument for unbounded sets $\cK$.  (Recall that the closed and bounded subsets of a reflexive Banach space are weakly compact.)  The condition of continuity can be weakened, e.g.~to only apply on finite-dimensional subspaces \cite{KinderlehrerStampacchia1980}, but it will apply in our examples.
 
 The coercive VIs solved in this paper satisfy a stronger inequality than \eqref{eq:coercive}.
 
@@ -215,7 +215,7 @@ It is easy to see that if $f$ is $p$-coercive then it is monotone, strictly mono
 \begin{theorem}  \label{thm:viwellposed}  If $f:\cK \to \cV'$ is continuous and $p$-coercive then there exists a unique $u^*\in \cK$ solving VI \eqref{eq:vi}.
 \end{theorem}
 
-Let $\Omega \subset \RR^d$ denote a bounded, open set with smooth or piecewise-smooth (e.g.~polygonal) boundary.  Sobolev spaces \cite{Evans2010} are denoted by $W^{k,p}(\Omega)$, for integer $k$ and $1\le p \le \infty$, with $W^{1,p}_0(\Omega)$ denoting the subspace having zero boundary values.
+Let $\Omega \subset \RR^d$ denote a bounded, open set with smooth or piecewise-smooth (e.g.~polygonal) boundary.  Sobolev spaces \cite{Evans2010} will be denoted by $W^{k,p}(\Omega)$, for integer $k$ and $1\le p \le \infty$, with $W^{1,p}_0(\Omega)$ denoting the subspace having zero boundary values.
 
 The following example includes the classical and $p$-Laplacian obstacle problems \cite{ChoeLewis1991}.
 
@@ -223,23 +223,23 @@ The following example includes the classical and $p$-Laplacian obstacle problems
 \begin{equation}
 \ip{f(u)}{v} = \int_\Omega a(x) |\grad u|^{p-2} \grad u \cdot \grad v\,dx, \label{eq:plaplacian}
 \end{equation}
-a continuous map \cite[Theorem A.0.6]{Peral1997}.  Now, if $x,y\in\RR^d$ then $(|x|^{p-2} x - |y|^{p-2} y)\cdot (x-y) \ge 2^{2-p} |x-y|^p$ \cite[see Appendix A and references therein]{Bueler2021conservation}.  Thus it follows from the Poincar\'e inequality that
+a continuous map \cite[Theorem A.0.6]{Peral1997}.  Now, if $x,y\in\RR^d$ then $(|x|^{p-2} x - |y|^{p-2} y)\cdot (x-y) \ge 2^{2-p} |x-y|^p$ \cite[Appendix A]{Bueler2021conservation}.  It follows from the Poincar\'e inequality that
     $$\ip{f(u) - f(v)}{u-v} \ge 2^{2-p} a_0 \|\grad u - \grad v\|_p^p \ge 2^{2-p} a_0 C \|u-v\|^p$$
 for some $C>0$, and thus $f$ is $p$-coercive.  The map in \eqref{eq:plaplacian} is also coercive if $1<p<2$, but the proof is somewhat different \cite[Theorem 4.4]{Bueler2021conservation}, and our results (Section \ref{sec:results}) only use $p\ge 2$.  \end{example}
 
-For monotone operators $f$, VI \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  In fact, suppose $F:\cK \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cK \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, Proposition II.2.1 in \cite{EkelandTemam1976} shows that if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ if and only if
+For monotone operators $f$, VI \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  Suppose $F:\cK \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cK \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, Proposition II.2.1 in \cite{EkelandTemam1976} shows that if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ if and only if
 \begin{equation}
 u^* = \operatorname{arg-min}_{v\in\cK} F(v) - \ip{\ell}{v}. \label{eq:minimization}
 \end{equation}
-The CD methods of Tai \cite{Tai2003} address problem \eqref{eq:minimization}; the analysis supposes that an objective $F$ exists, with $F'$ 2-coercive.
+The CD methods of Tai \cite{Tai2003} address problem \eqref{eq:minimization}; the analysis in \cite{Tai2003} supposes that an objective $F$ exists with $F'$ 2-coercive.
 
 Not all VI problems arise from optimization, but for Example \ref{ex:plaplacian} we may define
 \begin{equation}
-F(v) = \int_\Omega \frac{a(x)}{p} |\grad v|^p\,dx - \ip{\ell}{v} \label{eq:plaplacianobjective}
+F(v) = \frac{1}{p} \int_\Omega a(x) |\grad v|^p\,dx. \label{eq:plaplacianobjective}
 \end{equation}
-for any $\ell\in\cV'$.  Then $F$ is a convex functional and $F'(v) = f(v) - \ell$ for $f$ given in \eqref{eq:plaplacian}.  For any closed and convex $\cK\subset \cV$, VI problem \eqref{eq:vi} for \eqref{eq:plaplacian} is equivalent to optimization problem \eqref{eq:minimization} for \eqref{eq:plaplacianobjective}.
+Then $F$ is a convex functional and $F'(v) = f(v)$ for $f$ given in \eqref{eq:plaplacian}.  For any closed and convex $\cK\subset \cV$, VI problem \eqref{eq:vi} is then equivalent to optimization problem \eqref{eq:minimization}.
 
-Next we give two examples which are \emph{not} of optimization type, first a linear advection-diffusion problem and then a nonlinear porous-medium-type problem.
+Next we give two examples which are \emph{not} of optimization type, first a linear advection-diffusion problem, which needs the following Lemma, and then a nonlinear problem of porous-medium type.
 
 \begin{lemma}  \label{lem:advectionskew}  \cite{Elmanetal2014}\,  Suppose $\bX :\Omega \to \RR^d$ is a bounded and boundedly-differentiable vector field on $\Omega$ with zero divergence ($\Div \bX=0$).  For $u,v \in W^{1,2}(\Omega)$ let $b(u,v) = \int_\Omega (\bX \cdot \grad u) v\,dx$.  Then $b(u,u) = \frac{1}{2} \int_{\partial \Omega} u^2 \bX\cdot \bn\,dx$ where $\bn$ is the outward normal on $\partial \Omega$.
 \end{lemma}
@@ -248,7 +248,7 @@ Next we give two examples which are \emph{not} of optimization type, first a lin
 Integration by parts gives $b(u,v) = - b(v,u) + \int_{\partial \Omega} uv \bX\cdot \bn\,dx$.
 \end{proof}
 
-\begin{example}  \label{ex:advectiondiffusion}  Suppose $\partial\Omega$ is partitioned into Dirichlet and Neumann portions, i.e.~$\partial\Omega = \partial_D\Omega \cup \partial_N\Omega$, with $\partial_D\Omega$ of positive measure.  Let $\cV = W_0^{1,2}(\Omega)$ be the space of functions which are zero along $\partial_D\Omega$.  Consider a divergence-free velocity field $\bX$ on $\Omega$ satisfying the conditions of Lemma \ref{lem:advectionskew}, and assume that the flow is outward on the Neumann boundary, $\bX \cdot \bn \ge 0$ on $\partial_N\Omega$.  For $u,v \in \cV = W_0^{1,2}(\Omega)$ and $\eps>0$ define
+\begin{example}  \label{ex:advectiondiffusion}  Suppose $\partial\Omega$ is partitioned into Dirichlet and Neumann portions, i.e.~$\partial\Omega = \partial_D\Omega \cup \partial_N\Omega$, with $\partial_D\Omega$ of positive measure.  Let $\cV \subset W^{1,2}(\Omega)$ be the space of functions which are zero along $\partial_D\Omega$.  Consider a divergence-free velocity field $\bX$ on $\Omega$ satisfying the conditions of Lemma \ref{lem:advectionskew}, and assume that the flow is outward on the Neumann boundary: $\bX \cdot \bn \ge 0$ on $\partial_N\Omega$.  For $u,v \in \cV$ and $\eps>0$ define
 \begin{equation}
 \ip{f(u)}{v} = \eps \left(\grad u, \grad v\right)_{L^2(\Omega)} - b(u,v). \label{eq:advectiondiffusion}
 \end{equation}
@@ -260,7 +260,7 @@ Consider VI \eqref{eq:vi} for any closed and convex $\cK \subset \cV$ and $g\in\
 Thus $f$ is 2-coercive, and so VI problem \eqref{eq:vi} is well-posed.
 \end{example}
 
-References \cite{Bueler2021conservation,ChangNakshatrala2017} consider advection-diffusion VI problems like Example \ref{ex:advectiondiffusion}, specifically over the set $\cK = \{v\ge 0\}$.  If $\bX \ne 0$ then VI \eqref{eq:vi} for $f$ in \eqref{eq:advectiondiffusion} does not correspond to a minimization problem.  Indeed, $\ip{f(u)}{v}$ is not symmetric in that case, so $f$ cannot be the gradient of a scalar objective.  (For $u,v$ which are zero on $\partial \Omega$, note that $\ip{f(u)}{v} - \ip{f(v)}{u} = -2 b(u,v)$.)
+If $\bX \ne 0$ then $f$ in Example \ref{ex:advectiondiffusion} does not correspond to a minimization problem.  Indeed, $\ip{f(u)}{v}$ is not symmetric in that case, so $f$ cannot be the gradient of a scalar objective.  (For $u,v$ which are zero on $\partial \Omega$, note that $\ip{f(u)}{v} - \ip{f(v)}{u} = -2 b(u,v)$.)  References \cite{Bueler2021conservation,ChangNakshatrala2017} consider advection-diffusion VI problems like this, specifically over the set $\cK = \{v\ge 0\}$.
 
 \begin{example}  \label{ex:porous}  Suppose $\phi:[0,\infty) \to [\phi_0,\infty)$ is continuous for some constant $\phi_0>0$.  As with Example \ref{ex:advectiondiffusion}, the following operator, of porous medium type, does not have the symmetry necessary to be the gradient of a scalar objective:
 \begin{equation}
@@ -269,44 +269,42 @@ References \cite{Bueler2021conservation,ChangNakshatrala2017} consider advection
 However, \eqref{eq:porous} is not known to be monotone (or coercive) when $\phi$ is not constant.
 \end{example}
 
-Numerical solver performance for Examples \ref{ex:plaplacian}, \ref{ex:advectiondiffusion}, and \ref{ex:porous} will be considered in Section \ref{sec:results}.  Further examples of nonlinear VI problems appear in ice sheet models \cite{Calvoetal2002,JouvetBueler2012} and other geophysical fluids.
+Numerical solver performance for Examples \ref{ex:plaplacian}, \ref{ex:advectiondiffusion}, and \ref{ex:porous} will be considered in Section \ref{sec:results}.  Further examples of nonlinear VI problems appear in ice sheet models \cite{Calvoetal2002,JouvetBueler2012} and other geophysical fluids \cite{Bueler2021conservation}.
 
 
 \section{Constraint decomposition (CD)} \label{sec:cd}
 
-Suppose there are $m<\infty$ closed subspaces $\cV_i \subset \cV$ so that the sum
+If there are $m<\infty$ closed subspaces $\cV_i \subset \cV$ so that the sum
 \begin{equation}
 \cV = \sum_{i=0}^{m-1} \cV_i \label{eq:subspacedecomp}
 \end{equation}
-holds in the sense that if $w \in \cV$ then there exist $w_i \in \cV_i$ so that $w = \sum_i w_i$.  We say \eqref{eq:subspacedecomp} is a \emph{subspace decomposition} of $\cV$ \cite{Xu1992}.  Suppose further that $\cK_i \subset \cV_i$ are nonempty, closed, and convex subsets such that
+holds in the sense that if $w \in \cV$ then there exist $w_i \in \cV_i$ so that $w = \sum_i w_i$, then we say \eqref{eq:subspacedecomp} is a \emph{space decomposition} of $\cV$ \cite{Xu1992}.  Suppose further that $\cK_i \subset \cV_i$ are nonempty, closed, and convex subsets such that
 \begin{equation}
 \cK = \sum_{i=0}^{m-1} \cK_i \label{eq:constraintdecomp}
 \end{equation}
-for a closed, convex subset $\cK \subset \cV$.  The sum in \eqref{eq:constraintdecomp} is required to hold in two senses \cite{TaiTseng2002}: \emph{(i)}~if $w \in \cK$ then there exist $w_i \in \cK_i$ so that $w = \sum_i w_i$, and \emph{(ii)}~if $z_i \in \cK_i$ for each $i$ then $\sum_i z_i \in \cK$.  (Sense \emph{(ii)} is automatic for \eqref{eq:subspacedecomp} because the $\cV_i$ are subspaces.)  Finally, for each $\cK_i$ suppose there are bounded, generally-nonlinear \emph{decomposition operators}\footnote{Denoted ``$R_i$'' in \cite{Tai2003}.  Here we avoid a notational conflict with multilevel transfer operators (Section \ref{sec:femultilevel}).} $\Pi_i : \cK \to \cK_i$ such that if $v \in \cK$ then
+for a closed, convex subset $\cK \subset \cV$.  The sum in \eqref{eq:constraintdecomp} must hold in two senses \cite{TaiTseng2002}: \emph{(i)}~if $w \in \cK$ then there exist $w_i \in \cK_i$ so that $w = \sum_i w_i$, and \emph{(ii)}~if $z_i \in \cK_i$ for each $i$ then $\sum_i z_i \in \cK$.  (Sense \emph{(ii)} is automatic for \eqref{eq:subspacedecomp} because the $\cV_i$ are subspaces.)  Finally, suppose there are bounded, generally-nonlinear \emph{decomposition operators}\footnote{Denoted ``$R_i$'' in \cite{Tai2003}.  Here we avoid a notational conflict with multilevel transfer operators (Section \ref{sec:femultilevel}).} $\Pi_i : \cK \to \cK_i$ such that if $v \in \cK$ then
 \begin{equation}
 v = \sum_{i=0}^{m-1} \Pi_i v.  \label{eq:constraintrestrictionsum}
 \end{equation}
-Clearly \eqref{eq:constraintrestrictionsum} implies sense \emph{(i)} for \eqref{eq:constraintdecomp}. A \emph{constraint decomposition} (CD) of $\cK$ is a choice of $\cV_i,\cK_i,\Pi_i$ satisfying \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum} \cite{Tai2003}.
-
-Figure \ref{fig:cartoon} suggests how a low-dimensional example might look.  (Typically $\cK_i \not\subset \cK$.)  Note that neither decomposition \eqref{eq:subspacedecomp} or \eqref{eq:constraintdecomp} is required to be unique.
+Clearly \eqref{eq:constraintrestrictionsum} implies sense \emph{(i)} for \eqref{eq:constraintdecomp}. A \emph{constraint decomposition} (CD) of $\cK$ is a choice of $\cV_i,\cK_i,\Pi_i$ satisfying \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum} \cite{Tai2003}.  Note that neither decomposition \eqref{eq:subspacedecomp} or \eqref{eq:constraintdecomp} is required to be unique.  Figure \ref{fig:cartoon} suggests how a low-dimensional example might look; as is typical, note $\cK_i \not\subset \cK$.
 
 \begin{figure}[ht]
 \includegraphics[width=0.6\textwidth]{genfigs/cartoon.pdf}
-\caption{Suppose $\mathcal{V}$ is the space of real functions on a two-point set $\Omega=\{x_1,x_2\}$.  A constraint decomposition (CD) for a unilateral obstacle problem with $\mathcal{K}=\{v\ge \psi\}$ might look like this.}
+\caption{A constraint decomposition (CD) for a unilateral obstacle problem with $\Omega=\{x_1,x_2\}$, $\mathcal{V}=\left\{\text{real functions on } \Omega\right\}$, and $\mathcal{K}=\{v\ge \psi\}$.}
 \label{fig:cartoon}
 \end{figure}
 
-In Sections \ref{sec:femultilevel}--\ref{sec:vcycle} we will introduce multilevel CD discretizations and algorithms for finite-dimensional VI problems.  However, one can observe here that the CD concept applies at the level of the continuum problem.  The following two obstacle problem examples are illustrations; the first is an overlapping domain decomposition.
+In Sections \ref{sec:femultilevel}--\ref{sec:vcycle} we will introduce multilevel CD discretizations and algorithms for finite-dimensional VI problems.  However, one can observe here that the CD concept applies at the level of the continuum problem, as illustrated in the following two examples.
 
 \begin{example}  \label{ex:domaindecomposition}  For a bounded domain $\Omega \subset \RR^d$, let $\cV = W_0^{k,p}(\Omega)$ for $k\ge 0$ and $p\ge 1$.  Suppose an obstacle $\psi \in W^{k,p}(\Omega)$ satisfies $\psi|_{\partial \Omega} \le 0$, and let $\cK = \{v \ge \psi\} \subset \cV$.  Suppose further that $\{\phi_i\}_{i=0}^{m-1}$ is a smooth partition of unity on $\Omega$, satisfying $0 \le \phi_i\le 1$ and $\sum_i \phi_i = 1$, and let $\Omega_i$ be the open support of $\phi_i$.  Let $\cV_i = \{w \in \cV:w|_{\Omega \setminus \Omega_i} =0 \}$, $\cK_i = \{v \in \cV_i: v \ge \phi_i \psi\}$, and $\Pi_i(v) = \phi_i v$.  Then \eqref{eq:subspacedecomp}, \eqref{eq:constraintdecomp}, and \eqref{eq:constraintrestrictionsum} all hold.
 \end{example}
 
-Our second example is a disjoint frequency decomposition.  A multilevel CD over a finite-dimensional FE discretization, specifically the one proposed in Section \ref{sec:cdmultilevel}, approximates such a frequency decomposition.
+Our second example is a disjoint frequency decomposition.  A multilevel CD over a finite-dimensional FE discretization, proposed in Sections \ref{sec:femultilevel}--\ref{sec:vcycle}, approximates such a frequency decomposition.
 
 \begin{example}  \label{ex:frequencydecomposition}  For simplicity suppose $\Omega = (0,a)^d \subset \RR^d$ is a cube, and let $\cV = W_{\text{per}}^{p,k}(\Omega)$, for $p\ge 2$ and $k\ge 0$, be the periodic functions.  Suppose $\psi \in W_{\text{per}}^{p,k}(\Omega)$ and let $\cK = \{v \ge \psi\} \subset \cV$.  Without using any detailed notation for Fourier representation, but noting that the frequencies are discrete because $\Omega$ is compact, suppose $\{\cV_i\}$ are $m<\infty$ subspaces of $\cV$ defined by an (nonoverlapping) partition of $W_{\text{per}}^{p,k}(\Omega)$ by frequency, thus satisfying \eqref{eq:subspacedecomp} as an orthogonal decomposition.  Suppose $P_i:\cV \to \cV_i$ are the corresponding orthogonal projections, satisfying $I = \sum_i P_i$.  Let $\cK_i = \{v \ge P_i \psi\} \subset \cV_i$ and $\Pi_i = P_i$.  Then \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} also hold.
 \end{example}
 
-Again note that $\cK_i \not\subset \cK$ in these cases; informally speaking, the important inclusion is $\cK_i \subset \cV_i$.  In Example \ref{ex:domaindecomposition}, if $\psi$ is positive over portions of $\Omega$ where the decomposition into overlapping subdomains $\Omega_i$ is nontrivial, then $\cK_i \not\subset \cK$, and something similar holds for Example \ref{ex:frequencydecomposition}.
+Note that $\cK_i \not\subset \cK$ in these cases; informally speaking, the important inclusion is $\cK_i \subset \cV_i$.
 
 
 \section{Basic CD iterations} \label{sec:cditers}
