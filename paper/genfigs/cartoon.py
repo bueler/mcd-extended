@@ -24,15 +24,10 @@ plt.text(-0.05, -0.07, r'$0$', fontsize=fsize)
 # filled gray box
 psi1 = 0.2
 psi2 = 0.35
-plt.fill([psi1, 1.2, 1.2, psi1, psi1],
-         [psi2, psi2, 0.8, 0.8, psi2],
+plt.fill([psi1, 1.4, 1.4, psi1, psi1],
+         [psi2, psi2, 1.0, 1.0, psi2],
          'k', alpha = 0.2)
 plt.text(0.9, 0.6, r'$\mathcal{K}$', fontsize=fsize)
-
-# put gray dots suggesting unboundedness
-plt.plot(0.01 + np.array([1.25, 1.30, 1.35]), 0.6 * np.array([1,1,1]), 'k.', ms = 12.0, markeredgecolor='w', alpha = 0.3)
-plt.plot(0.7 * np.array([1,1,1]), 0.01 + np.array([0.85, 0.90, 0.95]), 'k.', ms = 12.0, markeredgecolor='w', alpha = 0.3)
-plt.plot([1.25, 1.30, 1.35], [0.85, 0.90, 0.95], 'k.', ms = 12.0, markeredgecolor='w', alpha = 0.3)
 
 plt.text(1.28, -0.02, r'$\mathcal{V}_1$', fontsize=fsize)
 plt.plot(psi1, 0.0, 'k.', ms = 12.0)
