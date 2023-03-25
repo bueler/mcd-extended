@@ -6,7 +6,7 @@
 \addtolength{\textwidth}{1.5in}
 \addtolength{\textheight}{1.5in}
 
-\renewcommand{\baselinestretch}{1.05}
+\renewcommand{\baselinestretch}{1.02}
 
 \usepackage{verbatim} % for "comment" environment
 
@@ -81,22 +81,36 @@
 \thispagestyle{empty}
 
 For the purposes of building a nonlinear variational inequality verification case, consider the $p$-Laplacian obstacle problem
+    $$-\Div(|\grad u|^{p-2} \grad u) = f(x), \qquad u(x) \ge \psi(x)$$
+over $\Omega\subset \RR^d$ open, with $p>1$, $f \in L^1(\Omega)$, and $\psi \in W^{1,p}(\Omega)$.  The weak form of this problem is well-posed over $\mathcal{X} = W_0^{1,p}(\Omega)$ \cite{KinderlehrerStampacchia1980}.  Equivalently one may minimize the coercive functional $J[u] = \int_\Omega \frac{1}{p} |\grad u|^p - f u$ over the closed and convex admissible set $\mathcal{K}=\{u \in \mathcal{X}\,:\, u \ge \psi\}$.
+
+We will solve the one-dimensional case
+\begin{equation}
+-\left(|u'(x)|^{p-2} u'(x)\right)' = f(x) = \begin{cases} \alpha, & |x| < 1 \\ -\alpha, & |x| > 1\end{cases} \label{concrete}
+\end{equation}
+on the interval $\Omega = (-3,3) \subset \RR^1$, with obstacle $\psi(x)=0$, for any $\alpha>0$.
+
+By symmetry and well-posedness, $u(x)$ is an even function and $u'(0)=0$.  Restricting attention to $x\ge 0$, we will see that $u'(x)\le 0$.  Integrating \eqref{concrete} once gives
+    $$\left(-u'(x)\right)^{p-1} = \int_0^x f(t)\,dt = \begin{cases} \alpha x, & 0 \le x \le 1 \\ \alpha (2 - x), & x \ge 1\end{cases}$$
+The function on the right is continuous, and nonnegative for $0 \le x \le 2$.  Solving for $u'(x)$ by raising to the $(p-1)^{-1} = q-1$ power, where $\frac{1}{p} + \frac{1}{q} = 1$ defines $q$, gives
+    $$u'(x) = \begin{cases} - \alpha^{q-1} x^{q-1}, & 0 \le x \le 1 \\ -\alpha^{q-1} (2 - x)^{q-1}, & x \ge 1\end{cases}$$
+Integrating again, and recalling that $u(x)$ has even symmetry, we have
 \begin{align*}
--\Div(|\grad u|^{p-2} \grad u) &= f(x) \\
-u(x) &\ge \psi(x).
+u(x) &= \begin{cases} u(0) - \frac{\alpha^{q-1}}{q} |x|^q, & |x| \le 1 \\
+                      u(0) - \frac{\alpha^{q-1}}{q} -\alpha^{q-1} \int_1^{|x|} (2 - y)^{q-1}\,dy, & |x| \ge 1\end{cases} \\
+     &= \begin{cases} u(0) - \frac{\alpha^{q-1}}{q} |x|^q, & |x| \le 1 \\
+                      u(0) + \frac{\alpha^{q-1}}{q} \left( (2 - |x|)^q - 2 \right), & |x| \ge 1\end{cases}
 \end{align*}
-For $\Omega\subset \RR^d$ open, $p>1$, $f \in L^1(\Omega)$, and $\psi \in W^{1,p}(\Omega)$, the weak form of this problem is well-posed over $\mathcal{X} = W_0^{1,p}(\Omega)$ \cite{KinderlehrerStampacchia1980}.  The same problem is to minimize the coercive functional $J[u] = \int_\Omega \frac{1}{p} |\grad u|^p - f u$ over the closed and convex admissible set $\mathcal{K}=\{u \in \mathcal{X}\,:\, u \ge \psi\}$.
 
-To be specific, for $p=1.5,2,4$ we will solve the one-dimensional case
-\begin{align}
--\left(|u'(x)|^{p-2} u'(x)\right)' &= f(x) = \begin{cases} \alpha, & |x| < 1 \\ -\alpha, & |x| > 1\end{cases} \label{concrete} \\
-u(x) &\ge 0 \notag
-\end{align}
-on the interval $\Omega = (-3,3) \subset \RR^1$.  Later, $\alpha>0$ will chosen for convenience.
+Now, where is the free boundary?  It must occur at $x=\xi>0$ where simultaneously $u(\xi)=0$ and $u'(\xi)=0$.  However, $u'(2)=0$, which reflects the symmetry that the integral of $f(x)$ on $[0,1]$ is cancelled by its integral on $[1,2]$, and $u'(x)$ is otherwise nonzero for $|x|>0$.  Thus the free boundary must be at $\xi=2$.  This determines $u(0)$:
+    $$0=u(2) = u(0) - 2 \frac{\alpha^{q-1}}{q} \qquad \iff \qquad u(0) = 2 \frac{\alpha^{q-1}}{q}.$$
+In conclusion, our exact solution is
+\begin{equation}
+\boxed{u(x) = \frac{\alpha^{q-1}}{q} \begin{cases} 2 - |x|^q, & |x| \le 1 \\
+                                                   (2 - |x|)^q, & |x| \ge 1.\end{cases}}
+\end{equation}
 
-By symmetry and well-posedness, $u(x)$ is an even function and $u'(0)=0$.  We will see that the solution satisfies $u'(x)\le 0$ on $0 \le x \le 3$.  Therefore, integrating \eqref{concrete} once gives
-    $$\left(-u'(x)\right)^{p-1} = \int_0^x f(t)\,dt = \begin{cases} \alpha x, & |x| < 1 \\ \alpha (1 - FIXME), & |x| > 1\end{cases}$$
-so 
+We will numerically test powers $p=3/2,2,4$, corresponding to $q=3,2,4/3$, respectively, with parameter $\alpha=1$ for convenience.
 
 \begin{thebibliography}{1}
 
