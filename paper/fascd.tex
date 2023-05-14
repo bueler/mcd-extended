@@ -814,4 +814,22 @@ With the given modifications, we have the much-simplified pseudocode in Algorith
 
 FIXME by assuming $f$ is linear, reduce to Algorithm 4.7 in \cite{GraeserKornhuber2009} but with $\text{V}(\nu_1,\nu_2)$ cycles
 
+\bigskip
+From slack, to not lose.
+
+\noindent Patrick : \emph{Interesting that you think Graeser and Kornhuber were barking up the wrong tree.  I still don't quite have my finger on the exact difference in the scheme between GK and the FAS approach. Is there a clean summary somewhere?  (I looked in the mcd-extended manuscript, but couldn't see it in a quick skim.)  Is the difference to GK the monotone multigrid bit, or the particular smoothers used?}
+
+\medskip\noindent
+Ed: \cite{GraeserKornhuber2009} only considers the Laplacian lower obstacle case, and they write everything in terms of nonlinear Gauss-Seidel (i.e. optimize one hat function at a time).  They first lay out the \cite{Tai2003} CD strategy as Alg. 4.7, only for V(1,0) cycles.  Then they observe that the convergence rates from \cite{Tai2003} are slower (worse) than if one does "monotone multigrid".  This seems to mean to them that one modifies the coarse hat functions according to whether they overlap the current fine-grid estimate of the coincidence set, "truncated nodal basis functions".  (See the start of \cite{GraeserKornhuber2009} section 5.2.)  I think that making these modifications in Firedrake, so we could try monotone multigrid V-cycles, would be a nightmare.  FASCD does not attempt the monotone multigrid idea at all.
+
+By contrast, FASCD is essentially just the \cite{Tai2003} CD strategy, but (1) without assuming an objective, and (2) with a coarse correction which is FAS in the nonlinear PDE case.  If you apply \cite{Tai2003} CD to a nonquadratic (e.g. p=1.5 p-laplacian) objective then the coarse-grid corrections are optimization problems over the coarse space.  I don't even know how to interpret this in non-optimization VIs?  Or maybe I should say that one can re-interpret this as FAS coarse corrections, and I have done so.
+
+But I have now concluded that everything discussed in \cite{GraeserKornhuber2009} is angels-on-the-head-of-a-pin stuff because the various differences of implementation don't produce any really good multigrid convergence if your smoother is NGS on each level.  I think the convergence proofs in \cite{GraeserKornhuber2009} all depend on this?  There are indeed differences in convergence rates reported in the results at the end of \cite{GraeserKornhuber2009}, but they are all not good compared to how multigrid works on PDEs.  This NGS-based stuff is what I was trying before February, in 1d mostly, with hand-made NGS smoothers, and no Firedrake.
+
+Now, the good thing I was already doing before February was building a version of VI multigrid which makes minimal assumptions on the problem:  FAS (residual need not be linear) and CD (build-up the total V-cycle update in an admissible manner on every level).  Thus it has a chance of working for the ice problems I care about.
+
+As I now see, and can easily demo on the spiral problem in \cite{GraeserKornhuber2009} and on any other classical obstacle problem I have tried, the thing which makes it fly is to realize, as you did, or perhaps as you just take for granted because you are so comfortable with Firedrake, that the smoother can be a grown-up but still O(N) VI solver.  E.g.~a fixed number of iterations of vinewtonrsls+gmres+ilu or whatever.  The role of the FASCD is simply to generate coarse VI problems which, once solved, make helpful admissible additions to the eventual V-cycle update.
+
+So the difference between FASCD and \cite{GraeserKornhuber2009} are: (1) FAS coarse corrections, (2) no attempt to do monotone/truncated multigrid which would be a mess (I think) across the FE infrastructure, (3) clarity on what sets you can use in $V(\nu_1,\nu_2)$ cycles, with bigger up-smoother sets in particular, and most importantly (4) implementation within the mature Firedrake/PETSc library framework where one can easily hook up an active-set Newton step as a smoother.
+
 \end{document}
