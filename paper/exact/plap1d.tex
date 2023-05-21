@@ -80,12 +80,12 @@
 
 \thispagestyle{empty}
 
-For the purposes of building a nonlinear variational inequality verification case we will construct exact solutions to the one-dimensional case of the \emph{$p$-Laplacian obstacle problem}.  Over an open set $\Omega\subset \RR^d$, for $p>1$, $f \in L^1(\Omega)$, and $\psi \in W^{1,p}(\Omega)$, recall that the problem is to find $u(x)$ satisfying
+For the purposes of building a nonlinear variational inequality verification case we will construct exact solutions to the one-dimensional case of the \emph{$p$-Laplacian obstacle problem}.  Over an open set $\Omega\subset \RR^d$, for $p>1$, $f \in L^1(\Omega)$, and $\psi \in W^{1,p}(\Omega)$, recall that the problem is to find $u(x) \ge \psi(x)$ satisfying
 \begin{equation}
--\Div\left(|\grad u(x)|^{p-2} \grad u(x)\right) = f(x) \qquad \text{and} \qquad u(x) \ge \psi(x). \label{plap}
+-\Div\left(|\grad u(x)|^{p-2} \grad u(x)\right) = f(x) \qquad \text{on the set where } u(x) > \psi(x). \label{plap}
 \end{equation}
 
-The weak form of this problem is well-posed with Dirichlet boundary conditions, and in particular there is a unique solution $u \in \mathcal{X} = W_0^{1,p}(\Omega)$ \cite{KinderlehrerStampacchia1980}.  Equivalently, the coercive functional $J[u] = \int_\Omega \frac{1}{p} |\grad u|^p - f u$ has a unique minimum over $\mathcal{K}=\{v \ge \psi\} \subset \mathcal{X}$, a closed and convex subset.  Observe that if $p=2$ then the operator is the ordinary Laplacian, if $1<p<2$ then $D=|\grad u|^{p-2}>0$ is unbounded as $|\grad u| \to 0$ (\emph{fast diffusion}), while if $p>2$ then $D\to 0$ as $|\grad u| \to 0$ (\emph{degenerate diffusion}).  The degenerate case violates uniform ellipticity, despite coercivity.
+The weak form of this problem is well-posed with Dirichlet boundary conditions, and in particular there is a unique solution $u \in \mathcal{K}=\{v \ge \psi\} \subset W_0^{1,p}(\Omega)$ \cite{KinderlehrerStampacchia1980}.  Equivalently, the coercive functional $J[u] = \int_\Omega \frac{1}{p} |\grad u|^p - f u$ has a unique minimum over $\mathcal{K}$, a closed and convex subset.  Observe that if $p=2$ then the operator is the ordinary Laplacian.  If $1<p<2$ then $D=|\grad u|^{p-2}>0$ is unbounded as $|\grad u| \to 0$ (\emph{fast diffusion}), while if $p>2$ then $D\to 0$ as $|\grad u| \to 0$ (\emph{degenerate diffusion}).  The degenerate case violates uniform ellipticity, despite coercivity.
 
 We will solve a one-dimensional case of \eqref{plap}, with
 \begin{equation}
@@ -95,7 +95,7 @@ on the interval $\Omega = (-3,3) \subset \RR^1$, for $\alpha > 0$ and $\beta \ge
 % FIXME  I think the cases where \beta < 0$ are fine too, though eventually the free boundary will be outside $(-3,3)$
 That is, we seek $u(x) \ge -\beta |x|$ so that
 \begin{equation}
--\left(|u'(x)|^{p-2} u'(x)\right)' = \alpha \mathbbm{1}_{(-1,1)}(x) - 2 \mathbbm{1}_{(-3,-1)\cup(1,3)}(x).  \label{concrete}
+-\left(|u'(x)|^{p-2} u'(x)\right)' = \alpha \left(\mathbbm{1}_{(-1,1)}(x) - \mathbbm{1}_{(-3,-1)\cup(1,3)}(x)\right).  \label{concrete}
 \end{equation}
 
 By symmetry and well-posedness, $u(x)$ is an even function and $u'(0)=0$.  Restricting attention to $x\ge 0$, we will see that $u'(x)\le 0$ for $x\le 2$.  Integrating \eqref{concrete} once gives
@@ -132,7 +132,17 @@ In conclusion, our exact solution family starts with a choice of $p>1$ and $\alp
 \end{equation}
 This function is in $W^{1,p}(\Omega) \cap W^{2,\infty}(\Omega)$, where $\Omega = (-3,3)$, and specifically it is continuously-differentiable.  It satisfies \eqref{plap} strongly a.e.
 
-We will set parameters $\alpha=1$ and $\beta = 0.2$ for convenience, and numerically test powers $p=3/2,2,4$, corresponding to $q=3,2,4/3$, respectively.  Note that for our chosen parameters $\alpha,\beta$, the requirement $\beta < \alpha^{q-1}/q$ is satisfied in the range $p \in [3/2,4]$.
+The $\beta=0$ case, in which the obstacle $\psi(x)=0$ is flat, implies that the solution has zero gradient at the free boundary ($u'(\xi)=0$).  Note that this implies a loss of uniform ellipticity at the free boundary in the $p>2$ degenerate diffusion cases, which makes the obstacle problem very challenging numerically, so we avoid that difficulty by setting $\beta>0$.
+
+For numerical tests we set parameters $\alpha=1$ and $\beta = 0.2$, and consider powers $p=3/2,2,4$, corresponding to $q=3,2,4/3$ respectively.  (For these $\alpha,\beta$ values, the requirement $\beta < \alpha^{q-1}/q$ is satisfied when $p > 5/4$.)  Numerical and exact solutions for the $p=3/2$ and $p=4$ cases are shown in Figure \ref{fig:solutions}.
+
+\begin{figure}
+\mbox{\includegraphics[width=0.45\textwidth]{solution1p5.pdf} \qquad \includegraphics[width=0.45\textwidth]{solution4.pdf}}
+\caption{Low-resolution $p$-Laplacian obstacle problem solutions for $\alpha=1$, $\beta=0.2$, and $p=1.5$ (left) or $p=4$ (right).}
+\label{fig:solutions}
+\end{figure}
+
+
 
 \begin{thebibliography}{1}
 
