@@ -80,7 +80,7 @@
 
 \thispagestyle{empty}
 
-For the purposes of building a nonlinear variational inequality verification case we will construct exact solutions to the one-dimensional case of the \emph{$p$-Laplacian obstacle problem}.  Over an open set $\Omega\subset \RR^d$, for $p>1$, $f \in L^1(\Omega)$, and $\psi \in W^{1,p}(\Omega)$, recall that the problem is to find $u(x) \ge \psi(x)$ satisfying
+For the purposes of building a nonlinear variational inequality verification case we will construct exact solutions to the one-dimensional \emph{$p$-Laplacian obstacle problem}.  Over an open set $\Omega\subset \RR^d$, for $p>1$, $f \in L^1(\Omega)$, and $\psi \in W^{1,p}(\Omega)$, recall that the problem is to find $u(x) \ge \psi(x)$ satisfying
 \begin{equation}
 -\Div\left(|\grad u(x)|^{p-2} \grad u(x)\right) = f(x) \qquad \text{on the set where } u(x) > \psi(x). \label{plap}
 \end{equation}
@@ -104,41 +104,40 @@ The function on the right is continuous.  Solving for $u'(x)$ by raising to the 
     $$u'(x) = \begin{cases} - \alpha^{q-1} x^{q-1}, & 0 \le x \le 1 \\ -\alpha^{q-1} (2 - x)^{q-1}, & x \ge 1\end{cases}$$
 Note that $u''(x) < 0$ (concave) for $0 < x < 1$ and $u''(x)>0$ (convex) for $x>1$.
 
-Integrating again, and recalling that $u(x)$ has even symmetry, for some $u(0)$ to be determined, we have
-\begin{align*}
-u(x) &= \begin{cases} u(0) - \frac{\alpha^{q-1}}{q} |x|^q, & |x| \le 1 \\
-                      u(0) - \frac{\alpha^{q-1}}{q} -\alpha^{q-1} \int_1^{|x|} (2 - y)^{q-1}\,dy, & |x| \ge 1\end{cases} \\
-     &= \begin{cases} u(0) - \frac{\alpha^{q-1}}{q} |x|^q, & |x| \le 1 \\
+Integrating again, and recalling that $u(x)$ has even symmetry, then on $\Omega=(-3,3)$,
+\begin{equation*}
+u(x) = \begin{cases} u(0) - \frac{\alpha^{q-1}}{q} |x|^q, & |x| \le 1 \\
                       u(0) + \frac{\alpha^{q-1}}{q} \left( (2 - |x|)^q - 2 \right), & |x| \ge 1\end{cases}
-\end{align*}
+\end{equation*}
+for some $u(0)$ to be determined.
 
-Now, where is the free boundary?  It must occur at $x=\xi>0$ where simultaneously $u(\xi)=-\beta \xi$ and $u'(\xi)=-\beta\le 0$.  However, $u'(2)=0$, which reflects the symmetry that the integral of $f(x)$ on $[0,1]$ is cancelled by its integral on $[1,2]$.  Furthermore $u'(x)<0$ for $0<x<2$ and $u'(x)$ is minimum at $x=1$, with $u'(1) = -\alpha^{q-1}$.  By a convexity/concavity argument, existence of the free boundary requires $\alpha^{q-1}/q>\beta$, which implies $\beta^{p-1}/\alpha < 1$ (see below).  Then, because $\beta \ge 0$, tangency implies that the free boundary is at some $1 < \xi \le 2$, and the above calculation is justified.
+Now, where are the free boundaries?  One must occur at $x=\xi>0$ where simultaneously $u(\xi)=-\beta \xi$ and $u'(\xi)=-\beta\le 0$.  However, $u'(2)=0$ because $\int_0^2 f(x)\,dx = 0$.  Furthermore $u'(x)<0$ for $0<x<2$ and $u'(x)$ is minimum at $x=1$, with $u'(1) = -\alpha^{q-1}$.  By a convexity/concavity argument, existence of the free boundary requires $\alpha^{q-1}/q>\beta$.  (Note this implies $\beta^{p-1} < \alpha$; in \eqref{params} below this shows $\xi>1$.)  Then, because $\beta \ge 0$, tangency implies that the free boundary is at some $1 < \xi \le 2$, and the above calculation is justified.
 
 Thus, given $\alpha>0$ and $0 \le \beta < \alpha^{q-1}/q$, we solve the system $u'(\xi)=-\beta$ and $u(\xi)=-\beta \xi$:
 \begin{align*}
 -\alpha^{q-1} (2 - \xi)^{q-1} &= -\beta \\
 u(0) + \frac{\alpha^{q-1}}{q} \left( (2 - \xi)^q - 2 \right) &= -\beta \xi
 \end{align*}
-The first equation determines $\xi$ and then the second will yield $u(0)$.  If $\beta=0$ then the free boundary is at $\xi=2$ and thus $u(0) = 2 \alpha^{q-1} / q$.  Generally
+These equations determine $\xi$ and $u(0)$ in turn:
 \begin{equation}
 \boxed{\xi = 2 - \frac{\beta^{p-1}}{\alpha} \qquad \text{and} \qquad u(0) = \frac{\beta^p}{p \alpha} + 2 \left(\frac{\alpha^{q-1}}{q} - \beta\right).} \label{params}
 \end{equation}
 
-In conclusion, our exact solution family starts with a choice of $p>1$ and $\alpha>0$ arbitrary.  Let $q>1$ be the dual exponent and choose $\beta \in [0,\alpha^{q-1}/q)$.  Compute $\xi \in (1,2]$ and $u(0)>0$ by \eqref{params}.  Then 
+In conclusion, the solution family allows arbitrary choice of $p>1$ and $\alpha>0$.  Let $q>1$ be the dual exponent and choose $\beta \in [0,\alpha^{q-1}/q)$.  From \eqref{params} compute $\xi \in (1,2]$ and $u(0)>0$.  Then 
 \begin{equation}
 \boxed{u(x) = \begin{cases} u(0) - \frac{\alpha^{q-1}}{q} |x|^q, & |x| \le 1 \\
                       u(0) + \frac{\alpha^{q-1}}{q} \left( (2 - |x|)^q - 2 \right), & 1 \le |x| \le \xi \\
                       -\beta |x|, & \xi \le |x| \le 3\end{cases}}  \label{exact}
 \end{equation}
-This function is in $W^{1,p}(\Omega) \cap W^{2,\infty}(\Omega)$, where $\Omega = (-3,3)$, and specifically it is continuously-differentiable.  It satisfies \eqref{plap} strongly a.e.
+This function is in $W^{1,p}(\Omega) \cap W^{2,\infty}(\Omega)$, $\Omega = (-3,3)$, and specifically it is continuously-differentiable.  It satisfies \eqref{plap} strongly a.e.
 
-The $\beta=0$ case, in which the obstacle $\psi(x)=0$ is flat, implies that the solution has zero gradient at the free boundary ($u'(\xi)=0$).  Note that this implies a loss of uniform ellipticity at the free boundary in the $p>2$ degenerate diffusion cases, which makes the obstacle problem very challenging numerically, so we avoid that difficulty by setting $\beta>0$.
+The $\beta=0$ case, in which the obstacle $\psi(x)=0$ is flat and $\xi=2$, implies that the solution has zero gradient at the free boundary ($u'(\xi)=0$).  This implies a loss of uniform ellipticity \emph{at} the free boundary in the $p>2$ degenerate diffusion cases, which makes the obstacle problem very challenging numerically.  We avoid the difficulty by only considering $\beta>0$.
 
-For numerical tests we set parameters $\alpha=1$ and $\beta = 0.2$, and consider powers $p=3/2,2,4$, corresponding to $q=3,2,4/3$ respectively.  (For these $\alpha,\beta$ values, the requirement $\beta < \alpha^{q-1}/q$ is satisfied when $p > 5/4$.)  Numerical and exact solutions for the $p=3/2$ and $p=4$ cases are shown in Figure \ref{fig:solutions}.
+For numerical tests we set parameters $\alpha=1$ and $\beta = 0.2$, and consider powers $p=3/2,2,4$, corresponding to $q=3,2,4/3$ respectively.  (For these $\alpha,\beta$ values, the requirement $\beta < \alpha^{q-1}/q$ is satisfied when $p > 5/4$.)  Solutions for $p=3/2,4$ are shown in Figure \ref{fig:solutions}.
 
 \begin{figure}
-\mbox{\includegraphics[width=0.45\textwidth]{solution1p5.pdf} \qquad \includegraphics[width=0.45\textwidth]{solution4.pdf}}
-\caption{Low-resolution $p$-Laplacian obstacle problem solutions for $\alpha=1$, $\beta=0.2$, and $p=1.5$ (left) or $p=4$ (right).}
+\mbox{\includegraphics[height=0.35\textwidth]{figs/solution1p5.pdf} \qquad \includegraphics[height=0.35\textwidth]{figs/solution4.pdf}}
+\caption{$p$-Laplacian obstacle problem solutions for $\alpha=1$ and $\beta=0.2$, with $p=1.5$ (left) and $p=4$ (right).}
 \label{fig:solutions}
 \end{figure}
 
