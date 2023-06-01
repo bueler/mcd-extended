@@ -152,7 +152,7 @@ urlcolor=black    % ...
 
 \maketitle
 
-\tableofcontents
+%\tableofcontents
 
 \thispagestyle{empty}
 %\bigskip
@@ -165,12 +165,13 @@ urlcolor=black    % ...
 
 For coercive variational inequality (VI) problems which arise from minimization of a convex functional over a convex set, the constraint decomposition (CD) method of Tai \cite{Tai2003} converges for multilevel and domain decompositions.  Furthermore the method has been shown to have almost grid-independent error bounds, and near-optimal complexity, for elliptic, linear obstacle problems \cite[Subsection 5.4]{Tai2003}; see also \cite[Theorem 4.6 and Algorithm 4.7]{GraeserKornhuber2009}.
 
-We extend Tai's multilevel CD method by implementing fully-nonlinear corrections, and we apply it to a new set of nonlinear VI problems which do not arise from minimization.  Specifically, for finite element (FE) solvers the algorithms in \cite{GraeserKornhuber2009} and \cite{Tai2003} are extended here in three practical ways:
+We extend Tai's multilevel CD method by implementing fully-nonlinear corrections, and we apply it to a new set of nonlinear VI problems which do not arise from minimization.  Specifically, for finite element (FE) solvers the algorithms in \cite{GraeserKornhuber2009} and \cite{Tai2003} are extended here in the following directions:
 \renewcommand{\labelenumi}{\emph{(\roman{enumi})}}
 \begin{enumerate}
 \item We apply a full approximation storage (FAS; see \cite{Brandt1977,Bruneetal2015}) approach which avoids global (Newton) linearization.  Section \ref{sec:results} shows results from this \pr{fascd} algorithm for several nonlinear problems.
 \item Our \pr{fascd} implementation permits ``box'' constraints, namely upper and lower obstacles; see Section \ref{sec:femultilevel}.
-\item In Sections \ref{sec:ldcs}--\ref{sec:vcycle} we explain why, given the manner in which constraint sets are decomposed in the multilevel context \cite{GraeserKornhuber2009}, ``up-smoothing'' is more efficient than ``down-smoothing''.  A strong preference for up-smoothing is special to multilevel CD methods and does not arise in unconstrained problems.
+\item We observe that ``up-smoothing'' is more effective than ``down-smoothing'' in for this class of algorithms.  A strong preference for up-smoothing is special to multilevel CD methods and does not arise in unconstrained problems.
+\item By using strong, yet $O(N)$-per-application, smoothers, namely Newton-type active set methods with a fixed number of preconditioned Krylov iterations per step, in Section \ref{sec:results} we demonstrate mesh-independent convergence rates substantially better than in the current literature.
 \end{enumerate}
 
 For the classical obstacle problem, based on the linear, symmetric Laplacian operator, certain multilevel techniques, such as the truncated monotone multigrid method \cite{GraeserKornhuber2009,Kornhuber1994}, are known to improve performance relative to the original multilevel CD method of Tai \cite{Tai2003}.  These improved methods either track the active set in the discretization or modify the nodal basis functions, and in this sense they are discrete algorithms.  By contrast a CD method applies essentially at the level of the continuum problem; see Section \ref{sec:cd}.  Acceleration of the \pr{fascd} method via active-set and/or basis-level manipulations is an obvious topic for future research.
@@ -180,7 +181,7 @@ One of our examples (Section \ref{sec:results}) demonstrates the application of 
 The iterates from a CD method are admissible, and thus the nonlinear operator in the VI needs only be defined for admissible states.  \pr{fascd} is designed for such admissible-only problems.  Our target fluid-layer problems require the solution of an auxiliary PDE on a domain determined inside the VI residual evaluation \cite{Bueler2021conservation}, but these problems are not addressed herein.  Note that non-admissible methods, including semi-smooth methods \cite{BensonMunson2006}, require unnatural modifications of the operator formula in such a fluid-layer context.
 
 
-\section{Coercive variational inequalities} \label{sec:vi}
+\section{Variational inequalities} \label{sec:vi}
 
 Suppose $\cV$ is a real and reflexive Banach space with norm $\|\cdot\|$ and topological dual space $\cV'$.  Denote the dual pairing of $\phi \in \cV'$ and $v\in\cV$ by $\ip{\phi}{v} = \phi(v)$, and define the (Banach space) norm on $\cV'$ by $\|\phi\|_{\cV'} = \sup_{\|v\|=1} |\ip{\phi}{v}|$.  Let $\cK \subset \cV$ be a nonempty, closed, and convex subset, the \emph{constraint set}; elements of $\cK$ are said to be \emph{admissible}.  For a continuous, but generally nonlinear, operator $f:\cK \to \cV'$ and a linear \emph{source functional} $\ell\in \cV'$ we consider the following \emph{variational inequality} (VI) problem, with solution $u^*\in \cK$ if it exists:
 \begin{equation}
@@ -202,9 +203,9 @@ The following definitions are standard \cite{KinderlehrerStampacchia1980}.
 \end{equation}
 \end{definition}
 
-It is well-known that if $f:\cK \to \cV'$ is continuous, monotone, and coercive then VI \eqref{eq:vi} has a solution \cite[Corollary III.1.8]{KinderlehrerStampacchia1980}, and that the solution is unique when $f$ is strictly monotone.  As is standard in the calculus of variations \cite{Evans2010}, coercivity permits a compactness argument for unbounded sets $\cK$.  (Recall that the closed and bounded subsets of a reflexive Banach space are weakly compact.)  The condition of continuity can be weakened, e.g.~to only apply on finite-dimensional subspaces \cite{KinderlehrerStampacchia1980}, but it will apply in our examples.
+It is well-known that if $f:\cK \to \cV'$ is continuous, monotone, and coercive then VI \eqref{eq:vi} has a solution \cite[Corollary III.1.8]{KinderlehrerStampacchia1980}, and that the solution is unique when $f$ is strictly monotone.  As is standard in the calculus of variations \cite{Evans2010}, coercivity permits a compactness argument for unbounded sets $\cK$.  (Recall that the closed and bounded subsets of a reflexive Banach space are weakly compact.)  The condition of continuity can be weakened, e.g.~to only apply on finite-dimensional subspaces \cite{KinderlehrerStampacchia1980}, but this is unnecessary in our examples.
 
-The coercive VIs solved in this paper satisfy a stronger inequality than \eqref{eq:coercive}.
+Certain of the VIs solved in this paper satisfy a stronger inequality than \eqref{eq:coercive}.
 
 \begin{definition}  Let $p>1$.  The map $f:\cK \to \cV'$ is \emph{$p$-coercive} if there exists $\kappa>0$ such that
 \begin{equation}
@@ -221,27 +222,25 @@ Let $\Omega \subset \RR^d$ denote a bounded, open set with smooth or piecewise-s
 
 The following example includes the classical and $p$-Laplacian obstacle problems \cite{ChoeLewis1991}.
 
-\begin{example}  \label{ex:plaplacian}  Suppose $a\in L^\infty(\Omega)$ such that $a(x)\ge a_0$ a.e.~for some constant $a_0>0$, and $p\ge 2$.  For $u,v \in \cV = W^{1,p}_0(\Omega)$ define $f:\cV \to \cV'$ by
+\begin{example}  \label{ex:plaplacian}  Suppose $p>1$.  For $u,v \in \cV = W^{1,p}_0(\Omega)$ define $f:\cV \to \cV'$ by
 \begin{equation}
-\ip{f(u)}{v} = \int_\Omega a(x) |\grad u|^{p-2} \grad u \cdot \grad v\,dx, \label{eq:plaplacian}
+\ip{f(u)}{v} = \int_\Omega |\grad u|^{p-2} \grad u \cdot \grad v\,dx, \label{eq:plaplacian}
 \end{equation}
-a continuous map \cite[Theorem A.0.6]{Peral1997}.  Now, if $x,y\in\RR^d$ then $(|x|^{p-2} x - |y|^{p-2} y)\cdot (x-y) \ge 2^{2-p} |x-y|^p$ \cite[Appendix A]{Bueler2021conservation}.  It follows from the Poincar\'e inequality that
+a continuous map \cite[Theorem A.0.6]{Peral1997}.  For $p\ge 2$, if $x,y\in\RR^d$ then $(|x|^{p-2} x - |y|^{p-2} y)\cdot (x-y) \ge 2^{2-p} |x-y|^p$ \cite[Appendix A]{Bueler2021conservation}, hence it follows from the Poincar\'e inequality that
     $$\ip{f(u) - f(v)}{u-v} \ge 2^{2-p} a_0 \|\grad u - \grad v\|_p^p \ge 2^{2-p} a_0 C \|u-v\|^p$$
-for some $C>0$, and thus $f$ is $p$-coercive.  The map in \eqref{eq:plaplacian} is also coercive if $1<p<2$, but the proof is somewhat different \cite[Theorem 4.4]{Bueler2021conservation}, and our results (Section \ref{sec:results}) only use $p\ge 2$.  \end{example}
+for some $C>0$, and thus $f$ is $p$-coercive.  The map \eqref{eq:plaplacian} is also coercive if $1<p<2$, but the proof is somewhat different \cite[Theorem 4.4, for example]{Bueler2021conservation}.  \end{example}
 
-For monotone operators $f$, VI \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  Suppose $F:\cK \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cK \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, Proposition II.2.1 in \cite{EkelandTemam1976} shows that if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ if and only if
+For monotone operators $f$, VI \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  In fact, suppose $F:\cK \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cK \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, Proposition II.2.1 in \cite{EkelandTemam1976} shows that if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ if and only if
 \begin{equation}
 u^* = \operatorname{arg-min}_{v\in\cK} F(v) - \ip{\ell}{v}. \label{eq:minimization}
 \end{equation}
-The CD methods of Tai \cite{Tai2003} address problem \eqref{eq:minimization}; the analysis in \cite{Tai2003} supposes that an objective $F$ exists with $F'$ 2-coercive.
-
-Not all VI problems arise from optimization, but for Example \ref{ex:plaplacian} we may define
+The CD methods of Tai \cite{Tai2003} address problem \eqref{eq:minimization}; the analysis in \cite{Tai2003} supposes that an objective $F$ exists with $F'$ 2-coercive.  For Example \ref{ex:plaplacian} we may define
 \begin{equation}
-F(v) = \frac{1}{p} \int_\Omega a(x) |\grad v|^p\,dx. \label{eq:plaplacianobjective}
+F(v) = \frac{1}{p} \int_\Omega |\grad v|^p\,dx. \label{eq:plaplacianobjective}
 \end{equation}
 Then $F$ is a convex functional and $F'(v) = f(v)$ for $f$ given in \eqref{eq:plaplacian}.  For any closed and convex $\cK\subset \cV$, VI problem \eqref{eq:vi} is then equivalent to optimization problem \eqref{eq:minimization}.
 
-Next we give two examples which are \emph{not} of optimization type, first a linear advection-diffusion problem, which needs the following Lemma, and then a nonlinear problem of porous-medium type.
+Next we give two examples which are \emph{not} of optimization type \eqref{eq:minimization}, the first being an advection-diffusion problem, which needs the following Lemma, and the second a nonlinear problem for ice sheet geometry.
 
 \begin{lemma}  \label{lem:advectionskew}  \cite{Elmanetal2014}\,  Suppose $\bX :\Omega \to \RR^d$ is a bounded and boundedly-differentiable vector field on $\Omega$ with zero divergence ($\Div \bX=0$).  For $u,v \in W^{1,2}(\Omega)$ let $b(u,v) = \int_\Omega (\bX \cdot \grad u) v\,dx$.  Then $b(u,u) = \frac{1}{2} \int_{\partial \Omega} u^2 \bX\cdot \bn\,dx$ where $\bn$ is the outward normal on $\partial \Omega$.
 \end{lemma}
@@ -250,11 +249,16 @@ Next we give two examples which are \emph{not} of optimization type, first a lin
 Integration by parts gives $b(u,v) = - b(v,u) + \int_{\partial \Omega} uv \bX\cdot \bn\,dx$.
 \end{proof}
 
-\begin{example}  \label{ex:advectiondiffusion}  Suppose $\partial\Omega$ is partitioned into Dirichlet and Neumann portions, i.e.~$\partial\Omega = \partial_D\Omega \cup \partial_N\Omega$, with $\partial_D\Omega$ of positive measure.  Let $\cV \subset W^{1,2}(\Omega)$ be the space of functions which are zero along $\partial_D\Omega$.  Consider a divergence-free velocity field $\bX$ on $\Omega$ satisfying the conditions of Lemma \ref{lem:advectionskew}, and assume that the flow is outward on the Neumann boundary: $\bX \cdot \bn \ge 0$ on $\partial_N\Omega$.  For $u,v \in \cV$ and $\eps>0$ define
+\begin{example}  \label{ex:advectiondiffusion}  Suppose $\partial\Omega$ is partitioned into Dirichlet and Neumann portions, i.e.~$\partial\Omega = \partial_D\Omega \cup \partial_N\Omega$, with $\partial_D\Omega$ of positive measure.  Let $\cV \subset W^{1,2}(\Omega)$ be the space of functions which are zero along $\partial_D\Omega$.  Consider a divergence-free velocity field $\bX$ on $\Omega$ satisfying the conditions of Lemma \ref{lem:advectionskew}, and assume that the flow is outward on the Neumann boundary: $\bX \cdot \bn \ge 0$ on $\partial_N\Omega$.  For $u,v \in \cV$, $\eps>0$, and $\phi \in L^\infty(\Omega)$, define
 \begin{equation}
-\ip{f(u)}{v} = \eps \left(\grad u, \grad v\right)_{L^2(\Omega)} - b(u,v). \label{eq:advectiondiffusion}
+\ip{f(u)}{v} = \eps \left(\grad u, \grad v\right)_{L^2(\Omega)} + b(u,v) - \ip{\phi}{v}. \label{eq:advectiondiffusion}
 \end{equation}
-Consider VI \eqref{eq:vi} for any closed and convex $\cK \subset \cV$ and $g\in\cV'$.  It is easy to see that $|\ip{f(u)}{v}| \le (\eps + \|\bX\|_\infty) \|u\| \|v\|$, thus that $f:\cK \to \cV'$ is continuous.  Lemma \ref{lem:advectionskew} says that the bilinear form $s(u,v)$ is skew-symmetric up to a nonnegative term.  By the outward flow assumption and the Poincar\'e inequality,
+With this operator, consider VI \eqref{eq:vi} for any closed and convex $\cK \subset \cV$ and $g\in\cV'$.  The interior condition, i.e.~PDE strong form, is the following linear advection-diffusion equation
+\begin{equation}
+-\eps \grad^2 u + \bX\cdot \grad u = \phi.
+\label{eq:pdeadvectiondiffusion}
+\end{equation}
+On the other hand, it is easy to see that $|\ip{f(u)}{v}| \le (\eps + \|\bX\|_\infty + \|\phi\|_\infty) \|u\| \|v\|$, thus that $f:\cK \to \cV'$ is continuous.  Lemma \ref{lem:advectionskew} says that the bilinear form $b(u,v)$ is skew-symmetric up to a nonnegative term.  By the outward flow assumption and the Poincar\'e inequality,
 \begin{align*}
 \ip{f(u)-f(v)}{u-v} &= \eps \int_\Omega |\grad u - \grad v|^2\,dx + b(u-v,u-v) \\
                     &= \eps \int_\Omega |\grad u - \grad v|^2\,dx + \frac{1}{2} \int_{\partial_N\Omega} (u-v)^2 \bX\cdot\bn \ge \eps C \|u-v\|^2.
@@ -262,7 +266,9 @@ Consider VI \eqref{eq:vi} for any closed and convex $\cK \subset \cV$ and $g\in\
 Thus $f$ is 2-coercive, and so VI problem \eqref{eq:vi} is well-posed.
 \end{example}
 
-If $\bX \ne 0$ then $f$ in Example \ref{ex:advectiondiffusion} does not correspond to a minimization problem.  Indeed, $\ip{f(u)}{v}$ is not symmetric in that case, so $f$ cannot be the gradient of a scalar objective.  (For $u,v$ which are zero on $\partial \Omega$, note that $\ip{f(u)}{v} - \ip{f(v)}{u} = -2 b(u,v)$.)  References \cite{Bueler2021conservation,ChangNakshatrala2017} consider advection-diffusion VI problems like this, specifically over the set $\cK = \{v\ge 0\}$.
+If $\bX \ne 0$ then $f$ in Example \ref{ex:advectiondiffusion} does not correspond to a minimization problem because $\ip{f(u)}{v}$ does not possess the symmetry of the gradient of a scalar objective.  (For $u,v$ which are zero on $\partial \Omega$, note that $\ip{f(u)}{v} - \ip{f(v)}{u} = -2 b(u,v)$.)  References \cite{Bueler2021conservation,ChangNakshatrala2017} consider advection-diffusion VI problems like this, specifically over the set $\cK = \{v\ge 0\}$.
+
+FIXME replace following with SIA
 
 \begin{example}  \label{ex:porous}  Suppose $\phi:[0,\infty) \to [\phi_0,\infty)$ is continuous for some constant $\phi_0>0$.  As with Example \ref{ex:advectiondiffusion}, the following operator, of porous medium type, does not have the symmetry necessary to be the gradient of a scalar objective:
 \begin{equation}
