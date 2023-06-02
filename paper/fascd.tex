@@ -282,34 +282,34 @@ Numerical solver performance for Examples \ref{ex:plaplacian}, \ref{ex:advection
 
 \section{Constraint decomposition (CD)} \label{sec:cd}
 
-If there are $m<\infty$ closed subspaces $\cV_i \subset \cV$ so that the sum
+Suppose that there are $m<\infty$ closed subspaces $\cV_i \subset \cV$, so that the sum
 \begin{equation}
 \cV = \sum_{i=0}^{m-1} \cV_i \label{eq:subspacedecomp}
 \end{equation}
-holds in the sense that if $w \in \cV$ then there exist $w_i \in \cV_i$ so that $w = \sum_i w_i$, then we say \eqref{eq:subspacedecomp} is a \emph{space decomposition} of $\cV$ \cite{Xu1992}.  Suppose further that $\cK_i \subset \cV_i$ are nonempty, closed, and convex subsets such that
+holds in the sense that if $w \in \cV$ then there exist $w_i \in \cV_i$ so that $w = \sum_i w_i$.  We say \eqref{eq:subspacedecomp} is a \emph{space decomposition} of $\cV$ \cite{Xu1992}.  For a closed, convex subset $\cK \subset \cV$, suppose further that $\cK_i \subset \cV_i$ are nonempty, closed, and convex subsets such that
 \begin{equation}
-\cK = \sum_{i=0}^{m-1} \cK_i \label{eq:constraintdecomp}
+\cK = \sum_{i=0}^{m-1} \cK_i. \label{eq:constraintdecomp}
 \end{equation}
-for a closed, convex subset $\cK \subset \cV$.  The sum in \eqref{eq:constraintdecomp} must hold in two senses \cite{TaiTseng2002}: \emph{(i)}~if $w \in \cK$ then there exist $w_i \in \cK_i$ so that $w = \sum_i w_i$, and \emph{(ii)}~if $z_i \in \cK_i$ for each $i$ then $\sum_i z_i \in \cK$.  (Sense \emph{(ii)} is automatic for \eqref{eq:subspacedecomp} because the $\cV_i$ are subspaces.)  Finally, suppose there are bounded, generally-nonlinear \emph{decomposition operators}\footnote{Denoted ``$R_i$'' in \cite{Tai2003}.  Here we avoid a notational conflict with multilevel transfer operators (Section \ref{sec:femultilevel}).} $\Pi_i : \cK \to \cK_i$ such that if $v \in \cK$ then
+The sum in \eqref{eq:constraintdecomp} must hold in two senses \cite{TaiTseng2002}: \emph{(i)}~if $w \in \cK$ then there exist $w_i \in \cK_i$ so that $w = \sum_i w_i$, and \emph{(ii)}~if $z_i \in \cK_i$ for each $i$ then $\sum_i z_i \in \cK$.  Note that neither decomposition \eqref{eq:subspacedecomp} or \eqref{eq:constraintdecomp} is required to be unique, and also notice that sense \emph{(ii)} is automatic for \eqref{eq:subspacedecomp} because the $\cV_i$ are subspaces.  Finally, suppose there are bounded \emph{decomposition operators}\footnote{Denoted ``$R_i$'' in \cite{Tai2003}.  Here we avoid a notational conflict with multilevel transfer operators (Section \ref{sec:femultilevel}).} $\Pi_i : \cK \to \cK_i$ such that if $v \in \cK$ then
 \begin{equation}
 v = \sum_{i=0}^{m-1} \Pi_i v.  \label{eq:constraintrestrictionsum}
 \end{equation}
-Clearly \eqref{eq:constraintrestrictionsum} implies sense \emph{(i)} for \eqref{eq:constraintdecomp}. A \emph{constraint decomposition} (CD) of $\cK$ is a choice of $\cV_i,\cK_i,\Pi_i$ satisfying \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum} \cite{Tai2003}.  Note that neither decomposition \eqref{eq:subspacedecomp} or \eqref{eq:constraintdecomp} is required to be unique.  Figure \ref{fig:cartoon} suggests how a low-dimensional example might look; as is typical, note $\cK_i \not\subset \cK$.
+The operators $\Pi_i$ are generally nonlinear.  Clearly \eqref{eq:constraintrestrictionsum} implies sense \emph{(i)} for \eqref{eq:constraintdecomp}. Tai \cite{Tai2003} defined a \emph{constraint decomposition} (CD) of $\cK$ to be a choice of $\cV_i,\cK_i,\Pi_i$ satisfying \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum}.  Figure \ref{fig:cartoon} suggests how a low-dimensional example might look; note $\cK_i \not\subset \cK$ in this, and in most nontrivial cases as well.
 
 \begin{figure}[ht]
 \includegraphics[width=0.6\textwidth]{genfigs/cartoon.pdf}
-\caption{A constraint decomposition (CD) for a unilateral obstacle problem with $\Omega=\{x_1,x_2\}$, $\mathcal{V}=\left\{\text{real functions on } \Omega\right\}$, and $\mathcal{K}=\{v\ge \psi\}$.}
+\caption{A constraint decomposition (CD) for a unilateral obstacle problem on a two-point space $\Omega=\{x_1,x_2\}$, with $\mathcal{V}=\left\{v \,:\, \Omega \to \RR\right\}$ and $\mathcal{K}=\{v\ge \psi\}$.}
 \label{fig:cartoon}
 \end{figure}
 
-In Sections \ref{sec:femultilevel}--\ref{sec:vcycle} we will introduce multilevel CD discretizations and algorithms for finite-dimensional VI problems.  However, one can observe here that the CD concept applies at the level of the continuum problem, as illustrated in the following two examples.
+In Sections \ref{sec:femultilevel}--\ref{sec:vcycle} we will introduce multilevel CD discretizations and algorithms for finite-dimensional VI problems.  However, one can observe here that the CD concept applies at the level of the continuum problem, as illustrated in the following two examples, the first of which is an overlapping domain decomposition of a Sobolev space.
 
-\begin{example}  \label{ex:domaindecomposition}  For a bounded domain $\Omega \subset \RR^d$, let $\cV = W_0^{k,p}(\Omega)$ for $k\ge 0$ and $p\ge 1$.  Suppose an obstacle $\psi \in W^{k,p}(\Omega)$ satisfies $\psi|_{\partial \Omega} \le 0$, and let $\cK = \{v \ge \psi\} \subset \cV$.  Suppose further that $\{\phi_i\}_{i=0}^{m-1}$ is a smooth partition of unity on $\Omega$, satisfying $0 \le \phi_i\le 1$ and $\sum_i \phi_i = 1$, and let $\Omega_i$ be the open support of $\phi_i$.  Let $\cV_i = \{w \in \cV:w|_{\Omega \setminus \Omega_i} =0 \}$, $\cK_i = \{v \in \cV_i: v \ge \phi_i \psi\}$, and $\Pi_i(v) = \phi_i v$.  Then \eqref{eq:subspacedecomp}, \eqref{eq:constraintdecomp}, and \eqref{eq:constraintrestrictionsum} all hold.
+\begin{example}  \label{ex:domaindecomposition}  For a bounded domain $\Omega \subset \RR^d$, let $\cV = W_0^{k,p}(\Omega)$ for $k\ge 0$ and $p\ge 1$.  Let $\psi$ be a measurable, real-valued obstacle, defined on $\Omega$, which satisfies $\psi|_{\partial \Omega} \le 0$, and let $\cK = \{v \ge \psi\} \subset \cV$.  Suppose further that $\{\phi_i\}_{i=0}^{m-1}$ is a smooth partition of unity on $\Omega$, satisfying $0 \le \phi_i\le 1$ and $\sum_i \phi_i = 1$, and let $\Omega_i$ be the open support of $\phi_i$.  Let $\cV_i = \{w \in \cV:w|_{\Omega \setminus \Omega_i} =0 \}$, $\cK_i = \{v \in \cV_i: v \ge \phi_i \psi\}$, and $\Pi_i(v) = \phi_i v$.  Then \eqref{eq:subspacedecomp}, \eqref{eq:constraintdecomp}, and \eqref{eq:constraintrestrictionsum} all hold.
 \end{example}
 
-Our second example is a disjoint frequency decomposition.  A multilevel CD over a finite-dimensional FE discretization, proposed in Sections \ref{sec:femultilevel}--\ref{sec:vcycle}, approximates such a frequency decomposition.
+Our second example is a disjoint frequency decomposition of a Hilbert space.  A multilevel CD over a finite-dimensional FE discretization, as proposed in Sections \ref{sec:femultilevel}--\ref{sec:cdmultilevel}, approximates such a decomposition.
 
-\begin{example}  \label{ex:frequencydecomposition}  For simplicity suppose $\Omega = (0,a)^d \subset \RR^d$ is a cube, and let $\cV = W_{\text{per}}^{p,k}(\Omega)$, for $p\ge 2$ and $k\ge 0$, be the periodic functions.  Suppose $\psi \in W_{\text{per}}^{p,k}(\Omega)$ and let $\cK = \{v \ge \psi\} \subset \cV$.  Without using any detailed notation for Fourier representation, but noting that the frequencies are discrete because $\Omega$ is compact, suppose $\{\cV_i\}$ are $m<\infty$ subspaces of $\cV$ defined by an (nonoverlapping) partition of $W_{\text{per}}^{p,k}(\Omega)$ by frequency, thus satisfying \eqref{eq:subspacedecomp} as an orthogonal decomposition.  Suppose $P_i:\cV \to \cV_i$ are the corresponding orthogonal projections, satisfying $I = \sum_i P_i$.  Let $\cK_i = \{v \ge P_i \psi\} \subset \cV_i$ and $\Pi_i = P_i$.  Then \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} also hold.
+\begin{example}  \label{ex:frequencydecomposition}  For simplicity suppose $\Omega = (0,a)^d \subset \RR^d$ is a cube, and let $\cV = W_{\text{per}}^{2,k}(\Omega)$ be the periodic functions with square-integrable $k$th derivatives.  Suppose $\psi \in W_{\text{per}}^{2,k}(\Omega)$ and let $\cK = \{v \ge \psi\} \subset \cV$.  Without using any detailed notation for Fourier representation, but noting that the frequencies are discrete because $\Omega$ is compact, suppose $\{\cV_i\}$ are $m<\infty$ subspaces of $\cV$ defined by an (nonoverlapping) partition of $W_{\text{per}}^{2,k}(\Omega)$ by frequency, thus satisfying \eqref{eq:subspacedecomp} as an orthogonal decomposition.  Suppose $P_i:\cV \to \cV_i$ are the corresponding orthogonal projections, satisfying $I = \sum_i P_i$.  Let $\cK_i = \{v \ge P_i \psi\} \subset \cV_i$ and $\Pi_i = P_i$.  Then \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} also hold.
 \end{example}
 
 Note that $\cK_i \not\subset \cK$ in these cases; informally speaking, the important inclusion is $\cK_i \subset \cV_i$.
@@ -317,15 +317,14 @@ Note that $\cK_i \not\subset \cK$ in these cases; informally speaking, the impor
 
 \section{Basic CD iterations} \label{sec:cditers}
 
-Associated to a constraint decomposition (CD) are certain iterative methods.  Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below solve smaller VI problems over each subset $\cK_i$, to replace $u \in \cK$ with $w\in\cK$ which should be closer to $u^* \in \cK$ solving \eqref{eq:vi}.  First is \pr{cd-add}, the additive or parallel method, which generalizes the classical Jacobi iteration.  Here ``\textbf{for all}'' can be computed in any order.  Note that the expression ``$u-\Pi_iu+\hat w_i$'' removes the part of $u$ which lies in $\mathcal{K}_i$, and then adds-back the subset solution $\hat w_i \in \mathcal{K}_i$.  Second is \pr{cd-mult}, the multiplicative or successive version, which generalizes the Gauss-Seidel iteration.  Each subset solution corrects the global iterate immediately, so here ordering is important.  The sum ``$\sum_{j>i} \Pi_j u$'' should be read as ``parts of the input $u$ which have not yet improved''.
-
+As is true for space decompositions \cite{Xu1992}, associated to a constraint decomposition (CD) are certain iterative methods \cite{Tai2003}.  Let $0\le \alpha \le 1$ be the \emph{damping parameter}.  Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below, which we now discuss, solve smaller VI problems over each subset $\cK_i$.  These Algorithms replace $u \in \cK$ with a new iterate $w\in\cK$ which should be closer to $u^* \in \cK$ solving \eqref{eq:vi}.
 
 \begin{pseudofloat}[H]
 \begin{pseudo*}
 \pr{cd-add}(u)\text{:} \\+
     for all $i \in \{0,\dots,m-1\}$: \\+
         \rm{find} $\hat w_i\in \cK_i$ \rm{so that for all} $v_i\in \cK_i$, \\+
-            $\boxed{\ip{f(u - \Pi_i u + \hat w_i)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i}}$ \\--
+            $\ip{f(u - \Pi_i u + \hat w_i)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i}$ \\--
     $\hat w = \sum_i \hat w_i\in\cK$ \\
     return $w=(1-\alpha) u + \alpha \hat w$
 \end{pseudo*}
@@ -333,12 +332,18 @@ Associated to a constraint decomposition (CD) are certain iterative methods.  Al
 \label{alg:basiccd-add}
 \end{pseudofloat}
 
-\begin{pseudofloat}
+The additive/parallel \pr{cd-add} method (Algorithm \ref{alg:basiccd-add}) generalizes the classical Jacobi iteration.  Here ``\textbf{for all}'' can be computed in any order.  In the VI over $\mathcal{K}_i$ solved here,
+\begin{equation}
+\ip{f(u - \Pi_i u + \hat w_i)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i} \qquad \forall v_i \in \mathcal{K}_i, \label{eq:cdaddvi}
+\end{equation}
+the expression ``$u-\Pi_iu+\hat w_i$'' removes the part of $u$ which lies in $\mathcal{K}_i$, and then adds-back the subset solution $\hat w_i \in \mathcal{K}_i$.
+
+\begin{pseudofloat}[H]
 \begin{pseudo*}
 \pr{cd-mult}(u)\text{:} \\+
     for $i = 0,\dots,m-1$: \\+
         \rm{find} $\hat w_i\in \cK_i$ \rm{so that for all} $v_i\in \cK_i$, \\+
-            $\displaystyle \boxed{\ip{f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} \Pi_j u\Big)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i}}$ \\-
+            $\displaystyle \ip{f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} \Pi_j u\Big)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i}$ \\-
             $w_i = (1-\alpha) \Pi_i u + \alpha \hat w_i\in\cK_i$ \\-
     $\hat w = \sum_i \hat w_i\in\cK$ \\
     return $w=(1-\alpha) u + \alpha \hat w$
@@ -347,16 +352,22 @@ Associated to a constraint decomposition (CD) are certain iterative methods.  Al
 \label{alg:basiccd-mult}
 \end{pseudofloat}
 
-In each boxed VI the argument of $f$ is an element of $\cK$, as the reader should confirm.  Also, by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may write the test vector $v_i - \hat w_i \in \cV_i$ as a difference of admissible vectors from $\cK$.  For \pr{cd-add} and \pr{cd-mult} respectively:
+The multiplicative/successive \pr{cd-mult} version (Algorithm \ref{alg:basiccd-mult}) generalizes the Gauss-Seidel iteration.  Each subset solution corrects the global iterate immediately, so here the ordering used in the ``\textbf{for}'' loop is important.  In the VI over $\mathcal{K}_i$,
+\begin{equation}
+\ip{f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} \Pi_j u\Big)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i} \qquad \forall v_i \in \mathcal{K}_i, \label{eq:cdmultvi}
+\end{equation}
+the sum ``$\sum_{j>i} \Pi_j u$'' should be read as ``those portions of $u$ which have not yet improved''.
+
+In VIs \eqref{eq:cdaddvi} and \eqref{eq:cdmultvi} the argument of $f$ is an element of $\cK$, as the reader should confirm.
+
+By \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may write the test vector $v_i - \hat w_i \in \cV_i$ as a difference of admissible vectors from $\cK$.  For \eqref{eq:cdaddvi} and \eqref{eq:cdmultvi} respectively:
 \begin{align}
 [u - \Pi_i u + v_i] - [u - \Pi_i u + \hat w_i] &= v_i - \hat w_i, \label{eq:admissibledifferenceadd} \\
 \left[\sum_{j<i} w_j + v_i + \sum_{j>i} \Pi_j u\right] - \left[\sum_{j<i} w_j + \hat w_i + \sum_{j>i} \Pi_j u\right] &= v_i - \hat w_i.  \label{eq:admissibledifferencemult}
 \end{align}
-In this sense the boxed VIs solve the same problem as \eqref{eq:vi}.
+In this sense the VIs over the subsets $\mathcal{K}_i$ solve the same problem as \eqref{eq:vi}.  Furthermore, let $e_i = \hat w_i - \Pi_i u \in \cV_i$.  The reader may confirm that $\hat w = u + \sum_{i} e_i$ and thus that $w = u + \alpha \sum_i e_i$.  The new iterate $w$ is computed by adding a damped correction from each sub\emph{space} $\mathcal{V}_i$, but in such a manner that $w \in \mathcal{K}$; the corrections preserve admissibility.
 
-Let $e_i = \hat w_i - \Pi_i u \in \cV_i$.  The reader may check that $\hat w = u + \sum_{i} e_i$ and $w = u + \alpha \sum_i e_i$.
-
-\pr{cd-add} and \pr{cd-mult} are the \emph{basic CD iterations}.  Each one permits a damping parameter $\alpha$.  Subject to a bound on $\alpha$, which is restrictive for \pr{cd-add} as noted by Tai \cite{Tai2003}, these iterations generate monotonically-decreasing objective values whenever VI problem \eqref{eq:vi} corresponds to convex optimization \eqref{eq:minimization}.  This is shown in the following Lemma.  Thus the boxed VI problems in the \pr{cd-add} and \pr{cd-mult} algorithms are analogous to constrained line searches, and in fact they reduce to such when the $\cV_i$ are one-dimensional.
+We call \pr{cd-add} and \pr{cd-mult} the \emph{basic CD iterations}.  VI problems \eqref{eq:cdaddvi} and \eqref{eq:cdmultvi} are analogous to constrained line searches, and in fact they reduce to such line searches when the $\cV_i$ are one-dimensional.  In general, as shown in the next Lemma \cite{Tai2003}, subject to a bound on the damping $\alpha$, which is quite restrictive for \pr{cd-add}, these iterations generate monotonically-decreasing objective values when VI problem \eqref{eq:vi} corresponds to convex optimization \eqref{eq:minimization}.
 
 \begin{lemma}  Suppose $f=F'$ for $F:\cK\to\RR$ convex and differentiable, and let $u\in\cK$.  For $0 \le \alpha \le 1$ the output $w \in \cK$ from \pr{cd-mult} satisfies
 \begin{equation}
@@ -367,42 +378,40 @@ If $0 \le \alpha \le 1/m$ then \pr{cd-add} likewise satisfies \eqref{eq:objectiv
 
 \begin{proof}  We assume $\ell=0$ without loss of generality; otherwise define $\tilde F(u)=F(u) - \ip{\ell}{u}$ and observe that the proof goes through for $\tilde F$ essentially unchanged.
 
-To show that each iteration of the \textbf{for} loop in \pr{cd-mult} lowers the objective value, let $z_{i} = \sum_{j\le i} w_j + \sum_{j > i} \Pi_j u \in \cK$, $i=0,\dots,m-1$, be the state at the end of the $i$th iteration.  Note that $z_0=u$, $z_{m-1}=w$, and $z_{i-1} = \sum_{j < i} w_j + \Pi_i u + \sum_{j > i} \Pi_j u$ for $i>0$.  Therefore by convexity of $F$, observation \eqref{eq:admissibledifferencemult} with $v_i=\Pi_i u$, and the boxed VI we find:
+To show that each iteration of the \textbf{for} loop in \pr{cd-mult} lowers the objective value, let $z_{i} = \sum_{j\le i} w_j + \sum_{j > i} \Pi_j u \in \cK$, $i=0,\dots,m-1$; it is the state at the end of the $i$th iteration.  Note that $z_{i-1} = \sum_{j < i} w_j + \Pi_i u + \sum_{j > i} \Pi_j u$ for $i>0$.  Therefore by convexity of $F$, observation \eqref{eq:admissibledifferencemult} with $v_i=\Pi_i u$, and \eqref{eq:cdmultvi} we find:
 \begin{equation*}
 F(z_{i-1}) - F\left(\sum_{j<i} w_j + \hat w_i + \sum_{j > i} \Pi_j u\right) \ge \ip{f\left(\sum_{j<i} w_j + \hat w_i + \sum_{j > i} \Pi_j u\right)}{\Pi_i u - \hat w_i} \ge 0.
 \end{equation*}
-Using convexity (again) with the above inequality gives
+Using convexity (again) now gives
 \begin{align*}
 F(z_i) &= F\left((1-\alpha) z_{i-1} + \alpha \left(\sum_{j<i} w_j + \hat w_i + \sum_{j > i} \Pi_j u\right)\right) \\
 &\le  (1-\alpha) F(z_{i-1}) + \alpha F\left(\sum_{j<i} w_j + \hat w_i + \sum_{j > i} \Pi_j u\right) \le F(z_{i-1}).
 \end{align*}
-As $w = z_{m-1}$, the result for \pr{cd-mult} follows.
+As $u=z_0$ and $w = z_{m-1}$, the result for \pr{cd-mult} follows.
 
-Suppose $w=u+\alpha\sum_i e_i$ is computed by \pr{cd-add} using $\alpha \le 1/m$.  Considering each $e_i=\hat w_i - \Pi_i u$ separately, convexity of $F$ and the boxed VI with $v_i=\Pi_i u$ yields
+Suppose $w=u+\alpha\sum_i e_i$ is computed by \pr{cd-add} using $\alpha \le 1/m$.  Considering each $e_i=\hat w_i - \Pi_i u$ separately, convexity of $F$ and VI \eqref{eq:cdaddvi} with $v_i=\Pi_i u$ yields
 \begin{equation}
 F(u) - F(u+e_i) \ge \ip{f(u+e_i)}{u-(u+e_i)} = \ip{f(u-\Pi_i u + \hat w_i)}{\Pi_i u - \hat w_i} \ge 0. \label{eq:cdaddonereduction}
 \end{equation}
-Let $v = u+ \frac{1}{m} \sum_i e_i$.  Again using convexity (Jensen's inequality), plus the above inequality, we have
+Let $v = u+ \frac{1}{m} \sum_i e_i$.  Again using convexity (Jensen's inequality), and \eqref{eq:cdaddonereduction}, we have
 \begin{equation*}
 F(v) = F\left(\frac{1}{m} \sum_{i=0}^{m-1} (u+e_i)\right) \le \frac{1}{m} \sum_{i=0}^{m-1} F(u+e_i) \le \frac{1}{m} \sum_{i=0}^{m-1} F(u) = F(u).
 \end{equation*}
 Now define $\lambda = m\alpha$ so $0 \le \lambda \le 1$ and $w = (1-\lambda) u + \lambda v$.  Thus by convexity and the above result, $F(w) \le (1-\lambda) F(u) + \lambda F(v) \le F(u)$.
 \end{proof}
 
-When $\alpha=1/m$ then the logic of the above proof for \pr{cd-add} is simpler because $v=w$ and $\lambda=1$.  Namely, the value $F(w)$ is less than $\frac{1}{m} \sum_i F(u+e_i)$ by Jensen's inequality, which is lower than $F(u)$ by the boxed VIs, which is inequality \eqref{eq:cdaddonereduction}.
+When $\alpha=1/m$ then the above proof for \pr{cd-add} can be simplified because $v=w$ and $\lambda=1$.  Then the value $F(w)$ is less than $\frac{1}{m} \sum_i F(u+e_i)$ by Jensen's inequality, which is lower than $F(u)$ by \eqref{eq:cdaddvi} or \eqref{eq:cdmultvi}, which gives inequality \eqref{eq:cdaddonereduction}.
 
-The basic CD iterations are meaningful whether we are in the optimization case $f=F'$ or not.  Furthermore they are meaningful even when $f$ is nonlinear, non-local, or defined only on $\cK$.  Practical and efficient FE implementation for such general operators $f$ seems not to have been addressed in the literature.  References \cite{GraeserKornhuber2009,Tai2003} only apply the CD method to the classical obstacle problem for which $f=F'$ is linear, local, and defined for all inputs (i.e.~$f$ is defined on all of $\mathcal{V}$).  The following example exposes the implementation simplifications available in that easier case.
+The basic CD iterations are meaningful whether we are in the optimization case $f=F'$ or not.  Furthermore they are meaningful even when $f$ is nonlinear, non-local, or defined only on $\cK$.  However, practical and efficient FE implementation for such general operators $f$ seems not to have been addressed in the literature.  References \cite{GraeserKornhuber2009,Tai2003} only apply the CD method to the classical obstacle problem, and in that case $f=F'$ is linear, local, and defined for all inputs (i.e.~on all of $\mathcal{V}$).  The following example exposes the implementation simplifications available in such easier cases.
 
-\begin{example}  \label{ex:fnice} Suppose $f:\cV \to \cV'$ is linear.  Furthermore suppose $f$ is a differential operator, thus local in the sense that for any $z\in\mathcal{V}$ the value $\ip{f(\phi)}{z}$ can be computed by an integral over the support of $\phi$.  Considering \pr{cd-add} for concreteness, by linearity the boxed VI can be rewritten
+\begin{example}  \label{ex:fnice} Suppose $f:\cV \to \cV'$ is linear.  Furthermore suppose $f$ is a differential operator, thus local in the sense that for any $z\in\mathcal{V}$ the value $\ip{f(\phi)}{z}$ can be computed by an integral over the support of $\phi$.  Considering \pr{cd-add} for concreteness, by linearity \eqref{eq:cdaddvi} can be rewritten
 \begin{equation}
 \ip{f(e_i)}{v_i-\hat w_i} \ge \ip{\tilde\ell}{v_i-\hat w_i}, \label{eq:linearlocalvi}
 \end{equation}
-for all $v_i \in \mathcal{K}_i$, where $\tilde\ell = \ell - f(u)$.  Thus each problem \eqref{eq:linearlocalvi} can be solved using a stored residual $f(u)$ included into $\tilde\ell$.  Note $e_i = \hat w_i - \Pi_i u \in \cV_i$ is not generally admissible ($e_i \notin \cK$), but \eqref{eq:linearlocalvi} is meaningful because $f$ is defined over $\cV$.  If a hat function basis exists for $\cV_i$, namely a basis of small-support functions, then by locality of $f$ a solver for VI \eqref{eq:linearlocalvi} can be implemented using only integrals over these small support sets.\footnote{Compare equations (2.31) and (2.32) in \cite{Farrelletal2021}, which describe the same sense of locality.}
+for all $v_i \in \mathcal{K}_i$, where $\tilde\ell = \ell - f(u)$.  Thus each problem \eqref{eq:linearlocalvi} can be solved using a stored residual $f(u)$ included into $\tilde\ell$.  Note $e_i = \hat w_i - \Pi_i u \in \cV_i$ is not generally admissible---generally $e_i \notin \cK$---but \eqref{eq:linearlocalvi} is meaningful because $f$ is defined over $\cV$.  If a hat function basis exists for $\cV_i$, namely a basis of small-support functions, then by locality of $f$ a solver for VI \eqref{eq:linearlocalvi} can be implemented using only integrals over these small support sets.\footnote{Compare equations (2.31) and (2.32) in \cite{Farrelletal2021}, which describe the same sense of locality.}
 \end{example}
 
-When $f$ has all the nice properties listed in Example \ref{ex:fnice} then a solver based on CD iterations can take advantage of implementation efficiencies.  That is, an FE approximation of VI \eqref{eq:vi} can be solved in any incremental and efficient manner following the techniques in \cite{GraeserKornhuber2009,Tai2003}, namely by computations over hat function supports.  Whatever is the actual solution process for VI \eqref{eq:linearlocalvi}, both storage and the arithmetical cost of residual evaluation are substantially smaller than in the general case.
-
-For general problems lacking the niceties of Example \ref{ex:fnice}, certain additional ideas are needed for practical implementation of \pr{cd-add} or \pr{cd-mult}.  With a non-local integral operator $f$, for example, the expression $\ip{f(\phi)}{z}$ requires an integral over $\Omega$ even if $\phi$ is a function with small support; cf.~subsection 4.5 in \cite{Bueler2021conservation}.  Section \ref{sec:vcycle} constructs a multiplicative multilevel CD iteration for general functions $f:\cK\to\cV'$, based on additive or multiplicative smoothers in Section \ref{sec:smoothers}, and assuming neither linearity nor locality, by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}.
+When $f$ has all the nice properties listed in Example \ref{ex:fnice}, an FE approximation of VI \eqref{eq:vi} can be solved in any incremental and efficient manner following the techniques in \cite{GraeserKornhuber2009,Tai2003}, namely by computations over hat function supports.  However, for general problems lacking the niceties of Example \ref{ex:fnice}, certain additional ideas are needed for practical implementation of \pr{cd-add} or \pr{cd-mult}.  Section \ref{sec:vcycle} constructs a multiplicative multilevel CD iteration for a general operator $f:\cK\to\cV'$ by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}.
 
 
 \section{Multilevel finite elements} \label{sec:femultilevel}
