@@ -11,6 +11,7 @@
 
 \usepackage{tikz}
 \usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{graphs}
 
 \usepackage[kw]{pseudo}
 \pseudoset{%
@@ -776,6 +777,19 @@ FIXME stopping criteria for smoother
 \section{Results and discussion} \label{sec:results}
 
 FIXME show results for 2D Firedrake implementation of FASCD for $p$-Laplacian obstacle problem (Example \ref{ex:plaplacian}), advection-diffusion obstacle problem (Example \ref{ex:advectiondiffusion}), and porous-media obstacle problem (Example \ref{ex:porous})
+
+% figures in the following visualization were generated using branch elbueler/simplefigs
+% of git@bitbucket.org:pefarrell/fascd.git, and the following commands:
+%   cd examples/
+%   python3 plap1d.py -figures -fascd_max_it 2 -fascd_cycle_type multiplicative -mcoarse 2
+\begin{figure}[ht]
+\begin{center}
+\input{tikz/imagesvcycle.tex}
+\end{center}
+\caption{Visualization of one iteration of \textsc{FASCD-VCYCLE} (Algorithm \ref{alg:fascd}) in the case of Example FIXME with $p=1.5$ and $J=3$.  Level iterates and solutions ($w^j$, $y^j$, $z^j$) are lines while obstacles and defect constraints ($\underline{\gamma}^j$, $\underline{\phi}^j\le 0$, $\underline{\chi}^j\le 0$) are strong dots.  The coarsest mesh $\mathcal{T}^0$ has two elements.}
+\label{fig:imagesvcycle}
+\end{figure}
+
 
 FIXME observe that up-smoothing is more efficient; this observation seems to be new; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}
 
