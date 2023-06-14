@@ -496,6 +496,8 @@ On the other hand, $z\ge 0$ implies $\minR z \ge 0$ and $z \le 0$ implies $\maxR
 
 \section{Multilevel CDs from level defect constraints} \label{sec:cdmultilevel}
 
+FIXME observe by example that using $\iR$ or $\minR/\maxR$ to directly generate coarse constaint sets will fail; this explains defect constraint idea
+
 Suppose $w^J \in \cK^J$ is an admissible finest-level iterate which approximates the solution $u^J$ of FE VI \eqref{eq:fe:vi}.  From $w^J$ we will now define CD constraint subsets using the defining inequalities \eqref{eq:fe:fineconstraintset} for $\cK^J$ and the above monotone restrictions $\minR, \maxR$.  Though the ideas are fundamentally the same as for unilateral constraints \cite{GraeserKornhuber2009}, the notation is necessarily more elaborate for box-constrained problems.
 
 We define the \emph{finest-level defect constraints} \cite{GraeserKornhuber2009} as the following nodal functions in $\tilde{\mathcal{V}}^J$:
@@ -717,24 +719,29 @@ This gives storage at most $16m_J$, $12m_J$, and $10m_J$ in dimensions $d=1,2,3$
 
 \section{Implementation and smoothers} \label{sec:implementation}
 
-FIXME smoothers including semi-smooth and active set are motivated by equivalence of VIs and NCPs
+In this section we consider several practical concerns regarding the implementation and application of Algorithm \ref{alg:fascd}.  We address convergence criterion, smoothers and coarse solvers, and finally the F-cycle (sometimes called \emph{full multigrid cycle}) extension.
 
-Finite-dimensional, box-constrained FE VI problem \eqref{eq:fe:vi} is equivalent to a \emph{mixed complementarity problem} (MCP) \cite{FacchineiPang2003,FerrisPang1997}, a strong form problem whose statement may be clarifying.  Denote $x_p$ for a node of the finest-level mesh $\mathcal{T}^J$ and $\psi_p(x)$ for the corresponding hat function.  Let $\mathcal{X}=\big\{w\in\cV^J\,:\,w(x_p)=g_D^J(x_p) \text{ if } x_p\in \partial_D\Omega\big\}$, thus $\cK^J = \left\{\underline{\gamma}^J \le w \le \overline{\gamma}^J\right\} \cap \mathcal{X}$.  If $m_D$ is the number of nodes $x_p$ in the Dirichlet boundary, let us define $I_D$ as the $m_D\times m_J$ matrix which extracts Dirichlet nodal values; its transpose $I_D^\top$ injects Dirichlet boundary degrees of freedom into $(\mathcal{V}^J)'$.  Problem \eqref{eq:fe:vi}, which would be stated as VI$\left(f^J(\cdot)-\ell^J,\left[\,\underline{\gamma}^J,\overline{\gamma}^J\right] \cap X\right)$ in the operations research literature \cite{FerrisPang1997}, is equivalent to the following MCP with additional equality constraints:
+Finite-dimensional, box-constrained FE VI problem \eqref{eq:fe:vi} is equivalent to a \emph{mixed complementarity problem} (MCP) \cite{FacchineiPang2003}, a strong form whose statement may be clarifying.  Denote $x_p$ for a node of the finest-level mesh $\mathcal{T}^J$ and $\psi_p(x)$ for the corresponding hat function.  Let $\mathcal{X}^J=\big\{w\in\cV^J\,:\,w(x_p)=g_D^J(x_p) \text{ if } x_p\in \partial_D\Omega\big\}$, thus $\cK^J = \left\{\underline{\gamma}^J \le w \le \overline{\gamma}^J\right\} \cap \mathcal{X}^J$.  If $m_D$ is the number of nodes $x_p$ in the Dirichlet boundary, let us define $I_D$ as the $m_D\times m_J$ matrix which extracts Dirichlet nodal values; its transpose $I_D^\top$ injects Dirichlet boundary degrees of freedom into $(\mathcal{V}^J)'$.  Let us use the symbols $a\perp b$ to indicate that $a,b \in \RR^n$ are \emph{complementary}, that is, $a\ge 0$ and $b\ge 0$ and $ab = 0$ (entrywise).  Problem \eqref{eq:fe:vi}, expressed as VI$\left(f^J(\cdot)-\ell^J,\left[\,\underline{\gamma}^J,\overline{\gamma}^J\right] \cap \mathcal{X}^J\right)$ in the operations research literature \cite{FerrisPang1997}, is equivalent to the following MCP with additional equality constraints:
 \begin{align}
 \underline{\gamma}^J \le u^J \le \overline{\gamma}^J \quad &\perp \quad f^J(u^J) - \ell^J - I_D^\top \lambda \label{eq:fe:mcp} \\
 I_D u^J &= g_D^J\big|_{\partial_D\Omega} \notag
 \end{align}
-for some Lagrange multipliers $\lambda \in \RR^{m_D}$.  If $\underline{\gamma}^J(x_p) < \overline{\gamma}^J(x_p)$ then MCP \eqref{eq:fe:mcp} says that exactly one of the following five conditions holds for the solution $u^J$:
-\begin{itemize}
-\item $x_p \notin \partial_D\Omega$ and $\underline{\gamma}^J(x_p)<u^J(x_p)<\overline{\gamma}^J(x_p)$ and $\ip{f^J(u^J)-\ell^J}{\psi_p} = 0$, or
-\item $x_p \notin \partial_D\Omega$ and $\underline{\gamma}^J(x_p)=u^J(x_p)<\overline{\gamma}^J(x_p)$ and $\ip{f^J(u^J)-\ell^J}{\psi_p} \ge 0$, or
-\item $x_p \notin \partial_D\Omega$ and $\underline{\gamma}^J(x_p)<u^J(x_p)=\overline{\gamma}^J(x_p)$ and $\ip{f^J(u^J)-\ell^J}{\psi_p} \le 0$, or
-\item $x_p \notin \partial_D\Omega$ and $\underline{\gamma}^J(x_p)=u^J(x_p)=\overline{\gamma}^J(x_p)$, or
-\item $x_p \in \partial_D\Omega$ and $u^J(x_p)=g_D^J(x_p)$ and $\lambda_p=\ip{f^J(u^J)-\ell^J}{\psi_p}$.
-\end{itemize}
-The cases might be labeled \emph{inactive}, \emph{lower active}, \emph{upper active}, \emph{pinched}, and \emph{boundary}, respectively.  Where case \emph{pinched} applies $\ip{f^J(u^J)-\ell^J}{\psi_p}$ can have any real value, and similarly if \emph{boundary} applies then $\lambda_p$ is unconstrained.
+for some Lagrange multipliers $\lambda \in \RR^{m_D}$.
 
-Repeated application of \pr{fascd-vcycle} to solve VI \eqref{eq:fe:vi} will not reduce the finest-level residual $f^J(w^J) - \ell^J$ to zero everywhere because the problem is inequality-constrained.  We need to identify the vector quantity whose norm must be controlled by a tolerance.  Recalling mixed complementarity problem \eqref{eq:fe:mcp}, and denoting the hat function at node $x_p \in \mathcal{T}^J$ by $\psi_p$, for $w^J \in \mathcal{K}^J$ we define the finest-level \emph{nodal complementarity residual} in $\RR^{m_J}$.  It is defined in the four cases listed after \ref{eq:fe:mcp}, namely inactive, lower active, upper active, and boundary:
+MCP \eqref{eq:fe:mcp} says that exactly one of five conditions holds for the solution $u^J$ at $x_p \in \mathcal{T}^J$.  If $x_p \notin \partial_D\Omega$ then one of these four conditions hold:
+\begin{itemize}
+\item $\underline{\gamma}^J(x_p)<u^J(x_p)<\overline{\gamma}^J(x_p)$ and $\ip{f^J(u^J)-\ell^J}{\psi_p} = 0$,
+\item $\underline{\gamma}^J(x_p)=u^J(x_p)<\overline{\gamma}^J(x_p)$ and $\ip{f^J(u^J)-\ell^J}{\psi_p} \ge 0$,
+\item $\underline{\gamma}^J(x_p)<u^J(x_p)=\overline{\gamma}^J(x_p)$ and $\ip{f^J(u^J)-\ell^J}{\psi_p} \le 0$,
+\item $\underline{\gamma}^J(x_p)=u^J(x_p)=\overline{\gamma}^J(x_p)$.
+\end{itemize}
+Otherwise, if $x_p \in \partial_D\Omega$ then
+\begin{itemize}
+\item $u^J(x_p)=g_D^J(x_p)$ and $\lambda_p=\ip{f^J(u^J)-\ell^J}{\psi_p}$.
+\end{itemize}
+The cases might be labeled \emph{inactive}, \emph{lower active}, \emph{upper active}, \emph{pinched}, and \emph{boundary}, respectively.  Where case \emph{pinched} applies, $\ip{f^J(u^J)-\ell^J}{\psi_p}$ can have any real value.
+
+Because the problem is inequality-constrained, repeated application of \pr{fascd-vcycle} to solve VI \eqref{eq:fe:vi} will not generally reduce the residual $f^J(w^J) - \ell^J$ to zero everywhere.  However, MCP \eqref{eq:fe:mcp} identifies candidate quantities which should go to zero, and which we can compare to a tolerance.  FIXME first, for $w^J \in \mathcal{K}^J$ we define the finest-level \emph{nodal complementarity residual} in $\RR^{m_J}$.  It is defined in the four cases listed after \ref{eq:fe:mcp}, namely inactive, lower active, upper active, and boundary:
 \begin{equation}
 \hat r(w^J)_p = \begin{cases}
     \ip{f^J(w^J)-\ell^J}{\psi_p}, & \underline{\gamma}^J(x_p) < w^J(x_p) < \overline{\gamma}^J(x_p), \\
@@ -745,6 +752,8 @@ Repeated application of \pr{fascd-vcycle} to solve VI \eqref{eq:fe:vi} will not 
 Where the box constraints pinch at $x_p \notin \partial_D\Omega$, i.e.~where $\underline{\gamma}^J(x_p)=u^J(x_p)=\overline{\gamma}^J(x_p)$, we define $\hat r(w^J)_p=0$.  Note that $\hat r:\mathcal{V}^J \to \RR^{m_J}$ is a computable nonlinear map derived from $f^J$ and the vectors $\ell^J$, $\underline{\gamma}^J$, and $\overline{\gamma}^J$.  For unconstrained PDEs one would use only the inactive and boundary cases.
 
 The idea here is that $\hat r(w^J)$ is nonzero only if there are nodes where MCP \eqref{eq:fe:mcp} is violated, either because the pointwise residual $\ip{f^J(w^J)-\ell^J}{\psi_p}$ remains nonzero where the constraints are inactive, or because it has the wrong sign on an actively-constrained degree of freedom, or because the Dirichlet boundary condition is not satisfied.
+
+FIXME Fischer-Burmeister semismooth alternative for convergence
 
 A solver for \eqref{eq:fe:vi} using repeated applications of \pr{fascd-vcycle} would start with an initial iterate $w_{(0)}^J$, do V-cycles, and stop once the finest-level nodal residual $\hat r(w^J)$ was sufficiently small.  For example, using tolerances \id{atol}$>0$ and \id{rtol}$>0$ the stopping criterion might be
 \begin{equation}
@@ -758,6 +767,8 @@ FIXME  Recall that a $j$th-level hat function based at node $x_p^j$ is denoted $
                                   \min\{\ip{f^j(g^j+y^j)-\ell^j}{\psi_p^j},0\}, & y^j(x_p^j) = \phi^j(x_p^j). \end{cases} \label{eq:dncpresidual}
 \end{equation}
 The \emph{upward nodal residual} $\hat r_{\text{up}}(z^j)$ for $z^j \in \mathcal{U}^j$ is similarly defined using $\chi^j$.
+
+FIXME smoothers including semi-smooth and active set \cite{BensonMunson2006}
 
 FIXME stopping criteria for smoother
 
