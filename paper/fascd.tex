@@ -167,6 +167,8 @@ urlcolor=black    % ...
 
 \section{Introduction} \label{sec:intro}
 
+FIXME rewrite the entire introduction
+
 For coercive variational inequality (VI) problems which arise from minimization of a convex functional over a convex set, the constraint decomposition (CD) method of Tai \cite{Tai2003} converges for multilevel and domain decompositions.  Furthermore the method has been shown to have almost grid-independent error bounds, and near-optimal complexity, for elliptic, linear obstacle problems \cite[Subsection 5.4]{Tai2003}; see also \cite[Theorem 4.6 and Algorithm 4.7]{GraeserKornhuber2009}.
 
 We extend Tai's multilevel CD method by implementing fully-nonlinear corrections, and we apply it to a new set of nonlinear VI problems which do not arise from minimization.  Specifically, for finite element (FE) solvers the algorithms in \cite{GraeserKornhuber2009} and \cite{Tai2003} are extended here in the following directions:
@@ -781,7 +783,7 @@ A step tolerance, based on $\|w^{J,k} - w^{J,k-1}\|_2$, could also be used, but 
 
 FIXME smoother semantics; shift ``$w^j+y^j$'' etc.
 
-FIXME smoothers including Newton active set \cite{BensonMunson2006} or Newton semi-smooth \cite{BensonMunson2006}, with either direct linear solve or a fixed number of Krylov steps
+FIXME smoothers including Newton active set \cite{BensonMunson2006} or Newton semi-smooth \cite{BensonMunson2006}, with either direct linear solve or a fixed number of Krylov steps; in latter case either fixed number of CG+ICC or fixed number of GMRES+ILU
 
 FIXME stopping criteria for smoother
 
@@ -790,7 +792,7 @@ FIXME F-cycles
 
 \section{Results and discussion} \label{sec:results}
 
-FIXME show results for 2D Firedrake implementation of FASCD for $p$-Laplacian obstacle problem (Example \ref{ex:plaplacian}), advection-diffusion obstacle problem (Example \ref{ex:advectiondiffusion}), and porous-media obstacle problem (Example \ref{ex:porous})
+FIXME show results for Firedrake implementation of FASCD for the 2D classical obstacle problem (ball and spiral), 1D $p$-Laplacian obstacle problem (Example \ref{ex:plaplacian}), advection-diffusion obstacle problem (Example \ref{ex:advectiondiffusion}), and SIA obstacle problem
 
 % figures in the following visualization were generated using branch elbueler/simplefigs
 % of git@bitbucket.org:pefarrell/fascd.git, and the following commands:
@@ -807,8 +809,6 @@ FIXME show results for 2D Firedrake implementation of FASCD for $p$-Laplacian ob
 
 FIXME observe that up-smoothing is more efficient; this observation seems to be new; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}
 
-FIXME constrast the implemented examples in \cite{GraeserKornhuber2009,Tai2003} in which $f$ is linear
-
 
 % A BRIDGE TOO FAR:  \section{Results for a nonlocal variational inequality}
 
@@ -818,26 +818,25 @@ FIXME constrast the implemented examples in \cite{GraeserKornhuber2009,Tai2003} 
 
 
 \appendix
-\section{Reductions of FASCD to familiar multilevel algorithms} \label{app:reductions}
+\section{Reduction of FASCD to FAS multigrid for PDEs} \label{app:reductions}
 
-\pr{fascd-vcycle} (Algorithm \ref{alg:fascd}) in the main text generalizes two better-known multilevel algorithms.  First we show that it reduces to the FAS multigrid V-cycle for nonlinear PDEs \cite{Trottenbergetal2001}, which itself generalizes linear multigrid, when inequality constraints are removed.  Second we reduce it to an existing V-cycle for unilateral linear variational inequalities \cite{GraeserKornhuber2009} in the case that the operator is linear and local.  Thus this Appendix separates FAS/nonlinear aspects of the algorithm from those modifications of linear multigrid which are caused by the inequality constraints.
+\pr{fascd-vcycle} (Algorithm \ref{alg:fascd}) in the main text generalizes existing multilevel algorithms.  Here we show that it reduces to the FAS multigrid V-cycle for nonlinear PDEs \cite{Trottenbergetal2001}, which itself generalizes linear multigrid, when all inequality constraints are removed.
 
-To derive the classical FAS multigrid V-cycle we remove the inequality constraints from the finest-level VI problem \eqref{eq:fe:vi} and then simplify the \pr{fascd-vcycle} pseudocode accordingly.  In fact, suppose that the finest-level obstacles $\underline{\gamma}^J$ and $\overline{\gamma}^J$ are very negative and positive, respectively, thus not constraining the solution $u^J$ or any possible iterate.  The admissible set $\mathcal{K}^J$ of \eqref{eq:fe:vi} is then determined only by the Dirichlet boundary conditions.  Let $\mathcal{V}_0^J \subset \mathcal{V}^J$ denote the linear subspace with zero values on $\partial_D\Omega$.  By replacing the (now) arbitrary element $v-u^J\in\mathcal{V}_0^J$ in \eqref{eq:fe:vi} with ``$v$'' we have the finest-level problem
+Suppose we remove the inequality constraints from the finest-level VI problem \eqref{eq:fe:vi} by replacing the finest-level obstacles $\underline{\gamma}^J$ and $\overline{\gamma}^J$ with very negative and positive constants, respectively, thus not constraining the solution $u^J$ or any possible iterate.  The admissible set $\mathcal{K}^J$ of \eqref{eq:fe:vi} is then determined only by the Dirichlet boundary conditions.  Let $\mathcal{V}_0^J \subset \mathcal{V}^J$ denote the linear subspace with zero values on $\partial_D\Omega$.  By replacing the (now) arbitrary element $v-u^J\in\mathcal{V}_0^J$ in \eqref{eq:fe:vi} with ``$v$'' we have the finest-level problem
 \begin{equation}
 \ip{f^J(u^J)}{v} = \ip{\ell^J}{v} \qquad \text{for all } v\in \mathcal{V}_0^J, \label{eq:app:fas:pde}
 \end{equation}
-the FE discretization of strong-form PDE $f(u)=\ell$.  The downward $\mathcal{D}^j$ and upward $\mathcal{U}^j$ constraint sets can also be enlarged so that the corrections $y^j$ and $z^j$ in \pr{fascd-vcycle} are never constrained.  Formally we might do this by choosing constant LDCs with $\underline{\chi}^j \ll 0 \ll \overline{\chi}^j$, but so that ordering property \eqref{eq:fe:chiordering} still holds, and also with large gaps so that $\underline{\phi}^j = \underline{\chi}^j - \underline{\chi}^{j-1} \ll 0 \ll \overline{\phi}^j = \overline{\chi}^j - \overline{\chi}^{j-1}$.  Thus the corrections $y^j$ and $z^j$ are unconstrained, and lines 2--3 and 5--8 can be removed from Algorithm \ref{alg:fascd}.
+the FE discretization of strong-form PDE $f(u)=\ell$.  The downward $\mathcal{D}^j$ and upward $\mathcal{U}^j$ constraint sets can also be enlarged so that the corrections $y^j$ and $z^j$ in \pr{fascd-vcycle} are never constrained.\footnote{Formally we might do this by choosing constant LDCs with $\underline{\chi}^j \ll 0 \ll \overline{\chi}^j$, but so that ordering property \eqref{eq:fe:chiordering} still holds, and also with large gaps so that $\underline{\phi}^j = \underline{\chi}^j - \underline{\chi}^{j-1} \ll 0 \ll \overline{\phi}^j = \overline{\chi}^j - \overline{\chi}^{j-1}$.}  Thus the corrections $y^j$ and $z^j$ are unconstrained, and lines 2--3 and 5--8 can be removed from Algorithm \ref{alg:fascd}.
 
-Now the downward/upward VIs \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi} are also unconstrained, and can be rewritten as weak forms $\ip{f^j(w^j + y^j)}{v} = \ip{\ell^j}{v}$ and $\ip{f^j(w^j + z^j)}{v} = \ip{\ell^j}{v}$, respectively, for all $v\in \mathcal{V}_0^j$.  However, we may simply refer to the unconstrained, approximate solution $u^j=w^j+y^j$, instead of $w^j$ and $y^j$ separately.  The smoothers and the coarsest-level solver can be regarded as unconstrained, in-place modifications of $u^j$, so we denote them simply as ``$\text{\pr{smooth}}(\ell^j;u^j)$.''  Noting line 11 of Algorithm \ref{alg:fascd} says $u^{j-1}=\iR u^j$, after down-smoothing the coarsened source functional computed by line 12 can be rewritten as
+Now the downward/upward VIs \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi} are also unconstrained, and can be rewritten as weak forms $\ip{f^j(w^j + y^j)}{v} = \ip{\ell^j}{v}$ and $\ip{f^j(w^j + z^j)}{v} = \ip{\ell^j}{v}$, respectively, for all $v\in \mathcal{V}_0^j$.  However, we may simply store the unconstrained, approximate solution $u^j=w^j+y^j$, instead of $w^j$ and $y^j$ separately, and similarly for the upward solution $u^j=w^j+z^j$.  The smoothers and the coarsest-level solver can be regarded as unconstrained, in-place modifications of $u^j$, so we denote them simply as ``$\text{\pr{smooth}}(\ell^j;u^j)$.''  Noting line 11 of Algorithm \ref{alg:fascd} now says $u^{j-1}=\iR u^j$, after down-smoothing the coarsened source functional computed by line 12 can be rewritten as
 \begin{equation}
 \ell^{j-1} = f^{j-1}\left(u^{j-1}\right) + R\left(\ell^j-f^j(u^j)\right). \label{eq:app:fas:levelsource}
 \end{equation}
 
-Going upward we must be careful that only the coarse correction, and not the coarse solution, is prolonged.\footnote{Compare Remark 5.3.9 in \cite{Trottenbergetal2001}, a warning to novices.}  After up-smoothing on the $j-1$ level the coarse iterate is $u^{j-1}$, but at this point $u^j=w^j + y^j$ contains the result of down-smoothing on the $j$th level.  On the other hand, in Algorithm \ref{alg:fascd} the initial value of the correction $z^j$, before up-smoothing on the $j$th level, is $z^j = y^j + P z^{j-1}$, where $z^{j-1}$ contains the total correction from coarser corrections and up-smoothing at the $j-1$ level.  Thus the $j$th-level iterate \emph{before} up-smoothing must be set to
-    $$w^j + y^j + P z^{j-1} = u^j + P(u^{j-1} - \iR u^j),$$
-a standard FAS assignment.
+Going upward we must be careful that only the coarse correction, and not the coarse solution, is prolonged.\footnote{Compare Remark 5.3.9 in \cite{Trottenbergetal2001}, a warning to novices and everyone else.}  After up-smoothing on the $j-1$ level the coarse iterate is $u^{j-1}$, but at this point $u^j=w^j + y^j$ contains the result of down-smoothing on the $j$th level.  On the other hand, in Algorithm \ref{alg:fascd} the initial value of the correction $z^j$, before up-smoothing on the $j$th level, is $z^j = y^j + P z^{j-1}$, where $z^{j-1}$ contains the total correction from coarser corrections and up-smoothing at the $j-1$ level.  Thus the $j$th-level iterate \emph{before} up-smoothing must be set to
+    $$w^j + y^j + P z^{j-1} = u^j + P(u^{j-1} - \iR u^j).$$
 
-With the given modifications, we have the much-simplified pseudocode in Algorithm \ref{alg:fas}.  This FAS V-cycle algorithm appears in various places, for example Algorithm 14 of \cite{Bruneetal2015} or in section 5.3.4 of \cite{Trottenbergetal2001}.
+With these modifications, we have a much-simplified pseudocode, Algorithm \ref{alg:fas}.  This FAS V-cycle appears in various places, for example Algorithm 14 of \cite{Bruneetal2015} or in section 5.3.4 of \cite{Trottenbergetal2001}.
 
 \begin{pseudofloat}[ht]
 \begin{pseudo} \label{ps:fas-vcycle}
@@ -851,16 +850,14 @@ With the given modifications, we have the much-simplified pseudocode in Algorith
       $u^j \gets u^j + P (u^{j-1} - \iR u^j)$ \\
       $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j;u^j)$ \\-
 \end{pseudo}
-\caption{Removing inequality constraints from \pr{fascd-vcycle} yields the standard FAS V-cycle.}
+\caption{The standard FAS V-cycle for a discretized PDE $f^J(u^J)=\ell^J$.}
 \label{alg:fas}
 \end{pseudofloat}
-
-FIXME by assuming $f$ is linear, reduce to Algorithm 4.7 in \cite{GraeserKornhuber2009} but with $\text{V}(\nu_1,\nu_2)$ cycles
 
 
 \section{From slack, to not lose} \label{app:slack}
 
-FIXME move this from this appendix, after using it in the discussion etc.
+FIXME remove this appendix, after using it in the introduction and discussion etc.
 
 \noindent Patrick : \emph{Interesting that you think Graeser and Kornhuber were barking up the wrong tree.  I still don't quite have my finger on the exact difference in the scheme between GK and the FAS approach. Is there a clean summary somewhere?  (I looked in the mcd-extended manuscript, but couldn't see it in a quick skim.)  Is the difference to GK the monotone multigrid bit, or the particular smoothers used?}
 
