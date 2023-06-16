@@ -139,7 +139,7 @@ urlcolor=black    % ...
 
 \newcommand{\rNC}{r_{\text{NC}}}
 \newcommand{\rSS}{r_{\text{SS}}}
-
+\newcommand{\rXX}{r_{\text{XX}}}
 
 
 \begin{document}
@@ -753,29 +753,31 @@ Thus the MCP \eqref{eq:fe:mcp} identifies expressions whose norms should go belo
 \end{equation}
 (The first four cases assume $x_p \notin \partial_D\Omega$.)  Note that $\rNC : \mathcal{K}^J \to \RR^{m_J}$ is a computable nonlinear map defined from $f^J$ and the vectors $\ell^J$, $\underline{\gamma}^J$, and $\overline{\gamma}^J$, and that for PDEs without constraints one uses only the first and last cases.  In summary, $\rNC(w^J)_p$ is nonzero at nodes where MCP \eqref{eq:fe:mcp} is violated, either because the pointwise residual $\ip{f^J(w^J)-\ell^J}{\psi_p}$ remains nonzero where the constraints are inactive, or because it has the wrong sign at an actively-constrained degree of freedom, or because the boundary condition is not satisfied.
 
-As a practical matter, however, direct implementation of \eqref{eq:rNC} is sensitive to rounding error because $\rNC$ is a discontinuous function of $w^J(x_p)$.  For example, if $w^J(x_p)$ exceeds $\underline{\gamma}^J(x_p)$ by $10^{-16}$, then, instead of returning the minimum of $z_p = \left<f^J(w^J)-\ell^J,\psi_p\right>$ and zero (the second case), the first case applies and $\rNC(w^J)_p = z_p$, which might be large (positive).  This would suggest that the iteration is far from converging.  On the other hand, an advantage of formula \eqref{eq:rNC} is that it applies as stated if $\underline{\gamma}^J(x_p)=-\infty$ or $\overline{\gamma}^J(x_p)=+\infty$; compared to \eqref{eq:rSS} below, the difference $w^J(x_p) - \underline{\gamma}^J(x_p)$, for example, is never computed.
+As a practical matter, however, direct implementation of \eqref{eq:rNC} is sensitive to rounding error because $\rNC$ is a discontinuous function of $w^J(x_p)$.  For example, if $w^J(x_p)$ exceeds $\underline{\gamma}^J(x_p)$ by $10^{-16}$, then, instead of returning the minimum of $z_p = \left<f^J(w^J)-\ell^J,\psi_p\right>$ and zero (the second case), the first case applies and $\rNC(w^J)_p = z_p$, which might be large (positive), and this would suggest falsely that the iteration is far from converging.  On the other hand, an advantage of formula \eqref{eq:rNC} is that it applies as stated if $\underline{\gamma}^J(x_p)=-\infty$ or $\overline{\gamma}^J(x_p)=+\infty$; compare \eqref{eq:rSS} below, wherein the difference $w^J(x_p) - \underline{\gamma}^J(x_p)$ is computed, for example.
 
 %\newcommand{\phiFB}{\phi_{\text{FB}}}
-We will instead measure convergence using a \emph{semi-smooth residual} based on the Fischer-Burmeister function \cite{BensonMunson2006,Ulbrich2011} which is defined as follows for $a,b\in\RR$:
+We will instead measure convergence using a \emph{semi-smooth residual} based on the Fischer-Burmeister function \cite{BensonMunson2006,Ulbrich2011}, a function defined as follows for $a,b\in\RR$:
 \begin{equation}
 \phi(a,b) = a + b - \sqrt{a^2 + b^2}. \label{eq:phiFB}
 \end{equation}
-Observe that $\phi(a,b)=0$ if and only if $a,b$ are complementary, and also that $\phi$ semi-smooth (and continuous).  Now let
+Observe that $\phi(a,b)=0$ if and only if $a,b$ are complementary, and also that $\phi$ semi-smooth (and thus continuous).  For convenience denote $\underline{g}_p = w^J(x_p) - \underline{\gamma}^J(x_p)$ and $\overline{g}_p = \overline{\gamma}^J(x_p) - w^J(x_p)$, the positive gaps at $x_p$.  Finally define
 \begin{equation}
 \rSS(w^J)_p = \begin{cases}
-r_p, & \underline{\gamma}^J(x_p) = -\infty \text{ and }\overline{\gamma}^J(x_p) = +\infty, \\
-\phi\left(w^J(x_p) - \underline{\gamma}^J(x_p), r_p\right), & \overline{\gamma}^J(x_p) = +\infty, \\
-\phi\left(\overline{\gamma}^J(x_p) - w^J(x_p), -r_p\right), & \underline{\gamma}^J(x_p) = -\infty, \\
-\text{FIXME: this case needs testing} \\
-w^J(x_p) - g_D^J(x_p), & x_p \in \partial_D\Omega.
+r_p, & \underline{\gamma}^J(x_p) = -\infty \text{ and } \overline{\gamma}^J(x_p) = +\infty, \\
+\phi\big(\underline{g}_p, r_p\big), & \overline{\gamma}^J(x_p) = +\infty, \\
+\phi\left(\overline{g}_p, -r_p\right), & \underline{\gamma}^J(x_p) = -\infty, \\
+\max\big\{\phi\big(\underline{g}_p, r_p\big), \phi\left(\overline{g}_p, -r_p\right)\big\}, & \text{otherwise}, \\
+w^J(x_p) - g_D^J(x_p), & x_p \in \partial_D\Omega,
 \end{cases} \label{eq:rSS}
 \end{equation}
+where again $x_p \notin \partial_D\Omega$ in the first four cases.
 
-A solver for \eqref{eq:fe:vi} using repeated applications of \pr{fascd-vcycle} would start with an initial iterate $w_{(0)}^J$, do V-cycles, and stop once the finest-level nodal residual $\hat r(w^J)$ was sufficiently small.  For example, using tolerances \id{atol}$>0$ and \id{rtol}$>0$ the stopping criterion might be
+ 
+Now suppose we repeatedly apply \pr{fascd-vcycle}, starting with $w^{J,0} \in \mathcal{K}^J$, generating (fine-level) iterates $w^{J,k} \in \mathcal{K}^J$.  Let $\id{atol}\ge 0$, $\id{rtol}\ge 0$ be given tolerances.  Then the criterion used in the results (Section \ref{sec:results}) is 
 \begin{equation}
-\|\hat r(w^J)\| < \id{atol} \qquad \text{or} \qquad \frac{\|\hat r(w^J)\|}{\|\hat r((w^J)^{(0)})\|} < \id{rtol},
+\|\rSS(w^{J,k})\|_2 < \id{atol} \qquad \text{or} \qquad \frac{\|\rSS(w^{J,k})\|_2}{\|\rSS(w^{J,0})\|_2} < \id{rtol}
 \end{equation}
-for some norm $\|\cdot\|$ on $\RR^{m_J}$.  A step tolerance could also be used, measuring the difference between successive iterates.
+A step tolerance, based on $\|w^{J,k} - w^{J,k-1}\|_2$, could also be used, but we did not find it necessary.
 
 FIXME smoother semantics; shift ``$w^j+y^j$'' etc.
 
