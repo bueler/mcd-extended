@@ -501,17 +501,31 @@ On the other hand, $z\ge 0$ implies $\minR z \ge 0$ and $z \le 0$ implies $\maxR
 
 \section{Multilevel CDs from level defect constraints} \label{sec:cdmultilevel}
 
-FIXME observe by example that using $\iR$ or $\minR/\maxR$ to directly generate coarse constaint sets will fail; this explains defect constraint idea
+Our practical multilevel CD scheme in this Section uses \emph{defect constraints} \cite{GraeserKornhuber2009} which are based on an admissible finest-level iterate.  The next Example concretely illustrates why we do not apply restriction operators directly to the finest-level box constraints $\underline{\gamma}^J,\overline{\gamma}^J$ in definition \eqref{eq:fe:fineconstraintset}.  Our straightforward iterate-dependent bounds, namely defect constraints \eqref{eq:fe:defectconstraints} below, bypass the difficulties exposed in Example \ref{ex:directRbad}.  However, other successful schemes may exist.
 
-Suppose $w^J \in \cK^J$ is an admissible finest-level iterate which approximates the solution $u^J$ of FE VI \eqref{eq:fe:vi}.  From $w^J$ we will now define CD constraint subsets using the defining inequalities \eqref{eq:fe:fineconstraintset} for $\cK^J$ and the above monotone restrictions $\minR, \maxR$.  Though the ideas are fundamentally the same as for unilateral constraints \cite{GraeserKornhuber2009}, the notation is necessarily more elaborate for box-constrained problems.
+\begin{example}  \label{ex:directRbad}  
+For concreteness, suppose $\Omega = [0,L] \subset \RR^1$ is an interval and consider a two-level mesh hierarchy ($J=1$).  Let $\underline{\gamma}^1$ be a sawtooth function with minimum value zero, and suppose $\overline{\gamma}^1=C+\underline{\gamma}^1$ with $C>0$ which is strictly less than the range of $\underline{\gamma}^1$.  Supposing empty Dirichlet boundary for simplicity, the constraint set $\mathcal{K}^1$ defined by \eqref{eq:fe:fineconstraintset} is nonempty.  Figure \ref{fig:directRbad} shows such functions; here levels $\mathcal{T}^1$ and $\mathcal{T}^0$ have $5$ and $3$ nodes, respectively.  However, various restriction schemes applied directly to $\underline{\gamma}^1,\overline{\gamma}^1$ are problematical.  Suppose we propose
+    $$\underline{\gamma}^0, \overline{\gamma}^0 \equiv \iR \underline{\gamma}^1, \iR \overline{\gamma}^1. \qquad \text{\emph{[problematic]}}$$
+Then $\underline{\gamma}^0=0$ and $\overline{\gamma}^0=C$ identically.  In that case the corresponding constraint set $\mathcal{K}^0$ is nonempty, but prolongation $Pw^0$ of an admissible solution of the coarse problem ($\underline{\gamma}^0 \le w^0 \le \overline{\gamma}^0$) is not admissible on the finer level: $Pw^0 \notin \mathcal{K}^1$.  On the other hand, suppose we propose
+    $$\underline{\gamma}^0, \overline{\gamma}^0 \equiv \maxR \underline{\gamma}^1, \minR \overline{\gamma}^1. \qquad \text{\emph{[problematic]}}$$
+The general motivation for this choice---compare \eqref{eq:fe:chilevels}---is that $w^0 \ge \underline{\gamma}^0 \, \implies \, Pw^0 \ge \underline{\gamma}^1$ and $w^0 \le \overline{\gamma}^0 \, \implies \, Pw^0 \le \overline{\gamma}^1$.  However, while these facts are true, the difficulty should be clear: the coarse-level admissible set $\mathcal{K}^0$ is now empty because the proposed lower bound $\underline{\gamma}^0$ actually exceeds the proposed upper bound $\overline{\gamma}^0$.
+\end{example}
 
-We define the \emph{finest-level defect constraints} \cite{GraeserKornhuber2009} as the following nodal functions in $\tilde{\mathcal{V}}^J$:
+\begin{figure}[ht]
+\begin{center}
+\input{tikz/directRbad.tex}
+\end{center}
+\caption{For finest-level box constraints $\underline{\gamma}^1,\overline{\gamma}^1$ like these, direct restriction using any of $\iR,\minR,\maxR$, to a coarser mesh (solid dots), is problematic for admissibility of coarse corrections.}
+\label{fig:directRbad}
+\end{figure}
+
+Subtraction of an admissible iterate provides a route out of these difficulties.  Suppose $w^J \in \cK^J$ is an admissible finest-level iterate (i.e.~which approximates the solution $u^J$ of \eqref{eq:fe:vi}).  We define the \emph{finest-level defect constraints} (DCs) \cite{GraeserKornhuber2009} as the following nodal functions in $\tilde{\mathcal{V}}^J$:
 \begin{equation}
 \underline{\chi}^J = \underline{\gamma}^J - w^J, \qquad \overline{\chi}^J = \overline{\gamma}^J - w^J. \label{eq:fe:defectconstraints}
 \end{equation}
-From definition \eqref{eq:fe:fineconstraintset}, note that $\underline{\chi}^J \le 0 \le \overline{\chi}^J$ everywhere in $\overline{\Omega}$, including along the Dirichlet boundary $\partial_D\Omega$.  Also, if $\underline{\gamma}^J=-\infty$ then $\underline{\chi}^J=-\infty$ by definition, and similarly if $\overline{\gamma}^J=+\infty$ then $\overline{\chi}^J=+\infty$.  The motivation for creating $\underline{\chi}^J,\overline{\chi}^J$ is that a corrected iterate $w^J + z^J$ is admissible, $w^J + z^J \in \cK^J$, if and only if the perturbation $z^J$ is between the defect constraints, $\underline{\chi}^J \le z^J \le \overline{\chi}^J$, and $z^J=0$ on $\partial_D\Omega$.
+Definition \eqref{eq:fe:fineconstraintset} implies that $\underline{\chi}^J \le 0 \le \overline{\chi}^J$ everywhere in $\overline{\Omega}$, including along the Dirichlet boundary $\partial_D\Omega$.  If $\underline{\gamma}^J=-\infty$ then $\underline{\chi}^J=-\infty$ by definition, and similarly if $\overline{\gamma}^J=+\infty$ then $\overline{\chi}^J=+\infty$.  Observe that a corrected iterate $w^J + z^J$ is admissible, $w^J + z^J \in \cK^J$, if and only if the perturbation $z^J$ is zero on $\partial_D\Omega$ and it is bounded by the defect constraints, $\underline{\chi}^J \le z^J \le \overline{\chi}^J$.
 
-Next, counting down the coarser levels $j=J-1,\dots,1,0$, we apply the monotone restrictions to generate box \emph{level defect constraints} (LDCs) in $\tilde{\mathcal{V}}^j$:
+Descending coarser levels, $j=J-1,\dots,1,0$, we apply the monotone restrictions to generate box \emph{level defect constraints} (LDCs) in $\tilde{\mathcal{V}}^j$:
 \begin{equation}
 \underline{\chi}^{j} = \maxR \underline{\chi}^{j+1}, \qquad \overline{\chi}^{j} = \minR \overline{\chi}^{j+1}. \label{eq:fe:chilevels}
 \end{equation}
@@ -519,7 +533,7 @@ Observe that
 \begin{equation}
 \underline{\chi}^{J} \le \dots \le \underline{\chi}^0 \le 0 \le \overline{\chi}^0 \le \dots \le \overline{\chi}^J. \label{eq:fe:chiordering}
 \end{equation}
-A unilateral $J=4$ example of LDCs $\underline{\chi}^j$ is shown in Figure \ref{fig:chiphilevels}.  Intuitively-speaking, the LDC $\underline{\chi}^j$ is the most-negative function from $\tilde{\mathcal{V}}^j$ such that if another element of $\tilde{\mathcal{V}}^j$ is above $\underline{\chi}^j$ then it is also above $\underline{\chi}^{j+1}$.  Similar comments apply to $\overline{\chi}^{j}$.
+A unilateral $J=4$ example of LDCs $\underline{\chi}^j$ is shown in Figure \ref{fig:chiphilevels}.  The LDC $\underline{\chi}^j$ is the most-negative function from $\tilde{\mathcal{V}}^j$ such that if another element of $\tilde{\mathcal{V}}^j$ is above $\underline{\chi}^j$ then it is also above $\underline{\chi}^{j+1}$, and similar comments apply to $\overline{\chi}^{j}$.
 
 %REGENERATE using https://github.com/bueler/mg-glaciers:
 %$ cd mg-glaciers/py/
@@ -532,9 +546,9 @@ A unilateral $J=4$ example of LDCs $\underline{\chi}^j$ is shown in Figure \ref{
 \label{fig:chiphilevels}
 \end{figure}
 
-This construction of multilevel box constraints is designed to permit the largest admissible coarse corrections, which promotes multilevel solver efficiency.  Note that for the multilevel schemes in Sections \ref{sec:vcycle} and \ref{sec:implementation}, any system satisfying \eqref{eq:fe:chiordering} will suffice; the particular formulas in \eqref{eq:fe:chilevels} are not required.
+This construction of multilevel box constraints is designed to permit the largest admissible coarse corrections, which promotes multilevel solver efficiency.  Note that for the multilevel schemes in Sections \ref{sec:vcycle} and \ref{sec:implementation}, any system satisfying \eqref{eq:fe:chiordering} will suffice; the particular formulas in \eqref{eq:fe:chilevels} are actually not required.  Also, though the system here is fundamentally the same as the unilateral defect constraints in \cite{GraeserKornhuber2009}, a system for box defect constraints has not been found in the literature.
 
-We now compute the LDC differences:
+We now compute the LDC differences (compare \cite{GraeserKornhuber2009}):
 \begin{equation}
 \underline{\phi}^j = \underline{\chi}^j - \underline{\chi}^{j-1}, \qquad \overline{\phi}^j = \overline{\chi}^j - \overline{\chi}^{j-1}.  \label{eq:fe:philevels}
 \end{equation}
@@ -543,7 +557,7 @@ We take $\underline{\chi}^{-1}=\overline{\chi}^{-1}=0$ so that $\underline{\phi}
 \begin{table}[H]
 \begin{tabular}{lll}
 \emph{name}         & \emph{formulas} & \emph{indices} \\ \hline
-finest-level defect constraints & ${\Large \strut} \underline{\chi}^J = \underline{\gamma}^J - w^J,\, \overline{\chi}^J = \overline{\gamma}^J - w^J$ \\
+finest-level DCs & ${\Large \strut} \underline{\chi}^J = \underline{\gamma}^J - w^J,\, \overline{\chi}^J = \overline{\gamma}^J - w^J$ \\
 upward LDCs  & ${\Large \strut} \underline{\chi}^{j} = \maxR \underline{\chi}^{j+1}, \, \overline{\chi}^{j} = \minR \overline{\chi}^{j+1}$ & $j=0,\dots,J-1$ \\
 downward LDCs       & ${\Large \strut} \underline{\phi}^j = \underline{\chi}^j - \underline{\chi}^{j-1}, \, \overline{\phi}^j = \overline{\chi}^j - \overline{\chi}^{j-1}$ & $j=0,\dots,J$
 \end{tabular}
@@ -553,7 +567,7 @@ downward LDCs       & ${\Large \strut} \underline{\phi}^j = \underline{\chi}^j -
 \label{tab:ldcs}
 \end{table}
 
-The multilevel V-cycle solver defined in the next Section uses LDCs $\underline{\phi}^j,\overline{\phi}^j$ for the downward side and $\underline{\chi}^j,\overline{\chi}^j$ for the upward side.  The corresponding \emph{downward/upward constraint sets}, respectively, are
+The corresponding \emph{downward/upward constraint sets}, respectively, are
 \begin{align}
 \mathcal{D}^j = \left\{v \in \mathcal{V}^j \,:\, \underline{\phi}^j \le v \le \overline{\phi}^j \text{ and } \, v|_{\partial_D\Omega} = 0\right\}, \label{eq:fe:constraintsets} \\
 \mathcal{U}^j = \left\{v \in \mathcal{V}^j \,:\, \underline{\chi}^j \le v \le \overline{\chi}^j \text{ and } \, v|_{\partial_D\Omega} = 0\right\}. \notag
@@ -563,7 +577,7 @@ These are closed and convex subsets of the FE spaces $\mathcal{V}^j$.  Because $
 z^J \in \mathcal{U}^J \quad \iff \quad w^J+z^J \in \mathcal{K}^J. \label{eq:fe:finestlevelequivalent}
 \end{equation}
 
-Our multilevel strategy is, however, based on \emph{incomplete} CDs (Section \ref{sec:cd}), in the general box-constrained cases, as we now explain.  Each upward set $\mathcal{U}^j$ can be decomposed in an inclusion sense, becoming a true CD in unilateral cases.  The following Lemma is based on the unilateral CD construction underlying Algorithm 4.7 in \cite{GraeserKornhuber2009}; see also equation (59) in \cite{Tai2003}.
+The multilevel V-cycle solver defined in the next Section computes coarse corrections in $\mathcal{D}^j$ for the downward side and in $\mathcal{U}^j$ for the upward side.  Our multilevel strategy is, however, based on \emph{incomplete} CDs (Section \ref{sec:cd}), in the general box-constrained cases, as we now explain.  Each upward set $\mathcal{U}^j$ can be decomposed in an inclusion sense, becoming a true CD in unilateral cases.  The following Lemma is based in part on the unilateral CD construction underlying Algorithm 4.7 in \cite{GraeserKornhuber2009}; see also equation (59) in \cite{Tai2003}.
 
 \begin{lemma}  \label{lem:downwardadmissibility}  For arbitrary finest-level box constraints $\underline{\gamma}^J,\overline{\gamma}^J$ satisfying \eqref{eq:fe:boxconstraintrequirements}, it follows that
 \begin{equation}
@@ -582,7 +596,7 @@ Thus if $y^i \in \mathcal{D}^i$ for $0 \le i \le j$ then
 \end{equation}
 so \eqref{eq:fe:downwardsuminclusion} holds for any box constraints.
 
-In unilateral cases we can also construct decomposition operators $\Pi_i$ and show \eqref{eq:constraintrestrictionsum}.  For concreteness suppose $\overline{\gamma}^J=+\infty$, thus $\overline{\chi}^j=+\infty$ and $\overline{\phi}^i = +\infty$ for all levels.  For $v\in \mathcal{V}^j$ and $0\le i \le j$, let $I_{j\to i}^\ominus$ be the operator applying the minimum (monotone) restriction $j-i$ times, mapping into $\mathcal{V}^i$:
+In unilateral cases we can also construct decomposition operators $\Pi_i$ and thereby show property \eqref{eq:constraintrestrictionsum}.  For concreteness suppose $\overline{\gamma}^J=+\infty$, thus $\overline{\chi}^j=+\infty$ and $\overline{\phi}^i = +\infty$ for all levels.  For $v\in \mathcal{V}^j$ and $0\le i \le j$, let $I_{j\to i}^\ominus$ be the operator applying the minimum (monotone) restriction $j-i$ times, mapping into $\mathcal{V}^i$:
 \begin{equation}
 I_{j\to i}^\ominus v = \minR(\dots(\minR v)\dots)  \label{eq:fe:minimummaps}
 \end{equation}
@@ -599,13 +613,11 @@ This shows \eqref{eq:constraintrestrictionsum}, thus that \eqref{eq:fe:downwards
 The $\underline{\gamma}^J=-\infty$ case is similar.
 \end{proof}
 
-One might try to turn \eqref{eq:fe:downwardsuminclusion} into a full CD for arbitrary box constraints by using decomposition maps like $\Pi_i$, for example by splitting $z^j = \min\{z^j,0\} + \max\{z^j,0\}$ and applying unilateral formulas like \eqref{eq:fe:unilateraldecompositionoperator} to $\min\{z^j,0\}$ and $\max\{z^j,0\}$ separately.  In fact, the lower bound $\Pi_i (\min\{z^j,0\}) \ge \underline{\phi}^i$ holds, as shown in the above proof.  However, the following Example shows why $\Pi_i(\min\{z^j,0\})$ may have an arbitrarily large maximum, and thus exceed any finite upper LDC $\overline{\phi}^i$.  In fact, $\Pi_i$ does not map all non-positive functions into $\mathcal{D}^i$ in the presence of a finite upper LDC.
+One might try to turn \eqref{eq:fe:downwardsuminclusion} into a full CD for arbitrary box constraints by using decomposition maps like $\Pi_i$, for example by splitting $z^j = \min\{z^j,0\} + \max\{z^j,0\}$ and applying unilateral formulas like \eqref{eq:fe:unilateraldecompositionoperator} to $\min\{z^j,0\}$ and $\max\{z^j,0\}$ separately.  In fact, the lower bound $\Pi_i (\min\{z^j,0\}) \ge \underline{\phi}^i$ holds, as shown in the above proof.  However, the following Example shows why $\Pi_i(\min\{z^j,0\})$ may have an arbitrarily large maximum, and thus exceed any finite upper LDC $\overline{\phi}^i$.  In fact, $\Pi_i$ does not generally map all non-positive elements of $\mathcal{U}^J$ into $\mathcal{D}^i$ if a finite upper LDC is present.  Note that this Example does not exclude the existence of an entirely-different strategy for showing a full CD in the general box-constrained case.
 
 \begin{example}  \label{ex:notfullcd}
 Let $a\ge 0$ be an arbitrary positive number.  Consider a 2-level hierarchy ($J=1$), and suppose the lower defect constraint is the constant function $\underline{\chi}^1=-a$.  Recalling Table \ref{tab:ldcs}, note $\underline{\chi}^0=\maxR \underline{\chi}^1=-a$ also, so $\underline{\phi}^1=0$ and $\underline{\phi}^0=-a$.  Suppose $z^1$ is a ``sawtooth'' function which takes on value $-a$ on the coarse nodes and value $0$ on the other nodes.  Then, for any valid $\overline{\chi}^1$, we have $\overline{\chi}^1 \ge 0 \ge z^1\ge \underline{\chi}^1$, so $z^j \in \mathcal{U}^1$.  However, $I_{1\to 0}^\ominus(z^1 - \underline{\chi}^1) = \minR(z^1 - \underline{\chi}^1) = 0$ identically.  From \eqref{eq:fe:unilateraldecompositionoperator}, $\Pi_1 z^1$ simplifies to $\Pi_1 z^1 = z^1 - \underline{\chi}^1$.  But then $\Pi_1 z^1$ attains a maximum $a\ge 0$.  This maximum can be chosen to exceed any upper defect obstacle $\overline{\phi}^1$, so $\Pi_1 z^1 \notin \mathcal{D}^1$.
 \end{example}
-
-The existence of an entirely-different strategy for showing a full CD in the general box-constrained case is, of course, not excluded.
 
 Each upward defect constraint set $\mathcal{U}^j$ can also be decomposed down to an arbitrary coarser level.  The incomplete CD in the next Lemma, which does not follow from Lemma \ref{lem:downwardadmissibility}, will justify upward admissibility in the V-cycle in the next Section.
 
@@ -620,7 +632,7 @@ In unilateral cases, where either $\underline{\gamma}^J=-\infty$ or $\overline{\
 In unilateral cases we follow the proof of Lemma \ref{lem:downwardadmissibility}.  We can use \eqref{eq:fe:unilateraldecompositionoperator} unchanged for $i=k+1,\dots,j$, but it must be modified in the $i=k$ case: $\Pi_k z^j = I_{j\to k}^\ominus(z^j - \underline{\chi}^j) + \underline{\chi}^k$.  The remainder of the proof goes through as before.
 \end{proof}
 
-In summary, inclusions \eqref{eq:fe:downwardsuminclusion} and \eqref{eq:fe:upwardsuminclusion} suffice to show the admissibility of all iterates and corrections in the V-cycle algorithm which follows.  However, a convergence analysis, perhaps extending the arguments of \cite{Tai2003} or \cite{GraeserKornhuber2009} to VIs \eqref{eq:vi} which are not of minimization type, and/or to box constraints, would seem to require full CDs, and perhaps new ideas, and we cannot offer that analysis.
+In summary, inclusions \eqref{eq:fe:downwardsuminclusion} and \eqref{eq:fe:upwardsuminclusion} suffice to show the admissibility of all iterates and corrections in the V-cycle algorithm which follows.  However, a convergence analysis, perhaps extending the arguments of \cite{Tai2003} or \cite{GraeserKornhuber2009} to VIs \eqref{eq:vi} which are not of minimization type, and/or to box constraints, would seem to require full CDs, and probably further new ideas, and we cannot offer that analysis.
 
 
 \section{FASCD V-cycle} \label{sec:vcycle}
