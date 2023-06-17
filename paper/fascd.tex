@@ -636,6 +636,21 @@ In unilateral cases, where either $\underline{\gamma}^J=-\infty$ or $\overline{\
 In unilateral cases we follow the proof of Lemma \ref{lem:downwardadmissibility}.  We can use \eqref{eq:fe:unilateraldecompositionoperator} unchanged for $i=k+1,\dots,j$, but it must be modified in the $i=k$ case: $\Pi_k z^j = I_{j\to k}^\ominus(z^j - \underline{\chi}^j) + \underline{\chi}^k$.  The remainder of the proof goes through as before.
 \end{proof}
 
+FIXME \pr{icd-tele} as third basic CD iteration
+
+
+\begin{pseudofloat}[H]
+\begin{pseudo*}
+\pr{icd-tele}(w^J)\text{:} \\+
+    for $j = 0,\dots,J$: \\+
+        \rm{find} $z_j\in \mathcal{U}_j$ \rm{so that for all} $v_j\in \mathcal{U}_j$, \\+
+            $\displaystyle \ip{f\Big(w^J + \alpha \sum_{i<j} z_i + \alpha z_j\Big)}{v_j-z_j} \ge \ip{\ell}{v_j-z_j}$ \\--
+    return $\tilde w^J=w^J + \alpha \sum_{i\le J} z_i$
+\end{pseudo*}
+\caption{One telescoping incomplete CD iteration for VI problem \eqref{eq:vi}, assuming $w^J\in\mathcal{K}^J$, property \eqref{eq:fe:finestlevelequivalent}, and incomplete CD \eqref{eq:fe:upwardsuminclusion}.}
+\label{alg:basiccd-tele}
+\end{pseudofloat}
+
 In summary, inclusions \eqref{eq:fe:downwardsuminclusion} and \eqref{eq:fe:upwardsuminclusion} suffice to show the admissibility of all iterates and corrections in the V-cycle algorithm which follows.  However, a convergence analysis, perhaps extending the arguments of \cite{Tai2003} or \cite{GraeserKornhuber2009} to VIs \eqref{eq:vi} which are not of minimization type, and/or to box constraints, would seem to require full CDs, and probably further new ideas, and we cannot offer that analysis.
 
 
@@ -730,6 +745,8 @@ These ideas come together in Algorithm \ref{alg:fascd}, \pr{fascd-vcycle}, which
 \caption{The \fascd V-cycle is an iteration for solving FE VI problem \eqref{eq:fe:vi}.  Here $f^j$ denotes an FE discretization of $f$ in problem \eqref{eq:boxdirichletvi}.}
 \label{alg:fascd}
 \end{pseudofloat}
+
+Compared specifically to the $V(1,0)$ cycle presented as Algorithm 4.7 in \cite{GraeserKornhuber2009}, one might say informally that \pr{fascd-vcycle} is a $V(1,1)$ cycle.  However, its structure relates directly to the basic CD iterations (Sections \ref{sec:cditers}, \ref{sec:cdmultilevel}) as well.  In unilateral cases it is precise to say that one iteration of \pr{fascd-vcycle} is an application of \pr{cd-mult} over CD \eqref{eq:fe:downwardsuminclusion}, using the defect constraint meaning of the downward constraint sets $\mathcal{D}^j$, followed by an application of \pr{icd-tele} over the incomplete CD \eqref{eq:fe:upwardsuminclusion}.  FIXME: idea is that once you are using defect constraints you no longer depend on the literal availability of $\Pi_i$, so incomplete CD suffices, e.g.~even for \pr{cd-mult}
 
 Regarding storage required for \pr{fascd-vcycle}, and assuming all box constraints are nontrivial, 7 vectors must be allocated on each level: $\underline{\chi}^j$, $\overline{\chi}^j$, $\underline{\phi}^j$, $\overline{\phi}^j$, $w^j$, $\ell^j$, $y^j$.  Note $z^j$ can use the same storage as $y^j$.  On the finest level one must also store $\underline{\gamma}^J$ and $\overline{\gamma}^J$, while on the coarsest level there are only 5 vectors because $\underline{\phi}^0=\underline{\chi}^0$ and $\overline{\phi}^0=\overline{\chi}^0$.  Therefore, using $m_j=2^d m_{j-1}$, plus a geometric series argument, the total floating-point storage, excluding smoother and coarse-solver implementations, is
 \begin{equation}
