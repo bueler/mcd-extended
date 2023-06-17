@@ -820,12 +820,39 @@ FIXME smoothers including Newton active set \cite{BensonMunson2006} or Newton se
 
 FIXME stopping criteria for smoother
 
-FIXME F-cycles
+FIXME F-cycles in Algorithm \ref{alg:fascd-fcycle}
+
+\begin{pseudofloat}[ht]
+\begin{pseudo}
+\pr{fascd-fcycle} \\
+FIXME
+\end{pseudo}
+\caption{FIXME}
+\label{alg:fascd-fcycle}
+\end{pseudofloat}
 
 
 \section{Results and discussion} \label{sec:results}
 
-FIXME show results for Firedrake implementation of FASCD for the 2D classical obstacle problem (ball and spiral; Example \ref{ex:plaplacian}), 1D $p$-Laplacian obstacle problem (also Example \ref{ex:plaplacian}), advection-diffusion obstacle problem (Example \ref{ex:advectiondiffusion}), and SIA obstacle problem (Example \ref{ex:sia})
+The FASCD V-cycle and F-cycle (Algorithms \ref{alg:fascd}, \ref{alg:fascd-fcycle}) have been implemented in Python using the Firedrake library \cite{Rathgeberetal2016}.  In this Section we show numerical results corresponding to several VI examples from Section \ref{sec:vi}, with a focus on the scaling of FASCD iterations as the mesh resolution increases.
+
+\begin{example}
+Consider the 2D classical, unilateral obstacle problem, namely Example \ref{ex:plaplacian} with $p=2$ and admissible set $\mathcal{K} = \{v \ge \psi\} \subset W^{1,2}(\Omega)$.  Suppose $\Omega$ is a square.  We consider two problems with very different coincidence (active) sets, the ``ball'' problem with $\psi$ equal to an upper hemisphere \cite[Chapter 12]{Bueler2021}, and the ``spiral'' problem in which $\psi$ is constructed to produce a nontrivial coincidence set \cite[Example 7.1.1]{GraeserKornhuber2009}.  FIXME show table of results
+\end{example}
+
+%REGENERATE using pefarrell-fascd/examples/
+%$ timer python3 drape.py -prob ball|spiral -levs 9 -o ball|spiral.pvd -fascd_rtol 1.0e-6 -fascd_atol 1.0e-6 -fascd_cycle_type full
+%$ paraview ball|spiral.pvd
+%use preset "xray" and invert colors
+\begin{figure}[ht]
+\begin{center}
+\includegraphics[width=0.35\textwidth]{fixfigs/ball-set.png} \qquad \includegraphics[width=0.35\textwidth]{fixfigs/spiral-set.png}
+\end{center}
+\caption{Coincidence sets $u=\psi$ for the ball and spiral problems.}
+\label{fig:ballspiral}
+\end{figure}
+
+FIXME results for 1D $p$-Laplacian obstacle problem, Example \ref{ex:plaplacian} with $p=1.5,4$; this is a good problem to visualize the problems solved on each coarser level Figure \ref{fig:imagesvcycle}
 
 % figures in the following visualization were generated using branch elbueler/simplefigs
 % of git@bitbucket.org:pefarrell/fascd.git, and the following commands:
@@ -839,6 +866,9 @@ FIXME show results for Firedrake implementation of FASCD for the 2D classical ob
 \label{fig:imagesvcycle}
 \end{figure}
 
+FIXME results for advection-diffusion obstacle problem, Example \ref{ex:advectiondiffusion}
+
+FIXME results for SIA obstacle problem, Example \ref{ex:sia}
 
 FIXME observe that up-smoothing is more efficient; this observation seems to be new; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}
 
