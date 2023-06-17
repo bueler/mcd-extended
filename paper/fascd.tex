@@ -182,7 +182,7 @@ We extend Tai's multilevel CD method by implementing fully-nonlinear corrections
 
 For the classical obstacle problem, based on the linear, symmetric Laplacian operator, certain multilevel techniques, such as the truncated monotone multigrid method \cite{GraeserKornhuber2009,Kornhuber1994}, are known to improve performance relative to the original multilevel CD method of Tai \cite{Tai2003}.  These improved methods either track the active set in the discretization or modify the nodal basis functions, and in this sense they are discrete algorithms.  By contrast a CD method applies essentially at the level of the continuum problem; see Section \ref{sec:cd}.  Acceleration of the \pr{fascd} method via active-set and/or basis-level manipulations is an obvious topic for future research.
 
-One of our examples (Section \ref{sec:results}) demonstrates the application of the \pr{fascd} method to a nonlinear operator of porous-media type.  By ``freezing'' the solution-dependent coefficient, the operator is approximated by a coercive operator for the duration of the V-cycle.  This scheme is also effective for doubly-nonlinear diffusion operators \cite[for example]{Bueler2021conservation,Calvoetal2002}.
+FIXME examples---see Sections \ref{sec:vi} and \ref{sec:results}
 
 The iterates from a CD method are admissible, and thus the nonlinear operator in the VI needs only be defined for admissible states.  \pr{fascd} is designed for such admissible-only problems.  Our target fluid-layer problems require the solution of an auxiliary PDE on a domain determined inside the VI residual evaluation \cite{Bueler2021conservation}, but these problems are not addressed herein.  Note that non-admissible methods, including semi-smooth methods \cite{BensonMunson2006}, require unnatural modifications of the operator formula in such a fluid-layer context.
 
@@ -246,7 +246,7 @@ F(v) = \frac{1}{p} \int_\Omega |\grad v|^p\,dx. \label{eq:plaplacianobjective}
 \end{equation}
 Then $F$ is a convex functional and $F'(v) = f(v)$ for $f$ given in \eqref{eq:plaplacian}.  For any closed and convex $\cK\subset \cV$, VI problem \eqref{eq:vi} is then equivalent to optimization problem \eqref{eq:minimization}.
 
-Next we give two examples which are \emph{not} of optimization type \eqref{eq:minimization}, the first being an advection-diffusion problem, which needs the following Lemma, and the second a nonlinear problem for ice sheet geometry.
+Next we give two examples which are \emph{not} of optimization type \eqref{eq:minimization}, the first being an advection-diffusion problem, which needs the following Lemma.
 
 \begin{lemma}  \label{lem:advectionskew}  \cite{Elmanetal2014}\,  Suppose $\bX :\Omega \to \RR^d$ is a bounded and boundedly-differentiable vector field on $\Omega$ with zero divergence ($\Div \bX=0$).  For $u,v \in W^{1,2}(\Omega)$ let $b(u,v) = \int_\Omega (\bX \cdot \grad u) v\,dx$.  Then $b(u,u) = \frac{1}{2} \int_{\partial \Omega} u^2 \bX\cdot \bn\,dx$ where $\bn$ is the outward normal on $\partial \Omega$.
 \end{lemma}
@@ -272,18 +272,22 @@ On the other hand, it is easy to see that $|\ip{f(u)}{v}| \le (\eps + \|\bX\|_\i
 Thus $f$ is 2-coercive, and so VI problem \eqref{eq:vi} is well-posed.
 \end{example}
 
-If $\bX \ne 0$ then $f$ in Example \ref{ex:advectiondiffusion} does not correspond to a minimization problem because $\ip{f(u)}{v}$ does not possess the symmetry of the gradient of a scalar objective.  (For $u,v$ which are zero on $\partial \Omega$, note that $\ip{f(u)}{v} - \ip{f(v)}{u} = -2 b(u,v)$.)  References \cite{Bueler2021conservation,ChangNakshatrala2017} consider advection-diffusion VI problems like this, specifically over the set $\cK = \{v\ge 0\}$.
+If $\bX \ne 0$ then $f\ne F'$ in Example \ref{ex:advectiondiffusion}, for any objective $F$, because $\ip{f(u)}{v}$ does not possess the symmetry of the gradient of a scalar: for $u,v$ which are zero on $\partial \Omega$, note that $\ip{f(u)}{v} - \ip{f(v)}{u} = -2 b(u,v)$.  References \cite{Bueler2021conservation,ChangNakshatrala2017} consider inequality-constrained advection-diffusion VI problems like this, specifically over the set $\cK = \{v\ge 0\}$.
 
-FIXME replace following with SIA
+The next VI example, nonlinear and generally not of optimization type, is a model for steady ice sheet geometry in a given climate.  Related VI problems arise for any fluid layer which is subject to a climate which can remove the fluid \cite{Bueler2021conservation}.
 
-\begin{example}  \label{ex:porous}  Suppose $\phi:[0,\infty) \to [\phi_0,\infty)$ is continuous for some constant $\phi_0>0$.  As with Example \ref{ex:advectiondiffusion}, the following operator, of porous medium type, does not have the symmetry necessary to be the gradient of a scalar objective:
+\begin{example}  \label{ex:sia}  Let $\Omega \subset \RR^2$ be a fixed region of land, and suppose $b \in C^1(\Omega)$ is the given bedrock elevation.  Suppose $a \in L^\infty(\Omega)$ is the ``surface mass balance'' function, the given, annually-averaged rate of ice accumulation (as snow) minus melt and runoff.  Then the surface elevation $s$ of a steady-state, isothermal, and non-sliding ice sheet (glacier) approximately satisfies the \emph{shallow ice approximation} (SIA) \cite{GreveBlatter2009} problem
 \begin{equation}
-\ip{f(u)}{v} = \int_\Omega \phi(u) \grad u \cdot \grad v\,dx. \label{eq:porous}
+\int_\Omega \Gamma (s-b)^{n+2} |\grad s|^{n-1} \grad s \cdot \grad (v-s) \,dx \ge \int_\Omega a (v-s)\,dx, \label{eq:siavi}
 \end{equation}
-However, \eqref{eq:porous} is not known to be monotone (or coercive) when $\phi$ is not constant.
+over the set $\mathcal{K} = \{s\ge b\}$ of admissible surface elevations, where $n>1$ and $\Gamma>0$ are constants determined by the physical properties of ice \cite{GreveBlatter2009}; $n=3$ is typically taken.  The doubly-nonlinear and doubly-degenerate operator in this case is
+\begin{equation}
+\ip{f(s)}{v} = \int_\Omega \Gamma (s-b)^{n+2} |\grad s|^{n-1} \grad s \cdot \grad v\,dx. \label{eq:sia}
+\end{equation}
+If the bed is flat ($b=0$) then a power transformation converts the problem into $p$-Laplacian form \eqref{eq:plaplacian} with $p=n+1$.  For general beds $b$ less is understood about this operator, but existence of a solution to \eqref{eq:siavi} can be established \cite{JouvetBueler2012}, and the theory suggests that a solution power lives in a Sobolev space, namely $(s-b)^{2p/(p-1)} \in W^{1,p}(\Omega)$.  This theory, and also observations of ice sheets, shows that $|\grad s|$ will be large, or even unbounded, as one approaches the free boundary, also know as the \emph{ice margin}, from the icy side where $s>b$.
 \end{example}
 
-Numerical solver performance for Examples \ref{ex:plaplacian}, \ref{ex:advectiondiffusion}, and \ref{ex:porous} will be considered in Section \ref{sec:results}.  Further examples of nonlinear VI problems appear in ice sheet models \cite{Calvoetal2002,JouvetBueler2012} and other geophysical fluids \cite{Bueler2021conservation}.
+Section \ref{sec:results} provides numerical results from applications of the \pr{fascd} method to Examples \ref{ex:plaplacian}, \ref{ex:advectiondiffusion}, and \ref{ex:sia}.
 
 
 \section{Constraint decomposition (CD)} \label{sec:cd}
@@ -804,7 +808,7 @@ FIXME F-cycles
 
 \section{Results and discussion} \label{sec:results}
 
-FIXME show results for Firedrake implementation of FASCD for the 2D classical obstacle problem (ball and spiral), 1D $p$-Laplacian obstacle problem (Example \ref{ex:plaplacian}), advection-diffusion obstacle problem (Example \ref{ex:advectiondiffusion}), and SIA obstacle problem
+FIXME show results for Firedrake implementation of FASCD for the 2D classical obstacle problem (ball and spiral; Example \ref{ex:plaplacian}), 1D $p$-Laplacian obstacle problem (also Example \ref{ex:plaplacian}), advection-diffusion obstacle problem (Example \ref{ex:advectiondiffusion}), and SIA obstacle problem (Example \ref{ex:sia})
 
 % figures in the following visualization were generated using branch elbueler/simplefigs
 % of git@bitbucket.org:pefarrell/fascd.git, and the following commands:
