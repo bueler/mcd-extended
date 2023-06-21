@@ -167,24 +167,25 @@ urlcolor=black    % ...
 
 \section{Introduction} \label{sec:intro}
 
-FIXME rewrite the entire introduction
+The constraint decomposition (CD) methods of Tai \cite{Tai2003} are designed to solve coercive variational inequality (VI) problems which arise from minimization of a convex functional over a convex set.  These methods have been shown to converge for multilevel and domain decompositions in a finite element (FE) context.  The multilevel CD method has been shown to have almost grid-independent error bounds, and near-optimal complexity, for elliptic, linear obstacle problems \cite[Subsection 5.4]{Tai2003}; see also \cite[Theorem 4.6 and Algorithm 4.7]{GraeserKornhuber2009}.  In this paper we extend the multilevel CD method by replacing the coarse-level corrections with a full approximation storage (FAS; \cite{Brandt1977,Bruneetal2015}) approach, and we apply this new solver to nonlinear VI problems which do not arise from minimization.
 
-For coercive variational inequality (VI) problems which arise from minimization of a convex functional over a convex set, the constraint decomposition (CD) method of Tai \cite{Tai2003} converges for multilevel and domain decompositions.  Furthermore the method has been shown to have almost grid-independent error bounds, and near-optimal complexity, for elliptic, linear obstacle problems \cite[Subsection 5.4]{Tai2003}; see also \cite[Theorem 4.6 and Algorithm 4.7]{GraeserKornhuber2009}.
-
-We extend Tai's multilevel CD method by implementing fully-nonlinear corrections, and we apply it to a new set of nonlinear VI problems which do not arise from minimization.  Specifically, for finite element (FE) solvers the algorithms in \cite{GraeserKornhuber2009} and \cite{Tai2003} are extended here in the following directions:
+Specifically, our \emph{full approximation storage constraint decomposition} (FASCD) method extends the algorithms in \cite{GraeserKornhuber2009} and \cite{Tai2003} in the following directions:
 \renewcommand{\labelenumi}{\emph{(\roman{enumi})}}
 \begin{enumerate}
-\item We apply a full approximation storage (FAS; see \cite{Brandt1977,Bruneetal2015}) approach which avoids global (Newton) linearization.  Section \ref{sec:results} shows results from this \pr{fascd} algorithm for several nonlinear problems.
-\item Our \pr{fascd} implementation permits ``box'' constraints, namely upper and lower obstacles; see Section \ref{sec:femultilevel}.
-\item We observe that ``up-smoothing'' is more effective than ``down-smoothing'' in for this class of algorithms.  A strong preference for up-smoothing is special to multilevel CD methods and does not arise in unconstrained problems.
-\item By using strong, yet $O(N)$-per-application, smoothers, namely Newton-type active set methods with a fixed number of preconditioned Krylov iterations per step, in Section \ref{sec:results} we demonstrate mesh-independent convergence rates substantially better than in the current literature.
+\item The FAS coarse corrections are adapted for general VI problems.  The needed computations do not require an objective function, nor do they require linearity of the residual operator.  Section \ref{sec:results} shows results for several nonlinear problems.
+\item By using $O(N)$-per-application Newton-type active set methods as smoothers, with a fixed number of Krylov iterations per step, we demonstrate mesh-independent convergence rates substantially better than in the current literature.
+\item We implement both V-cycles (Algorithm \ref{alg:fascd}) and F-cycles (also known as full multigrid; Algorithm \ref{alg:fascd-fcycle}).
+\item Box constraints, namely upper and lower obstacles, are permitted; see Section \ref{sec:femultilevel}.
+\item We observe an asymmetry special to multilevel CD methods, namely that up-smoothing is more effective than down-smoothing because a ``telescoping'' subset property can be exploited on the up-smoothing side.
 \end{enumerate}
 
-For the classical obstacle problem, based on the linear, symmetric Laplacian operator, certain multilevel techniques, such as the truncated monotone multigrid method \cite{GraeserKornhuber2009,Kornhuber1994}, are known to improve performance relative to the original multilevel CD method of Tai \cite{Tai2003}.  These improved methods either track the active set in the discretization or modify the nodal basis functions, and in this sense they are discrete algorithms.  By contrast a CD method applies essentially at the level of the continuum problem; see Section \ref{sec:cd}.  Acceleration of the \pr{fascd} method via active-set and/or basis-level manipulations is an obvious topic for future research.
+FASCD exhibits essentially the same optimal, mesh-independent convergence rates for VI problems that FAS multigrid exhibits for the corresponding unconstrained PDE problems.  The results in Section \ref{sec:results} include textbook multigrid efficiency, namely solutions within discretization error in work comparable to ten smoother sweeps on the finest-level mesh \cite{BrandtLivne2011}, of F-cycles applied to classical Laplacian obstacle problems (Example \ref{ex:results:classical}), $p$-Laplacian obstacle problems (Example \ref{ex:results:plap}), and nonnegativity-constrained advection-diffusion equations (Example \ref{ex:results:advdiff}).  Furthermore, these results are essentially insensitive to the length or structure of the free boundary, i.e.~the geometric complexity of the coincidence set (Examples \ref{ex:results:classical}, \ref{ex:results:advdiff}).
 
-FIXME examples---see Sections \ref{sec:vi} and \ref{sec:results}
+The iterates from FASCD are admissible, and thus the nonlinear operator in the VI needs only be defined for admissible states.  For example, we solve an ice sheet geometry problem (Examples \ref{ex:sia}, \ref{ex:results:sia}) in which the ice velocity is only meaningful for surface elevation iterates which exceed the bed elevation.  More generally, fluid-layer problems, with a non-negative thickness constraint, would require the solution of an auxiliary PDE on a domain determined inside the VI residual evaluation \cite{Bueler2021conservation}.  (Though a target for FASCD, such problems, however, are not addressed here.)  Note that non-admissible methods, including semi-smooth methods \cite{BensonMunson2006}, would require unnatural modifications of the operator formula in such a fluid-layer context.  In any case, FASCD solves the difficult ice sheet problem, wherein the solution has unbounded gradient at the free boundary, by a mesh-independent number of iterations, with near textbook efficiency.
 
-The iterates from a CD method are admissible, and thus the nonlinear operator in the VI needs only be defined for admissible states.  \pr{fascd} is designed for such admissible-only problems.  Our target fluid-layer problems require the solution of an auxiliary PDE on a domain determined inside the VI residual evaluation \cite{Bueler2021conservation}, but these problems are not addressed herein.  Note that non-admissible methods, including semi-smooth methods \cite{BensonMunson2006}, require unnatural modifications of the operator formula in such a fluid-layer context.
+For the classical obstacle problem, based on the linear, symmetric Laplacian operator, certain multilevel techniques, such as the truncated monotone multigrid method \cite{GraeserKornhuber2009,Kornhuber1994}, are known to improve performance relative to the original multilevel CD method \cite{Tai2003}.  These improved methods modify the nodal basis functions.  By contrast FASCD makes essentially no assumptions about the FE discretization.  Acceleration via basis-level manipulations is a topic for future research.
+
+FIXME organization of paper
 
 
 \section{Variational inequalities} \label{sec:vi}
@@ -836,7 +837,7 @@ FIXME
 
 The FASCD V-cycle and F-cycle (Algorithms \ref{alg:fascd}, \ref{alg:fascd-fcycle}) have been implemented in Python using the Firedrake library \cite{Rathgeberetal2016}.  In this Section we show numerical results corresponding to several VI examples from Section \ref{sec:vi}, with a focus on the scaling of FASCD iterations as the mesh resolution increases.
 
-\begin{example}
+\begin{example} \label{ex:results:classical}
 Consider the 2D classical, unilateral obstacle problem, namely Example \ref{ex:plaplacian} with $p=2$ and admissible set $\mathcal{K} = \{v \ge \psi\} \subset W^{1,2}(\Omega)$.  Suppose $\Omega$ is a square.  We consider two problems with very different coincidence (active) sets, the ``ball'' problem with $\psi$ equal to an upper hemisphere \cite[Chapter 12]{Bueler2021}, and the ``spiral'' problem in which $\psi$ is constructed to produce a nontrivial coincidence set \cite[Example 7.1.1]{GraeserKornhuber2009}.  FIXME show table of results
 \end{example}
 
@@ -852,7 +853,9 @@ Consider the 2D classical, unilateral obstacle problem, namely Example \ref{ex:p
 \label{fig:ballspiral}
 \end{figure}
 
+\begin{example}  \label{ex:results:plap}
 FIXME results for 1D $p$-Laplacian obstacle problem, Example \ref{ex:plaplacian} with $p=1.5,4$; this is a good problem to visualize the problems solved on each coarser level Figure \ref{fig:imagesvcycle}
+\end{example}
 
 % figures in the following visualization were generated using branch elbueler/simplefigs
 % of git@bitbucket.org:pefarrell/fascd.git, and the following commands:
@@ -866,12 +869,15 @@ FIXME results for 1D $p$-Laplacian obstacle problem, Example \ref{ex:plaplacian}
 \label{fig:imagesvcycle}
 \end{figure}
 
+\begin{example}  \label{ex:results:advdiff}
 FIXME results for advection-diffusion obstacle problem, Example \ref{ex:advectiondiffusion}
+\end{example}
 
+\begin{example}   \label{ex:results:sia}
 FIXME results for SIA obstacle problem, Example \ref{ex:sia}
+\end{example}
 
 FIXME observe that up-smoothing is more efficient; this observation seems to be new; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}
-
 
 % A BRIDGE TOO FAR:  \section{Results for a nonlocal variational inequality}
 
