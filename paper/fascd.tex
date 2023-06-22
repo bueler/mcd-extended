@@ -2,16 +2,16 @@
 
 \usepackage[total={6.3in,9.2in},top=1.1in,left=1.1in]{geometry}
 
-\usepackage{times,bm,bbm,empheq,fancyvrb,graphicx,amsthm,amssymb}
+\usepackage{times,bm,bbm,empheq,verbatim,fancyvrb,graphicx,amsthm,amssymb}
 \usepackage[dvipsnames]{xcolor}
-\usepackage{longtable,booktabs,xspace}
+\usepackage{booktabs,multirow,xspace}
 
 \usepackage{tabto}
 \TabPositions{1.5cm}
 
 \usepackage{tikz}
 \usetikzlibrary{decorations.pathreplacing}
-\usetikzlibrary{graphs}
+\usetikzlibrary{graphs,quotes}
 
 \usepackage[kw]{pseudo}
 \pseudoset{%
@@ -811,7 +811,7 @@ where again $x_p \notin \partial_D\Omega$ in the first four cases.
  
 Now suppose we repeatedly apply \pr{fascd-vcycle}, starting with $w^{J,0} \in \mathcal{K}^J$, generating (fine-level) iterates $w^{J,k} \in \mathcal{K}^J$.  Let $\id{atol}\ge 0$, $\id{rtol}\ge 0$ be given tolerances.  Then the criterion used in the results (Section \ref{sec:results}) is 
 \begin{equation}
-\|\rSS(w^{J,k})\|_2 < \id{atol} \qquad \text{or} \qquad \frac{\|\rSS(w^{J,k})\|_2}{\|\rSS(w^{J,0})\|_2} < \id{rtol}
+\|\rSS(w^{J,k})\|_2 < \id{atol} \qquad \text{or} \qquad \frac{\|\rSS(w^{J,k})\|_2}{\|\rSS(w^{J,0})\|_2} < \id{rtol} \label{eq:stoppingcriterion}
 \end{equation}
 A step tolerance, based on $\|w^{J,k} - w^{J,k-1}\|_2$, could also be used, but we did not find it necessary.
 
@@ -833,12 +833,15 @@ FIXME
 \end{pseudofloat}
 
 
-\section{Results and discussion} \label{sec:results}
+\section{Results} \label{sec:results}
 
-The FASCD V-cycle and F-cycle (Algorithms \ref{alg:fascd}, \ref{alg:fascd-fcycle}) have been implemented in Python using the Firedrake library \cite{Rathgeberetal2016}.  In this Section we show numerical results corresponding to several VI examples from Section \ref{sec:vi}, with a focus on the scaling of FASCD iterations as the mesh resolution increases.
+Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} were implemented in Python using the Firedrake library \cite{Rathgeberetal2016}.  In this Section we show numerical results corresponding to several VI examples from Section \ref{sec:vi}, with a focus on the scaling of FASCD iterations as the mesh resolution increases.
 
 \begin{example} \label{ex:results:classical}
-Consider the 2D classical, unilateral obstacle problem, namely Example \ref{ex:plaplacian} with $p=2$ and admissible set $\mathcal{K} = \{v \ge \psi\} \subset W^{1,2}(\Omega)$.  Suppose $\Omega$ is a square.  We consider two problems with very different coincidence (active) sets, the ``ball'' problem with $\psi$ equal to an upper hemisphere \cite[Chapter 12]{Bueler2021}, and the ``spiral'' problem in which $\psi$ is constructed to produce a nontrivial coincidence set \cite[Example 7.1.1]{GraeserKornhuber2009}.  FIXME show table of results
+Consider the 2D classical, unilateral obstacle problem, namely Example \ref{ex:plaplacian} with $p=2$ and admissible set $\mathcal{K} = \{v \ge \psi\} \subset W^{1,2}(\Omega)$, with $\Omega$ square.  We consider two problems with very different coincidence (active) sets $\{x\in\Omega \,:\, u(x)=\psi(x)\}$.   The first is a standard ``ball'' problem, with an upper hemisphere obstacle $\psi$ \cite[Chapter 12]{Bueler2021}, and the second is the ``spiral'' problem in which $\psi$ is constructed to produce a more interesting coincidence set \cite[Example 7.1.1]{GraeserKornhuber2009}.  For this experiment we generated uniform triangular meshs, from a coarsest mesh of 32 triangles and $N=4^2$ nodes, to a finest mesh of $N=2048^2 \approx 4.2 \times 10^{6}$ nodes after nine standard refinements.  (The V- and F-cycles descended to the $4\times 4$ mesh.)  An RS$+$CG$+$ICC symmetric smoother (Section \ref{sec:implementation}) was applied, with fixed three iterations, and stopping tolerances \texttt{rtol} $=$ \texttt{atol} $= 10^{-6}$ in \eqref{eq:stoppingcriterion}.
+% FIXME set atol *small* and re-run
+
+Table \ref{tab:results:classical} shows the resulting iterations.  The RS Newton method, applied by itself as the solver with direct (LU) solution of the Newton steps, shows rapidly increasing iterations, approximately proportionally to the resolution, as expected; the highest resolution cases were not attempted with this non-scalable solver.  FASCD V-cycle iterations increase slowly, roughly logarithmically with the resolution.  For F-cycles we counted the number of V-cycles after the ramp (Section \ref{sec:implementation}), which shows constant iterations.  The spiral problem appears to be only slightly more challenging for these solvers.  Note that three V-cycle iterations in the F-cycle application, which suffices to solve either problem at any resolution, does work proportional to approximately FIXME smoother applications on the finest level, so these problems are solved with nearly textbook multigrid efficiency despite the low solution regularity.
 \end{example}
 
 %REGENERATE using pefarrell-fascd/examples/
@@ -849,9 +852,36 @@ Consider the 2D classical, unilateral obstacle problem, namely Example \ref{ex:p
 \begin{center}
 \includegraphics[width=0.35\textwidth]{fixfigs/ball-set.png} \qquad \includegraphics[width=0.35\textwidth]{fixfigs/spiral-set.png}
 \end{center}
-\caption{Coincidence sets $u=\psi$ for the ball and spiral problems.}
+\caption{Coincidence sets for the ball and spiral problems in Example \ref{ex:results:classical}.}
 \label{fig:ballspiral}
 \end{figure}
+
+\newcommand{\XX}{{\sffamily X}}
+% see pefarrell/examples/drape.py:
+%   $ python3 drape.py -prob PROB -levs LEVS
+% for PROB=ball,spiral and LEVS=1,...,10
+% note mcoarse=4, rtol=atol=1e-6
+% smoother is vinewtonrsls + 3 x (cg + icc)
+\begin{table}[ht]
+\begin{tabular}{lr rrr rrr}
+\multirow{2}{*}{\emph{levels}} & \multirow{2}{*}{$N$} & \multicolumn{3}{c}{\,\emph{ball}} & \multicolumn{3}{c}{\,\emph{spiral}} \\ \cmidrule(lr){3-5} \cmidrule(lr){6-8}
+             && \, V-cycle & F-cycle & RS only & \,V-cycle & F-cycle & RS only \\ \cmidrule{1-8}
+ 1 &    $4^2$ &  1 &  1 &  1  &  1 &  1 &  1 \\
+ 2 &    $8^2$ &  2 &  1 &  2  &  2 &  1 &  2 \\
+ 3 &   $16^2$ &  2 &  2 &  3  &  3 &  2 &  4 \\
+ 4 &   $32^2$ &  3 &  2 &  6  &  3 &  2 &  7 \\
+ 5 &   $64^2$ &  3 &  2 &  8  &  4 &  3 &  9 \\
+ 6 &  $128^2$ &  4 &  2 & 17  &  4 &  3 & 16 \\
+ 7 &  $256^2$ &  4 &  2 & 33  &  4 &  3 & 27 \\
+ 8 &  $512^2$ &  5 &  2 & 65  &  5 &  3 & 48 \\
+ 9 & $1024^2$ &  5 &  2 & \XX &  5 &  3 & \XX \\
+10 & $2048^2$ &  5 &  2 & \XX &  5 &  3 & \XX
+\end{tabular}
+
+\bigskip
+\caption{Iterations for FASCD V-cycle and F-cycle algorithms in Example \ref{ex:results:classical}.}
+\label{tab:results:classical}
+\end{table}
 
 \begin{example}  \label{ex:results:plap}
 FIXME results for 1D $p$-Laplacian obstacle problem, Example \ref{ex:plaplacian} with $p=1.5,4$; this is a good problem to visualize the problems solved on each coarser level Figure \ref{fig:imagesvcycle}
@@ -865,7 +895,7 @@ FIXME results for 1D $p$-Laplacian obstacle problem, Example \ref{ex:plaplacian}
 \begin{center}
 \input{tikz/imagesvcycle.tex}
 \end{center}
-\caption{Visualization of one iteration of \textsc{FASCD-VCYCLE} (Algorithm \ref{alg:fascd}) for Example FIXME, with $p=1.5$, $J=3$, and a coarsest mesh of two elements.  Solutions ($w^j$, $y^j$, $z^j$) are lines while obstacles ($\underline{\gamma}^j$, $\underline{\phi}^j$, $\underline{\chi}^j$) are strong dots.}
+\caption{Visualization of one FASCD V-cycle iteration for Example \ref{ex:results:plap}, with $p=1.5$, $J=3$, and a coarsest mesh of two elements.  Solutions (i.e.~$w^j$, $y^j$, $z^j$) are lines while obstacles ($\underline{\gamma}^j$, $\underline{\phi}^j$, $\underline{\chi}^j$) are strong dots.  The zero function (dotted) is the admissible initial iterate for $y^j$ and $z^j$.  Vertical scale varies.}
 \label{fig:imagesvcycle}
 \end{figure}
 
@@ -881,6 +911,10 @@ FIXME observe that up-smoothing is more efficient; this observation seems to be 
 
 % A BRIDGE TOO FAR:  \section{Results for a nonlocal variational inequality}
 
+
+\section{Discussion and Conclusion} \label{sec:discussion}
+
+FIXME
 
 \bibliography{fascd}
 \bibliographystyle{siam}
@@ -924,9 +958,8 @@ With these modifications, we have a much-simplified pseudocode, Algorithm \ref{a
 \end{pseudofloat}
 
 
-\section{From slack, to not lose} \label{app:slack}
-
-FIXME remove this appendix, after using it in the introduction and discussion etc.
+\begin{comment}
+%From slack, to not lose
 
 \noindent Patrick : \emph{Interesting that you think Graeser and Kornhuber were barking up the wrong tree.  I still don't quite have my finger on the exact difference in the scheme between GK and the FAS approach. Is there a clean summary somewhere?  (I looked in the mcd-extended manuscript, but couldn't see it in a quick skim.)  Is the difference to GK the monotone multigrid bit, or the particular smoothers used?}
 
@@ -942,5 +975,6 @@ Now, the good thing I was already doing before February was building a version o
 As I now see, and can easily demo on the spiral problem in \cite{GraeserKornhuber2009} and on any other classical obstacle problem I have tried, the thing which makes it fly is to realize, as you did, or perhaps as you just take for granted because you are so comfortable with Firedrake, that the smoother can be a grown-up but still O(N) VI solver.  E.g.~a fixed number of iterations of vinewtonrsls+gmres+ilu or whatever.  The role of the FASCD is simply to generate coarse VI problems which, once solved, make helpful admissible additions to the eventual V-cycle update.
 
 So the difference between FASCD and \cite{GraeserKornhuber2009} are: (1) FAS coarse corrections, (2) no attempt to do monotone/truncated multigrid which would be a mess (I think) across the FE infrastructure, (3) clarity on what sets you can use in $V(\nu_1,\nu_2)$ cycles, with bigger up-smoother sets in particular, and most importantly (4) implementation within the mature Firedrake/PETSc library framework where one can easily hook up an active-set Newton step as a smoother.
+\end{comment}
 
 \end{document}
