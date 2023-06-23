@@ -838,10 +838,11 @@ FIXME
 Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} were implemented in Python using the Firedrake library \cite{Rathgeberetal2016}.  In this Section we show numerical results corresponding to several VI examples from Section \ref{sec:vi}, with a focus on the scaling of FASCD iterations as the mesh resolution increases.
 
 \begin{example} \label{ex:results:classical}
-Consider the 2D classical, unilateral obstacle problem, namely Example \ref{ex:plaplacian} with $p=2$ and admissible set $\mathcal{K} = \{v \ge \psi\} \subset W^{1,2}(\Omega)$, with $\Omega$ square.  We consider two problems with very different coincidence (active) sets $\{x\in\Omega \,:\, u(x)=\psi(x)\}$.   The first is a standard ``ball'' problem, with an upper hemisphere obstacle $\psi$ \cite[Chapter 12]{Bueler2021}, and the second is the ``spiral'' problem in which $\psi$ is constructed to produce a more interesting coincidence set \cite[Example 7.1.1]{GraeserKornhuber2009}.  For this experiment we generated uniform triangular meshs, from a coarsest mesh of 32 triangles and $N=4^2$ nodes, to a finest mesh of $N=2048^2 \approx 4.2 \times 10^{6}$ nodes after nine standard refinements.  (The V- and F-cycles descended to the $4\times 4$ mesh.)  An RS$+$CG$+$ICC symmetric smoother (Section \ref{sec:implementation}) was applied, with fixed three iterations, and stopping tolerances \texttt{rtol} $=$ \texttt{atol} $= 10^{-6}$ in \eqref{eq:stoppingcriterion}.
-% FIXME set atol *small* and re-run
+Consider the 2D classical, unilateral obstacle problem, namely Example \ref{ex:plaplacian} with $p=2$ and admissible set $\mathcal{K} = \{v \ge \psi\} \subset W^{1,2}(\Omega)$, with $\Omega$ square.  We consider two problems with very different coincidence (active) sets $\{x\in\Omega \,:\, u(x)=\psi(x)\}$.   The first is a standard ``ball'' problem, with an upper hemisphere obstacle $\psi$ \cite[Chapter 12]{Bueler2021}, and the second is the ``spiral'' problem in which $\psi$ is constructed to produce a more interesting coincidence set \cite[Example 7.1.1]{GraeserKornhuber2009}.  For this experiment we generated uniform triangular meshs, from a coarsest mesh of 32 triangles and $N=4^2$ nodes, to a finest mesh of $N=2048^2 \approx 4.2 \times 10^{6}$ nodes after nine standard refinements, and note that the V- and F-cycles descended to the $4\times 4$ mesh.  A symmetric RS smoother (Section \ref{sec:implementation}) with three (fixed) ICC-preconditioned CG iterations was applied, the coarse solver was RS with LU (direct) solution of the Newton step equations, and tolerances \texttt{rtol} $= 10^{-6}$ and \texttt{atol} $= 10^{-12}$ were used in stopping criterion \eqref{eq:stoppingcriterion}.
 
-Table \ref{tab:results:classical} shows the resulting iterations.  The RS Newton method, applied by itself as the solver with direct (LU) solution of the Newton steps, shows rapidly increasing iterations, approximately proportionally to the resolution, as expected; the highest resolution cases were not attempted with this non-scalable solver.  FASCD V-cycle iterations increase slowly, roughly logarithmically with the resolution.  For F-cycles we counted the number of V-cycles after the ramp (Section \ref{sec:implementation}), which shows constant iterations.  The spiral problem appears to be only slightly more challenging for these solvers.  Note that three V-cycle iterations in the F-cycle application, which suffices to solve either problem at any resolution, does work proportional to approximately FIXME smoother applications on the finest level, so these problems are solved with nearly textbook multigrid efficiency despite the low solution regularity.
+Table \ref{tab:results:classical} shows the resulting iterations.  The RS Newton method, i.e.~the smoother, applied by itself as the solver, shows rapidly increasing iterations, approximately proportionally to resolution, as expected.  By contrast, FASCD V-cycle iterations increase slowly, roughly logarithmically with the resolution.  For F-cycles we counted the number of V-cycles after the ramp (Section \ref{sec:implementation}), and this shows a constant number of V-cycle iterations.  The spiral problem appears to be only slightly more challenging for these solvers; apparently the complexity of the coincidence set or free boundary does not strongly influence performance.
+
+Note that each V-cycle does the work of about eight finest-level preconditioned Krylov (CG+ICC) iterations.  For the F-cycle results, where three V-cycle iterations suffice in either problem, and at any finest-level resolution, we see textbook multigrid efficiency\footnote{This phrase is imperfectly defined, but one possible definition is given by \cite{BrownSmithAhmadia2013}: ``textbook multigrid efficiency [is] (an order of magnitude reduction in residual per iteration and solution of the fine-level system at a small multiple of the cost of a residual evaluation).''} despite their low solution regularity.
 \end{example}
 
 %REGENERATE using pefarrell-fascd/examples/
@@ -857,11 +858,9 @@ Table \ref{tab:results:classical} shows the resulting iterations.  The RS Newton
 \end{figure}
 
 \newcommand{\XX}{{\sffamily X}}
-% see pefarrell/examples/drape.py:
-%   $ python3 drape.py -prob PROB -levs LEVS
-% for PROB=ball,spiral and LEVS=1,...,10
-% note mcoarse=4, rtol=atol=1e-6
-% smoother is vinewtonrsls + 3 x (cg + icc)
+% see pefarrell/examples/drape.py and pefarrell/edplay/resultsdrape.sh|txt
+% note mcoarse=4, rtol=1e-6, atol=1e-12
+% smoother is vinewtonrsls + 3 x (cg + icc), coarse solver is vinewtonrsls + lu
 \begin{table}[ht]
 \begin{tabular}{lr rrr rrr}
 \multirow{2}{*}{\emph{levels}} & \multirow{2}{*}{$N$} & \multicolumn{3}{c}{\,\emph{ball}} & \multicolumn{3}{c}{\,\emph{spiral}} \\ \cmidrule(lr){3-5} \cmidrule(lr){6-8}
@@ -879,7 +878,7 @@ Table \ref{tab:results:classical} shows the resulting iterations.  The RS Newton
 \end{tabular}
 
 \bigskip
-\caption{Iterations for FASCD V-cycle and F-cycle algorithms in Example \ref{ex:results:classical}.}
+\caption{Iterations for FASCD V-cycle and F-cycle algorithms in Example \ref{ex:results:classical}.  Runs marked \XX\xspace were not attempted.}
 \label{tab:results:classical}
 \end{table}
 
