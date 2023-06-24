@@ -277,20 +277,20 @@ Thus $f$ is 2-coercive, and so VI problem \eqref{eq:vi} is well-posed.
 
 If $\bX \ne 0$ then $f\ne F'$ in Example \ref{ex:advectiondiffusion}, for any objective $F$, because $\ip{f(u)}{v}$ does not possess the symmetry of the gradient of a scalar: for $u,v$ which are zero on $\partial \Omega$, note that $\ip{f(u)}{v} - \ip{f(v)}{u} = -2 b(u,v)$.  References \cite{Bueler2021conservation,ChangNakshatrala2017} consider inequality-constrained advection-diffusion VI problems like this, specifically over the set $\cK = \{v\ge 0\}$.
 
-The next VI example, nonlinear and generally not of optimization type, is a model for steady ice sheet geometry in a given climate.  Related VI problems arise for any fluid layer which is subject to a climate which can remove the fluid \cite{Bueler2021conservation}.
+The next VI example, nonlinear and not of optimization type, is a model for steady ice sheet geometry in a given climate.  Related VI problems arise for any fluid layer which is subject to a source term which can remove the fluid \cite{Bueler2021conservation}.
 
-\begin{example}  \label{ex:sia}  Let $\Omega \subset \RR^2$ be a fixed region of land, and suppose $b \in C^1(\Omega)$ is the given bedrock elevation.  Suppose $a \in L^\infty(\Omega)$ is the ``surface mass balance'' function, the given, annually-averaged rate of ice accumulation (as snow) minus melt and runoff.  Then the surface elevation $s$ of a steady-state, isothermal, and non-sliding ice sheet (glacier) approximately satisfies the \emph{shallow ice approximation} (SIA) \cite{GreveBlatter2009} problem
+\begin{example}  \label{ex:sia}  Let $\Omega \subset \RR^2$ be a fixed region of land, and suppose $b \in C^1(\Omega)$ is the given bedrock elevation.  Let $a \in L^\infty(\Omega)$ denote a given ``surface mass balance'' function, the annually-averaged rate of ice accumulation (as snow) minus melt and runoff.  Then the surface elevation $s\in C(\Omega)$ of a steady-state, isothermal, and non-sliding ice sheet (glacier) approximately satisfies the \emph{shallow ice approximation} (SIA) \cite{GreveBlatter2009} problem
 \begin{equation}
 \int_\Omega \Gamma (s-b)^{n+2} |\grad s|^{n-1} \grad s \cdot \grad (v-s) \,dx \ge \int_\Omega a (v-s)\,dx, \label{eq:siavi}
 \end{equation}
-over the set $\mathcal{K} = \{s\ge b\}$ of admissible surface elevations, where $n>1$ and $\Gamma>0$ are constants determined by the physical properties of ice \cite{GreveBlatter2009}; $n=3$ is typically taken.  The doubly-nonlinear and doubly-degenerate operator in this case is
+over the set $\mathcal{K} = \{s\ge b\}$ of admissible surface elevations, where $n>1$ and $\Gamma>0$ are constants determined by the physical properties of ice; $n=3$ is a typical value.  The doubly-nonlinear and doubly-degenerate operator in this case is
 \begin{equation}
 \ip{f(s)}{v} = \int_\Omega \Gamma (s-b)^{n+2} |\grad s|^{n-1} \grad s \cdot \grad v\,dx. \label{eq:sia}
 \end{equation}
-If the bed is flat ($b=0$) then a power transformation converts the problem into $p$-Laplacian form \eqref{eq:plaplacian} with $p=n+1$.  For general beds $b$ less is understood about this operator, but existence of a solution to \eqref{eq:siavi} can be established \cite{JouvetBueler2012}, and the theory suggests that a solution power lives in a Sobolev space, namely $(s-b)^{2p/(p-1)} \in W^{1,p}(\Omega)$.  This theory, and also observations of ice sheets, shows that $|\grad s|$ will be large, or even unbounded, as one approaches the free boundary, also know as the \emph{ice margin}, from the icy side where $s>b$.
+If the bed is flat ($b=0$) then a power transformation converts the problem into $p$-Laplacian form \eqref{eq:plaplacian} with $p=n+1$.  For general beds $b$ less is understood about this operator, but existence holds for \eqref{eq:siavi} \cite{JouvetBueler2012}.  The theory suggests that a power of the solution lives in a Sobolev space, namely $(s-b)^{2p/(p-1)} \in W^{1,p}(\Omega)$.  This theory, and also observations of ice sheets, shows that $|\grad s|$ is generally unbounded as one approaches the free boundary, the \emph{ice margin}, from the icy side (where $s>b$).
 \end{example}
 
-Section \ref{sec:results} provides numerical results from applications of the \pr{fascd} method to Examples \ref{ex:plaplacian}, \ref{ex:advectiondiffusion}, and \ref{ex:sia}.
+Numerical results are shown in Section \ref{sec:results} for applications of FASCD Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} to these Examples.
 
 
 \section{Constraint decomposition (CD)} \label{sec:cd}
@@ -667,7 +667,7 @@ Our V-cycle generates a correction to a finest-level iterate $w^J \in \mathcal{K
 \begin{center}
 \input{tikz/fascdvcycle.tex}
 \end{center}
-\caption{The \fascd V-cycle computes downward corrections $y_j \in \mathcal{D}^j$, but the upward corrections $z_j\in\mathcal{U}^j$ are in larger sets.}
+\caption{The FASCD V-cycle computes downward corrections $y_j \in \mathcal{D}^j$, but the upward corrections $z_j\in\mathcal{U}^j$ are in larger sets.}
 \label{fig:fascdvcycle}
 \end{figure}
 
@@ -745,7 +745,7 @@ These ideas come together in Algorithm \ref{alg:fascd}, \pr{fascd-vcycle}, which
       $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j,\underline{\chi}^j,\overline{\chi}^j,w^j;z^j)$  \ct{smoothing of \eqref{eq:fe:upvi} in $\mathcal{U}^j$} \\-
     $w^J \gets w^J+z^J$
 \end{pseudo}
-\caption{The \fascd V-cycle is an iteration for solving FE VI problem \eqref{eq:fe:vi}.  Here $f^j$ denotes an FE discretization of $f$ in problem \eqref{eq:boxdirichletvi}.}
+\caption{The FASCD V-cycle is an iteration for solving FE VI problem \eqref{eq:fe:vi}.  Here $f^j$ denotes an FE discretization of $f$ in problem \eqref{eq:boxdirichletvi}.}
 \label{alg:fascd}
 \end{pseudofloat}
 
@@ -839,7 +839,7 @@ FIXME
 
 \section{Results} \label{sec:results}
 
-Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} were implemented in Python using the Firedrake library \cite{Rathgeberetal2016}.  In this Section we show numerical results corresponding to several VI examples from Section \ref{sec:vi}, with a focus on the scaling of FASCD iterations as the mesh resolution increases.  Assuming strong $O(m_J)$ smoothers on each level, as illustrated in the Examples, our essential observations are that each V-cycle dramatically reduces the residual norm, and that a couple of F-cycles solves the problem down to discretization error.
+Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} were implemented in Python using the Firedrake library \cite{Rathgeberetal2016}.  In this Section we show numerical results corresponding to the several VI Examples in Section \ref{sec:vi}, with a focus on the scaling of FASCD iterations as the mesh resolution increases.  Assuming strong $O(m_J)$ smoothers on each level, as illustrated below, our essential observations are that each V-cycle dramatically reduces the residual norm, and that a couple of F-cycles solves most Examples down to discretization error.
 
 \begin{example} \label{ex:results:classical}
 Consider the 2D classical, unilateral obstacle problem, namely Example \ref{ex:plaplacian} with $p=2$ and admissible set $\mathcal{K} = \{v \ge \psi\} \subset W^{1,2}(\Omega)$, with $\Omega$ square.  We consider two problems with very different coincidence (active) sets $\{x\in\Omega \,:\, u(x)=\psi(x)\}$.   The first is a standard ``ball'' problem, with an upper hemisphere obstacle $\psi$ \cite[Chapter 12]{Bueler2021}, and the second is the ``spiral'' problem from Example 7.1.1 in \cite{GraeserKornhuber2009}, wherein $\psi$ is constructed to produce a more interesting coincidence set; see Figure \ref{fig:results:classical}.  For this experiment we used $P_1$ elements and uniform triangular meshs, from a coarsest mesh of $m_0=5^2$ nodes (32 triangles), to a finest mesh of $m_9=2049^2 \approx 4.2 \times 10^{6}$ nodes after standard refinements.  As our $O(m_j)$ smoother we applied a single iteration of RS Newton (Section \ref{sec:implementation}), with three (fixed) ICC-preconditioned CG iterations to approximately solve the step equations.  The coarse solver was RS$+$LU, iterated to convergence.  Tolerances \texttt{rtol} $= 10^{-6}$ and \texttt{atol} $= 10^{-12}$ were used in stopping criterion \eqref{eq:stoppingcriterion}.  Noting that $\psi\big|_{\partial \Omega} \le 0$ in both problems, the initial iterate was set to $w=\max\{0,\psi\}$.
@@ -968,11 +968,24 @@ Iteration results for the (unregularized) degenerate diffusion $p=4.0$ case are 
 FIXME results for 3D advection-diffusion obstacle problem, Example \ref{ex:advectiondiffusion}
 \end{example}
 
-Solvers implemented in Firedrake apply parallel solvers from the PETSc library \cite{Balayetal2023}.  All of the above Examples, which were run in serial so as to fix the smoother,\footnote{The precise action of $O(m_j)$ work parallel smoothers depends on the number of processes \cite[for example]{Bueler2021}.} can in fact be run efficiently in parallel.  We start the next example with a demonstration of parallel weak scaling, and then explore the performance of the FASCD method up to memory-limited resolutions.
+Solvers implemented in Firedrake apply parallel solvers from the PETSc library \cite{Balayetal2023}.  All of the above Examples, which were run in serial so as to fix the smoother,\footnote{The precise action of $O(m_j)$ work parallel smoothers depends on the number of processes \cite[for example]{Bueler2021}.} also run efficiently in parallel.  We start the next Example with a demonstration of parallel weak scaling \cite{Bueler2021}, and then explore the performance of the FASCD up to memory-limited resolutions.
 
 \begin{example}   \label{ex:results:sia}
-FIXME results for SIA obstacle problem, Example \ref{ex:sia}; start with weak scaling; show Paraview-generated Figure
+FIXME results for SIA obstacle problem, Example \ref{ex:sia}; start with weak scaling
 \end{example}
+
+% to regenerate:
+%   $ mpiexec -n 16 --map-by core --bind-to hwthread python3 sia.py -levs 8 -bumps \
+%       -mcoarse 8 -fascd_cycle_type full -fascd_monitor -fascd_rtol 2.0e-4 \
+%       -fascd_atol 1.0e-8 -o sialev8.pvd
+\begin{figure}[ht]
+\begin{center}
+\includegraphics[width=1.0\textwidth]{fixfigs/sialev8scene.png}
+\end{center}
+\caption{FIXME}
+\label{fig:results:siascene}
+\end{figure}
+
 
 \begin{comment}
 from slack, regarding SIA example:
