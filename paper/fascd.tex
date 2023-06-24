@@ -974,7 +974,11 @@ Solvers implemented in Firedrake apply parallel solvers from the PETSc library \
 FIXME results for SIA obstacle problem, Example \ref{ex:sia}; start with weak scaling; show Paraview-generated Figure
 \end{example}
 
-
+\begin{comment}
+from slack, regarding SIA example:
+Patrick:  The convergence criteria are relatively loose?
+Ed:  Yes, the convergence is loose, and furthermore there is a double-regularization in the nonlinear diffusivity.  The problem is that only the 8/3 power of the solution u is actually in W^{1,p} for p=4; for the flat bed case u^{8/3} is actually C^1.  But the derivative of u itself is not actually integrable, though u is C^0; you can see there is essentially a cliff all the way around the ice sheet.  So as we converge to the exact solution, along the free boundary the P1 elements are trying to match this unbounded derivative, and it struggles at tighter tolerances.  The best (but still not like textbook problems) results are with a Petrov-Galerkin method using Q1, for which the convergence rates are much closer to O(h^2).  See Bueler (2016) for this P-G method, and Jouvet & Bueler (2012) for an existence proof giving u^{8/3} in W^{1,4}.  If you really want to know ...
+\end{comment}
 
 % A BRIDGE TOO FAR:  \section{Results for a nonlocal variational inequality}
 
