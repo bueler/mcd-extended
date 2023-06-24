@@ -839,7 +839,7 @@ FIXME
 
 \section{Results} \label{sec:results}
 
-Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} were implemented in Python using the Firedrake library \cite{Rathgeberetal2016}.  In this Section we show numerical results corresponding to several VI examples from Section \ref{sec:vi}, with a focus on the scaling of FASCD iterations as the mesh resolution increases.  Our essential observation is that, with strong $O(m_J)$ smoothers on each level, each V-cycle dramatically reduces the residual norm, and generally a couple of F-cycles solves the problem down to discretization error.
+Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} were implemented in Python using the Firedrake library \cite{Rathgeberetal2016}.  In this Section we show numerical results corresponding to several VI examples from Section \ref{sec:vi}, with a focus on the scaling of FASCD iterations as the mesh resolution increases.  Assuming strong $O(m_J)$ smoothers on each level, as illustrated in the Examples, our essential observations are that each V-cycle dramatically reduces the residual norm, and that a couple of F-cycles solves the problem down to discretization error.
 
 \begin{example} \label{ex:results:classical}
 Consider the 2D classical, unilateral obstacle problem, namely Example \ref{ex:plaplacian} with $p=2$ and admissible set $\mathcal{K} = \{v \ge \psi\} \subset W^{1,2}(\Omega)$, with $\Omega$ square.  We consider two problems with very different coincidence (active) sets $\{x\in\Omega \,:\, u(x)=\psi(x)\}$.   The first is a standard ``ball'' problem, with an upper hemisphere obstacle $\psi$ \cite[Chapter 12]{Bueler2021}, and the second is the ``spiral'' problem from Example 7.1.1 in \cite{GraeserKornhuber2009}, wherein $\psi$ is constructed to produce a more interesting coincidence set; see Figure \ref{fig:results:classical}.  For this experiment we used $P_1$ elements and uniform triangular meshs, from a coarsest mesh of $m_0=5^2$ nodes (32 triangles), to a finest mesh of $m_9=2049^2 \approx 4.2 \times 10^{6}$ nodes after standard refinements.  As our $O(m_j)$ smoother we applied a single iteration of RS Newton (Section \ref{sec:implementation}), with three (fixed) ICC-preconditioned CG iterations to approximately solve the step equations.  The coarse solver was RS$+$LU, iterated to convergence.  Tolerances \texttt{rtol} $= 10^{-6}$ and \texttt{atol} $= 10^{-12}$ were used in stopping criterion \eqref{eq:stoppingcriterion}.  Noting that $\psi\big|_{\partial \Omega} \le 0$ in both problems, the initial iterate was set to $w=\max\{0,\psi\}$.
@@ -861,7 +861,7 @@ Note that each V-cycle does the work of about eight finest-level preconditioned 
 \label{fig:results:classical}
 \end{figure}
 
-% see git@bitbucket.org:pefarrell/fascd.git: examples/drape.py and edplay/resultsdrape.sh|txt
+% see git@bitbucket.org:pefarrell/fascd.git: examples/drape.py and edplay/results/drape.sh|txt
 % note mcoarse=4, rtol=1e-6, atol=1e-12
 % smoother is vinewtonrsls + 3 x (cg + icc), coarse solver is vinewtonrsls + lu
 \begin{table}[ht]
@@ -923,7 +923,7 @@ Iteration results for the (unregularized) degenerate diffusion $p=4.0$ case are 
 \end{example}
 
 % for Tables \ref{tab:results:fastplap1d} and \ref{tab:results:degenerateplap1d},
-% see git@bitbucket.org:pefarrell/fascd.git: examples/plap1d.py and edplay/resultsplap1d.sh|txt
+% see git@bitbucket.org:pefarrell/fascd.git: examples/plap1d.py and edplay/results/plap1d.sh|txt
 
 \begin{table}[ht]
 \begin{tabular}{lr@{\hskip 7mm}c@{\hskip 3mm}c@{\hskip 3mm}c@{\hskip 4mm}c@{\hskip 5mm}c@{\hskip 6mm}c}
@@ -968,8 +968,10 @@ Iteration results for the (unregularized) degenerate diffusion $p=4.0$ case are 
 FIXME results for 3D advection-diffusion obstacle problem, Example \ref{ex:advectiondiffusion}
 \end{example}
 
+Solvers implemented in Firedrake apply parallel solvers from the PETSc library \cite{Balayetal2023}.  All of the above Examples, which were run in serial so as to fix the smoother,\footnote{The precise action of $O(m_j)$ work parallel smoothers depends on the number of processes \cite[for example]{Bueler2021}.} can in fact be run efficiently in parallel.  We start the next example with a demonstration of parallel weak scaling, and then explore the performance of the FASCD method up to memory-limited resolutions.
+
 \begin{example}   \label{ex:results:sia}
-FIXME results for SIA obstacle problem, Example \ref{ex:sia}
+FIXME results for SIA obstacle problem, Example \ref{ex:sia}; start with weak scaling; show Paraview-generated Figure
 \end{example}
 
 
@@ -979,9 +981,9 @@ FIXME results for SIA obstacle problem, Example \ref{ex:sia}
 
 \section{Discussion and Conclusion} \label{sec:discussion}
 
-FIXME
+FIXME the observation that up-smoothing is more efficient seems to be new; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}
 
-FIXME the observation that up-smoothing is more efficient; this observation seems to be new; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}
+FIXME smoother could be AMG
 
 
 \bibliography{fascd}
