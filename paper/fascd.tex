@@ -962,23 +962,44 @@ Iteration results for the (unregularized) degenerate diffusion $p=4.0$ case are 
 FIXME results for 3D advection-diffusion obstacle problem, Example \ref{ex:advectiondiffusion}
 \end{example}
 
-Solvers implemented in Firedrake apply parallel solvers from the PETSc library \cite{Balayetal2023}.  All of the above Examples, which were run in serial so as to fix the smoother,\footnote{The precise action of $O(m_j)$ work parallel smoothers depends on the number of processes \cite[for example]{Bueler2021}.} also run efficiently in parallel.  We start the next Example with a demonstration of parallel weak scaling \cite{Bueler2021}, and then explore the performance of the FASCD up to memory-limited resolutions.
+Solvers implemented in Firedrake exploit parallel solvers from the PETSc library \cite{Balayetal2023}.  In fact, all of the above Examples, which were run in serial so as to fix the smoother,\footnote{The precise action of $O(m_j)$ work parallel smoothers depends on the number of processes \cite[for example]{Bueler2021}.} also run efficiently in parallel.  The next Example demonstrates the parallel weak scaling \cite{Bueler2021} of FASCD F-cycle solvers.
 
 \begin{example}   \label{ex:results:sia}
-FIXME results for SIA obstacle problem, Example \ref{ex:sia}; start with weak scaling
-\end{example}
+Recall the steady shallow ice approximation (SIA) obstacle problem, Example \ref{ex:sia}, in which the surface elevation $s$ is constrained to exceed the bedrock elevation $b$.  For a test case we set $\Omega=(0,L)^2$, with $L=1800$ km, a radial surface mass balance $a$ function \cite[equation (5.122)]{GreveBlatter2009}, and bumpy, synthetic values for $b\in C^1(\Omega)$, with an elevation range of $1800$ m.  The numerical solution, colored by the ice flow, is shown in Figure \ref{fig:results:siascene}; this used the surface value of the SIA solution, namely $\mathbf{u} = (n+1)(n+2)^{-1} \Gamma (s-b)^{n+1} |\grad s|^{n-1} \grad s$.  As noted in Example \ref{ex:sia} and seen in this Figure, $|\grad s|$ is unbounded at the free boundary, so the solution has low regularity.
 
+\vspace{-2mm}
 % to regenerate:
 %   $ mpiexec -n 16 --map-by core --bind-to hwthread python3 sia.py -levs 8 -bumps \
 %       -mcoarse 8 -fascd_cycle_type full -fascd_monitor -fascd_rtol 2.0e-4 \
 %       -fascd_atol 1.0e-8 -o sialev8.pvd
 \begin{figure}[ht]
 \begin{center}
-\includegraphics[width=1.0\textwidth]{fixfigs/sialev8scene.png}
+\includegraphics[width=0.95\textwidth]{fixfigs/sialev8scene.png}
 \end{center}
-\caption{FIXME}
+\caption{A high-resolution ($m^J\approx 10^6$) solution of Example \ref{ex:sia} over a bumpy bedrock topography, with the ice speed as the surface coloring.}
 \label{fig:results:siascene}
 \end{figure}
+
+We applied FASCD F-cycles using a smoother of four (fixed) iterations of RS Newton (Section \ref{sec:implementation}), with quadratic backtracking line search.  The step equations were approximately solved, in parallel, by three (fixed) iterations of additive-Schwarz preconditioned GMRES, with ILU preconditioning on the blocks.  The coarse solver was again RS Newton, with LU preconditioning redundantly over all processors.  The coarse mesh was relatively fine, with $m_0=289$ nodes and 512 triangles.  Because of the low regularity of the solution we used \id{rtol} $= 2 \times 10^{-4}$ and \id{atol} $= 10^{-8}$ in \eqref{eq:stoppingcriterion}.  The initial iterate was zero ice: $s=b$.
+
+These solver parameters generate a weak-scaling solver.  For $P$ process solutions we fixed the number of degrees of freedom per process at $m_J/P=1025^2$ and solved over $P=1,4,16$ processes.\footnote{Runs were on a single-node workstation with two Intel Xeon 4210 cpus (2.2GHz), a total of 20 physical cores, and 128 GB shared memory.}  The results in Table \ref{tab:results:siaweak} showing mesh independence in the number of FASCD cycles and clear weak scaling.  The finest mesh result, with $m_J=4097^2=17 \times 10^6$ degrees of freedom, needed under six minutes to solve for the surface elevation of an ice sheet slightly larger than the current Greenland ice sheet ($1.7$ million $\text{km}^2$) at uniform $439$ m resolution.
+\end{example}
+
+% see pefarrell-fascd/edplay/siaweak.sh|txt
+% time in seconds:
+%>> 5*60+[11,36,55]
+%ans =      311      336      355
+\begin{table}[ht]
+\begin{tabular}{c@{\hskip 4mm}c@{\hskip 4mm}c@{\hskip 7mm}c@{\hskip 4mm}c}
+P & \emph{levels} & $m_J$ & \emph{F-cycles} & \emph{time} (s) \\ \cmidrule{1-5}
+ 1 & 7 & $1025^2$ & 4 & 311 \\
+ 4 & 8 & $2049^2$ & 4 & 336 \\
+16 & 9 & $4097^2$ & 4 & 355
+\end{tabular}
+\bigskip
+\caption{Iterations and run time (wall clock, in seconds) for parallel FASCD F-cycle solutions of Example \ref{ex:sia}.}
+\label{tab:results:siaweak}
+\end{table}
 
 
 \begin{comment}
