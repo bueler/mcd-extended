@@ -832,14 +832,16 @@ FIXME
 
 \section{Results} \label{sec:results}
 
-Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} were implemented in Python using the Firedrake library \cite{Rathgeberetal2016}.  In this Section we show numerical results corresponding to the several VI Examples in Section \ref{sec:vi}, with a focus on the scaling of FASCD iterations as the mesh resolution increases.  Assuming strong $O(m_J)$ smoothers on each level, as illustrated below, our essential observations are that each V-cycle dramatically reduces the residual norm, and that a couple of F-cycles solves most Examples down to discretization error.
+Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} were implemented in Python using the Firedrake library \cite{Rathgeberetal2016}.  In this Section we show numerical results for the several VI Examples in Section \ref{sec:vi}, with a focus on the scaling of FASCD iterations as the mesh resolution increases.  Assuming strong, yet $O(m_J)$ arithmetic, smoothers on each level, as illustrated below, our essential observations are that each V-cycle dramatically reduces the residual norm, and that a couple of F-cycles solves most Examples down to discretization error.
 
 \begin{example} \label{ex:results:classical}
-Consider the 2D classical, unilateral obstacle problem, namely Example \ref{ex:plaplacian} with $p=2$ and admissible set $\mathcal{K} = \{v \ge \psi\} \subset W^{1,2}(\Omega)$, with $\Omega$ square.  We consider two problems with very different coincidence (active) sets $\{x\in\Omega \,:\, u(x)=\psi(x)\}$.   The first is a standard ``ball'' problem, with an upper hemisphere obstacle $\psi$ \cite[Chapter 12]{Bueler2021}, and the second is the ``spiral'' problem from Example 7.1.1 in \cite{GraeserKornhuber2009}, wherein $\psi$ is constructed to produce a more interesting coincidence set; see Figure \ref{fig:results:classical}.  For this experiment we used $P_1$ elements and uniform triangular meshs, from a coarsest mesh of $m_0=5^2$ nodes (32 triangles), to a finest mesh of $m_9=2049^2 \approx 4.2 \times 10^{6}$ nodes after standard refinements.  As our $O(m_j)$ smoother we applied a single iteration of RS Newton (Section \ref{sec:implementation}), with three (fixed) ICC-preconditioned CG iterations to approximately solve the step equations.  The coarse solver was RS$+$LU, iterated to convergence.  Tolerances \texttt{rtol} $= 10^{-6}$ and \texttt{atol} $= 10^{-12}$ were used in stopping criterion \eqref{eq:stoppingcriterion}.  Noting that $\psi\big|_{\partial \Omega} \le 0$ in both problems, the initial iterate was set to $w=\max\{0,\psi\}$.
+Consider the 2D classical, i.e.~unilateral and Laplacian, obstacle problem, namely Example \ref{ex:plaplacian} with $p=2$ and admissible set $\mathcal{K} = \{v \ge \psi\} \subset W^{1,2}(\Omega)$.  We consider two problems with very different coincidence (active) sets $\{x\in\Omega \,:\, u(x)=\psi(x)\}$, both over square $\Omega$.   The standard ``ball'' problem has an upper hemisphere obstacle $\psi$ \cite[Chapter 12]{Bueler2021}.  In the ``spiral'' problem from Example 7.1.1 in \cite{GraeserKornhuber2009}, $\psi$ is constructed to produce a more interesting coincidence set; see Figure \ref{fig:results:classical}.  Note that $\psi\big|_{\partial \Omega} \le 0$ in both problems.
 
-Table \ref{tab:results:classical} shows the resulting iteration counts.  When the RS Newton smoother is applied by itself as a solver it shows rapidly-increasing iterations as expected, approximately proportionally to resolution.  By contrast, FASCD V-cycle iterations increase slowly, roughly logarithmically with the resolution.  Noting that for F-cycles we are counting the number of V-cycles after the ramp (Section \ref{sec:implementation}), we see that a constant number of F-cycles solves the problem.  The spiral problem appears to be only slightly more challenging for these solvers; apparently the complexity of the coincidence set or free boundary does not strongly influence performance.
+For this experiment we used $P_1$ elements, standard uniform mesh refinement, and a coarsest mesh of $m_0=5^2$ nodes (32 triangles).  The finest mesh had $m_9=2049^2 \approx 4.2 \times 10^{6}$ nodes.  As our smoother we applied a single RS Newton iteration (Section \ref{sec:implementation}), with three (fixed) ICC-preconditioned CG iterations to approximately solve the step equations.  The coarse solver was RS$+$LU, iterated to convergence.  Tolerances \texttt{rtol} $= 10^{-6}$ and \texttt{atol} $= 10^{-12}$ were used in stopping criterion \eqref{eq:stoppingcriterion}.  The initial iterate was set to $w=\max\{0,\psi\}$.
 
-Note that each V-cycle does the work of about eight finest-level preconditioned Krylov (CG+ICC) iterations.  For the F-cycle results, where three V-cycle iterations suffice in either problem, and at any finest-level resolution, this is nearly textbook multigrid efficiency\footnote{Textbook multigrid efficiency is imperfectly defined, but consider \cite{BrownSmithAhmadia2013}: ``an order of magnitude reduction in residual per iteration and solution of the fine-level system at a small multiple of the cost of a residual evaluation.''  However, work of at most ten residual evaluations is often mentioned.} despite the low solution regularity.
+Table \ref{tab:results:classical} shows the resulting iteration counts.  When the RS Newton smoother is applied by itself as a solver it shows rapidly-increasing iterations as expected, roughly proportional to resolution.  By contrast, V-cycle iterations increase slowly, perhaps logarithmically with the resolution.  Noting that for F-cycles we are counting the number of V-cycles after the ramp (Section \ref{sec:implementation}), we see that a constant number of cycles solves the problem.  The spiral problem appears to be only slightly more challenging for these solvers.  The complexity of the coincidence set or free boundary does not strongly-influence FASCD performance.
+
+Each V-cycle does the work of about eight finest-level preconditioned Krylov (CG+ICC) iterations.  For the F-cycle results, where three iterations suffice at all resolutions in either problem, this is close to textbook multigrid efficiency\footnote{Textbook multigrid efficiency is imperfectly defined, but consider \cite{BrownSmithAhmadia2013}: ``an order of magnitude reduction in residual per iteration and solution of the fine-level system at a small multiple of the cost of a residual evaluation.''  However, work of at most ten residual evaluations is often mentioned.} despite the low solution regularity.
 \end{example}
 
 %REGENERATE using git@bitbucket.org:pefarrell/fascd.git, in examples/
@@ -850,13 +852,11 @@ Note that each V-cycle does the work of about eight finest-level preconditioned 
 \begin{center}
 \includegraphics[width=0.35\textwidth]{fixfigs/ball-set.png} \qquad \includegraphics[width=0.35\textwidth]{fixfigs/spiral-set.png}
 \end{center}
-\caption{Coincidence sets for the ball and spiral problems in Example \ref{ex:results:classical}.}
+\caption{Coincidence sets (black) for the ball and spiral problems in Example \ref{ex:results:classical}.}
 \label{fig:results:classical}
 \end{figure}
 
 % see git@bitbucket.org:pefarrell/fascd.git: examples/drape.py and edplay/results/drape.sh|txt
-% note mcoarse=4, rtol=1e-6, atol=1e-12
-% smoother is vinewtonrsls + 3 x (cg + icc), coarse solver is vinewtonrsls + lu
 \begin{table}[ht]
 \begin{tabular}{lr@{\hskip 7mm}cccccc}
 \multirow{2}{*}{\emph{levels}} & \multirow{2}{*}{$m_J$} & \multicolumn{3}{c}{\,\emph{ball}} & \multicolumn{3}{c}{\,\emph{spiral}} \\ \cmidrule(lr){3-5} \cmidrule(lr){6-8}
@@ -878,7 +878,7 @@ Note that each V-cycle does the work of about eight finest-level preconditioned 
 \end{table}
 
 \begin{example}  \label{ex:results:plap}
-Recall Example \ref{ex:plaplacian}, the nonlinear $p$-Laplacian operator.  We will solve a unilateral obstacle problem, in one dimension for visualizability, considering both fast ($p=1.5$) and degenerate diffusivity ($p=4.0$) cases.\footnote{``Fast'' and ``degenerate'' refer to $D=|\grad u|^{p-2}\to \infty$ and $D\to 0$ as $|\grad u|\to 0$, respectively.  Ellipticity is lost in the latter case.}  This example reveals a strong contrast between $V(1,0)$ and $V(0,1)$ results, namely \pr{up} $=0$ and \pr{down} $=0$ in Algorithm \ref{alg:fascd}, respectively, and it emphasizes the need for robust smoothers.
+Recall Example \ref{ex:plaplacian}, the nonlinear $p$-Laplacian operator.  Here we consider a unilateral obstacle problem, in one dimension for visualizability, for both fast ($p=1.5$) and degenerate ($p=4.0$) diffusivity cases.\footnote{``Fast'' and ``degenerate'' refer to $D=|\grad u|^{p-2}\to \infty$ and $D\to 0$ as $|\grad u|\to 0$, respectively.  Ellipticity is lost in the latter case.  For such $p$-Laplacian obstacle problems, well-posedness and ($p$-dependent) solution regularity are considered in \cite{ChoeLewis1991}.}  This example reveals the sometimes strong contrast between $V(1,0)$ and $V(0,1)$ results, namely \pr{up} $=0$ and \pr{down} $=0$ in Algorithm \ref{alg:fascd}, and it emphasizes the need for robust smoothers.
 
 Suppose $\Omega=(-3,3)$, $\psi(x) = -0.2|x|$, $\mathcal{K} = \{v \ge \psi\} \subset W^{1,p}(\Omega)$, and $\ell(v) = \int_\Omega g v$ where $g(x)=1$ for $|x|<1$ and $g(x)=-1$ for $|x|>1$.  The exact solution of VI \eqref{eq:vi} is easily computed for any $p$; see Figure \ref{fig:results:plap}.  For this experiment we used $P_1$ elements, a coarsest mesh of $m_0=7$ nodes, and nine standard refinements to a $m_9=3073$ finest mesh.  The default smoother uses three (fixed) iterations of RS Newton, with LU solution of the step equations.\footnote{This is an optimal $O(m_j)$ smoother in 1D.}  The coarse solver is the same but iterated to convergence.  The initial iterate was $w=\psi$, and again \texttt{rtol} $= 10^{-6}$ and \texttt{atol} $= 10^{-12}$.
 
@@ -908,16 +908,14 @@ Figure \ref{fig:imagesvcycle} illustrates the major steps of an example V-cycle,
 \label{fig:imagesvcycle}
 \end{figure}
 
-Iteration results for the fast diffusion $p=1.5$ case are shown in Table \ref{tab:results:fastplap1d}.  We see that $V(1,0)$ cycles, which correspond to an FAS implemention of Algorithm 4.7 in \cite{GraeserKornhuber2009}, but with a stronger smoother, often do not converge.  By contrast, $V(0,1)$ cycles, using only up-smoothing in the larger sets $\mathcal{U}^j$ (Section \ref{sec:cdmultilevel}), are just as good as the default $V(1,1)$ cycles of Algorithm \ref{alg:fascd}.  These default V-cycles give convergence in the $\|\cdot\|_\infty$ norm (last column) at rate $O(h^{2.005})$.
+Iteration results are shown in Table \ref{tab:results:fastplap1d} for the fast diffusion $p=1.5$ case.  We see that $V(1,0)$ cycles, essentially Algorithm 4.7 in \cite{GraeserKornhuber2009} but with a stronger smoother, often do not converge.  By contrast, $V(0,1)$ cycles, using only up-smoothing in the larger sets $\mathcal{U}^j$ (Section \ref{sec:cdmultilevel}), are just as good as the default $V(1,1)$ cycles (i.e.~Algorithm \ref{alg:fascd}).  F-cycles are even more efficient except when they fail entirely, but the failures arise from singular diffusivity.  If we regularize  $D=|\grad u|^{-0.5}$ to $D_\eps = \left(\eps + |\grad u|^2\right)^{-0.25}$, with $\eps=10^{-8}$, then a single F-cycle suffices at every resolution (column ``F$_\eps$'').
 
-Turning to the F-cycle results in Table \ref{tab:results:fastplap1d}, they are very efficient except when they fail entirely.  This apparently arises from singular diffusivity.  If we regularize the diffusivity formula, from $D=|\grad u|^{-0.5}$ to $D_\eps = \left(\eps + |\grad u|^2\right)^{-0.25}$ with $\eps=10^{-8}$, then a single F-cycle suffices at every resolution (column ``F$_\eps$'').
+Iteration results for the (unregularized) degenerate diffusion $p=4.0$ case are in Table \ref{tab:results:degenerateplap1d}.  V-cycles using the default settings, specifically three fixed RS Newton iterations, do not converge on the finer meshes; the semi-smooth NCP residual norms \eqref{eq:stoppingcriterion} are unbounded in the failed runs.  Visualization shows an instability in which oscillations in the restricted residuals explode.  However, either a slight increase in smoother power, to four RS Newton iterations, or improved finest-level initial iterates through use of an F-cycle, stops the instability.  Even for the three-iteration solver, a single F-cycle suffices at every resolution.
 
-Iteration results for the (unregularized) degenerate diffusion $p=4.0$ case are in Table \ref{tab:results:degenerateplap1d}.  V-cycles using the default settings, specifically the fixed three RS Newton iterations, do not converge on the finer meshes; the semi-smooth NCP residual norms \eqref{eq:stoppingcriterion} are unbounded in the failed runs.  Visualization shows an instability in which oscillations in the restricted residuals explode.  Fortunately, either a slight increase in smoother power, to four RS Newton iterations, or improved finest-level initial iterates, through use of an F-cycle, stops the instability.  In fact, a single F-cycle suffices at every resolution, giving convergence at rate $O(h^{1.420})$.
+The $p=1.5$ and $p=4$ cases give different convergence rates in the $\|\cdot\|_\infty$ norm, namely at rates $O(h^{2.005})$ and $O(h^{1.420})$, respectively.
 \end{example}
 
-% for Tables \ref{tab:results:fastplap1d} and \ref{tab:results:degenerateplap1d},
 % see git@bitbucket.org:pefarrell/fascd.git: examples/plap1d.py and edplay/results/plap1d.sh|txt
-
 \begin{table}[ht]
 \begin{tabular}{lr@{\hskip 7mm}c@{\hskip 3mm}c@{\hskip 3mm}c@{\hskip 4mm}c@{\hskip 5mm}c@{\hskip 6mm}c}
 \emph{levels} & $m_J$ & V(1,0) & V(0,1) & V(1,1) & F & F$_\eps$ & $\|$error$\|_\infty$ \\ \cmidrule{1-8}
@@ -937,6 +935,7 @@ Iteration results for the (unregularized) degenerate diffusion $p=4.0$ case are 
 \label{tab:results:fastplap1d}
 \end{table}
 
+% see git@bitbucket.org:pefarrell/fascd.git: examples/plap1d.py and edplay/results/plap1d.sh|txt
 \begin{table}[ht]
 \begin{tabular}{lr@{\hskip 7mm}c@{\hskip 4mm}c@{\hskip 4mm}c@{\hskip 6mm}c}
 \emph{levels} & $m_J$ & V & V$_4$ & F & $\|$error$\|_\infty$ \\ \cmidrule{1-6}
@@ -956,6 +955,7 @@ Iteration results for the (unregularized) degenerate diffusion $p=4.0$ case are 
 \label{tab:results:degenerateplap1d}
 \end{table}
 
+Solvers implemented in Firedrake can exploit parallel solvers from the PETSc library \cite{Balayetal2023}.  In fact, the above Examples, which were run in serial so as to fix the smoother,\footnote{The action of parallel preconditioners generally depends on the number of processes \cite[for example]{Bueler2021}.} also run efficiently in parallel.  The next Example applies a parallel solver, and Example \ref{ex:results:sia} also demonstrates the parallel weak scaling \cite{Bueler2021} of FASCD.
 
 \begin{example}  \label{ex:results:advdiff}
 FIXME results for 3D advection-diffusion obstacle problem, Example \ref{ex:advectiondiffusion}
