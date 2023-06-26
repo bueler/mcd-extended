@@ -154,7 +154,7 @@ urlcolor=black    % ...
 \date{\today}
 
 \begin{abstract}
-The \emph{full approximation storage constraint decomposition} (FASCD) multilevel finite element method introduced here is a common extension of the full approximation storage multigrid technique for nonlinear partial differential equations, due to A.~Brandt, and of the constraint decomposition method introduced by X.-C.~Tai for variational inequalities.  We extend the existing constraint decomposition ideas by recognizing and exploiting the telescoping nature of certain function space subset decompositions arising from multilevel mesh hierarchies.  Then, by using strong smoothers with work proportional to the number of unknowns on the finite element mesh level, we demonstrate that FASCD V-cycles show superior mesh-independent convergence rates and that FASCD F-cycles (full multigrid) are optimal solvers.  The example problems include unilateral and bi-obstacle variational inequality problems with linear and nonlinear differential operators.
+The \emph{full approximation storage constraint decomposition} (FASCD) multilevel finite element method introduced here is a common extension of the full approximation storage multigrid technique for nonlinear partial differential equations, due to A.~Brandt, and of the constraint decomposition method introduced by X.-C.~Tai for the variational inequalities associated to inequality-constrained optimization.  We extend the constraint decomposition idea by recognizing and exploiting the telescoping nature of certain function space subset decompositions arising from multilevel mesh hierarchies.  Then, by using strong smoothers with work proportional to the number of unknowns on the finite element mesh level, we demonstrate that FASCD V-cycles show superior mesh-independent convergence rates and that FASCD F-cycles (full multigrid) are optimal solvers.  The several example problems include unilateral and bi-obstacle variational inequality problems with symmetric linear, nonsymmetric linear, and nonlinear differential operators.
 \end{abstract}
 
 \maketitle
@@ -661,7 +661,7 @@ Our V-cycle generates a correction to a finest-level iterate $w^J \in \mathcal{K
 
 \begin{figure}[ht]
 \begin{center}
-\input{tikz/fascdvcycle.tex}
+\input{tikz/vcycle.tex}
 \end{center}
 \caption{The FASCD V-cycle computes downward corrections $y_j \in \mathcal{D}^j$, but the upward corrections $z_j\in\mathcal{U}^j$ are in larger sets.}
 \label{fig:fascdvcycle}
@@ -716,13 +716,13 @@ Steps \emph{(ii)}--\emph{(iv)} are justified when the residual and the error are
 \end{align}
 This is the same as VI problem \eqref{eq:fe:downvi}, but in cluttered form; definitions \eqref{eq:fe:definew} and \eqref{eq:fe:levelsource} create \eqref{eq:fe:downvi}.  The explanation for VI \eqref{eq:fe:upvi} is similar.
 
-We will regard the smoothers for VI problems \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi} as approximate, in-place procedures, acting on the corrections $y^j$ and $z^j$, respectively (Section \ref{sec:implementation}).  Also, as is standard in multigrid, at the coarsest $j=0$ level we suppose that problem \eqref{eq:fe:upvi} is solved accurately.
+We will regard the smoothers for VI problems \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi} as approximate solvers, acting on the corrections $y^j$ and $z^j$, respectively (Section \ref{sec:implementation}).  Also, as is standard in multigrid, at the coarsest $j=0$ level we suppose that problem \eqref{eq:fe:upvi} is solved accurately.
 
-These ideas come together in Algorithm \ref{alg:fascd}, \pr{fascd-vcycle}, which acts in-place on $w^J$.  It assumes certain semantics for the \pr{smooth} and the coarsest-level \pr{solve} procedures; they do in-place modifications of their final arguments, without modifying their first four arguments.  Parameters \id{down} and \id{up} determine the number of smoother iterations, respectively.
+These ideas come together in Algorithm \ref{alg:fascd}, \pr{fascd-vcycle}, which updates $w^J$.  It assumes certain semantics for the \pr{smooth} and the coarsest-level \pr{solve} procedures; they do in-place modifications of their final arguments, without modifying their first four arguments.  Parameters \id{down} and \id{up} determine the number of smoother iterations, respectively.
 
 \begin{pseudofloat}[ht]
 \begin{pseudo}
-\pr{fascd-vcycle}(\ell^J,\underline{\gamma}^J,\overline{\gamma}^J;w^J)\text{:} \\+
+\pr{fascd-vcycle}(J,\ell^J,\underline{\gamma}^J,\overline{\gamma}^J;w^J)\text{:} \\+
     $\underline{\chi}^J = \underline{\gamma}^J - w^J {\large \strut}$ \\
     $\overline{\chi}^J = \overline{\gamma}^J - w^J {\large \strut}$ \\
     for $j=J$ downto $j=1$ \\+
@@ -739,7 +739,7 @@ These ideas come together in Algorithm \ref{alg:fascd}, \pr{fascd-vcycle}, which
     for $j=1$ to $j=J$ \\+
       $z^j = y^{j} + P z^{j-1}$ \\
       $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j,\underline{\chi}^j,\overline{\chi}^j,w^j;z^j)$  \ct{smoothing of \eqref{eq:fe:upvi} in $\mathcal{U}^j$} \\-
-    $w^J \gets w^J+z^J$
+    return $w^J+z^J$
 \end{pseudo}
 \caption{The FASCD V-cycle is an iteration for solving FE VI problem \eqref{eq:fe:vi}.  Here $f^j$ denotes an FE discretization of $f$ in problem \eqref{eq:boxdirichletvi}.}
 \label{alg:fascd}
@@ -818,16 +818,38 @@ FIXME smoothers use Newton reduced space (RS) \cite{BensonMunson2006}with either
 
 % FIXME try Newton semi-smooth \cite{BensonMunson2006}?
 
-FIXME F-cycles
+FIXME a perfectly reasonable algorithm is to iterate V-cycles until \eqref{eq:stoppingcriterion} (see Section \ref{sec:results}), but F-cycles are even better; idea is to ``ramp up'' to an initial iterate on the finest level by solving coarse mesh problems, and only then doing full-depth V-cycles
+
+FIXME while the direct application of injection to the original fine-level constraints $\underline{\gamma}^J, \overline{\gamma}^J$ is not used in generating the LDCs for V-cycles (Section \ref{sec:cdmultilevel}), it is the right idea for the ramp in an F-cycle (as long as it is followed by truncation into the next-finest admissible set); here $\mathcal{K}^j=\{v \in \mathcal{V}^j \,:\, \underline{\gamma}^j \le v \le \overline{\gamma}^j\}$; see Algorithm \ref{alg:fascd-fcycle}; Figure \ref{fig:fcycle} illustrates the F-cycle.
 
 \begin{pseudofloat}[ht]
 \begin{pseudo}
-\pr{fascd-fcycle} \\
-FIXME
+\pr{fascd-fcycle}(J,\ell^J,\underline{\gamma}^J,\overline{\gamma}^J)\text{:} \\+
+    for $j=J$ downto $j=1$ \\+
+        $\ell^{j-1}, \underline{\gamma}^{j-1}, \overline{\gamma}^{j-1} = R(\ell^j), \iR \underline{\gamma}^{j}, \iR \overline{\gamma}^{j}$ {\large\strut} \\-
+    choose $w^0 \in \mathcal{K}^0$ \\
+    $\text{\pr{solve}}(\ell^0,\underline{\gamma}^0,\overline{\gamma}^0;w^0)$ \\
+    for $j=1$ to $j=J-1$ \\+
+        $w^j = \max\left\{\underline{\gamma}^{j},\min\{\overline{\gamma}^{j}, Pw^{j-1}\}\right\} \in \mathcal{K}^j$ \\
+        $\pr{fascd-vcycle}^{\text{\id{rampv}}}(j,\ell^j,\underline{\gamma}^j,\overline{\gamma}^j;w^j)$ \\-
+    $w^J = \max\left\{\underline{\gamma}^{J},\min\{\overline{\gamma}^{J}, Pw^{J-1}\}\right\} \in \mathcal{K}^J$ \\
+    while not \eqref{eq:stoppingcriterion} \\+
+        \pr{fascd-vcycle}(J,\ell^J,\underline{\gamma}^J,\overline{\gamma}^J;w^J) \\-
+    return $w^J$
 \end{pseudo}
 \caption{The FASCD F-cycle for solving FE VI problem \eqref{eq:fe:vi}.}
 \label{alg:fascd-fcycle}
 \end{pseudofloat}
+
+\begin{figure}[ht]
+\begin{center}
+\input{tikz/fcycle.tex}
+\end{center}
+\caption{Algorithm \ref{alg:fascd-fcycle} initially restricts the data $\ell^J,\underline{\gamma}^J,\overline{\gamma}^J$ down to level $j=0$ (gray), then prolongs and truncates (doubled; see lines 7 and 9 in Alg.~\ref{alg:fascd-fcycle}) to create the next-finer initial iterate.  See Figure \ref{fig:fascdvcycle} for other symbols.}
+\label{fig:fcycle}
+\end{figure}
+
+FIXME though not shown in Algorithm \ref{alg:fascd-fcycle}, one can generate an admissible initial iterate for the first coarse solve in the F-cycle by injection and truncation down to coarsest level
 
 
 \section{Results} \label{sec:results}
