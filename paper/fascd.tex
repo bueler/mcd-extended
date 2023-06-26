@@ -958,10 +958,44 @@ The $p=1.5$ and $p=4$ cases give different convergence rates in the $\|\cdot\|_\
 Solvers implemented in Firedrake can exploit parallel solvers from the PETSc library \cite{Balayetal2023}.  In fact, the above Examples, which were run in serial so as to fix the smoother,\footnote{The action of parallel preconditioners generally depends on the number of processes \cite[for example]{Bueler2021}.} also run efficiently in parallel.  The next Example applies a parallel solver, and Example \ref{ex:results:sia} also demonstrates the parallel weak scaling \cite{Bueler2021} of FASCD.
 
 \begin{example}  \label{ex:results:advdiff}
-FIXME results for 3D advection-diffusion obstacle problem, Example \ref{ex:advectiondiffusion}
+The advection-diffusion operator in Example \ref{ex:advectiondiffusion} is coercive when the velocity $\bX$ is divergence-free.  We now demonstrate FASCD F-cycles on such a VI problem over $\Omega=(-1,1)^d$ ($d=2,3$).  The 2D problem satisfies the coercivity hypotheses ($\bX = (7+5y,-5x)$ is divergence-free), but the 3D problem has a more general velocity ($\grad\cdot\bX \ne 0$); note $u=0$ on all of $\partial \Omega$ in both problems.  The discontinuous source term $\phi \in L^\infty(\Omega)$ has $\phi>0$ patches in half of the domain and $\phi<0$ values in the other half.  While the other Examples in this Section are unilateral, here we constrained the solution with upper and lower obstacles: $0 \le u \le 1$.  The $u=0$ and $u=1$ coincidence sets for the 2D problem are shown in Figure \ref{fig:results:advdiff}; the 3D sets are comparable in regularity.
+
+% REGENERATE using git@bitbucket.org:pefarrell/fascd.git, in examples/
+%   mpiexec -n 16 --map-by core --bind-to hwthread python3 pollutant.py -dim 2 -levs 7 -o poll2d.pvd
+%   paraview poll2d.pvd
+% to plot coincidence sets use ranges 0 <= u <= 0.00001 and 0.99999 <= u <= 1 and
+% preset "xray" and invert colors (for u=0) or keep colors (u=1)
+\begin{figure}[ht]
+\begin{center}
+\includegraphics[width=0.35\textwidth]{fixfigs/poll2d-zero-set.png} \qquad \includegraphics[width=0.35\textwidth]{fixfigs/poll2d-one-set.png}
+\end{center}
+\caption{Coincidence sets (black) for the 2D bi-obstacle problem in Example \ref{ex:results:advdiff}: $u=0$ (left) and $u=1$ (right).}
+\label{fig:results:advdiff}
+\end{figure}
+
+For the experiment we used $P_1$ elements, uniform refinement, and a coarse mesh with $m_0=16^d$ nodes so as to minimally-resolve the coincidence set.  The smoother was two (fixed) RS Newton iterations,  with three preconditioned GMRES iterations to approximately solve the step equations.  The additive Schwarz method (ASM) preconditioner applied incomplete factorization (ILU) preconditioning on the blocks.  The coarse solver was RS Newton and LU, iterated to convergence.  Tolerances \id{rtol} $=10^{-5}$, \id{atol} $=10^{-9}$ were used in \eqref{eq:stoppingcriterion}.
+
+F-cycle iteration results are shown in Table \ref{tab:results:advdiff}.  Despite the hint of growing iterations under mesh refinement, a few iterations suffice up to memory-limited resolutions.  For any of the finer mesh runs here, the FASCD F-cycle solver takes less time than generating the $P_1$ mesh hierarchy.
 \end{example}
 
-Solvers implemented in Firedrake exploit parallel solvers from the PETSc library \cite{Balayetal2023}.  In fact, all of the above Examples, which were run in serial so as to fix the smoother,\footnote{The precise action of $O(m_j)$ work parallel smoothers depends on the number of processes \cite[for example]{Bueler2021}.} also run efficiently in parallel.  The next Example demonstrates the parallel weak scaling \cite{Bueler2021} of FASCD F-cycle solvers.
+% see git@bitbucket.org:pefarrell/fascd.git: examples/pollutant.py and edplay/results/pollutant.sh|txt
+\begin{table}[ht]
+\begin{tabular}{lr@{\hskip 7mm}c@{\hskip 4mm}c}
+\emph{levels} & $m_J$ & F ($d=2$) & F ($d=3$) \\ \cmidrule{1-4}
+ 1 &    $16^d$ & 1 & 1 \\
+ 2 &    $31^d$ & 2 & 2 \\
+ 3 &    $61^d$ & 2 & 3 \\
+ 4 &   $121^d$ & 2 & 3 \\
+ 5 &   $241^d$ & 2 & 4 \\
+ 6 &   $481^d$ & 2 \\
+ 7 &   $961^d$ & 3 \\
+ 8 &  $1921^d$ & 3 \\
+ 9 &  $3841^d$ & 3
+\end{tabular}
+\bigskip
+\caption{F-cycle iterations for 2D (serial) and 3D (16 processes) solutions of the advection-diffusion bi-obstacle VI problem in Example \ref{ex:results:advdiff}.}
+\label{tab:results:advdiff}
+\end{table}
 
 \begin{example}   \label{ex:results:sia}
 Recall the steady shallow ice approximation (SIA) obstacle problem, Example \ref{ex:sia}, in which the surface elevation $s$ is constrained to exceed the bedrock elevation $b$.  For a test case we set $\Omega=(0,L)^2$, with $L=1800$ km, a radial surface mass balance $a$ function \cite[equation (5.122)]{GreveBlatter2009}, and bumpy, synthetic values for $b\in C^1(\Omega)$, with an elevation range of $1800$ m.  The numerical solution, colored by the ice flow, is shown in Figure \ref{fig:results:siascene}; this used the surface value of the SIA solution, namely $\mathbf{u} = (n+1)(n+2)^{-1} \Gamma (s-b)^{n+1} |\grad s|^{n-1} \grad s$.  As noted in Example \ref{ex:sia} and seen in this Figure, $|\grad s|$ is unbounded at the free boundary, so the solution has low regularity.
