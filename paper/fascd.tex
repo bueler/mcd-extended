@@ -723,17 +723,14 @@ These ideas come together in Algorithm \ref{alg:fascd}, \pr{fascd-vcycle}, which
 \begin{pseudofloat}[ht]
 \begin{pseudo}
 \pr{fascd-vcycle}(J,\ell^J,\underline{\gamma}^J,\overline{\gamma}^J;w^J)\text{:} \\+
-    $\underline{\chi}^J = \underline{\gamma}^J - w^J {\large \strut}$ \\
-    $\overline{\chi}^J = \overline{\gamma}^J - w^J {\large \strut}$ \\
+    $\underline{\chi}^J, \, \overline{\chi}^J = \underline{\gamma}^J - w^J, \, \overline{\gamma}^J - w^J {\large \strut}$ \label{line:vcyclegenchifinest} \\
     for $j=J$ downto $j=1$ \\+
-      $\underline{\chi}^{j-1} = \maxR \underline{\chi}^j {\large \strut}$ \\
-      $\overline{\chi}^{j-1} = \minR \overline{\chi}^j {\large \strut}$ \\
-      $\underline{\phi}^j = \underline{\chi}^j - P\underline{\chi}^{j-1} {\large \strut}$ \\
-      $\overline{\phi}^j = \overline{\chi}^j - P\overline{\chi}^{j-1} {\large \strut}$ \\
+      $\underline{\chi}^{j-1}, \, \overline{\chi}^{j-1} = \maxR \underline{\chi}^j, \, \minR \overline{\chi}^j {\large \strut}$ \label{line:vcyclegenchi} \\
+      $\underline{\phi}^j, \, \overline{\phi}^j = \underline{\chi}^j - P\underline{\chi}^{j-1}, \, \overline{\chi}^j - P\overline{\chi}^{j-1} {\large \strut}$ \label{line:vcyclegenphi} \\
       $y^j = 0$ \\
       $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j,\underline{\phi}^j,\overline{\phi}^j,w^j;y^j)$  \ct{smoothing of \eqref{eq:fe:downvi} in $\mathcal{D}^j$}\\
-      $w^{j-1} = \iR(w^j + y^j)$ \\
-      $\ell^{j-1} = f^{j-1}(w^{j-1}) + R \left(\ell^j - f^j(w^j+y^j)\right)$ \\-
+      $w^{j-1} = \iR(w^j + y^j)$ \label{line:vcyclerestrictsolution} \\
+      $\ell^{j-1} = f^{j-1}(w^{j-1}) + R \left(\ell^j - f^j(w^j+y^j)\right)$ \label{line:vcyclerestrictell} \\-
     $z^0 = 0$ \\
     $\text{\pr{solve}}(\ell^0,\underline{\chi}^0,\overline{\chi}^0,w^0;z^0)$ \hspace{1.0cm} \ct{solving of \eqref{eq:fe:upvi} in $\mathcal{U}^0$} \\
     for $j=1$ to $j=J$ \\+
@@ -826,13 +823,14 @@ FIXME while the direct application of injection to the original fine-level const
 \begin{pseudo}
 \pr{fascd-fcycle}(J,\ell^J,\underline{\gamma}^J,\overline{\gamma}^J)\text{:} \\+
     for $j=J$ downto $j=1$ \\+
-        $\ell^{j-1}, \underline{\gamma}^{j-1}, \overline{\gamma}^{j-1} = R(\ell^j), \iR \underline{\gamma}^{j}, \iR \overline{\gamma}^{j}$ {\large\strut} \\-
+        $\ell^{j-1} = R(\ell^j)$ \\
+        $\underline{\gamma}^{j-1}, \, \overline{\gamma}^{j-1} = \iR \underline{\gamma}^{j}, \, \iR \overline{\gamma}^{j}$ {\large\strut} \\-
     choose $w^0 \in \mathcal{K}^0$ \\
     $\text{\pr{solve}}(\ell^0,\underline{\gamma}^0,\overline{\gamma}^0;w^0)$ \\
     for $j=1$ to $j=J-1$ \\+
-        $w^j = \max\left\{\underline{\gamma}^{j},\min\{\overline{\gamma}^{j}, Pw^{j-1}\}\right\} \in \mathcal{K}^j$ \\
+        $w^j = \max\left\{\underline{\gamma}^{j},\min\{\overline{\gamma}^{j}, Pw^{j-1}\}\right\} \in \mathcal{K}^j$ \label{line:fcycleprolongtruncone} \\
         $\pr{fascd-vcycle}^{\text{\id{rampv}}}(j,\ell^j,\underline{\gamma}^j,\overline{\gamma}^j;w^j)$ \\-
-    $w^J = \max\left\{\underline{\gamma}^{J},\min\{\overline{\gamma}^{J}, Pw^{J-1}\}\right\} \in \mathcal{K}^J$ \\
+    $w^J = \max\left\{\underline{\gamma}^{J},\min\{\overline{\gamma}^{J}, Pw^{J-1}\}\right\} \in \mathcal{K}^J$ \label{line:fcycleprolongtrunctwo} \\
     while not \eqref{eq:stoppingcriterion} \\+
         \pr{fascd-vcycle}(J,\ell^J,\underline{\gamma}^J,\overline{\gamma}^J;w^J) \\-
     return $w^J$
@@ -845,7 +843,7 @@ FIXME while the direct application of injection to the original fine-level const
 \begin{center}
 \input{tikz/fcycle.tex}
 \end{center}
-\caption{Algorithm \ref{alg:fascd-fcycle} initially restricts the data $\ell^J,\underline{\gamma}^J,\overline{\gamma}^J$ down to level $j=0$ (gray), then prolongs and truncates (doubled; see lines 7 and 9 in Alg.~\ref{alg:fascd-fcycle}) to create the next-finer initial iterate.  See Figure \ref{fig:fascdvcycle} for other symbols.}
+\caption{Algorithm \ref{alg:fascd-fcycle} initially restricts the data $\ell^J,\underline{\gamma}^J,\overline{\gamma}^J$ down to level $j=0$ (gray), then prolongs and truncates (doubled; see lines \ref{line:fcycleprolongtruncone} and \ref{line:fcycleprolongtrunctwo} in Alg.~\ref{alg:fascd-fcycle}) to create the next-finer initial iterate.  See Figure \ref{fig:fascdvcycle} for other symbols.}
 \label{fig:fcycle}
 \end{figure}
 
@@ -1085,9 +1083,9 @@ FIXME For the classical obstacle problem, based on the linear, symmetric Laplaci
 \begin{equation}
 \ip{f^J(u^J)}{v} = \ip{\ell^J}{v} \qquad \text{for all } v\in \mathcal{V}_0^J, \label{eq:app:fas:pde}
 \end{equation}
-the FE discretization of strong-form PDE $f(u)=\ell$.  The downward $\mathcal{D}^j$ and upward $\mathcal{U}^j$ constraint sets can also be enlarged so that the corrections $y^j$ and $z^j$ in \pr{fascd-vcycle} are never constrained.\footnote{Formally we might do this by choosing constant LDCs with $\underline{\chi}^j \ll 0 \ll \overline{\chi}^j$, but so that ordering property \eqref{eq:fe:chiordering} still holds, and also with large gaps so that $\underline{\phi}^j = \underline{\chi}^j - \underline{\chi}^{j-1} \ll 0 \ll \overline{\phi}^j = \overline{\chi}^j - \overline{\chi}^{j-1}$.}  Thus the corrections $y^j$ and $z^j$ are unconstrained, and lines 2--3 and 5--8 can be removed from Algorithm \ref{alg:fascd}.
+the FE discretization of strong-form PDE $f(u)=\ell$.  The downward $\mathcal{D}^j$ and upward $\mathcal{U}^j$ constraint sets can also be enlarged so that the corrections $y^j$ and $z^j$ in \pr{fascd-vcycle} are never constrained.\footnote{Formally we might do this by choosing constant LDCs with $\underline{\chi}^j \ll 0 \ll \overline{\chi}^j$, but so that ordering property \eqref{eq:fe:chiordering} still holds, and also with large gaps so that $\underline{\phi}^j = \underline{\chi}^j - \underline{\chi}^{j-1} \ll 0 \ll \overline{\phi}^j = \overline{\chi}^j - \overline{\chi}^{j-1}$.}  Thus the corrections $y^j$ and $z^j$ are unconstrained, and lines \ref{line:vcyclegenchifinest}, \ref{line:vcyclegenchi}, and \ref{line:vcyclegenphi} can be removed from Algorithm \ref{alg:fascd}.
 
-Now the downward/upward VIs \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi} are also unconstrained, and can be rewritten as weak forms $\ip{f^j(w^j + y^j)}{v} = \ip{\ell^j}{v}$ and $\ip{f^j(w^j + z^j)}{v} = \ip{\ell^j}{v}$, respectively, for all $v\in \mathcal{V}_0^j$.  Then we combine $u^j=w^j+y^j$, instead of $w^j$ and $y^j$ separately, and similarly $u^j=w^j+z^j$ when up-smoothing.  The smoothers and the coarsest-level solver can be regarded as unconstrained, in-place modifications of $u^j$, so we denote them simply as ``$\text{\pr{smooth}}(\ell^j;u^j)$.''  Noting line 11 of Algorithm \ref{alg:fascd} now says $u^{j-1}=\iR u^j$, after down-smoothing the coarsened source functional computed by line 12 can be rewritten as
+Now the downward/upward VIs \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi} are also unconstrained, and can be rewritten as weak forms $\ip{f^j(w^j + y^j)}{v} = \ip{\ell^j}{v}$ and $\ip{f^j(w^j + z^j)}{v} = \ip{\ell^j}{v}$, respectively, for all $v\in \mathcal{V}_0^j$.  Then we combine $u^j=w^j+y^j$, instead of $w^j$ and $y^j$ separately, and similarly $u^j=w^j+z^j$ when up-smoothing.  The smoothers and the coarsest-level solver can be regarded as unconstrained, in-place modifications of $u^j$, so we denote them simply as ``$\text{\pr{smooth}}(\ell^j;u^j)$.''  Noting line \ref{line:vcyclerestrictsolution} of Algorithm \ref{alg:fascd} now says $u^{j-1}=\iR u^j$, after down-smoothing the coarsened source functional computed by line \ref{line:vcyclerestrictell} can be rewritten as
 \begin{equation}
 \ell^{j-1} = f^{j-1}\left(u^{j-1}\right) + R\left(\ell^j-f^j(u^j)\right). \label{eq:app:fas:levelsource}
 \end{equation}
