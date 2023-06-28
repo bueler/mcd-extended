@@ -751,81 +751,80 @@ Regarding storage required for \pr{fascd-vcycle}, and assuming all box constrain
 This gives storage at most $16m_J$, $12m_J$, and $10m_J$ in dimensions $d=1,2,3$, respectively.  For comparison, a single-level method needs $4 m_J$ storage.\footnote{That is, for vectors $\underline{\gamma}^J,\overline{\gamma}^J,\ell^J,w^J$.}  If some of the obstacles are trivial, for instance in the unilateral case $\overline{\gamma}^J=+\infty$, storage is reduced at all levels.
 
 
-\section{Implementation and smoothers} \label{sec:implementation}
+\section{Implementation} \label{sec:implementation}
 
-In this section we consider several practical concerns when implementing and applying \pr{fascd-vcycle} Algorithm \ref{alg:fascd}.  We address convergence criteria, smoothers, and coarse solvers, plus the F-cycle extension of the Algorithm, sometimes called a \emph{full multigrid cycle}.
+In this section we consider several practical concerns when implementing and applying \pr{fascd-vcycle} Algorithm \ref{alg:fascd}.  We address convergence criteria and the F-cycle extension of the Algorithm.  We also describe an active set Newton method used in Section \ref{sec:results} as a smoother and coarse solver.
 
-Because the problem is inequality-constrained, repeated application of \pr{fascd-vcycle} to solve the finite-dimensional, box-constrained VI \eqref{eq:fe:vi} will not generally reduce the residual $f^J(w^J) - \ell^J$ to zero everywhere.  However, \eqref{eq:fe:vi} is equivalent to a \emph{mixed complementarity problem} (MCP) \cite{FacchineiPang2003}, a strong form amenable to convergence criteria.  Let $x_p \in \mathcal{T}^J$ be a finest-level node, and $\psi_p(x)$ the corresponding hat function.  Let $\mathcal{X}^J=\big\{w\in\cV^J\,:\,w(x_p)=g_D^J(x_p) \text{ if } x_p\in \partial_D\Omega\big\}$, thus $\cK^J = \left\{\underline{\gamma}^J \le w \le \overline{\gamma}^J\right\} \cap \mathcal{X}^J$.  If $m_D$ is the number of nodes $x_p$ in the Dirichlet boundary, let $I_D$ be the $m_D\times m_J$ matrix which extracts Dirichlet nodal values; its transpose $I_D^\top$ injects Dirichlet boundary degrees of freedom into $(\mathcal{V}^J)'$.  Finally, we will write $a\perp b$ when $a,b \in \RR^n$ are \emph{complementary}, that is, when $a_i \ge 0$ and $b_i \ge 0$ and $a_i b_i = 0$ for $i=0,\dots,n-1$.  Then problem \eqref{eq:fe:vi}, which would be expressed VI$\left(f^J(\cdot)-\ell^J,\left[\,\underline{\gamma}^J,\overline{\gamma}^J\right] \cap \mathcal{X}^J\right)$ in the operations research literature \cite{FerrisPang1997}, is equivalent to the following MCP for the solution $u^J \in \mathcal{K}^J$, but with additional equality constraints:
+Because the problem is inequality-constrained, repeated application of \pr{fascd-vcycle} to solve the finite-dimensional, box-constrained VI \eqref{eq:fe:vi} will not generally reduce the residual $f^J(w^J) - \ell^J$ to zero everywhere.  Indeed \eqref{eq:fe:vi} is equivalent to a \emph{mixed complementarity problem} (MCP) \cite{FacchineiPang2003}, a strong form amenable to constructing a convergence criteria for the discretization.  Let $x_p \in \mathcal{T}^J$ be a finest-level node, and $\psi_p(x)$ the corresponding hat function.  Let $\mathcal{X}^J=\big\{w\in\cV^J\,:\,w(x_p)=g_D^J(x_p) \text{ if } x_p\in \partial_D\Omega\big\}$, thus $\cK^J = \left\{\underline{\gamma}^J \le w \le \overline{\gamma}^J\right\} \cap \mathcal{X}^J$.  If $m_D$ is the number of nodes $x_p$ in the Dirichlet boundary, let $I_D$ be the $m_D\times m_J$ matrix which extracts Dirichlet nodal values; its transpose $I_D^\top$ injects Dirichlet boundary degrees of freedom into $(\mathcal{V}^J)'$.  Finally, write $a\perp b$ when $a,b \in \RR^n$ are \emph{complementary}, that is, when $a_i \ge 0$ and $b_i \ge 0$ and $a_i b_i = 0$ for $i=0,\dots,n-1$.  Then problem \eqref{eq:fe:vi}, which would be expressed VI$\left(f^J(\cdot)-\ell^J,\left[\,\underline{\gamma}^J,\overline{\gamma}^J\right] \cap \mathcal{X}^J\right)$ in the operations research literature \cite{FerrisPang1997}, is equivalent to the following MCP for the solution $u^J \in \mathcal{K}^J$, but with additional equality constraints:
 \begin{align}
 \underline{\gamma}^J \le u^J \le \overline{\gamma}^J \quad &\perp \quad f^J(u^J) - \ell^J - I_D^\top \lambda \label{eq:fe:mcp} \\
 I_D u^J &= g_D^J\big|_{\partial_D\Omega} \notag
 \end{align}
-for some Lagrange multipliers $\lambda \in \RR^{m_D}$.  By definition, MCP \eqref{eq:fe:mcp} says that certain node-wise conditions hold for $u^J$ at $x_p \in \mathcal{T}^J$.  If $x_p \notin \partial_D\Omega$ then one of these four conditions hold:
+for some Lagrange multipliers $\lambda \in \RR^{m_D}$.
+
+By definition, MCP \eqref{eq:fe:mcp} says that certain node-wise conditions hold for $u^J$ at $x_p \in \mathcal{T}^J$.  Let $r(u^J)_p = \ip{f^J(w^J)-\ell^J}{\psi_p}$ be the pointwise (ordinary) residual.  If $x_p \notin \partial_D\Omega$ then one of these four conditions hold:
 \begin{itemize}
-\item $\underline{\gamma}^J(x_p)<u^J(x_p)<\overline{\gamma}^J(x_p)$ and $\ip{f^J(u^J)-\ell^J}{\psi_p} = 0$,
-\item $\underline{\gamma}^J(x_p)=u^J(x_p)<\overline{\gamma}^J(x_p)$ and $\ip{f^J(u^J)-\ell^J}{\psi_p} \ge 0$,
-\item $\underline{\gamma}^J(x_p)<u^J(x_p)=\overline{\gamma}^J(x_p)$ and $\ip{f^J(u^J)-\ell^J}{\psi_p} \le 0$,
+\item $\underline{\gamma}^J(x_p)<u^J(x_p)<\overline{\gamma}^J(x_p)$ and $r(u^J)_p = 0$,
+\item $\underline{\gamma}^J(x_p)=u^J(x_p)<\overline{\gamma}^J(x_p)$ and $r(u^J)_p \ge 0$,
+\item $\underline{\gamma}^J(x_p)<u^J(x_p)=\overline{\gamma}^J(x_p)$ and $r(u^J)_p \le 0$,
 \item $\underline{\gamma}^J(x_p)=u^J(x_p)=\overline{\gamma}^J(x_p)$.
 \end{itemize}
 Otherwise, if $x_p \in \partial_D\Omega$ then
 \begin{itemize}
-\item $u^J(x_p)=g_D^J(x_p)$ and $\lambda_p=\ip{f^J(u^J)-\ell^J}{\psi_p}$.
+\item $u^J(x_p)=g_D^J(x_p)$ and $\lambda_p=r(u^J)_p$.
 \end{itemize}
-The cases might be labeled \emph{inactive}, \emph{lower active}, \emph{upper active}, \emph{pinched} (\emph{both active}), and \emph{boundary}, respectively.  Where \emph{pinched} applies, $\ip{f^J(u^J)-\ell^J}{\psi_p}$ can have any real value.
+The cases might be labeled \emph{inactive}, \emph{lower active}, \emph{upper active}, \emph{pinched} (\emph{both active}), and \emph{boundary}, respectively.  Where \emph{pinched} applies, $r(u^J)_p$ can have any real value.
 
-Thus the MCP \eqref{eq:fe:mcp} identifies expressions whose norms should go below tolerance.  For for $w^J \in \mathcal{K}^J$, let $r_p = \ip{f^J(w^J)-\ell^J}{\psi_p}$, the pointwise (ordinary) residual, as a notational convenience.  First, interpreting the MCP directly, we define the finest-level \emph{nodal complementarity residual} $\rNC$ in $\RR^{m_J}$ from the five cases:
+Thus \eqref{eq:fe:mcp} allows us to construct expressions whose norms should go below tolerance.  First, interpreting the MCP directly, for $w^J \in \mathcal{K}^J$ we define the finest-level \emph{nodal complementarity residual} $\rNC(w^J)$ from the five cases:
 \begin{equation}
 \rNC(w^J)_p = \begin{cases}
-    r_p, & \underline{\gamma}^J(x_p) < w^J(x_p) < \overline{\gamma}^J(x_p), \\
-    \min\{r_p,0\}, & w^J(x_p) = \underline{\gamma}^J(x_p), \\
-    \max\{r_p,0\}, & w^J(x_p) = \overline{\gamma}^J(x_p), \\
+    r(w^J)_p, & \underline{\gamma}^J(x_p) < w^J(x_p) < \overline{\gamma}^J(x_p), \\
+    \min\{r(w^J)_p,0\}, & w^J(x_p) = \underline{\gamma}^J(x_p), \\
+    \max\{r(w^J)_p,0\}, & w^J(x_p) = \overline{\gamma}^J(x_p), \\
     0, & \underline{\gamma}^J(x_p)=w^J(x_p)=\overline{\gamma}^J(x_p), \\
     w^J(x_p) - g_D^J(x_p), & x_p \in \partial_D\Omega. \end{cases} \label{eq:rNC}
 \end{equation}
-(The first four cases assume $x_p \notin \partial_D\Omega$.)  Note that $\rNC : \mathcal{K}^J \to \RR^{m_J}$ is a computable nonlinear map defined from $f^J$ and the vectors $\ell^J$, $\underline{\gamma}^J$, and $\overline{\gamma}^J$, and that for PDEs without constraints one uses only the first and last cases.  In summary, $\rNC(w^J)_p$ is nonzero at nodes where MCP \eqref{eq:fe:mcp} is violated, either because the pointwise residual $\ip{f^J(w^J)-\ell^J}{\psi_p}$ remains nonzero where the constraints are inactive, or because it has the wrong sign at an actively-constrained degree of freedom, or because the boundary condition is not satisfied.
+The first four cases assume $x_p \notin \partial_D\Omega$.  For PDEs one uses only the first and last cases.
 
-As a practical matter, however, direct implementation of \eqref{eq:rNC} is sensitive to rounding error because $\rNC$ is a discontinuous function of $w^J(x_p)$.  For example, if $w^J(x_p)$ exceeds $\underline{\gamma}^J(x_p)$ by $10^{-16}$, then, instead of returning the minimum of $z_p = \left<f^J(w^J)-\ell^J,\psi_p\right>$ and zero (the second case), the first case applies and $\rNC(w^J)_p = z_p$, which might be large (positive), and this would suggest falsely that the iteration is far from converging.  On the other hand, an advantage of formula \eqref{eq:rNC} is that it applies as stated if $\underline{\gamma}^J(x_p)=-\infty$ or $\overline{\gamma}^J(x_p)=+\infty$; compare \eqref{eq:rSS} below, wherein the difference $w^J(x_p) - \underline{\gamma}^J(x_p)$ is computed, for example.
+In summary, $\rNC : \mathcal{K}^J \to \RR^{m_J}$ is a computable nonlinear map defined using the discretization $f^J$ and the vectors $\ell^J$, $\underline{\gamma}^J$, and $\overline{\gamma}^J$.  A value $\rNC(w^J)_p$ is nonzero only at nodes where \eqref{eq:fe:mcp} is violated, either because $r(w^J)_p$ remains nonzero where the constraints are inactive, or because it has the wrong sign at an active node, or because the boundary condition is not satisfied.
 
-%\newcommand{\phiFB}{\phi_{\text{FB}}}
-We will instead measure convergence using a \emph{semi-smooth residual} based on the Fischer-Burmeister function \cite{BensonMunson2006,Ulbrich2011}, a function defined as follows for $a,b\in\RR$:
+Direct implementation of \eqref{eq:rNC} is, however, sensitive to rounding error because $\rNC$ is a discontinuous function of $w^J(x_p)$.  For example, if $w^J(x_p)$ exceeds $\underline{\gamma}^J(x_p)$ by $10^{-16}$, then, instead of returning the minimum of $r(w^J)_p$ and zero (the second case), the first case applies, so $\rNC(w^J)_p$ might be large and positive.  This situation would falsely suggest that the iteration is far from converging.  On the other hand, formula \eqref{eq:rNC} applies as stated if $\underline{\gamma}^J(x_p)=-\infty$ or $\overline{\gamma}^J(x_p)=+\infty$.  Compare \eqref{eq:rSS} in this case, wherein the difference $w^J(x_p) - \underline{\gamma}^J(x_p)$ is computed.
+
+We will instead measure convergence using a \emph{semi-smooth residual} based on the Fischer-Burmeister function \cite{BensonMunson2006,Ulbrich2011} on $a,b\in\RR$:
 \begin{equation}
 \phi(a,b) = a + b - \sqrt{a^2 + b^2}. \label{eq:phiFB}
 \end{equation}
-Observe that $\phi(a,b)=0$ if and only if $a,b$ are complementary, and also that $\phi$ semi-smooth (and thus continuous).  For convenience denote $\underline{g}_p = w^J(x_p) - \underline{\gamma}^J(x_p)$ and $\overline{g}_p = \overline{\gamma}^J(x_p) - w^J(x_p)$, the positive gaps at $x_p$.  Finally define
+Observe that $\phi$ is semi-smooth, thus continuous, and that $\phi(a,b)=0$ if and only if $a,b$ are complementary.  For convenience denote $\underline{g}_p = w^J(x_p) - \underline{\gamma}^J(x_p)$ and $\overline{g}_p = \overline{\gamma}^J(x_p) - w^J(x_p)$, the nonnegative gaps at $x_p$.  Now define\footnote{This semismooth residual is straightforwardly modified for unconstrained degrees of freedom, that is, where $\overline{\gamma}^J(x_p) = +\infty$ or $\underline{\gamma}^J(x_p) = -\infty$ or both.}
 \begin{equation}
 \rSS(w^J)_p = \begin{cases}
-r_p, & \underline{\gamma}^J(x_p) = -\infty \text{ and } \overline{\gamma}^J(x_p) = +\infty, \\
-\phi\big(\underline{g}_p, r_p\big), & \overline{\gamma}^J(x_p) = +\infty, \\
-\phi\left(\overline{g}_p, -r_p\right), & \underline{\gamma}^J(x_p) = -\infty, \\
-\max\big\{\phi\big(\underline{g}_p, r_p\big), \phi\left(\overline{g}_p, -r_p\right)\big\}, & \text{otherwise}, \\
-w^J(x_p) - g_D^J(x_p), & x_p \in \partial_D\Omega,
+\max\big\{\phi\big(\underline{g}_p, r(w^J)_p\big), \phi\left(\overline{g}_p, -r(w^J)_p\right)\big\}, & x_p \notin \partial_D\Omega, \\
+w^J(x_p) - g_D^J(x_p), & x_p \in \partial_D\Omega.
 \end{cases} \label{eq:rSS}
 \end{equation}
-where again $x_p \notin \partial_D\Omega$ in the first four cases.
-
-Now suppose we repeatedly apply \pr{fascd-vcycle}, starting with $w^{J,0} \in \mathcal{K}^J$, generating (fine-level) iterates $w^{J,k} \in \mathcal{K}^J$.  Let $\id{atol}\ge 0$, $\id{rtol}\ge 0$ be given tolerances.  Then the criterion used in the results (Section \ref{sec:results}) is 
+Suppose an iteration starts with $w^{J,0} \in \mathcal{K}^J$, generating (fine-level) iterates $w^{J,k} \in \mathcal{K}^J$.  Let $\id{atol}\ge 0$, $\id{rtol}\ge 0$ be given tolerances.  Then the criterion used in Section \ref{sec:results} for computations is\footnote{A step tolerance $\|w^{J,k} - w^{J,k-1}\|_2 < \id{stol}$ or similar could also be used, but we did not find it necessary.}
 \begin{equation}
 \|\rSS(w^{J,k})\|_2 < \id{atol} \qquad \text{or} \qquad \frac{\|\rSS(w^{J,k})\|_2}{\|\rSS(w^{J,0})\|_2} < \id{rtol} \label{eq:stoppingcriterion}
 \end{equation}
-A step tolerance, based on $\|w^{J,k} - w^{J,k-1}\|_2$, could also be used, but we did not find it necessary.
 
-FIXME smoother semantics; shift ``$w^j+y^j$'' etc.
+Straightforward iteration of V-cycle Algorithm \ref{alg:fascd}, starting with some finest-mesh initial iterate $w^{J,0}$ and repeated until \eqref{eq:stoppingcriterion} holds, is demonstrated as a solver in Section \ref{sec:results}.  However, application of an FASCD F-cycle, also called a \emph{full multigrid cycle}, is seen to be even better.  The well-known principle \cite[section 2.6]{Trottenbergetal2001} is to start on the coarsest mesh and solve the problem from any initial iterate.  Then an admissible initial iterate on the next-finer mesh is generated via prolongation and truncation, and so on.  During this ``ramp'' up one approximately solves on each level by using a fixed number (\id{rampv}) of V-cycles, each down to the coarsest mesh.  From the finest level one does full-depth V-cycles to convergence.
 
-FIXME smoothers use Newton reduced space (RS) \cite{BensonMunson2006}with either direct linear solve or a fixed number of Krylov steps; in latter case either fixed number of CG+ICC for symmetric linear operator (Laplacian), otherwise fixed number of GMRES+ILU
+This F-cycle approach is in Figure \ref{fig:fcycle} and Algorithm \ref{alg:fascd-fcycle}.  Observe that injection of the original fine-level constraints $\underline{\gamma}^J, \overline{\gamma}^J$ is \emph{not} used in generating the LDCs for V-cycles; compare Section \ref{sec:cdmultilevel}.  However, injection is appropriate for the ramp in an F-cycle, if followed by truncation into $\mathcal{K}^j=\{v \in \mathcal{V}^j \,:\, \underline{\gamma}^j \le v \le \overline{\gamma}^j, \, v|_{\partial\Omega} = g_D\}$; see lines \ref{line:fcycleprolongtruncone} and \ref{line:fcycleprolongtrunctwo} in Algorithm \ref{alg:fascd-fcycle}.  Though not included in Algorithm \ref{alg:fascd-fcycle}, one may generate the coarsest-level initial iterate $w^0\in\mathcal{K}^0$ by injection and truncation down to coarsest level; compare line \ref{line:fcyclecoarsestinitial}.
 
-% FIXME try Newton semi-smooth \cite{BensonMunson2006}?
+\begin{figure}[h]
+\begin{center}
+\input{tikz/fcycle.tex}
+\end{center}
+\caption{Algorithm \ref{alg:fascd-fcycle} initially restricts the data $\ell^J,\underline{\gamma}^J,\overline{\gamma}^J$ down to level $j=0$ (gray edges).  Then it prolongs and truncates (doubled edges) to create an admissible initial iterate on the next-finer level.  Solution on each level is by V-cycles; \id{rampv} $=1$ here.  See Figure \ref{fig:fascdvcycle} for the other symbols.}
+\label{fig:fcycle}
+\end{figure}
 
-FIXME a perfectly reasonable algorithm is to iterate V-cycles until \eqref{eq:stoppingcriterion} (see Section \ref{sec:results}), but F-cycles are even better; idea is to ``ramp up'' to an initial iterate on the finest level by solving coarse mesh problems, and only then doing full-depth V-cycles
-
-FIXME while the direct application of injection to the original fine-level constraints $\underline{\gamma}^J, \overline{\gamma}^J$ is not used in generating the LDCs for V-cycles (Section \ref{sec:cdmultilevel}), it is the right idea for the ramp in an F-cycle (as long as it is followed by truncation into the next-finest admissible set); here $\mathcal{K}^j=\{v \in \mathcal{V}^j \,:\, \underline{\gamma}^j \le v \le \overline{\gamma}^j\}$; see Algorithm \ref{alg:fascd-fcycle}; Figure \ref{fig:fcycle} illustrates the F-cycle.
-
-\begin{pseudofloat}[ht]
+\begin{pseudofloat}[h]
 \begin{pseudo}
 \pr{fascd-fcycle}(J,\ell^J,\underline{\gamma}^J,\overline{\gamma}^J)\text{:} \\+
     for $j=J$ downto $j=1$ \\+
         $\ell^{j-1} = R(\ell^j)$ \\
         $\underline{\gamma}^{j-1}, \, \overline{\gamma}^{j-1} = \iR \underline{\gamma}^{j}, \, \iR \overline{\gamma}^{j}$ {\large\strut} \\-
-    choose $w^0 \in \mathcal{K}^0$ \\
+    choose $w^0 \in \mathcal{K}^0$ \label{line:fcyclecoarsestinitial} \\
     $\text{\pr{solve}}(\ell^0,\underline{\gamma}^0,\overline{\gamma}^0;w^0)$ \\
     for $j=1$ to $j=J-1$ \\+
         $w^j = \max\left\{\underline{\gamma}^{j},\min\{\overline{\gamma}^{j}, Pw^{j-1}\}\right\} \in \mathcal{K}^j$ \label{line:fcycleprolongtruncone} \\
@@ -839,15 +838,11 @@ FIXME while the direct application of injection to the original fine-level const
 \label{alg:fascd-fcycle}
 \end{pseudofloat}
 
-\begin{figure}[ht]
-\begin{center}
-\input{tikz/fcycle.tex}
-\end{center}
-\caption{Algorithm \ref{alg:fascd-fcycle} initially restricts the data $\ell^J,\underline{\gamma}^J,\overline{\gamma}^J$ down to level $j=0$ (gray), then prolongs and truncates (doubled; see lines \ref{line:fcycleprolongtruncone} and \ref{line:fcycleprolongtrunctwo} in Alg.~\ref{alg:fascd-fcycle}) to create the next-finer initial iterate.  See Figure \ref{fig:fascdvcycle} for other symbols.}
-\label{fig:fcycle}
-\end{figure}
+FIXME smoother semantics; shift ``$w^j+y^j$'' etc.
 
-FIXME though not shown in Algorithm \ref{alg:fascd-fcycle}, one can generate an admissible initial iterate for the first coarse solve in the F-cycle by injection and truncation down to coarsest level
+FIXME smoothers use Newton reduced space (RS) \cite{BensonMunson2006}with either direct linear solve or a fixed number of Krylov steps; in latter case either fixed number of CG+ICC for symmetric linear operator (Laplacian), otherwise fixed number of GMRES+ILU
+
+% FIXME try Newton semi-smooth \cite{BensonMunson2006}?
 
 
 \section{Results} \label{sec:results}
