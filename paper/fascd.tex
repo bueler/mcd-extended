@@ -314,19 +314,17 @@ The operators $\Pi_i$ are generally nonlinear.  Clearly \eqref{eq:constraintrest
 \label{fig:cartoon}
 \end{figure}
 
-In Sections \ref{sec:femultilevel}--\ref{sec:vcycle} we will introduce multilevel CD discretizations and algorithms for finite-dimensional VI problems.  However, one can observe here that the CD concept applies at the level of the continuum problem, as illustrated in the following two examples, the first of which is an overlapping domain decomposition of a Sobolev space.
+In Sections \ref{sec:femultilevel}--\ref{sec:vcycle} we will introduce multilevel CD discretizations and algorithms for finite-dimensional VI problems.  However, one can observe here that the CD concept applies at the level of the continuum problem, as illustrated in the following two examples, the first of which is an overlapping domain decomposition of a Sobolev space.  Note that $\cK_i \not\subset \cK$ in these cases; informally speaking, the important inclusion is $\cK_i \subset \cV_i$.
 
 \begin{example}  \label{ex:domaindecomposition}  For a bounded domain $\Omega \subset \RR^d$, let $\cV = W_0^{k,p}(\Omega)$ for $k\ge 0$ and $p\ge 1$.  Let $\psi$ be a measurable, real-valued obstacle, defined on $\Omega$, which satisfies $\psi|_{\partial \Omega} \le 0$, and let $\cK = \{v \ge \psi\} \subset \cV$.  Suppose further that $\{\phi_i\}_{i=0}^{m-1}$ is a smooth partition of unity on $\Omega$, satisfying $0 \le \phi_i\le 1$ and $\sum_i \phi_i = 1$, and let $\Omega_i$ be the open support of $\phi_i$.  Let $\cV_i = \{w \in \cV:w|_{\Omega \setminus \Omega_i} =0 \}$, $\cK_i = \{v \in \cV_i: v \ge \phi_i \psi\}$, and $\Pi_i(v) = \phi_i v$.  Then \eqref{eq:subspacedecomp}, \eqref{eq:constraintdecomp}, and \eqref{eq:constraintrestrictionsum} all hold.
 \end{example}
 
-Our second example is a disjoint frequency decomposition of a Hilbert space.  A multilevel CD over a finite-dimensional FE discretization, as proposed in Sections \ref{sec:femultilevel}--\ref{sec:cdmultilevel}, approximates such a decomposition.
+Our second example is a disjoint frequency decomposition of a Hilbert space.  A multilevel CD over a finite-dimensional FE discretization, as proposed in Sections \ref{sec:femultilevel} and \ref{sec:cdmultilevel}, approximates such a decomposition.
 
 \begin{example}  \label{ex:frequencydecomposition}  For simplicity suppose $\Omega = (0,a)^d \subset \RR^d$ is a cube, and let $\cV = W_{\text{per}}^{2,k}(\Omega)$ be the periodic functions with square-integrable $k$th derivatives.  Suppose $\psi \in W_{\text{per}}^{2,k}(\Omega)$ and let $\cK = \{v \ge \psi\} \subset \cV$.  Without using any detailed notation for Fourier representation, but noting that the frequencies are discrete because $\Omega$ is compact, suppose $\{\cV_i\}$ are $m<\infty$ subspaces of $\cV$ defined by an (nonoverlapping) partition of $W_{\text{per}}^{2,k}(\Omega)$ by frequency, thus satisfying \eqref{eq:subspacedecomp} as an orthogonal decomposition.  Suppose $P_i:\cV \to \cV_i$ are the corresponding orthogonal projections, satisfying $I = \sum_i P_i$.  Let $\cK_i = \{v \ge P_i \psi\} \subset \cV_i$ and $\Pi_i = P_i$.  Then \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} also hold.
 \end{example}
 
-Note that $\cK_i \not\subset \cK$ in these cases; informally speaking, the important inclusion is $\cK_i \subset \cV_i$.
-
-Associated to a constraint decomposition \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum} are certain iterative methods \cite{Tai2003,Xu1992}.  Let $0\le \alpha \le 1$ be the \emph{damping parameter}.  Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below, discussed next, solve smaller VI problems over each subset $\cK_i$.  Each Algorithm replaces $u \in \cK$ with a new iterate $w\in\cK$ which should be closer to $u^* \in \cK$ solving \eqref{eq:vi}.
+Associated to a constraint decomposition \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum} are certain iterative methods \cite{Tai2003,Xu1992}.  Let $0\le \alpha \le 1$ be the \emph{damping parameter}.\footnote{FASCD Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} are presented without damping, and indeed it seems to be unnecessary.  However, the general convergence of the basic CD iterations appears to depend upon it.}  Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below, discussed next, solve smaller VI problems over each subset $\cK_i$.  Each Algorithm replaces $u \in \cK$ with a new iterate $w\in\cK$ which should be closer to $u^* \in \cK$ solving \eqref{eq:vi}.
 
 The additive/parallel \pr{cd-add} Algorithm \ref{alg:basiccd-add} generalizes the classical Jacobi iteration.  Here ``\textbf{for all}'' can be computed in any order.  In its VI,
 \begin{equation}
@@ -367,14 +365,14 @@ the sum ``$\sum_{j>i} \Pi_j u$'' should be read as ``those portions of $u$ which
 \label{alg:basiccd-mult}
 \end{pseudofloat}
 
-In VIs \eqref{eq:cdaddvi} and \eqref{eq:cdmultvi} the argument of $f$ is an element of $\cK$, as the reader should confirm.
-
-By \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may write the test vector $v_i - \hat w_i \in \cV_i$ as a difference of admissible vectors from $\cK$.  For \eqref{eq:cdaddvi} and \eqref{eq:cdmultvi} respectively:
+In VIs \eqref{eq:cdaddvi} and \eqref{eq:cdmultvi} the argument of $f$ is an element of $\cK$, as the reader should confirm.  Furthermore, by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may write the test vector $v_i - \hat w_i \in \cV_i$ as a difference of admissible vectors from $\cK$.  For \eqref{eq:cdaddvi} and \eqref{eq:cdmultvi} respectively:
 \begin{align}
 [u - \Pi_i u + v_i] - [u - \Pi_i u + \hat w_i] &= v_i - \hat w_i, \label{eq:admissibledifferenceadd} \\
 \left[\sum_{j<i} w_j + v_i + \sum_{j>i} \Pi_j u\right] - \left[\sum_{j<i} w_j + \hat w_i + \sum_{j>i} \Pi_j u\right] &= v_i - \hat w_i.  \label{eq:admissibledifferencemult}
 \end{align}
-In this sense the VIs over the subsets $\mathcal{K}_i$ solve the same problem as \eqref{eq:vi}.  Furthermore, let $e_i = \hat w_i - \Pi_i u \in \cV_i$.  The reader may confirm that $\hat w = u + \sum_{i} e_i$ and thus that $w = u + \alpha \sum_i e_i$.  The new iterate $w$ is therefore computed by adding a damped correction from each sub\emph{space} $\mathcal{V}_i$, but in such a manner that $w \in \mathcal{K}$; the corrections preserve admissibility.
+In this sense the VIs over the subsets $\mathcal{K}_i$ solve the same problem as \eqref{eq:vi}.
+
+Let $e_i = \hat w_i - \Pi_i u \in \cV_i$.  The reader may confirm that $\hat w = u + \sum_{i} e_i$ and thus that $w = u + \alpha \sum_i e_i$.  The new iterate $w$ is therefore computed by adding a damped correction from each sub\emph{space} $\mathcal{V}_i$, but in such a manner that $w \in \mathcal{K}$; the corrections preserve admissibility.
 
 We call \pr{cd-add} and \pr{cd-mult} the \emph{basic CD iterations}.  VI problems \eqref{eq:cdaddvi} and \eqref{eq:cdmultvi} are analogous to constrained line searches, and in fact they reduce to such line searches when the $\cV_i$ are one-dimensional.  As shown in the next Lemma, when VI problem \eqref{eq:vi} corresponds to convex optimization \eqref{eq:minimization} then, subject to bounds on the damping $\alpha$, these iterations generate monotonically-decreasing objective values.
 
@@ -411,7 +409,7 @@ Now define $\lambda = m\alpha$ so $0 \le \lambda \le 1$ and $w = (1-\lambda) u +
 
 When $\alpha=1/m$ then the \pr{cd-add} proof can be simplified because $v=w$ and $\lambda=1$.  In this case $F(w)$ is less than $\frac{1}{m} \sum_i F(u+e_i)$ by Jensen's inequality, which is lower than $F(u)$ by \eqref{eq:cdaddvi} or \eqref{eq:cdmultvi}, which gives inequality \eqref{eq:cdaddonereduction}.
 
-The basic CD iterations are meaningful whether or not we are in the optimization case $f=F'$, and when $f$ is nonlinear, non-local, or defined only on $\cK$.  However, practical and efficient FE implementation for such general operators $f$ seems not to have been addressed in the literature.  References \cite{GraeserKornhuber2009,Tai2003} only apply the CD method to the classical obstacle problem, and which case $f=F'$ is linear, local, and defined for all inputs (on all of $\mathcal{V}$).  Substantial implementation simplifications are available in such cases.
+The basic CD iterations are meaningful whether or not we are in the optimization case $f=F'$, and even when $f$ is nonlinear, non-local, or defined only on $\cK$.  However, practical and efficient FE implementation for such general operators $f$ seems not to have been addressed in the literature.  References \cite{GraeserKornhuber2009,Tai2003} only apply the CD method to the classical obstacle problem, wherein $f=F'$ is linear, local, and defined for all inputs (on all of $\mathcal{V}$).  Substantial implementation simplifications are available in such cases.
 
 \begin{example}  \label{ex:fnice} Suppose $f:\cV \to \cV'$ is linear and a differential operator, thus local in the sense that for any $z\in\mathcal{V}$ the value $\ip{f(\phi)}{z}$ can be computed by an integral over the support of $\phi$.  Considering \pr{cd-add} for concreteness, by linearity \eqref{eq:cdaddvi} can be rewritten
 \begin{equation}
@@ -420,24 +418,24 @@ The basic CD iterations are meaningful whether or not we are in the optimization
 for all $v_i \in \mathcal{K}_i$, where $\tilde\ell = \ell - f(u)$ incorporates the initial residual $f(u)$.  Note $e_i = \hat w_i - \Pi_i u \in \cV_i$ is not generally admissible---generally $e_i \notin \cK$---but \eqref{eq:linearlocalvi} is meaningful for this $f$.
 \end{example}
 
-When $f$ has the locality of Example \ref{ex:fnice}, an FE approximation of VI \eqref{eq:vi} can be solved in any incremental and efficient manner following the techniques in \cite{GraeserKornhuber2009,Tai2003}, namely by computations over hat function supports.\footnote{Compare equations (2.31) and (2.32) in \cite{Farrelletal2021}, which describe the same sense of locality.}  However, for general problems lacking the niceties of Example \ref{ex:fnice}, certain additional ideas are needed for practical implementation of \pr{cd-add} or \pr{cd-mult}.  Section \ref{sec:vcycle} constructs a multiplicative multilevel CD iteration for a general operator $f:\cK\to\cV'$ by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}.
+When $f$ has the locality of Example \ref{ex:fnice}, an FE approximation of VI \eqref{eq:vi} can be solved in any incremental and efficient manner following the techniques in \cite{GraeserKornhuber2009,Tai2003}, namely by computations over hat function supports.\footnote{Compare equations (2.31) and (2.32) in \cite{Farrelletal2021}, which describe the same sense of locality.}  However, for general problems lacking the niceties of Example \ref{ex:fnice}, certain additional ideas are needed for practical implementation of CD-type iterations.  Section \ref{sec:vcycle} constructs a multiplicative multilevel CD iteration for a general operator $f:\cK\to\cV'$ by applying the full approximation storage (FAS) idea of Brandt \cite{Brandt1977}.
 
-From now on we restrict to the case of \emph{box constraints} \cite{BensonMunson2006,FerrisPang1997}, equivalently \emph{bi-obstacle problems}.  Suppose $\Omega \subset \RR^d$ is open and let $\mathcal{V}=W^{1,p}(\Omega)$.  The \emph{lower obstacle} $\underline{\gamma}$ and the \emph{upper obstacle} $\overline{\gamma}$ are given functions, defined on the closure $\overline{\Omega}$, with values in the extended real line $\tilde\RR = [-\infty,+\infty]$.  Specifically, we suppose $\underline{\gamma} : \overline{\Omega} \to [-\infty,+\infty)$ and $\overline{\gamma} : \overline{\Omega} \to (-\infty,+\infty]$ are measurable, $\underline{\gamma} \le \overline{\gamma}$ on $\overline{\Omega}$, and $\underline{\gamma} \le g_D \le \overline{\gamma}$ on $\partial_D \Omega$.  Also, we assume that $\partial\Omega$ is split into disjoint, measurable sets, $\partial\Omega = \partial_D \Omega \cup \partial_N \Omega$, with $\partial_D \Omega$ of positive measure, to facilitate well-posedness \cite{Evans2010}, and $\partial_N \Omega$ possibly empty.  Dirichlet data\footnote{Dirichlet boundary values are in the trace sense \cite{Evans2010}, and $g_D$ is assumed to be as regular as needed.} $g_D:\partial_D \Omega \to \RR$ then defines
+From now on we will restrict to the case of \emph{box constraints} \cite{BensonMunson2006,FerrisPang1997}, equivalently \emph{bi-obstacle problems}.  Suppose $\Omega \subset \RR^d$ is open and let $\mathcal{V}=W^{1,p}(\Omega)$.  The \emph{lower obstacle} $\underline{\gamma}$ and the \emph{upper obstacle} $\overline{\gamma}$ are given functions, defined on the closure $\overline{\Omega}$, with values in the extended real line $\tilde\RR = [-\infty,+\infty]$.  We suppose $\underline{\gamma} : \overline{\Omega} \to [-\infty,+\infty)$ and $\overline{\gamma} : \overline{\Omega} \to (-\infty,+\infty]$ are measurable, $\underline{\gamma} \le \overline{\gamma}$ on $\overline{\Omega}$, and $\underline{\gamma} \le g_D \le \overline{\gamma}$ on $\partial_D \Omega$, and that $\partial\Omega$ is split into disjoint, measurable sets, $\partial\Omega = \partial_D \Omega \cup \partial_N \Omega$, with $\partial_D \Omega$ of positive measure, to facilitate well-posedness \cite{Evans2010}, and $\partial_N \Omega$ possibly empty.  Dirichlet data\footnote{Dirichlet boundary values are in the trace sense \cite{Evans2010}, and $g_D$ is assumed to be as regular as needed.} $g_D:\partial_D \Omega \to \RR$ then defines
 \begin{equation}
 \cK = \left\{w\,:\,\underline{\gamma} \le w \le \overline{\gamma} \, \text{ and }\, w\big|_{\partial_D \Omega} = g_D\right\} \subset \cV =W^{1,p}(\Omega), \label{eq:originalconstraintset}
 \end{equation}
-the closed and convex constraint set.  Note that we are treating inequality and equality (boundary) constraints in a unified manner.
+the closed and convex \emph{constraint set}.  Note that we are treating inequality constraints and boundary conditions in a unified manner.\footnote{Any Neumann conditions over $\partial_N \Omega$ are determined by the operator formula for $f$, i.e.~by an integration over $\partial_N\Omega$.}
 
-Recalling abstract VI problem \eqref{eq:vi}, we now consider box-constrained cases only, using set \eqref{eq:originalconstraintset}.  Given continuous $f:\cK \to \cV'$, and $\ell \in \cV'$, we will assume that the following is well-posed for $u^*\in \cK$:
+Recalling abstract VI problem \eqref{eq:vi}, from now on we only constraint sets \eqref{eq:originalconstraintset}.  Given continuous $f:\cK \to \cV'$, and $\ell \in \cV'$, we will assume that the following is well-posed for $u^*\in \cK$:
 \begin{equation}
 \ip{f(u^*)}{v-u^*} \ge \ip{\ell}{v-u^*} \qquad \text{for all } v\in \cK. \label{eq:boxdirichletvi}
 \end{equation}
-Note that $v-u^* \in W_0^{1,p}(\Omega)$, so test functions in \eqref{eq:boxdirichletvi} have zero Dirichlet values.  Any Neumann conditions over $\partial_N \Omega$ are determined by the operator formula for $f$, i.e.~by an integration over $\partial_N\Omega$.  In summary, from now on we consider well-posed VI problems \eqref{eq:boxdirichletvi}, namely box-constrained boundary value problems.
+Note that $v-u^* \in W_0^{1,p}(\Omega)$.
 
 
 \section{Multilevel finite elements} \label{sec:femultilevel}
 
-We seek to rapidly compute the approximate solution of box-constrained VI problems using finite elements (FE).  Suppose $\Omega \subset \RR^d$ is a (open) bounded polygon.\footnote{Section \ref{sec:results} illustrates $d=1,2,3$ cases.}  We will construct a multilevel FE approximation to problem \eqref{eq:boxdirichletvi} over $\Omega$ using $P_1$ or $Q_1$ elements \cite{Elmanetal2014}, by refining a coarsest mesh into a mesh hierarchy; the goal is an accurate solution on the finest-level mesh.  The hierarchy allows the creation of a multilevel CD of $\cK$, using the ideas in the next two Sections, which permits admissibility-preserving coarse corrections.
+We seek to rapidly compute the approximate solution of box-constrained VI problems \eqref{eq:boxdirichletvi} using finite elements (FE).  Suppose $\Omega \subset \RR^d$ is a (open) bounded polygon.\footnote{Section \ref{sec:results} illustrates $d=1,2,3$ cases.}  We will construct a multilevel FE approximation to \eqref{eq:boxdirichletvi} over $\Omega$ using $P_1$ or $Q_1$ elements \cite{Elmanetal2014}, by refining a coarsest mesh into a mesh hierarchy; the goal is an accurate solution on the finest-level mesh.  The hierarchy allows the creation of a multilevel CD of $\cK$, using the ideas in the next two Sections, which permits solvers based on admissibility-preserving coarse corrections.
 
 The mesh hierarchy and FE spaces can be constructed by standard nested refinement.\footnote{The dimension-dependent details of mesh refinement are suppressed here.  Section \ref{sec:results} only uses $P_1$ elements for intervals, triangles, and tetrahedra, in dimensions $d=1,2,3$ respectively, within the Firedrake framework \cite{Rathgeberetal2016}.}  Suppose $\mathcal{T}^0$ is the \emph{coarsest mesh}, a finite set of non-overlapping, nondegenerate elements with union equal to $\overline{\Omega}$ and maximum edge length (characteristic mesh size) $h_0>0$.  We assume $\mathcal{T}^0$ is conforming, with no hanging nodes.  For $j=1,\dots,J$, let $\mathcal{T}^j$ be the uniform refinement of $\mathcal{T}^{j-1}$ so that each $\mathcal{T}^{j-1}$ element becomes $2^d$ elements in $\mathcal{T}^j$ with maximum edge length $h_j = 2^{-j} h_0$.  We call $J\ge 0$ the \emph{depth} of the hierarchy, $J+1$ the \emph{number of levels}, and $\mathcal{T}^J$ the \emph{finest-level mesh}.  Let $m_j$ be the number of nodes in $\mathcal{T}^j$, so there are $m_j$ \emph{degrees of freedom} at the $j$th level.  Let $\mathcal{V}^j$ be the continuous $P_1$ or $Q_1$ FE space over $\mathcal{T}^j$, with arbitrary boundary values, and observe the following vector space nesting:
 \begin{equation}
@@ -445,13 +443,13 @@ The mesh hierarchy and FE spaces can be constructed by standard nested refinemen
 \end{equation}
 On the finest-level mesh let $g_D^J \in \mathcal{V}^J$ satisfy $g_D^J = g_D$ on $\partial_D \Omega$; this restricts $g_D$ in \eqref{eq:originalconstraintset} to be piecewise-linear.
 
-In the VI material which follows, use of higher-order Lagrange elements, i.e.~$P_k$ or $Q_k$ with $k\ge 2$, would imply a ``variational crime'' \cite[Chapter 10]{BrennerScott2007}, special to inequality constraints, which we avoid.  Namely, our FE construction of constraint sets (Section \ref{sec:cdmultilevel}) will require \emph{nodal monotonicity},
+In the VI material which follows, use of higher-order Lagrange elements, i.e.~$P_k$ or $Q_k$ with $k\ge 2$, would imply a ``variational crime'' \cite[Chapter 10]{BrennerScott2007} special to inequality constraints, which we avoid.  Namely, our FE construction of constraint sets (Section \ref{sec:cdmultilevel}) will require \emph{nodal monotonicity},
 \begin{equation}
 \bw \ge \bz \quad \implies \quad w \ge z \label{eq:nodalmonotonicity}
 \end{equation}
 for all $w,z \in \mathcal{V}^j$, where $\bw,\bz \in \RR^{m_j}$ denote vectors of nodal values.  However, for $k\ge 2$ there are hat functions in $P_k$ and $Q_k$, i.e.~functions with nodal values one or zero, which take on negative values \cite[Figure 1.7]{Elmanetal2014}.  Evidently \eqref{eq:nodalmonotonicity} is equivalent to the non-existence of such indefinite-sign hat functions.
 
-To allow box constraints on all meshes in the hierarchy, let $\tilde{\mathcal{V}}^j$ denote the set of functions\footnote{Note that $\tilde{\mathcal{V}}^j$ functions need not be defined everywhere on $\Omega$.} on the nodes of $\mathcal{T}^j$ with values in the extended real line $\tilde{\RR} = [-\infty,+\infty]$.  Suppose that the finest-level \emph{lower} and \emph{upper obstacles} $\underline{\gamma}^J, \overline{\gamma}^J \in \tilde{\mathcal{V}}^J$ satisfy
+To allow box constraints on all meshes in the hierarchy, let $\tilde{\mathcal{V}}^j$ denote the set of functions on the nodes of $\mathcal{T}^j$ with values in the extended real line $\tilde{\RR} = [-\infty,+\infty]$.  Suppose that the finest-level \emph{lower} and \emph{upper obstacles} $\underline{\gamma}^J, \overline{\gamma}^J \in \tilde{\mathcal{V}}^J$ satisfy
 \begin{equation}
 \underline{\gamma}^J \le \overline{\gamma}^J, \qquad \underline{\gamma}^J < +\infty, \qquad -\infty < \overline{\gamma}^J. \label{eq:fe:boxconstraintrequirements}
 \end{equation}
@@ -467,9 +465,9 @@ Let $f^J:\mathcal{K}^J \to (\mathcal{V}^J)'$ be a discretization of $f$ in \eqre
 \end{equation}
 If $f^J$ is continuous and $p$-coercive on $\mathcal{K}^J$, in the sense that \eqref{eq:pcoercive} holds for all $u,v \in \mathcal{K}^J$, then, as for \eqref{eq:vi}, FE VI \eqref{eq:fe:vi} is well-posed.
 
-While \eqref{eq:fe:vi} approximates \eqref{eq:boxdirichletvi}, we warn the reader that it may not technically be conforming for that VI.  That is, even if quadrature and other implementation details for $f^J$ are ignored, and despite the vector space inclusion $\mathcal{V}^J \subset \mathcal{V}$, we do not require or generally expect $\mathcal{K}^J \subset \mathcal{K}$.  Regardless of the smoothness of the continuum obstacles $\underline{\gamma}, \overline{\gamma}$, admissibility with respect to their FE interpolants $\underline{\gamma}^J, \overline{\gamma}^J$ will generally not imply continuum admissiblity.\footnote{This caveat is especially relevant in geophysical situations where only nodal values of the obstacle are known.  The nodal elevation data misses the actual topographic detail in-between the nodes.  See the Greenland ice sheet application in \cite{Bueler2016}, for example.}
+While \eqref{eq:fe:vi} approximates \eqref{eq:boxdirichletvi}, we warn the reader that it may not technically be conforming for that VI.  That is, even if quadrature and other implementation details for $f^J$ are ignored, and despite the vector space inclusion $\mathcal{V}^J \subset \mathcal{V}$, we do not require or generally expect $\mathcal{K}^J \subset \mathcal{K}$.  Regardless of the smoothness of the continuum obstacles $\underline{\gamma}, \overline{\gamma}$, admissibility with respect to their FE interpolants $\underline{\gamma}^J, \overline{\gamma}^J$ will generally not imply continuum admissibility.\footnote{This caveat is especially relevant in geophysical situations where only nodal values of the obstacle are known.  Nodal elevation data generally misses the actual topographic detail in-between the nodes; compare \cite{Bueler2016}.}
 
-The multilevel algorithm defined in the next two Sections, a solver for FE VI \eqref{eq:fe:vi}, requires transfer operators between meshes.  We require five such operators, of which three are standard multigrid tools \cite{Trottenbergetal2001}.  Table \ref{tab:transfers} will help the reader keep track.
+The multilevel algorithm defined in Section \ref{sec:vcycle}, a solver for FE VI \eqref{eq:fe:vi}, requires transfer operators between meshes.  We require five such operators, of which three are standard \cite{Trottenbergetal2001}.  Table \ref{tab:transfers} will help the reader keep track.
 
 \begin{table}[H]
 \begin{tabular}{llc}
@@ -486,28 +484,28 @@ minimum restriction           & $\minR:\tilde{\mathcal{V}}^j\to\tilde{\mathcal{V
 \label{tab:transfers}
 \end{table}
 
-Canonical prolongation $P:\mathcal{V}^{j-1}\to\mathcal{V}^j$ is the vector space inclusion $\mathcal{V}^{j-1} \hookrightarrow \mathcal{V}^j$ of coarser-mesh functions.  Canonical (dual) restriction $R:(\mathcal{V}^j)'\to(\mathcal{V}^{j-1})'$ also acts as an identity in the sense that if $\sigma \in (\mathcal{V}^j)'$ then $(R\sigma)[z] = \sigma[z]$ for all $z \in \mathcal{V}^{j-1} \subset \mathcal{V}^j$.  Note that these canonical transfers generally involve a change of FE representation.  For example, the formula for canonical restriction, derived by writing coarser-mesh hat functions in terms of finer-mesh ones, is ``full-weighting'' \cite{Trottenbergetal2001}.
+Canonical prolongation $P:\mathcal{V}^{j-1}\to\mathcal{V}^j$ is the vector space inclusion $\mathcal{V}^{j-1} \hookrightarrow \mathcal{V}^j$ of coarser-mesh functions.  Canonical (dual) restriction $R:(\mathcal{V}^j)'\to(\mathcal{V}^{j-1})'$ also acts as an identity in the sense that if $\sigma \in (\mathcal{V}^j)'$ then $(R\sigma)[z] = \sigma[z]$ for all $z \in \mathcal{V}^{j-1} \subset \mathcal{V}^j$.  These canonical transfers generally involve a change of FE representation.  For example, $R$ is ``full-weighting'' \cite{Trottenbergetal2001}.
 
-To define injection $\iR:\mathcal{V}^j\to\mathcal{V}^{j-1}$, observe that the nodes of $\mathcal{T}^{j-1}$ are nodes of $\mathcal{T}^j$, and that for any values at $\mathcal{T}^j$ nodes there is a unique $\mathcal{V}^j$ function assuming those values.  For $z\in\mathcal{V}^j$ we define the injection $\iR z$ as the element of $\mathcal{V}^{j-1}$ with the same (coarse) nodal values.  Note that injection is monotonic: if $w \le z$ then $\iR w \le \iR z$.
+To define injection $\iR:\mathcal{V}^j\to\mathcal{V}^{j-1}$, observe that the nodes of $\mathcal{T}^{j-1}$ are nodes of $\mathcal{T}^j$, and that for any values at $\mathcal{T}^j$ nodes there is a unique $\mathcal{V}^j$ function assuming those values.  For $z\in\mathcal{V}^j$ we define the injection $\iR z$ as the element of $\mathcal{V}^{j-1}$ with the same (coarse) nodal values.  Injection is monotonic: if $w \le z$ then $\iR w \le \iR z$.
 
-Finally, the monotone restrictions \cite{GraeserKornhuber2009} $\maxR,\minR$ are nonlinear maps which maximize and minimize, respectively, nodal values over the open supports of coarser-mesh hat functions.  These monotone operators will only be applied to nodal functions $\tilde{\mathcal{V}}^j$.  To make the definitions precise, let $x_q^j$, $q=0,1,\dots,m_j-1$, denote the nodes of mesh $\mathcal{T}^j$, and denote the corresponding hat functions by $\psi_q^j(x)$.  The monotone restrictions of an $\tilde\RR$-valued\footnote{In computing $\max$ and $\min$ to define \eqref{eq:fe:monotonerestrictions}, the usual $\tilde\RR$ ordering is applied.} nodal function $z\in\tilde{\mathcal{V}}^j$ are the following functions in $\tilde{\mathcal{V}}^{j-1}$:
+The monotone restrictions $\maxR,\minR$ \cite{GraeserKornhuber2009}, which will only be applied to nodal functions $\tilde{\mathcal{V}}^j$, are nonlinear maps which maximize and minimize, respectively, nodal values over the open supports of coarser-mesh hat functions.  To make this precise, let $x_q^j$ denote the nodes of mesh $\mathcal{T}^j$, with corresponding hat functions $\psi_q^j(x)$.  For a $\tilde\RR$-valued nodal function $z\in\tilde{\mathcal{V}}^j$ we define functions in $\tilde{\mathcal{V}}^{j-1}$:
 \begin{align}
 (\maxR z)(x_p^{j-1}) &= \max \{z(x_q^j) \,:\, \psi_p^{j-1}(x_q^j) > 0\}, \label{eq:fe:monotonerestrictions} \\
-(\minR z)(x_p^{j-1}) &= \min \{z(x_q^j) \,:\, \psi_p^{j-1}(x_q^j) > 0\}, \notag
+(\minR z)(x_p^{j-1}) &= \min \{z(x_q^j) \,:\, \psi_p^{j-1}(x_q^j) > 0\}. \notag
 \end{align}
-for $p=0,1,\dots,m_{j-1}-1$.  By standard nested refinement, a coarse-mesh node $x_p^{j-1}$ is in the set of fine nodes $x_q^j$ such that $\psi_p^{j-1}(x_q^j)>0$, so it follows that
+For standard refinement a coarse-mesh node $x_p^{j-1}$ is in the set of fine nodes $x_q^j$ such that $\psi_p^{j-1}(x_q^j)>0$, so it follows that
 \begin{equation}
 \minR z \le z \le \maxR z,  \label{eq:fe:monotonerestrictionprops}
 \end{equation}
-On the other hand, $z\ge 0$ implies $\minR z \ge 0$ and $z \le 0$ implies $\maxR z \le 0$.  These ordering properties used in the CD construction of the next two sections.
+On the other hand, $z\ge 0$ implies $\minR z \ge 0$ and $z \le 0$ implies $\maxR z \le 0$.  These ordering properties are used in the CD construction of the next two Sections.
 
 
 \section{Multilevel CDs from level defect constraints} \label{sec:cdmultilevel}
 
-Our practical multilevel CD scheme in this Section uses \emph{defect constraints} \cite{GraeserKornhuber2009} which are based on an admissible finest-level iterate.  The next Example concretely illustrates why we do not apply restriction operators directly to the finest-level box constraints $\underline{\gamma}^J,\overline{\gamma}^J$ in definition \eqref{eq:fe:fineconstraintset}.  Our straightforward iterate-dependent bounds, namely defect constraints \eqref{eq:fe:defectconstraints} below, bypass the difficulties exposed in Example \ref{ex:directRbad}.  However, other successful schemes may exist.
+Our practical multilevel CD scheme uses \emph{defect constraints} \cite{GraeserKornhuber2009} which are based on an admissible finest-level iterate.  The next Example concretely illustrates why we do not apply restriction operators directly\footnote{An exception is in the F-cycle; see Section \ref{sec:implementation}.} to the finest-level box constraints $\underline{\gamma}^J,\overline{\gamma}^J$.  Our straightforward (iterate-dependent) bounds on the defect constraints, namely \eqref{eq:fe:chiordering} below, bypass the difficulties exposed in Example \ref{ex:directRbad}.
 
 \begin{example}  \label{ex:directRbad}  
-For concreteness, suppose $\Omega = [0,L] \subset \RR^1$ is an interval and consider a two-level mesh hierarchy ($J=1$).  Let $\underline{\gamma}^1$ be a sawtooth function with minimum value zero, and suppose $\overline{\gamma}^1=C+\underline{\gamma}^1$ with $C>0$ which is strictly less than the range of $\underline{\gamma}^1$.  Supposing empty Dirichlet boundary for simplicity, the constraint set $\mathcal{K}^1$ defined by \eqref{eq:fe:fineconstraintset} is nonempty.  Figure \ref{fig:directRbad} shows such functions; here levels $\mathcal{T}^1$ and $\mathcal{T}^0$ have $5$ and $3$ nodes, respectively.  However, various restriction schemes applied directly to $\underline{\gamma}^1,\overline{\gamma}^1$ are problematical.  Suppose we propose
+For concreteness, suppose $\Omega = [0,L] \subset \RR^1$ is an interval and consider a two-level mesh hierarchy ($J=1$).  Let $\underline{\gamma}^1$ be a sawtooth function with minimum value zero, and suppose $\overline{\gamma}^1=C+\underline{\gamma}^1$ with $C>0$ which is strictly less than the range of $\underline{\gamma}^1$.  Figure \ref{fig:directRbad} shows such functions; here levels $\mathcal{T}^1$ and $\mathcal{T}^0$ have $5$ and $3$ nodes, respectively.  Supposing empty Dirichlet boundary for simplicity, the constraint set $\mathcal{K}^1$ defined by \eqref{eq:fe:fineconstraintset} is nonempty.  However, various restriction schemes applied directly to $\underline{\gamma}^1,\overline{\gamma}^1$ are problematical.  Suppose we propose
     $$\underline{\gamma}^0, \overline{\gamma}^0 \equiv \iR \underline{\gamma}^1, \iR \overline{\gamma}^1. \qquad \text{\emph{[problematic]}}$$
 Then $\underline{\gamma}^0=0$ and $\overline{\gamma}^0=C$ identically.  In that case the corresponding constraint set $\mathcal{K}^0$ is nonempty, but prolongation $Pw^0$ of an admissible solution of the coarse problem ($\underline{\gamma}^0 \le w^0 \le \overline{\gamma}^0$) is not admissible on the finer level: $Pw^0 \notin \mathcal{K}^1$.  On the other hand, suppose we propose
     $$\underline{\gamma}^0, \overline{\gamma}^0 \equiv \maxR \underline{\gamma}^1, \minR \overline{\gamma}^1. \qquad \text{\emph{[problematic]}}$$
@@ -522,13 +520,13 @@ The general motivation for this choice---compare \eqref{eq:fe:chilevels}---is th
 \label{fig:directRbad}
 \end{figure}
 
-Subtraction of an admissible iterate provides a route out of these difficulties.  Suppose $w^J \in \cK^J$ is an admissible finest-level iterate (i.e.~which approximates the solution $u^J$ of \eqref{eq:fe:vi}).  We define the \emph{finest-level defect constraints} (DCs) \cite{GraeserKornhuber2009} as the following nodal functions in $\tilde{\mathcal{V}}^J$:
+Subtracting an admissible iterate from the original bounds provides a route out of the difficulties in Example \ref{ex:directRbad}.  Suppose $w^J \in \cK^J$ is an admissible finest-level iterate for \eqref{eq:fe:vi}.  We define the \emph{finest-level defect constraints} (DCs) \cite{GraeserKornhuber2009} as the following nodal functions in $\tilde{\mathcal{V}}^J$:
 \begin{equation}
 \underline{\chi}^J = \underline{\gamma}^J - w^J, \qquad \overline{\chi}^J = \overline{\gamma}^J - w^J. \label{eq:fe:defectconstraints}
 \end{equation}
-Definition \eqref{eq:fe:fineconstraintset} implies that $\underline{\chi}^J \le 0 \le \overline{\chi}^J$ everywhere in $\overline{\Omega}$, including along the Dirichlet boundary $\partial_D\Omega$.  If $\underline{\gamma}^J=-\infty$ then $\underline{\chi}^J=-\infty$ by definition, and similarly if $\overline{\gamma}^J=+\infty$ then $\overline{\chi}^J=+\infty$.  Observe that a corrected iterate $w^J + z^J$ is admissible, $w^J + z^J \in \cK^J$, if and only if the perturbation $z^J$ is zero on $\partial_D\Omega$ and it is bounded by the defect constraints, $\underline{\chi}^J \le z^J \le \overline{\chi}^J$.
+Definition \eqref{eq:fe:fineconstraintset} implies that $\underline{\chi}^J \le 0 \le \overline{\chi}^J$ everywhere in $\overline{\Omega}$, including on the Dirichlet boundary $\partial_D\Omega$.  If $\underline{\gamma}^J=-\infty$ then $\underline{\chi}^J=-\infty$ by definition, and similarly if $\overline{\gamma}^J=+\infty$ then $\overline{\chi}^J=+\infty$.  Observe that a corrected iterate $w^J + z^J$ is admissible, $w^J + z^J \in \cK^J$, if and only if the perturbation $z^J \in \mathcal{V}^J$ is zero on $\partial_D\Omega$ and bounded by the defect constraints, $\underline{\chi}^J \le z^J \le \overline{\chi}^J$.
 
-Descending coarser levels, $j=J-1,\dots,1,0$, we apply the monotone restrictions to generate box \emph{level defect constraints} (LDCs) in $\tilde{\mathcal{V}}^j$:
+Descending coarser levels, $j=J-1,\dots,1,0$, we apply the monotone restrictions to generate \emph{level defect constraints} (LDCs) in $\tilde{\mathcal{V}}^j$:
 \begin{equation}
 \underline{\chi}^{j} = \maxR \underline{\chi}^{j+1}, \qquad \overline{\chi}^{j} = \minR \overline{\chi}^{j+1}. \label{eq:fe:chilevels}
 \end{equation}
@@ -536,7 +534,7 @@ Observe that
 \begin{equation}
 \underline{\chi}^{J} \le \dots \le \underline{\chi}^0 \le 0 \le \overline{\chi}^0 \le \dots \le \overline{\chi}^J. \label{eq:fe:chiordering}
 \end{equation}
-A unilateral $J=4$ example of LDCs $\underline{\chi}^j$ is shown in Figure \ref{fig:chiphilevels}.  The LDC $\underline{\chi}^j$ is the most-negative function from $\tilde{\mathcal{V}}^j$ such that if another element of $\tilde{\mathcal{V}}^j$ is above $\underline{\chi}^j$ then it is also above $\underline{\chi}^{j+1}$, and similar comments apply to $\overline{\chi}^{j}$.
+A unilateral $J=4$ example of LDCs $\underline{\chi}^j$ is shown in Figure \ref{fig:chiphilevels}.  The LDC $\underline{\chi}^j$ is the most-negative function from $\tilde{\mathcal{V}}^j$ such that if another element of $\tilde{\mathcal{V}}^j$ is above $\underline{\chi}^j$ then it is also above $\underline{\chi}^{j+1}$; similar comments apply to $\overline{\chi}^{j}$.
 
 %REGENERATE using https://github.com/bueler/mg-glaciers:
 %$ cd mg-glaciers/py/
@@ -549,44 +547,31 @@ A unilateral $J=4$ example of LDCs $\underline{\chi}^j$ is shown in Figure \ref{
 \label{fig:chiphilevels}
 \end{figure}
 
-This construction of multilevel box constraints is designed to permit the largest admissible coarse corrections, which promotes multilevel solver efficiency.  Note that for the multilevel schemes in Sections \ref{sec:vcycle} and \ref{sec:implementation}, any system satisfying \eqref{eq:fe:chiordering} will suffice; the particular formulas in \eqref{eq:fe:chilevels} are actually not required.  Also, though the system here is fundamentally the same as the unilateral defect constraints in \cite{GraeserKornhuber2009}, a system for box defect constraints has not been found in the literature.
+This construction of multilevel box constraints, fundamentally the same as the unilateral construction in \cite{GraeserKornhuber2009}, is designed to permit large-yet-admissible coarse corrections, which promotes multilevel solver efficiency.  Note that for Algorithm \ref{alg:fascd} below, any system satisfying \eqref{eq:fe:chiordering} will suffice; the particular formulas in \eqref{eq:fe:chilevels} are actually not required.
 
-We now compute the LDC differences (compare \cite{GraeserKornhuber2009}):
+We now compute the LDC differences \cite{GraeserKornhuber2009}:
 \begin{equation}
 \underline{\phi}^j = \underline{\chi}^j - \underline{\chi}^{j-1}, \qquad \overline{\phi}^j = \overline{\chi}^j - \overline{\chi}^{j-1}.  \label{eq:fe:philevels}
 \end{equation}
-We take $\underline{\chi}^{-1}=\overline{\chi}^{-1}=0$ so that $\underline{\phi}^0=\underline{\chi}^0$ and $\overline{\phi}^0=\overline{\chi}^0$.  Regarding subtraction of extended real-valued quantities, if $\underline{\chi}^j(x_p)=-\infty$ then we set $\underline{\phi}^j(x_p)=-\infty$ regardless of the value of $\underline{\chi}^{j-1}(x_p)$, and similarly $\overline{\phi}^j(x_p)=+\infty$ if $\overline{\chi}^j(x_p)=+\infty$.  These new LDCs $\underline{\phi}^{j},\overline{\phi}^{j} \in \tilde{\mathcal{V}}^J$ again bracket zero, $\underline{\phi}^j \le 0 \le \overline{\phi}^j$, but they are not ordered as in \eqref{eq:fe:chiordering}.  Table \ref{tab:ldcs} should help the reader keep track of our box-constrained LDC system.
+We take $\underline{\chi}^{-1}=\overline{\chi}^{-1}=0$ so that $\underline{\phi}^0=\underline{\chi}^0$ and $\overline{\phi}^0=\overline{\chi}^0$.  Regarding subtraction of extended real-valued quantities, if $\underline{\chi}^j(x_p)=-\infty$ then we set $\underline{\phi}^j(x_p)=-\infty$ regardless of the value of $\underline{\chi}^{j-1}(x_p)$, and similarly $\overline{\phi}^j(x_p)=+\infty$ if $\overline{\chi}^j(x_p)=+\infty$.  While $\underline{\phi}^{j},\overline{\phi}^{j} \in \tilde{\mathcal{V}}^J$ again bracket zero, $\underline{\phi}^j \le 0 \le \overline{\phi}^j$, they are not ordered as in \eqref{eq:fe:chiordering}.
 
-\begin{table}[H]
-\begin{tabular}{lll}
-\emph{name}         & \emph{formulas} & \emph{indices} \\ \hline
-finest-level DCs & ${\Large \strut} \underline{\chi}^J = \underline{\gamma}^J - w^J,\, \overline{\chi}^J = \overline{\gamma}^J - w^J$ \\
-upward LDCs  & ${\Large \strut} \underline{\chi}^{j} = \maxR \underline{\chi}^{j+1}, \, \overline{\chi}^{j} = \minR \overline{\chi}^{j+1}$ & $j=0,\dots,J-1$ \\
-downward LDCs       & ${\Large \strut} \underline{\phi}^j = \underline{\chi}^j - \underline{\chi}^{j-1}, \, \overline{\phi}^j = \overline{\chi}^j - \overline{\chi}^{j-1}$ & $j=0,\dots,J$
-\end{tabular}
-
-\medskip
-\caption{Level defect constraints (LDCs) for box-constrained VI problems.}
-\label{tab:ldcs}
-\end{table}
-
-The corresponding \emph{downward/upward constraint sets}, respectively, are
+The corresponding \emph{downward/upward constraint sets}, respectively, are closed and convex subsets of the FE spaces $\mathcal{V}^j$:
 \begin{align}
 \mathcal{D}^j = \left\{v \in \mathcal{V}^j \,:\, \underline{\phi}^j \le v \le \overline{\phi}^j \text{ and } \, v|_{\partial_D\Omega} = 0\right\}, \label{eq:fe:constraintsets} \\
 \mathcal{U}^j = \left\{v \in \mathcal{V}^j \,:\, \underline{\chi}^j \le v \le \overline{\chi}^j \text{ and } \, v|_{\partial_D\Omega} = 0\right\}. \notag
 \end{align}
-These are closed and convex subsets of the FE spaces $\mathcal{V}^j$.  Because $\underline{\chi}^j \le \underline{\phi}^j \le 0 \le \overline{\phi}^j \le \overline{\chi}^j$, it follows that $\mathcal{D}^j \subseteq \mathcal{U}^j$.  Note that the finest-level set $\mathcal{U}^J$ is equivalent to the original constraint set $\mathcal{K}^J$: for all $z^J \in \mathcal{V}^J$,
+Because $\underline{\chi}^j \le \underline{\phi}^j \le 0 \le \overline{\phi}^j \le \overline{\chi}^j$, it follows that $\mathcal{D}^j \subseteq \mathcal{U}^j$.  Note that the finest-level set $\mathcal{U}^J$ is equivalent to the original constraint set $\mathcal{K}^J$: for all $z^J \in \mathcal{V}^J$,
 \begin{equation}
 z^J \in \mathcal{U}^J \quad \iff \quad w^J+z^J \in \mathcal{K}^J. \label{eq:fe:finestlevelequivalent}
 \end{equation}
 
-The multilevel V-cycle solver defined in the next Section computes coarse corrections in $\mathcal{D}^j$ for the downward side and in $\mathcal{U}^j$ for the upward side.  Our multilevel strategy is, however, based on \emph{incomplete} CDs (Section \ref{sec:cd}), in the general box-constrained cases, as we now explain.  Each upward set $\mathcal{U}^j$ can be decomposed in an inclusion sense, becoming a true CD in unilateral cases.  The following Lemma is based in part on the unilateral CD construction underlying Algorithm 4.7 in \cite{GraeserKornhuber2009}; see also equation (59) in \cite{Tai2003}.
+Our V-cycle solver (Algorithm \ref{alg:fascd}) will compute coarse corrections in $\mathcal{D}^j$ for the downward side and in $\mathcal{U}^j$ for the upward side.  This strategy is, however, based on \emph{incomplete} CDs, in the general box-constrained cases, as we now explain.  Each upward set $\mathcal{U}^j$ is generally only a superset of a sum of downward sets $\mathcal{D}^j$, but this becomes a true CD, i.e.~\eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum}, in unilateral cases.  The following Lemma, apparently new, is based in part on the unilateral CD construction underlying Algorithm 4.7 in \cite{GraeserKornhuber2009}; see also equation (59) in \cite{Tai2003}.
 
 \begin{lemma}  \label{lem:downwardadmissibility}  For arbitrary finest-level box constraints $\underline{\gamma}^J,\overline{\gamma}^J$ satisfying \eqref{eq:fe:boxconstraintrequirements}, it follows that
 \begin{equation}
 \mathcal{U}^j \supseteq \mathcal{D}^j + \mathcal{D}^{j-1} + \dots + \mathcal{D}^0 \label{eq:fe:downwardsuminclusion}
 \end{equation}
-for $j=0,1,\dots,J$.  In unilateral cases, where either $\underline{\gamma}^J=-\infty$ identically or $\overline{\gamma}^J=+\infty$ identically, inclusion \eqref{eq:fe:downwardsuminclusion} becomes a full CD \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum} with $\mathcal{U}^j=\sum_{i=0}^j \mathcal{D}^i$.
+for $j=0,1,\dots,J$.  In unilateral cases, where either $\underline{\gamma}^J=-\infty$ identically or $\overline{\gamma}^J=+\infty$ identically, inclusion \eqref{eq:fe:downwardsuminclusion} becomes a full CD with $\mathcal{U}^j=\sum_{i=0}^j \mathcal{D}^i$.
 \end{lemma}
 
 \begin{proof}  Subspace decomposition \eqref{eq:subspacedecomp} holds---see nesting \eqref{eq:fe:nestedspaces}---and definition \eqref{eq:fe:constraintsets} shows $\mathcal{D}^i \subset \mathcal{U}^i \subset \cV^i$.  Furthermore, telescoping sums hold for any $j=0,1,\dots,J$:
@@ -603,61 +588,58 @@ In unilateral cases we can also construct decomposition operators $\Pi_i$ and th
 \begin{equation}
 I_{j\to i}^\ominus v = \minR(\dots(\minR v)\dots)  \label{eq:fe:minimummaps}
 \end{equation}
-Note that $I_{j\to j}^\ominus v = v$, and set $I_{j\to -1}^\ominus=0$ by definition.  From operators \eqref{eq:fe:minimummaps} we define the following nonlinear decomposition operators $\Pi_i:\mathcal{U}^j \to \mathcal{D}^i$:
+(Set $I_{j\to j}^\ominus v = v$ and $I_{j\to -1}^\ominus=0$ by definition.)  Now define the following nonlinear decomposition operators $\Pi_i:\mathcal{U}^j \to \mathcal{D}^i$:
 \begin{equation}
 \Pi_i z^j = I_{j\to i}^\ominus(z^j - \underline{\chi}^j) - I_{j\to i-1}^\ominus(z^j - \underline{\chi}^j) + \underline{\phi}^i.  \label{eq:fe:unilateraldecompositionoperator}
 \end{equation}
-(Compare equation (4.9) in \cite{GraeserKornhuber2009}.)  Property \eqref{eq:fe:monotonerestrictionprops} implies $I_{j\to i}^\ominus(z^j - \underline{\chi}^j) \ge I_{j\to i-1}^\ominus(z^j - \underline{\chi}^j)$, thus $\Pi_i z^j \ge \underline{\phi}^i$, so $\Pi_i z^j \in \mathcal{D}^i$ (in this unilateral case).  On the other hand, the following sum telescopes, leaving only its first term plus the sum in \eqref{eq:fe:telescoping}:
+(Compare equation (4.9) in \cite{GraeserKornhuber2009}.)  Property \eqref{eq:fe:monotonerestrictionprops} implies $I_{j\to i}^\ominus(z^j - \underline{\chi}^j) \ge I_{j\to i-1}^\ominus(z^j - \underline{\chi}^j)$, thus $\Pi_i z^j \ge \underline{\phi}^i$, so $\Pi_i z^j \in \mathcal{D}^i$.  On the other hand, the following sum telescopes, leaving only its first term plus the sum in \eqref{eq:fe:telescoping}:
 \begin{align*}
 \sum_{i=0}^j \Pi_i z^j &= z^j - \underline{\chi}^j + \sum_{i=0}^j \underline{\phi}^i = z^j.
 \end{align*}
-This shows \eqref{eq:constraintrestrictionsum}, thus that \eqref{eq:fe:downwardsuminclusion} is equality, yielding a true CD \eqref{eq:constraintdecomp}.
-
-The $\underline{\gamma}^J=-\infty$ case is similar.
+This shows \eqref{eq:constraintrestrictionsum}, thus that \eqref{eq:fe:downwardsuminclusion} is equality, yielding \eqref{eq:constraintdecomp}.  The $\underline{\gamma}^J=-\infty$ case is similar.
 \end{proof}
 
-One might try to turn \eqref{eq:fe:downwardsuminclusion} into a full CD for arbitrary box constraints by using decomposition maps like $\Pi_i$, for example by splitting $z^j = \min\{z^j,0\} + \max\{z^j,0\}$ and applying unilateral formulas like \eqref{eq:fe:unilateraldecompositionoperator} to $\min\{z^j,0\}$ and $\max\{z^j,0\}$ separately.  In fact, the lower bound $\Pi_i (\min\{z^j,0\}) \ge \underline{\phi}^i$ holds, as shown in the above proof.  However, the following Example shows why $\Pi_i(\min\{z^j,0\})$ may have an arbitrarily large maximum, and thus exceed any finite upper LDC $\overline{\phi}^i$.  In fact, $\Pi_i$ does not generally map all non-positive elements of $\mathcal{U}^J$ into $\mathcal{D}^i$ if a finite upper LDC is present.  Note that this Example does not exclude the existence of an entirely-different strategy for showing a full CD in the general box-constrained case.
+One might try to turn \eqref{eq:fe:downwardsuminclusion} into a full CD for arbitrary box constraints by using decomposition maps like $\Pi_i$, for example by splitting $z^j = \min\{z^j,0\} + \max\{z^j,0\}$ and applying unilateral formulas like \eqref{eq:fe:unilateraldecompositionoperator} to $\min\{z^j,0\}$ and $\max\{z^j,0\}$ separately.  The above proof shows that the lower bound $\Pi_i (\min\{z^j,0\}) \ge \underline{\phi}^i$ does hold.  However, the following Example\footnote{Of course, this Example does not exclude the existence of an entirely-different strategy for showing a full CD in the general box-constrained case.} shows why $\Pi_i(\min\{z^j,0\})$ may have an arbitrarily large maximum, and thus exceed any finite upper LDC $\overline{\phi}^i$.  In fact, $\Pi_i$ does not generally map all non-positive elements of $\mathcal{U}^J$ into $\mathcal{D}^i$ if a finite upper LDC is present.
 
 \begin{example}  \label{ex:notfullcd}
-Let $a\ge 0$ be an arbitrary positive number.  Consider a 2-level hierarchy ($J=1$), and suppose the lower defect constraint is the constant function $\underline{\chi}^1=-a$.  Recalling Table \ref{tab:ldcs}, note $\underline{\chi}^0=\maxR \underline{\chi}^1=-a$ also, so $\underline{\phi}^1=0$ and $\underline{\phi}^0=-a$.  Suppose $z^1$ is a ``sawtooth'' function which takes on value $-a$ on the coarse nodes and value $0$ on the other nodes.  Then, for any valid $\overline{\chi}^1$, we have $\overline{\chi}^1 \ge 0 \ge z^1\ge \underline{\chi}^1$, so $z^j \in \mathcal{U}^1$.  However, $I_{1\to 0}^\ominus(z^1 - \underline{\chi}^1) = \minR(z^1 - \underline{\chi}^1) = 0$ identically.  From \eqref{eq:fe:unilateraldecompositionoperator}, $\Pi_1 z^1$ simplifies to $\Pi_1 z^1 = z^1 - \underline{\chi}^1$.  But then $\Pi_1 z^1$ attains a maximum $a\ge 0$.  This maximum can be chosen to exceed any upper defect obstacle $\overline{\phi}^1$, so $\Pi_1 z^1 \notin \mathcal{D}^1$.
+Let $a\ge 0$ be an arbitrary positive number.  Consider a 2-level hierarchy ($J=1$), and suppose the lower defect constraint is the constant function $\underline{\chi}^1=-a$.  Note $\underline{\chi}^0=\maxR \underline{\chi}^1=-a$ also, so $\underline{\phi}^1=0$ and $\underline{\phi}^0=-a$.  Suppose $z^1$ is a ``sawtooth'' function which takes on value $-a$ on the coarse nodes and value $0$ on the other nodes.  Then, for any $\overline{\chi}^1\ge 0$, we have $\overline{\chi}^1 \ge 0 \ge z^1\ge \underline{\chi}^1$, so $z^j \in \mathcal{U}^1$.  However, $I_{1\to 0}^\ominus(z^1 - \underline{\chi}^1) = \minR(z^1 - \underline{\chi}^1) = 0$ identically.  From \eqref{eq:fe:unilateraldecompositionoperator}, $\Pi_1 z^1$ simplifies to $\Pi_1 z^1 = z^1 - \underline{\chi}^1$.  But then $\Pi_1 z^1$ attains a maximum $a\ge 0$.  This maximum can be chosen to exceed any upper defect obstacle $\overline{\phi}^1$, so $\Pi_1 z^1 \notin \mathcal{D}^1$.
 \end{example}
 
-Each upward defect constraint set $\mathcal{U}^j$ can also be decomposed down to an arbitrary coarser level.  The incomplete CD in the next Lemma, which does not follow from Lemma \ref{lem:downwardadmissibility}, will justify upward admissibility in the V-cycle in the next Section.
+Each upward set $\mathcal{U}^j$ can also be decomposed (incompletely) down to an arbitrary coarser level.  The next Lemma, which does not follow from Lemma \ref{lem:downwardadmissibility}, justifies upward admissibility in Algorithm \ref{alg:fascd}.
 
 \begin{lemma}  \label{lem:upwardadmissibility}  For any $j=0,1,\dots,J$ and $0\le k\le j$,
 \begin{equation}
 \mathcal{U}^j \supseteq \mathcal{D}^j + \mathcal{D}^{j-1} + \dots + \mathcal{D}^{k+1} + \mathcal{U}^k \label{eq:fe:upwardsuminclusion}
 \end{equation}
-In unilateral cases, where either $\underline{\gamma}^J=-\infty$ or $\overline{\gamma}^J=+\infty$, inclusion \eqref{eq:fe:upwardsuminclusion} becomes a full CD. \end{lemma}
+In unilateral cases, where either $\underline{\gamma}^J=-\infty$ or $\overline{\gamma}^J=+\infty$, actually $\mathcal{U}^j = \mathcal{U}^k + \sum_{i=k+1}^j \mathcal{D}^i$. \end{lemma}
 
-\begin{proof}  Definition \eqref{eq:fe:philevels} shows that $\underline{\chi}^j = \underline{\phi}^j + \dots + \underline{\phi}^{k+1} + \underline{\chi}^k$ and $\overline{\chi}^j = \overline{\phi}^j + \dots + \overline{\phi}^{k+1} + \overline{\chi}^k$.  If $y^i \in \mathcal{D}^i$ for $k+1 \le i \le j$ and $z^k \in \mathcal{U}^k$ then it is easy to show, as in \eqref{eq:fe:lemmaordering}, that $\underline{\chi}^j \le y^j + \dots + y^{k+1} + z^k \le \overline{\chi}^j$, thus \eqref{eq:fe:upwardsuminclusion} holds.
+\begin{proof}  Definition \eqref{eq:fe:philevels} shows that $\underline{\chi}^j = \underline{\phi}^j + \dots + \underline{\phi}^{k+1} + \underline{\chi}^k$ and $\overline{\chi}^j = \overline{\phi}^j + \dots + \overline{\phi}^{k+1} + \overline{\chi}^k$.  If $y^i \in \mathcal{D}^i$ for $k+1 \le i \le j$ and $z^k \in \mathcal{U}^k$ then $\underline{\chi}^j \le y^j + \dots + y^{k+1} + z^k \le \overline{\chi}^j$ and \eqref{eq:fe:upwardsuminclusion}.
 
 In unilateral cases we follow the proof of Lemma \ref{lem:downwardadmissibility}.  We can use \eqref{eq:fe:unilateraldecompositionoperator} unchanged for $i=k+1,\dots,j$, but it must be modified in the $i=k$ case: $\Pi_k z^j = I_{j\to k}^\ominus(z^j - \underline{\chi}^j) + \underline{\chi}^k$.  The remainder of the proof goes through as before.
 \end{proof}
 
-FIXME \pr{icd-tele} as third basic CD iteration
+Inclusions \eqref{eq:fe:downwardsuminclusion} and \eqref{eq:fe:upwardsuminclusion}, which are special to multilevel FE schemes based on defect constraints, hold regardless of whether a CD operator $\Pi_i$ can be constructed.  Here there is, in fact, another ``basic'' iteration, namely \pr{icd-tele} in Algorithm \ref{alg:basiccd-tele}, which also does not need the $\Pi_i$ operators.  It is a variant of \pr{cd-mult} (Algorithm \ref{alg:basiccd-mult}).
 
-
-\begin{pseudofloat}[H]
+\begin{pseudofloat}[ht]
 \begin{pseudo*}
 \pr{icd-tele}(w^J)\text{:} \\+
     for $j = 0,\dots,J$: \\+
-        \rm{find} $z_j\in \mathcal{U}_j$ \rm{so that for all} $v_j\in \mathcal{U}_j$, \\+
-            $\displaystyle \ip{f\Big(w^J + \alpha \sum_{i<j} z_i + \alpha z_j\Big)}{v_j-z_j} \ge \ip{\ell}{v_j-z_j}$ \\--
-    return $\tilde w^J=w^J + \alpha \sum_{i\le J} z_i$
+        \rm{find} $z^j\in \mathcal{U}^j$ \rm{so that for all} $v \in \mathcal{U}^j$, \\+
+            $\displaystyle \ip{f\Big(w^J + \alpha \sum_{i<j} z^i + \alpha z^j\Big)}{v-z^j} \ge \ip{\ell}{v-z^j}$ \\--
+    return $\tilde w^J=w^J + \alpha \sum_{i\le J} z^i$
 \end{pseudo*}
-\caption{One telescoping incomplete CD iteration for VI problem \eqref{eq:vi}, assuming $w^J\in\mathcal{K}^J$, property \eqref{eq:fe:finestlevelequivalent}, and incomplete CD \eqref{eq:fe:upwardsuminclusion}.}
+\caption{One telescoping incomplete CD iteration for VI problem \eqref{eq:fe:vi}, assuming $w^J\in\mathcal{K}^J$, property \eqref{eq:fe:finestlevelequivalent}, and incomplete CD \eqref{eq:fe:upwardsuminclusion}.}
 \label{alg:basiccd-tele}
 \end{pseudofloat}
 
-In summary, inclusions \eqref{eq:fe:downwardsuminclusion} and \eqref{eq:fe:upwardsuminclusion} suffice to show the admissibility of all iterates and corrections in the V-cycle algorithm which follows.  However, a convergence analysis, perhaps extending the arguments of \cite{Tai2003} or \cite{GraeserKornhuber2009} to VIs \eqref{eq:vi} which are not of minimization type, and/or to box constraints, would seem to require full CDs, and probably further new ideas, and we cannot offer that analysis.
+While inclusions \eqref{eq:fe:downwardsuminclusion} and \eqref{eq:fe:upwardsuminclusion} suffice to show the admissibility of all iterates and corrections in Algorithm \ref{alg:fascd} below, a convergence analysis, perhaps extending the arguments of \cite{Tai2003} or \cite{GraeserKornhuber2009} to VIs which are not of minimization type, and/or to box constraints, would seem to require full CDs.  We cannot offer that analysis.
 
 
 \section{FASCD V-cycle} \label{sec:vcycle}
 
-The V-cycle algorithm in this section applies smoothers in constraint sets $\mathcal{D}^j$ and $\mathcal{U}^j$ during the downward and upward stages, respectively.  It extends the multilevel CD schemes of Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear full approximation storage (FAS) approach \cite{BrandtLivne2011}, and in fact it reduces to FAS for PDEs when inequality constraints are removed (Appendix \ref{app:reductions}).
+The V-cycle algorithm in this section applies smoothers in constraint sets $\mathcal{D}^j$ and $\mathcal{U}^j$ during the downward and upward stages, respectively.  It extends the multilevel CD schemes of Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear full approximation storage (FAS) approach \cite{BrandtLivne2011}.  In fact, it reduces to FAS for PDEs when inequality constraints are removed (Appendix \ref{app:reductions}).
 
-Our V-cycle generates a correction to a finest-level iterate $w^J \in \mathcal{K}^J$ based on perturbations from each coarser FE subspace $\mathcal{V}^j$.  By nesting \eqref{eq:fe:nestedspaces} these corrections all live in the fine-level subspace $\mathcal{V}^J$,\footnote{Note we use prolongation $P$ to indicate where the computer representation changes.} but the corrected iterate needs to be admissible.  Suppose $y^i \in \mathcal{D}^i$ for $i=J,\dots,j-1$ are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:fascdvcycle}).  By \eqref{eq:fe:downwardsuminclusion} the correction at this point is admissible, namely $y^J + \dots + y^{j+1} \in \mathcal{U}^J$, equivalently $w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$.  Smoothing, an incomplete solution process on a VI problem (Section \ref{sec:implementation}), then occurs at the next-coarser level, yielding the next correction $y^j \in \mathcal{D}^j$.  At the bottom the coarsest-level VI is then solved, resulting in the full downward correction $y^J + \dots + y^1 + z^0 \in \mathcal{U}^J$.  Starting upward, $y^1 + z^0 \in \mathcal{U}^1$ is an initial iterate for smoothing on level $j=1$, which then yields $z^1 \in \mathcal{U}^1$ and an admissible correction $y^J + \dots + y^2 + z^1 \in \mathcal{U}^J$ using \eqref{eq:fe:upwardsuminclusion}.  Continuing in this ``telescoping'' way, up-smoothing in the constraint sets $\mathcal{U}^j$, starting from initial iterate $y^j+z^{j-1}$, finally generates $z^J\in \mathcal{U}^J$ as the full V-cycle correction.  Then the next admissible iterate is $\tilde{w}^J = w^J + z^J \in \mathcal{K}^J$.
+Each V-cycle generates a correction to a finest-level iterate $w^J \in \mathcal{K}^J$ based on perturbations from each coarser FE subspace $\mathcal{V}^j$.  By nesting \eqref{eq:fe:nestedspaces} these corrections all live in the fine-level subspace $\mathcal{V}^J$,\footnote{Nonetheless we use prolongation $P$ to indicate where the computer representation changes.} but the corrected iterate needs to be admissible.  Proceeding inductively, suppose $y^i \in \mathcal{D}^i$ for $i=J,\dots,j-1$ are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:fascdvcycle}).  By \eqref{eq:fe:downwardsuminclusion} the correction at this point is admissible, namely $y^J + \dots + y^{j+1} \in \mathcal{U}^J$, equivalently $w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$.  Smoothing then occurs at the next-coarser level, yielding the next correction $y^j \in \mathcal{D}^j$.  At the bottom the coarsest-level VI is then solved, resulting in the full downward correction $y^J + \dots + y^1 + z^0 \in \mathcal{U}^J$.  Starting upward, $y^1 + z^0 \in \mathcal{U}^1$ is an initial iterate for smoothing on level $j=1$, which then yields $z^1 \in \mathcal{U}^1$ and an admissible correction $y^J + \dots + y^2 + z^1 \in \mathcal{U}^J$, using \eqref{eq:fe:upwardsuminclusion}.  Continuing in this ``telescoping'' way (Algorithm \ref{alg:basiccd-tele}), up-smoothing in the constraint sets $\mathcal{U}^j$, starting from initial iterate $y^j+z^{j-1}$, finally generates $z^J\in \mathcal{U}^J$ as the full V-cycle correction.  Then the next admissible iterate is $\tilde{w}^J = w^J + z^J \in \mathcal{K}^J$.
 
 \begin{figure}[ht]
 \begin{center}
@@ -667,38 +649,38 @@ Our V-cycle generates a correction to a finest-level iterate $w^J \in \mathcal{K
 \label{fig:fascdvcycle}
 \end{figure}
 
-A key idea is that, because $\mathcal{U}^j\supset \mathcal{D}^j$, up-smoothing solves less-restricted VI problems than down-smoothing.  Intuitively-speaking, going downward one does not know what the next coarse corrections will be, thus they must be in small sets $\mathcal{D}^j$, so that their sum is admissible once we return to a given level.  On the other hand, going upward no further coarse corrections can violate admissibility.
+A key idea is that, because of inclusions \eqref{eq:fe:upwardsuminclusion}, up-smoothing solves less-restricted VI problems than down-smoothing.  Intuitively-speaking, going downward one does not know what the next coarse corrections will be, and thus they must be in sufficiently small sets ($\mathcal{D}^j$) so that their sum is admissible once we return to a given level.  Going upward, however, no further coarse corrections can violate admissibility.
 
-To state the V-cycle algorithm below we must also clarify the problems solved at each mesh level.  As in FAS multigrid for nonlinear PDEs \cite{BrandtLivne2011,Bruneetal2015,Trottenbergetal2001}, both the solution approximation and the residual must be coarsened, and a source functional created.  On mesh level $j$ we assume a re-discretized nonlinear operator $f^j$, with output in $(\cV^j)'$, which is an FE discretization of $f$ in \eqref{eq:boxdirichletvi}, presumably using quadrature etc.~by the same scheme which generated $f^J$ in \eqref{eq:fe:vi}.  Note that finest-level problem \eqref{eq:fe:vi} uses the original source functional $\ell^J$.  An admissible iterate $w^J \in \mathcal{K}^J$ has already\footnote{In practice the LDCs $\underline{\chi}^j,\overline{\chi}^j,\underline{\phi}^j,\overline{\phi}^j$ are generated during the descent stage; see Algorithm \ref{alg:fascd}.} been used to generate the LDCs and constraint sets $\mathcal{D}^j$, $\mathcal{U}^j$ at each level (Section \ref{sec:cdmultilevel}); these LDCs do not depend on the coarse-level corrections.
+To state the V-cycle algorithm below we must also clarify the problems solved at each mesh level.  As in FAS multigrid for nonlinear PDEs \cite{BrandtLivne2011,Bruneetal2015,Trottenbergetal2001}, both the solution approximation and the residual must be coarsened, and a source functional created.  On mesh level $j$ we assume a re-discretized nonlinear operator $f^j$, with output in $(\cV^j)'$, which is an FE discretization of $f$ in \eqref{eq:boxdirichletvi}.\footnote{Presumably it uses quadrature etc.~in the same scheme which generated $f^J$ in \eqref{eq:fe:vi}.}  Finally, we assume that an admissible iterate $w^J \in \mathcal{K}^J$ has already\footnote{In practice the LDCs $\underline{\chi}^j,\overline{\chi}^j,\underline{\phi}^j,\overline{\phi}^j$ are generated during the descent stage; see Algorithm \ref{alg:fascd}.} been used to generate the LDCs and constraint sets $\mathcal{D}^j$, $\mathcal{U}^j$ at each level (Section \ref{sec:cdmultilevel}); these LDCs do not depend on the coarse-level corrections.
 
 As we descend we define new $j$th-level iterates
 \begin{equation}
 w^j = \iR(w^{j+1} + y^{j+1}).  \label{eq:fe:definew}
 \end{equation}
-(These are the states \emph{before} smoothing and/or correction.)  From $w^j$ we define $\ell^j \in (\cV^j)'$:
+(These are the states before smoothing or correction.)  From $w^j$ we define $\ell^j \in (\cV^j)'$:
 \begin{equation}
 \ell^j = \begin{cases} \ell^J, & j=J \\
                        f^j(w^j) + R\left(\ell^{j+1}-f^{j+1}(w^{j+1}+y^{j+1})\right), & j<J. \end{cases} \label{eq:fe:levelsource}
 \end{equation}
-Observe that injection $\iR$ coarsens the iterates---injection is commonly used in classical FAS \cite[section 5.3]{Trottenbergetal2001}---but canonical restriction $R$ coarsens linear functionals.\footnote{Recall that Table \ref{tab:transfers} summarizes our transfer operators.}
+Observe that injection $\iR$ coarsens the iterates---injection is commonly used in classical FAS \cite[section 5.3]{Trottenbergetal2001}---but canonical restriction $R$ coarsens linear functionals; recall Table \ref{tab:transfers}.
 
 On descent, at levels $j=J,J-1,\dots,1$, we solve the following VI for $y^j \in \mathcal{D}^j$:
 \begin{equation}
 \ip{f^j(w^j + y^j)}{v-y^j} \ge \ip{\ell^j}{v-y^j} \qquad \text{for all } v\in \mathcal{D}^j, \label{eq:fe:downvi}
 \end{equation}
-for which the initial iterate is $y_{(0)}^j=0$.  (Zero is admissible; see the comment after \eqref{eq:fe:philevels}.)  On ascent, $j=0,1,\dots,J$, the same VI is solved but for $z^j \in \mathcal{U}^j$, in a larger admissible set:
+for which the initial iterate is $y_{(0)}^j=0$.  (Zero is admissible; see the comment after \eqref{eq:fe:philevels}.)  On ascent, $j=0,1,\dots,J$, the same VI is solved but for $z^j \in \mathcal{U}^j$:
 \begin{equation}
 \ip{f^j(w^j + z^j)}{v-z^j} \ge \ip{\ell^j}{v-z^j} \qquad \text{for all } v\in \mathcal{U}^j. \label{eq:fe:upvi}
 \end{equation}
-The nontrivial initial iterate for this problem is found by prolonging $z^{j-1}$ and using it to correct the current (i.e.~down-smoothed) correction on the level:\footnote{Prolongation $P$ in \eqref{eq:fe:upwardinitial} reflects the change in FE representation.}
+The nontrivial initial iterate for this problem is found by prolonging $z^{j-1}$ and using it to correct the current (i.e.~down-smoothed) correction on the level:
 \begin{equation}
 z_{(0)}^j = y^j + P z^{j-1}.  \label{eq:fe:upwardinitial}
 \end{equation}
-An exception is that $z_{(0)}^0=0$ on the coarsest level.  Note $z_{(0)}^j$ is admissible since $\mathcal{D}^j + \mathcal{U}^{j-1} \subset \mathcal{U}^j$; see \eqref{eq:fe:upwardsuminclusion}.
+An exception is that $z_{(0)}^0=0$ on the coarsest level.  Note $z_{(0)}^j$ is admissible by \eqref{eq:fe:upwardsuminclusion}: $\mathcal{D}^j + \mathcal{U}^{j-1} \subset \mathcal{U}^j$.
 
-If we were to inject the original box constraints \eqref{eq:fe:fineconstraintset} downward to coarser meshes, i.e.~$\underline{\gamma}^j = \iR \underline{\gamma}^{j+1}$ and $\overline{\gamma}^j = \iR \overline{\gamma}^{j+1}$, then, because injection preserves inequalities, and because $y^{j+1} \in \mathcal{D}^{j+1}$, it would follow from \eqref{eq:fe:definew} that $\underline{\gamma}^j \le w^j \le \overline{\gamma}^j$.  In this sense $w^j$ is admissible with respect to the box constraints.  However, while $w^j \in \cV^j \subset \cV^J$ holds, generally $w^j \notin \cK^J$, and furthermore, following \cite{GraeserKornhuber2009}, our use of LDCs (Table \ref{tab:ldcs}) avoids the need to generate these $\underline{\gamma}^j, \overline{\gamma}^j$.  In any case, Algorithm \ref{alg:fascd} yields a new finest-level iterate $w^J+z^J \in \cK^J$ which is  admissible for problem \eqref{eq:fe:vi}.
+If we were to inject the original box constraints \eqref{eq:fe:fineconstraintset} downward to coarser meshes, i.e.~$\underline{\gamma}^j = \iR \underline{\gamma}^{j+1}$ and $\overline{\gamma}^j = \iR \overline{\gamma}^{j+1}$, then, because injection preserves inequalities, and because $y^{j+1} \in \mathcal{D}^{j+1}$, it would follow from \eqref{eq:fe:definew} that $\underline{\gamma}^j \le w^j \le \overline{\gamma}^j$.  In this sense $w^j$ is admissible with respect to the box constraints.  However, while $w^j \in \cV^j \subset \cV^J$ holds, generally $w^j \notin \cK^J$, and furthermore our use of LDCs (Section \ref{sec:cdmultilevel}) avoids the need to generate these $\underline{\gamma}^j, \overline{\gamma}^j$.
 
-Observe that formula \eqref{eq:fe:levelsource} for functional $\ell^j$ is a classical FAS construction; compare equation (8.5b) in \cite{BrandtLivne2011} or equation (5.3.14) in \cite{Trottenbergetal2001}.  It has the following explanation, mimicking the PDE version, which simultaneously justifies VI problems \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi}.  First, the $j+1$ level problem \eqref{eq:fe:downvi} is not solved exactly by the finer-level correction $y^{j+1}$---the down-smoother was only approximate---so we seek a further correction $y$ on the $j+1$ level such that
+Observe that formula \eqref{eq:fe:levelsource} for functional $\ell^j$ is a classical FAS construction for PDEs; compare equation (8.5b) in \cite{BrandtLivne2011} or equation (5.3.14) in \cite{Trottenbergetal2001}.  It has the following explanation, which simultaneously justifies VI problems \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi}.  First, the $j+1$ level problem \eqref{eq:fe:downvi} is not solved exactly by the finer-level correction $y^{j+1}$---the down-smoother was only approximate---so we seek a further correction $y$ on the $j+1$ level such that
 \begin{equation}
 \ip{f^{j+1}(w^{j+1}+y^{j+1}+y)}{v-y^{j+1}-y} \ge \ip{\ell^{j+1}}{v-y^{j+1}-y} \quad \text{\emph{(notional)}} \label{eq:fe:downvinotional}
 \end{equation}
@@ -714,11 +696,9 @@ Steps \emph{(ii)}--\emph{(iv)} are justified when the residual and the error are
 &\ip{f^j\left(\iR(w^{j+1}+y^{j+1})+y^j\right)}{v-y^j} - \ip{f^j\left(\iR(w^{j+1}+y^{j+1})\right)}{v-y^j} \label{eq:fe:downvicluttered} \\
 &\qquad \ge \ip{R\left(\ell^{j+1}-f^{j+1}(w^{j+1}+y^{j+1})\right)}{v-y^j} \notag
 \end{align}
-This is the same as VI problem \eqref{eq:fe:downvi}, but in cluttered form; definitions \eqref{eq:fe:definew} and \eqref{eq:fe:levelsource} create \eqref{eq:fe:downvi}.  The explanation for VI \eqref{eq:fe:upvi} is similar.
+This is the same as VI problem \eqref{eq:fe:downvi}, but in cluttered form, thus definitions \eqref{eq:fe:definew} and \eqref{eq:fe:levelsource}.  The explanation for VI \eqref{eq:fe:upvi} is similar.
 
-We will regard the smoothers for VI problems \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi} as approximate solvers, acting on the corrections $y^j$ and $z^j$, respectively (Section \ref{sec:implementation}).  Also, as is standard in multigrid, at the coarsest $j=0$ level we suppose that problem \eqref{eq:fe:upvi} is solved accurately.
-
-These ideas come together in Algorithm \ref{alg:fascd}, \pr{fascd-vcycle}, which updates $w^J$.  It assumes certain semantics for the \pr{smooth} and the coarsest-level \pr{solve} procedures; they do in-place modifications of their final arguments, without modifying their first four arguments.  Parameters \id{down} and \id{up} determine the number of smoother iterations, respectively.
+These ideas come together in Algorithm \ref{alg:fascd}, \pr{fascd-vcycle}, which updates $w^J$.  It assumes that the \pr{smooth} and \pr{solve} procedures do in-place modifications of their final arguments, without modifying their first four arguments.  Parameters \id{down} and \id{up} determine the number of smoother iterations, respectively.
 
 \begin{pseudofloat}[ht]
 \begin{pseudo}
@@ -742,13 +722,13 @@ These ideas come together in Algorithm \ref{alg:fascd}, \pr{fascd-vcycle}, which
 \label{alg:fascd}
 \end{pseudofloat}
 
-Compared specifically to the $V(1,0)$ cycle presented as Algorithm 4.7 in \cite{GraeserKornhuber2009}, one might say informally that \pr{fascd-vcycle} is a $V(1,1)$ cycle.  However, its structure relates directly to the basic CD iterations (Sections \ref{sec:cd}) as well.  In unilateral cases it is precise to say that one iteration of \pr{fascd-vcycle} is an application of \pr{cd-mult} over CD \eqref{eq:fe:downwardsuminclusion}, using the defect constraint meaning of the downward constraint sets $\mathcal{D}^j$, followed by an application of \pr{icd-tele} (Section \ref{sec:cdmultilevel}) over the incomplete CD \eqref{eq:fe:upwardsuminclusion}.  FIXME: idea is that once you are using defect constraints you no longer depend on the literal availability of $\Pi_i$, so incomplete CD suffices, e.g.~even for \pr{cd-mult}
+Algorithm \ref{alg:fascd} is a $V(1,1)$ cycle.\footnote{We could write ``$V(\id{down},\id{up})$'', but we prefer to emphasize the number of subsets used on each level rather than the number of smoother sweeps in a given set.}  If \id{up} $=0$ then it becomes a $V(1,0)$ cycle and if \id{down} $=0$ then it is a $V(0,1)$ cycle; in the former case it generalizes Algorithm 4.7 in \cite{GraeserKornhuber2009} by allowing nonlinear operators $f$, any smoother, and applying FAS-type corrections.  In unilateral cases it is precise to say that one iteration of \pr{fascd-vcycle} is an application of \pr{cd-mult} over CD \eqref{eq:fe:downwardsuminclusion} followed by an application of \pr{icd-tele} (Section \ref{sec:cdmultilevel}) over incomplete CD \eqref{eq:fe:upwardsuminclusion}; in this sense $V(1,1)=V(1,0)+V(0,1)$.
 
-Regarding storage required for \pr{fascd-vcycle}, and assuming all box constraints are nontrivial, 7 vectors must be allocated on each level: $\underline{\chi}^j$, $\overline{\chi}^j$, $\underline{\phi}^j$, $\overline{\phi}^j$, $w^j$, $\ell^j$, $y^j$.  Note $z^j$ can use the same storage as $y^j$.  On the finest level one must also store $\underline{\gamma}^J$ and $\overline{\gamma}^J$, while on the coarsest level there are only 5 vectors because $\underline{\phi}^0=\underline{\chi}^0$ and $\overline{\phi}^0=\overline{\chi}^0$.  Therefore, using $m_j=2^d m_{j-1}$, plus a geometric series argument, the total floating-point storage, excluding smoother and coarse-solver implementations, is
+Regarding the floating-point storage required, let us assuming all box constraints are nontrivial.  Then seven vectors must be allocated on each level: $\underline{\chi}^j$, $\overline{\chi}^j$, $\underline{\phi}^j$, $\overline{\phi}^j$, $w^j$, $\ell^j$, $y^j$.  Note $z^j$ can use the same storage as $y^j$.  On the finest level one must also store $\underline{\gamma}^J$ and $\overline{\gamma}^J$, while on the coarsest level there are only five vectors because $\underline{\phi}^0=\underline{\chi}^0$ and $\overline{\phi}^0=\overline{\chi}^0$.  Therefore, using $m_j=2^d m_{j-1}$, plus a geometric series argument, the total storage, excluding smoother and coarse-solver implementations, is
 \begin{equation}
 9 m_J + 7 m_{J-1} + \dots + 7 m_1 + 5 m_0 \le \left(9 + \frac{7}{2^d - 1}\right) m_J.
 \end{equation}
-This gives storage at most $16m_J$, $12m_J$, and $10m_J$ in dimensions $d=1,2,3$, respectively.  For comparison, a single-level method needs $4 m_J$ storage.\footnote{That is, for vectors $\underline{\gamma}^J,\overline{\gamma}^J,\ell^J,w^J$.}  If some of the obstacles are trivial, for instance in the unilateral case $\overline{\gamma}^J=+\infty$, storage is reduced at all levels.
+This gives storage at most $16m_J$, $12m_J$, and $10m_J$ in dimensions $d=1,2,3$, respectively.  For comparison, a single-level method needs $4 m_J$ storage.\footnote{That is, for vectors $\underline{\gamma}^J,\overline{\gamma}^J,\ell^J,w^J$.}  If some of the obstacles are trivial, for instance in the unilateral case $\overline{\gamma}^J=+\infty$, storage is correspondingly reduced at all levels.
 
 
 \section{Implementation} \label{sec:implementation}
@@ -1061,6 +1041,8 @@ Ed:  Yes, the convergence is loose, and furthermore there is a double-regulariza
 FIXME the observation that up-smoothing is more efficient seems to be new; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}
 
 FIXME smoother could be Newton semi-smooth \cite{BensonMunson2006}; smoother could be interior point method, etc.; smoother could use GMG or AMG on step equations but this is not seen to be necessary in applications so far
+
+FIXME the fact that FASCD reduces to FAS for PDEs when inequality constraints are removed (Appendix \ref{app:reductions}) suggests it is a completely different strategy from PFAS in \cite{BrandtCryer1983}
 
 FIXME desired extension to nonlocal variational inequalities not tried here
 
