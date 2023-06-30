@@ -143,6 +143,9 @@ urlcolor=black    % ...
 
 \newcommand{\XX}{{\sffamily X}}
 
+\newcommand{\dx}{\, \mathrm{d}x}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
 \usepackage{todonotes}
 \newcommand{\pef}[1]{\todo[inline, color=red!20]{PF: #1}}
 
@@ -199,13 +202,14 @@ This paper is organized as follows.  In Section \ref{sec:vi} we recall the theor
 
 \section{Variational inequalities} \label{sec:vi}
 
-Let $\cV$ be a real and reflexive Banach space with norm $\|\cdot\|$ and topological dual space $\cV'$.  Denote the dual pairing of $\phi \in \cV'$ and $v\in\cV$ by $\ip{\phi}{v} = \phi(v)$, and define the (Banach space) norm on $\cV'$ by $\|\phi\|_{\cV'} = \sup_{\|v\|=1} |\ip{\phi}{v}|$.  Let $\cK \subset \cV$ be a nonempty, closed, and convex subset, the \emph{constraint set}; elements of $\cK$ are said to be \emph{admissible}.  For a continuous, but generally nonlinear, operator $f:\cK \to \cV'$ and a linear \emph{source functional} $\ell\in \cV'$ we consider the following \emph{variational inequality} (VI) problem: find $u^*\in \cK$ such that
+Let $\cV$ be a real and reflexive Banach space with norm $\|\cdot\|$ and topological dual space $\cV'$.  Denote the dual pairing of $\phi \in \cV'$ and $v\in\cV$ by $\ip{\phi}{v} = \phi(v)$, and define the (Banach space) norm on $\cV'$ by $\|\phi\|_{\cV'} = \sup_{\|v\|=1} |\ip{\phi}{v}|$.  Let $\cK \subset \cV$ be a nonempty, closed, and convex subset, the \emph{constraint set}; elements of $\cK$ are said to be \emph{admissible}.  For a continuous, but generally nonlinear, operator $f:\cK \to \cV'$ and a linear \emph{source functional} $\ell\in \cV'$ we consider the following \emph{variational inequality} (VI) problem: find $u^\star\in \cK$ such that
 \begin{equation}
-\ip{f(u^*)}{v-u^*} \ge \ip{\ell}{v-u^*} \quad \text{for all } v\in \cK. \label{eq:vi}
+\ip{f(u^\star)}{v-u^\star} \ge \ip{\ell}{v-u^\star} \quad \text{for all } v\in \cK. \label{eq:vi}
 \end{equation}
 Because $f$ is (generally) nonlinear, the source term $\ell$ is not strictly needed in stating this class of problems.  In fact, by redefining $f$ we may take $\ell=0$.  However, introducing $\ell$ clarifies the algorithm in Section \ref{sec:vcycle}.
 
-VI \eqref{eq:vi} generalizes nonlinear systems of equations $f(u^*)=\ell$ to problems where $u^*$ is also constrained to be in $\cK$.  Informally, pretending the dual pairing is an inner product, \eqref{eq:vi} says that the angle between $f(u^*)-\ell$ and any arbitrary vector $v-u^*$ pointing from $u^*$ into $\cK$ is at most $90^\circ$; while $f(u^*)-\ell$ may not be zero, it must point directly into $\cK$.  On the other hand, if $u^*\in\cK^\circ$ is in the interior of the constraint set then \eqref{eq:vi} implies $f(u^*)=\ell$.
+VI \eqref{eq:vi} generalizes nonlinear systems of equations $f(u^\star)=\ell$ to problems where $u^\star$ is also constrained to be in $\cK$.  Informally, pretending the dual pairing is an inner product, \eqref{eq:vi} says that the angle between $f(u^\star)-\ell$ and any arbitrary vector $v-u^\star$ pointing from $u^\star$ into $\cK$ is at most $90^\circ$; while $f(u^\star)-\ell$ may not be zero, it must point directly into $\cK$.  On the other hand, if $u^\star$ is in the interior of the constraint set then \eqref{eq:vi} implies $f(u^\star)=\ell$.
+Variational inequalities may generally permit multiple solutions~\cite{Farrell2019}.
 
 The following definitions are standard \cite{KinderlehrerStampacchia1980}.
 
@@ -221,7 +225,7 @@ The following definitions are standard \cite{KinderlehrerStampacchia1980}.
 
 It is well-known that if $f:\cK \to \cV'$ is continuous, monotone, and coercive then VI \eqref{eq:vi} has a solution \cite[Corollary III.1.8]{KinderlehrerStampacchia1980}, and that the solution is unique when $f$ is strictly monotone.  As is standard in the calculus of variations \cite{Evans2010}, coercivity permits a compactness argument for unbounded sets $\cK$.  (Recall that the closed and bounded subsets of a reflexive Banach space are weakly compact.)  The condition of continuity can be weakened, e.g.~to only apply on finite-dimensional subspaces \cite{KinderlehrerStampacchia1980}, but this is unnecessary in our examples.
 
-Certain of the VIs solved in this paper satisfy a stronger inequality than \eqref{eq:coercive}.
+Some of the VIs solved in this paper satisfy a stronger inequality than \eqref{eq:coercive}.
 
 \begin{definition}  Let $p>1$.  The map $f:\cK \to \cV'$ is \emph{$p$-coercive} if there exists $\kappa>0$ such that
 \begin{equation}
@@ -231,16 +235,16 @@ Certain of the VIs solved in this paper satisfy a stronger inequality than \eqre
 
 It is easy to see that if $f$ is $p$-coercive then it is monotone, strictly monotone, and coercive, so the following well-posedness theorem holds.
 
-\begin{theorem}  \label{thm:viwellposed}  If $f:\cK \to \cV'$ is continuous and $p$-coercive then there exists a unique $u^*\in \cK$ solving VI \eqref{eq:vi}.
+\begin{theorem}  \label{thm:viwellposed}  If $f:\cK \to \cV'$ is continuous and $p$-coercive then there exists a unique $u^\star\in \cK$ solving VI \eqref{eq:vi}.
 \end{theorem}
 
 Let $\Omega \subset \RR^d$ denote a bounded, open set with smooth or piecewise-smooth (e.g.~polygonal) boundary.  Sobolev spaces \cite{Evans2010} will be denoted by $W^{k,p}(\Omega)$, for integer $k$ and $1\le p \le \infty$, with $W^{1,p}_0(\Omega)$ denoting the subspace having zero boundary values.
 
 The following example includes the classical and $p$-Laplacian obstacle problems \cite{ChoeLewis1991}.
 
-\begin{example}  \label{ex:plaplacian}  Suppose $p>1$.  For $u,v \in \cV = W^{1,p}_0(\Omega)$ define $f:\cV \to \cV'$ by
+\begin{example}  \label{ex:plaplacian}  Let $p>1$.  For $u,v \in \cV = W^{1,p}_0(\Omega)$, define $f:\cV \to \cV'$ by
 \begin{equation}
-\ip{f(u)}{v} = \int_\Omega |\grad u|^{p-2} \grad u \cdot \grad v\,dx, \label{eq:plaplacian}
+\ip{f(u)}{v} = \int_\Omega |\grad u|^{p-2} \grad u \cdot \grad v\dx, \label{eq:plaplacian}
 \end{equation}
 a continuous map \cite[Theorem A.0.6]{Peral1997}.  For $p\ge 2$, if $x,y\in\RR^d$ then $(|x|^{p-2} x - |y|^{p-2} y)\cdot (x-y) \ge 2^{2-p} |x-y|^p$ \cite[Appendix A]{Bueler2021conservation}, hence it follows from the Poincar\'e inequality that
     $$\ip{f(u) - f(v)}{u-v} \ge 2^{2-p} a_0 \|\grad u - \grad v\|_p^p \ge 2^{2-p} a_0 C \|u-v\|^p$$
@@ -248,57 +252,59 @@ for some $C>0$, and thus $f$ is $p$-coercive.  The map \eqref{eq:plaplacian} is 
 
 For monotone operators $f$, VI \eqref{eq:vi} generalizes the problem of minimizing a convex function over $\cK$.  In fact, suppose $F:\cK \to \RR$ is lower semi-continuous and (G\^ateau) differentiable with continuous derivative $F':\cK \to \cV'$.  Then $F$ is convex if and only if $F'$ is monotone \cite[Proposition I.5.5]{EkelandTemam1976}.  Furthermore, Proposition II.2.1 in \cite{EkelandTemam1976} shows that if $F$ is convex then \eqref{eq:vi} holds for $f=F'$ if and only if
 \begin{equation}
-u^* = \operatorname{arg-min}_{v\in\cK} F(v) - \ip{\ell}{v}. \label{eq:minimization}
+u^\star = \argmin_{v\in\cK} F(v) - \ip{\ell}{v}. \label{eq:minimization}
 \end{equation}
 The CD methods of Tai \cite{Tai2003} address problem \eqref{eq:minimization}; the analysis in \cite{Tai2003} supposes that an objective $F$ exists with $F'$ 2-coercive.  For Example \ref{ex:plaplacian} we may define
 \begin{equation}
-F(v) = \frac{1}{p} \int_\Omega |\grad v|^p\,dx. \label{eq:plaplacianobjective}
+F(v) = \frac{1}{p} \int_\Omega |\grad v|^p\dx. \label{eq:plaplacianobjective}
 \end{equation}
 Then $F$ is a convex functional and $F'(v) = f(v)$ for $f$ given in \eqref{eq:plaplacian}.  For any closed and convex $\cK\subset \cV$, VI problem \eqref{eq:vi} is then equivalent to optimization problem \eqref{eq:minimization}.
 
 Next we give two examples which are \emph{not} of optimization type \eqref{eq:minimization}, the first being an advection-diffusion problem, which needs the following Lemma.
 
-\begin{lemma}  \label{lem:advectionskew}  \cite{Elmanetal2014}\,  Suppose $\bX :\Omega \to \RR^d$ is a bounded and boundedly-differentiable vector field on $\Omega$ with zero divergence ($\Div \bX=0$).  For $u,v \in W^{1,2}(\Omega)$ let $b(u,v) = \int_\Omega (\bX \cdot \grad u) v\,dx$.  Then $b(u,u) = \frac{1}{2} \int_{\partial \Omega} u^2 \bX\cdot \bn\,dx$ where $\bn$ is the outward normal on $\partial \Omega$.
+\begin{lemma}  \label{lem:advectionskew}  \cite{Elmanetal2014}\,  Suppose $\bX :\Omega \to \RR^d$ is a bounded and boundedly-differentiable vector field on $\Omega$ with zero divergence ($\Div \bX=0$).  For $u,v \in W^{1,2}(\Omega)$ let $b(u,v) = \int_\Omega (\bX \cdot \grad u) v\dx$.  Then $b(u,u) = \frac{1}{2} \int_{\partial \Omega} u^2 \bX\cdot \bn\dx$ where $\bn$ is the outward normal on $\partial \Omega$.
 \end{lemma}
 
 \begin{proof}
-Integration by parts gives $b(u,v) = - b(v,u) + \int_{\partial \Omega} uv \bX\cdot \bn\,dx$.
+Integration by parts gives $b(u,v) = - b(v,u) + \int_{\partial \Omega} uv \bX\cdot \bn\dx$.
 \end{proof}
 
 \begin{example}  \label{ex:advectiondiffusion}  Suppose $\partial\Omega$ is partitioned into Dirichlet and Neumann portions, i.e.~$\partial\Omega = \partial_D\Omega \cup \partial_N\Omega$, with $\partial_D\Omega$ of positive measure.  Let $\cV \subset W^{1,2}(\Omega)$ be the space of functions which are zero along $\partial_D\Omega$.  Consider a divergence-free velocity field $\bX$ on $\Omega$ satisfying the conditions of Lemma \ref{lem:advectionskew}, and assume that the flow is outward on the Neumann boundary: $\bX \cdot \bn \ge 0$ on $\partial_N\Omega$.  For $u,v \in \cV$, $\eps>0$, and $\phi \in L^\infty(\Omega)$, define
 \begin{equation}
 \ip{f(u)}{v} = \eps \left(\grad u, \grad v\right)_{L^2(\Omega)} + b(u,v) - \ip{\phi}{v}. \label{eq:advectiondiffusion}
 \end{equation}
-With this operator, consider VI \eqref{eq:vi} for any closed and convex $\cK \subset \cV$ and $g\in\cV'$.  The interior condition, i.e.~PDE strong form, is the following linear advection-diffusion equation
+\pef{Why is $\phi \in L^\infty(\Omega)$? If that is the case, then should we have an $L^2$ inner product in the last term, rather than a dual pairing?}
+With this operator, consider VI \eqref{eq:vi} with $\ell = 0$ for any closed and convex $\cK \subset \cV$. The interior condition, i.e.~PDE strong form, is the following linear advection-diffusion equation
 \begin{equation}
 -\eps \grad^2 u + \bX\cdot \grad u = \phi.
 \label{eq:pdeadvectiondiffusion}
 \end{equation}
 On the other hand, it is easy to see that $|\ip{f(u)}{v}| \le (\eps + \|\bX\|_\infty + \|\phi\|_\infty) \|u\| \|v\|$, thus that $f:\cK \to \cV'$ is continuous.  Lemma \ref{lem:advectionskew} says that the bilinear form $b(u,v)$ is skew-symmetric up to a nonnegative term.  By the outward flow assumption and the Poincar\'e inequality,
 \begin{align*}
-\ip{f(u)-f(v)}{u-v} &= \eps \int_\Omega |\grad u - \grad v|^2\,dx + b(u-v,u-v) \\
-                    &= \eps \int_\Omega |\grad u - \grad v|^2\,dx + \frac{1}{2} \int_{\partial_N\Omega} (u-v)^2 \bX\cdot\bn \ge \eps C \|u-v\|^2.
+\ip{f(u)-f(v)}{u-v} &= \eps \int_\Omega |\grad u - \grad v|^2\dx + b(u-v,u-v) \\
+                    &= \eps \int_\Omega |\grad u - \grad v|^2\dx + \frac{1}{2} \int_{\partial_N\Omega} (u-v)^2 \bX\cdot\bn \ge \eps C \|u-v\|^2.
 \end{align*}
-Thus $f$ is 2-coercive, and so VI problem \eqref{eq:vi} is well-posed.
+Thus $f$ is 2-coercive, and so the associated VI problem is well-posed.
 \end{example}
 
-If $\bX \ne 0$ then $f\ne F'$ in Example \ref{ex:advectiondiffusion}, for any objective $F$, because $\ip{f(u)}{v}$ does not possess the symmetry of the gradient of a scalar: for $u,v$ which are zero on $\partial \Omega$, note that $\ip{f(u)}{v} - \ip{f(v)}{u} = -2 b(u,v)$.  References \cite{Bueler2021conservation,ChangNakshatrala2017} consider inequality-constrained advection-diffusion VI problems like this, specifically over the set $\cK = \{v\ge 0\}$.
+If $\bX \ne 0$ then $f\ne F'$ for any objective $F$, because $\ip{f(u)}{v}$ does not possess the symmetry of the gradient of a scalar: for $u,v$ which are zero on $\partial \Omega$, note that $\ip{f(u)}{v} - \ip{f(v)}{u} = -2 b(u,v)$.  References \cite{Bueler2021conservation,ChangNakshatrala2017} consider inequality-constrained advection-diffusion VI problems like this, specifically over the set $\cK = \{v\ge 0\}$.
 
-The next VI example, nonlinear and not of optimization type, is a model for steady ice sheet geometry in a given climate.  Related VI problems arise for any fluid layer which is subject to a source term which can remove the fluid \cite{Bueler2021conservation}.
+The next VI example is a model for steady ice sheet geometry in a given climate. It is nonlinear and not of optimization type. Related VI problems arise for any fluid layer which is subject to processes that can remove the fluid \cite{Bueler2021conservation}.
 
-\begin{example}  \label{ex:sia}  Let $\Omega \subset \RR^2$ be a fixed region of land, and suppose $b \in C^1(\Omega)$ is the given bedrock elevation.  Let $a \in L^\infty(\Omega)$ denote a given ``surface mass balance'' function, the annually-averaged rate of ice accumulation (as snow) minus melt and runoff.  Then the surface elevation $s\in C(\Omega)$ of a steady-state, isothermal, and non-sliding ice sheet (glacier) approximately satisfies the \emph{shallow ice approximation} (SIA) \cite{GreveBlatter2009} problem
+\begin{example}  \label{ex:sia}  Let $\Omega \subset \RR^2$ be a fixed region of land, and suppose $b \in C^1(\Omega)$ is the given bedrock elevation.  Let $a \in L^\infty(\Omega)$ denote a given ``surface mass balance'' function, the annually-averaged rate of ice accumulation (as snow) minus melt and runoff.  Then the surface elevation $s\in C(\Omega)$ of a steady-state, isothermal, and non-sliding ice sheet (glacier) approximately satisfies the \emph{shallow ice approximation} (SIA) \cite{GreveBlatter2009} problem: find $s \in \mathcal{K} = \{s\ge b\}$ such that
 \begin{equation}
-\int_\Omega \Gamma (s-b)^{n+2} |\grad s|^{n-1} \grad s \cdot \grad (v-s) \,dx \ge \int_\Omega a (v-s)\,dx, \label{eq:siavi}
+\int_\Omega \Gamma (s-b)^{n+2} |\grad s|^{n-1} \grad s \cdot \grad (v-s) \dx \ge \int_\Omega a (v-s)\dx \quad \text{ for all } v \in \mathcal{K}, \label{eq:siavi}
 \end{equation}
-over the set $\mathcal{K} = \{s\ge b\}$ of admissible surface elevations, where $n>1$ and $\Gamma>0$ are constants determined by the physical properties of ice; $n=3$ is a typical value.  The doubly-nonlinear and doubly-degenerate operator in this case is
+where $n>1$ and $\Gamma>0$ are constants determined by the physical properties of ice; $n=3$ is a typical value.  The doubly-nonlinear and doubly-degenerate operator in this case is
 \begin{equation}
-\ip{f(s)}{v} = \int_\Omega \Gamma (s-b)^{n+2} |\grad s|^{n-1} \grad s \cdot \grad v\,dx. \label{eq:sia}
+\ip{f(s)}{v} = \int_\Omega \Gamma (s-b)^{n+2} |\grad s|^{n-1} \grad s \cdot \grad v\dx. \label{eq:sia}
 \end{equation}
-If the bed is flat ($b=0$) then a power transformation converts the problem into $p$-Laplacian form \eqref{eq:plaplacian} with $p=n+1$.  For general beds $b$ less is understood about this operator, but existence holds for \eqref{eq:siavi} \cite{JouvetBueler2012}.  The theory suggests that a power of the solution lives in a Sobolev space, namely $(s-b)^{2p/(p-1)} \in W^{1,p}(\Omega)$.  This theory, and also observations of ice sheets, shows that $|\grad s|$ is generally unbounded as one approaches the free boundary, the \emph{ice margin}, from the icy side (where $s>b$).
+If the bed is flat ($b=0$) then a power transformation converts the problem into $p$-Laplacian form \eqref{eq:plaplacian} with $p=n+1$.  For general beds $b$ less is understood about this operator, but existence holds for \eqref{eq:siavi} \cite{JouvetBueler2012}.  The theory suggests that a power of the solution lives in a Sobolev space, namely $(s-b)^{2p/(p-1)} \in W^{1,p}(\Omega)$. \pef{`suggests' is quite weak; can we use a stronger word?} This theory, and also observations of ice sheets, shows that $|\grad s|$ is generally unbounded as one approaches the free boundary, the \emph{ice margin}, from the icy side (where $s>b$).
 \end{example}
 
 Numerical results are shown in Section \ref{sec:results} for applications of FASCD Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} to these Examples.
 
+\pef{I'm not sure starting with the example problems we want to solve is the right move. Let me read more and think about it.}
 
 \section{Constraint decomposition (CD)} \label{sec:cd}
 
@@ -329,42 +335,38 @@ In Sections \ref{sec:femultilevel}--\ref{sec:vcycle} we will introduce multileve
 
 Our second example is a disjoint frequency decomposition of a Hilbert space.  A multilevel CD over a finite-dimensional FE discretization, as proposed in Sections \ref{sec:femultilevel} and \ref{sec:cdmultilevel}, approximates such a decomposition.
 
-\begin{example}  \label{ex:frequencydecomposition}  For simplicity suppose $\Omega = (0,a)^d \subset \RR^d$ is a cube, and let $\cV = W_{\text{per}}^{2,k}(\Omega)$ be the periodic functions with square-integrable $k$th derivatives.  Suppose $\psi \in W_{\text{per}}^{2,k}(\Omega)$ and let $\cK = \{v \ge \psi\} \subset \cV$.  Without using any detailed notation for Fourier representation, but noting that the frequencies are discrete because $\Omega$ is compact, suppose $\{\cV_i\}$ are $m<\infty$ subspaces of $\cV$ defined by an (nonoverlapping) partition of $W_{\text{per}}^{2,k}(\Omega)$ by frequency, thus satisfying \eqref{eq:subspacedecomp} as an orthogonal decomposition.  Suppose $P_i:\cV \to \cV_i$ are the corresponding orthogonal projections, satisfying $I = \sum_i P_i$.  Let $\cK_i = \{v \ge P_i \psi\} \subset \cV_i$ and $\Pi_i = P_i$.  Then \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} also hold.
+\begin{example}  \label{ex:frequencydecomposition}  For simplicity suppose $\Omega = (0,a)^d \subset \RR^d$ is a cube, and let $\cV = W_{\text{per}}^{2,k}(\Omega)$ be the periodic functions with square-integrable $k$th derivatives for $k \ge 0$.  Suppose $\psi \in W_{\text{per}}^{2,k}(\Omega)$ and let $\cK = \{v \ge \psi\} \subset \cV$.  Without using any detailed notation for Fourier representation, but noting that the frequencies are discrete because $\Omega$ is compact, suppose $\{\cV_i\}$ are $m<\infty$ subspaces of $\cV$ defined by an (nonoverlapping) partition of $W_{\text{per}}^{2,k}(\Omega)$ by frequency, thus satisfying \eqref{eq:subspacedecomp} as an orthogonal decomposition.  Suppose $P_i:\cV \to \cV_i$ are the corresponding orthogonal projections, satisfying $I = \sum_i P_i$.  Let $\cK_i = \{v \ge P_i \psi\} \subset \cV_i$ and $\Pi_i = P_i$.  Then \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} also hold.
 \end{example}
 
-Associated to a constraint decomposition \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum} are certain iterative methods \cite{Tai2003,Xu1992}.  Let $0\le \alpha \le 1$ be the \emph{damping parameter}.\footnote{FASCD Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} are presented without damping, and indeed it seems to be unnecessary.  However, the general convergence of the basic CD iterations appears to depend upon it.}  Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below, discussed next, solve smaller VI problems over each subset $\cK_i$.  Each Algorithm replaces $u \in \cK$ with a new iterate $w\in\cK$ which should be closer to $u^* \in \cK$ solving \eqref{eq:vi}.
+Associated to a constraint decomposition \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum} are certain iterative methods \cite{Tai2003,Xu1992}.  Let $0\le \alpha \le 1$ be the \emph{damping parameter}.\footnote{FASCD Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} are presented without damping, and indeed it seems to be unnecessary.  However, the convergence of the more general CD iterations appears to depend upon it.}  Algorithms \ref{alg:basiccd-add} and \ref{alg:basiccd-mult} below, discussed next, solve smaller VI problems over each subset $\cK_i$.  Each Algorithm replaces $u \in \cK$ with a new iterate $w\in\cK$ which should be closer to $u^\star \in \cK$ solving \eqref{eq:vi}.
 
-The additive/parallel \pr{cd-add} Algorithm \ref{alg:basiccd-add} generalizes the classical Jacobi iteration.  Here ``\textbf{for all}'' can be computed in any order.  In its VI,
-\begin{equation}
-\ip{f(u - \Pi_i u + \hat w_i)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i} \qquad \forall v_i \in \mathcal{K}_i, \label{eq:cdaddvi}
-\end{equation}
-the expression ``$u-\Pi_iu+\hat w_i$'' removes the part of $u$ which lies in $\mathcal{K}_i$, and then adds-back the subset solution $\hat w_i \in \mathcal{K}_i$.
-
+The additive/parallel \pr{cd-add} Algorithm \ref{alg:basiccd-add} generalizes the classical Jacobi iteration.
 \begin{pseudofloat}[H]
 \begin{pseudo*}
 \pr{cd-add}(u)\text{:} \\+
     for all $i \in \{0,\dots,m-1\}$: \\+
-        \rm{find} $\hat w_i\in \cK_i$ \rm{so that for all} $v_i\in \cK_i$, \\+
-            $\ip{f(u - \Pi_i u + \hat w_i)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i}$ \\--
+        \rm{find} $\hat w_i\in \cK_i$ \rm{such that} \\+
+            $\ip{f(u - \Pi_i u + \hat w_i)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i} \textnormal{ for all } v_i \in \cK_i$ \\--
     $\hat w = \sum_i \hat w_i\in\cK$ \\
     return $w=(1-\alpha) u + \alpha \hat w$
 \end{pseudo*}
 \caption{One additive CD iteration for VI problem \eqref{eq:vi}.}
 \label{alg:basiccd-add}
 \end{pseudofloat}
-
-The multiplicative/successive \pr{cd-mult} Algorithm \ref{alg:basiccd-mult} generalizes the Gauss-Seidel iteration.  Each subset solution corrects the global iterate immediately, so here the ordering used in the ``\textbf{for}'' loop is important.  In the VI,
+Here ``\textbf{for all}'' can be computed in any order.  In its VI,
 \begin{equation}
-\ip{f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} \Pi_j u\Big)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i} \qquad \forall v_i \in \mathcal{K}_i, \label{eq:cdmultvi}
+\ip{f(u - \Pi_i u + \hat w_i)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i} \textnormal{ for all } v_i \in \mathcal{K}_i, \label{eq:cdaddvi}
 \end{equation}
-the sum ``$\sum_{j>i} \Pi_j u$'' should be read as ``those portions of $u$ which have not yet improved''.
+the expression ``$u-\Pi_iu+\hat w_i$'' removes the part of $u$ which lies in $\mathcal{K}_i$, and then adds-back the subset solution $\hat w_i \in \mathcal{K}_i$.
+\pef{Could remove this explanation, but it's nice to keep it in if we can fit it}
 
-\begin{pseudofloat}[H]
+
+The multiplicative/successive \pr{cd-mult} Algorithm \ref{alg:basiccd-mult} generalizes the Gauss--Seidel iteration.  \begin{pseudofloat}[H]
 \begin{pseudo*}
 \pr{cd-mult}(u)\text{:} \\+
     for $i = 0,\dots,m-1$: \\+
-        \rm{find} $\hat w_i\in \cK_i$ \rm{so that for all} $v_i\in \cK_i$, \\+
-            $\displaystyle \ip{f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} \Pi_j u\Big)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i}$ \\-
+        \rm{find} $\hat w_i\in \cK_i$ \rm{such that} \\+
+            $\displaystyle \ip{f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} \Pi_j u\Big)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i} \textnormal{ for all } v_i \in \cK_i$ \\-
             $w_i = (1-\alpha) \Pi_i u + \alpha \hat w_i\in\cK_i$ \\-
     $\hat w = \sum_i \hat w_i\in\cK$ \\
     return $w=(1-\alpha) u + \alpha \hat w$
@@ -372,17 +374,24 @@ the sum ``$\sum_{j>i} \Pi_j u$'' should be read as ``those portions of $u$ which
 \caption{One multiplicative CD iteration for VI problem \eqref{eq:vi}.}
 \label{alg:basiccd-mult}
 \end{pseudofloat}
+Each subset solution corrects the global iterate immediately, so here the ordering used in the ``\textbf{for}'' loop is important.  In the VI,
+\begin{equation}
+\ip{f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} \Pi_j u\Big)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i} \qquad \forall v_i \in \mathcal{K}_i, \label{eq:cdmultvi}
+\end{equation}
+the sum ``$\sum_{j>i} \Pi_j u$'' should be read as ``those portions of $u$ which have not yet improved''.
 
-In VIs \eqref{eq:cdaddvi} and \eqref{eq:cdmultvi} the argument of $f$ is an element of $\cK$, as the reader should confirm.  Furthermore, by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may write the test vector $v_i - \hat w_i \in \cV_i$ as a difference of admissible vectors from $\cK$.  For \eqref{eq:cdaddvi} and \eqref{eq:cdmultvi} respectively:
+
+
+In VIs \eqref{eq:cdaddvi} and \eqref{eq:cdmultvi} the argument of $f$ is an element of $\cK$.  Furthermore, by \eqref{eq:constraintdecomp} and \eqref{eq:constraintrestrictionsum} one may write the test vector $v_i - \hat w_i \in \cV_i$ as a difference of admissible vectors from $\cK$.  For \eqref{eq:cdaddvi} and \eqref{eq:cdmultvi} respectively:
 \begin{align}
 [u - \Pi_i u + v_i] - [u - \Pi_i u + \hat w_i] &= v_i - \hat w_i, \label{eq:admissibledifferenceadd} \\
 \left[\sum_{j<i} w_j + v_i + \sum_{j>i} \Pi_j u\right] - \left[\sum_{j<i} w_j + \hat w_i + \sum_{j>i} \Pi_j u\right] &= v_i - \hat w_i.  \label{eq:admissibledifferencemult}
 \end{align}
-In this sense the VIs over the subsets $\mathcal{K}_i$ solve the same problem as \eqref{eq:vi}.
+In this sense the VIs over the subsets $\mathcal{K}_i$ solve the same problem as the original one.
 
 Let $e_i = \hat w_i - \Pi_i u \in \cV_i$.  The reader may confirm that $\hat w = u + \sum_{i} e_i$ and thus that $w = u + \alpha \sum_i e_i$.  The new iterate $w$ is therefore computed by adding a damped correction from each sub\emph{space} $\mathcal{V}_i$, but in such a manner that $w \in \mathcal{K}$; the corrections preserve admissibility.
 
-We call \pr{cd-add} and \pr{cd-mult} the \emph{basic CD iterations}.  VI problems \eqref{eq:cdaddvi} and \eqref{eq:cdmultvi} are analogous to constrained line searches, and in fact they reduce to such line searches when the $\cV_i$ are one-dimensional.  As shown in the next Lemma, when VI problem \eqref{eq:vi} corresponds to convex optimization \eqref{eq:minimization} then, subject to bounds on the damping $\alpha$, these iterations generate monotonically-decreasing objective values.
+We call \pr{cd-add} and \pr{cd-mult} the \emph{basic CD iterations}.  VI problems \eqref{eq:cdaddvi} and \eqref{eq:cdmultvi} reduce to constrained line searches when the $\cV_i$ are one-dimensional.  As shown in the next Lemma, when VI problem \eqref{eq:vi} corresponds to convex optimization \eqref{eq:minimization} then, subject to bounds on the damping $\alpha$, these iterations generate monotonically-decreasing objective values.
 
 \begin{lemma} \cite{Tai2003}  Suppose $f=F'$ for $F:\cK\to\RR$ convex and differentiable, and let $u\in\cK$.  For $0 \le \alpha \le 1$ the output $w \in \cK$ from \pr{cd-mult} satisfies
 \begin{equation}
@@ -393,7 +402,7 @@ If $0 \le \alpha \le 1/m$ then \pr{cd-add} likewise satisfies \eqref{eq:objectiv
 
 \begin{proof}  We assume $\ell=0$ without loss of generality; otherwise define $\tilde F(u)=F(u) - \ip{\ell}{u}$ and observe that the proof goes through for $\tilde F$ essentially unchanged.
 
-To show that each iteration of the \textbf{for} loop in \pr{cd-mult} lowers the objective value, let $z_{i} = \sum_{j\le i} w_j + \sum_{j > i} \Pi_j u \in \cK$, $i=0,\dots,m-1$; this is the state at the end of the $i$th iteration.  Note that $z_{i-1} = \sum_{j < i} w_j + \Pi_i u + \sum_{j > i} \Pi_j u$ for $i>0$.  Therefore by convexity of $F$, observation \eqref{eq:admissibledifferencemult} with $v_i=\Pi_i u$, and \eqref{eq:cdmultvi} we find:
+To show that each iteration of the {for} loop in \pr{cd-mult} lowers the objective value, let $z_{i} = \sum_{j\le i} w_j + \sum_{j > i} \Pi_j u \in \cK$, $i=0,\dots,m-1$; this is the state at the end of the $i$th iteration.  Note that $z_{i-1} = \sum_{j < i} w_j + \Pi_i u + \sum_{j > i} \Pi_j u$ for $i>0$.  Therefore by convexity of $F$, observation \eqref{eq:admissibledifferencemult} with $v_i=\Pi_i u$, and \eqref{eq:cdmultvi} we find:
 \begin{equation*}
 F(z_{i-1}) - F\left(\sum_{j<i} w_j + \hat w_i + \sum_{j > i} \Pi_j u\right) \ge \ip{f\left(\sum_{j<i} w_j + \hat w_i + \sum_{j > i} \Pi_j u\right)}{\Pi_i u - \hat w_i} \ge 0.
 \end{equation*}
@@ -434,11 +443,11 @@ From now on we will restrict to the case of \emph{box constraints} \cite{BensonM
 \end{equation}
 the closed and convex \emph{constraint set}.  Note that we are treating inequality constraints and boundary conditions in a unified manner.\footnote{Any Neumann conditions over $\partial_N \Omega$ are determined by the operator formula for $f$, i.e.~by an integration over $\partial_N\Omega$.}
 
-Recalling abstract VI problem \eqref{eq:vi}, from now on we only constraint sets \eqref{eq:originalconstraintset}.  Given continuous $f:\cK \to \cV'$, and $\ell \in \cV'$, we will assume that the following is well-posed for $u^*\in \cK$:
+Recalling abstract VI problem \eqref{eq:vi}, from now on we only constraint sets \eqref{eq:originalconstraintset}.  Given continuous $f:\cK \to \cV'$, and $\ell \in \cV'$, we will assume that the following is well-posed for $u^\star\in \cK$:
 \begin{equation}
-\ip{f(u^*)}{v-u^*} \ge \ip{\ell}{v-u^*} \qquad \text{for all } v\in \cK. \label{eq:boxdirichletvi}
+\ip{f(u^\star)}{v-u^\star} \ge \ip{\ell}{v-u^\star} \qquad \text{for all } v\in \cK. \label{eq:boxdirichletvi}
 \end{equation}
-Note that $v-u^* \in W_0^{1,p}(\Omega)$.
+Note that $v-u^\star \in W_0^{1,p}(\Omega)$.
 
 
 \section{Multilevel finite elements} \label{sec:femultilevel}
