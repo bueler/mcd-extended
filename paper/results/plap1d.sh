@@ -1,4 +1,4 @@
-# generate results for Example 9.2 in paper
+# generate results for Example 8.2 in paper
 # run as
 #   $ bash PATHTOHERE/plap1d.sh &> plap1d.txt
 # from git@bitbucket.org:pefarrell/fascd.gitexamples/

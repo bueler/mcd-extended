@@ -1,4 +1,4 @@
-# generate results for Example 9.1 in paper
+# generate results for Example 8.1 in paper
 
 for PROB in ball spiral; do
     echo ""
