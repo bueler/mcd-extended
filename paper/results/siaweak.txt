@@ -1,0 +1,33 @@
+   0 FASCD ncp function norm 5.651387787497e+01
+   0 FASCD ncp function norm 7.137234227036e+01
+   1 FASCD ncp function norm 2.317518119098e+00
+   2 FASCD ncp function norm 2.825530707579e-02
+   3 FASCD ncp function norm 1.012890690291e-02
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+done (bumps): mcoarse=20, 7 levels, 1280 x 1280 mesh, h=1.406 km
+
+real	5m8.975s
+user	5m4.173s
+sys	0m4.705s
+   0 FASCD ncp function norm 2.825710954663e+01
+   0 FASCD ncp function norm 3.555859402546e+01
+   1 FASCD ncp function norm 1.536457373301e-01
+   2 FASCD ncp function norm 8.771699474212e-03
+   3 FASCD ncp function norm 4.005573221079e-03
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+done (bumps): mcoarse=20, 8 levels, 2560 x 2560 mesh, h=0.703 km
+
+real	6m8.015s
+user	24m3.739s
+sys	0m27.911s
+   0 FASCD ncp function norm 1.412857629632e+01
+   0 FASCD ncp function norm 1.774278270564e+01
+   1 FASCD ncp function norm 1.484719682126e-02
+   2 FASCD ncp function norm 3.269984396680e-03
+   3 FASCD ncp function norm 1.466026324500e-03
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+done (bumps): mcoarse=20, 9 levels, 5120 x 5120 mesh, h=0.352 km
+
+real	6m14.329s
+user	97m2.587s
+sys	2m42.533s

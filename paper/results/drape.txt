@@ -1,0 +1,599 @@
+
+******** -nofas PROB=ball *******
+  0 SNES Function norm 6.357687537953e-01 
+  1 SNES Function norm 3.110763932274e-16 
+Nonlinear  solve converged due to CONVERGED_FNORM_ABS iterations 1
+done on 4 x 4 square mesh (oper=lap, prob=ball, levs=1, mcoarse=4):  |u-uexact|_h = 3.422e-01
+  0 SNES Function norm 2.765009398224e+00 
+  1 SNES Function norm 1.332297792192e+00 
+  2 SNES Function norm 4.473858626762e-16 
+Nonlinear  solve converged due to CONVERGED_FNORM_ABS iterations 2
+done on 8 x 8 square mesh (oper=lap, prob=ball, levs=2, mcoarse=4):  |u-uexact|_h = 1.985e-02
+  0 SNES Function norm 2.328238671250e+00 
+  1 SNES Function norm 7.761977450207e-01 
+  2 SNES Function norm 4.085770249472e-02 
+  3 SNES Function norm 8.394329739988e-16 
+Nonlinear  solve converged due to CONVERGED_FNORM_ABS iterations 3
+done on 16 x 16 square mesh (oper=lap, prob=ball, levs=3, mcoarse=4):  |u-uexact|_h = 1.637e-02
+  0 SNES Function norm 2.078483735217e+00 
+  1 SNES Function norm 1.504848572372e+00 
+  2 SNES Function norm 7.679266050281e-01 
+  3 SNES Function norm 3.214294335760e-01 
+  4 SNES Function norm 3.271908318334e-02 
+  5 SNES Function norm 1.852569925535e-04 
+  6 SNES Function norm 1.829865213214e-15 
+Nonlinear  solve converged due to CONVERGED_FNORM_ABS iterations 6
+done on 32 x 32 square mesh (oper=lap, prob=ball, levs=4, mcoarse=4):  |u-uexact|_h = 4.794e-03
+  0 SNES Function norm 2.242216235325e+00 
+  1 SNES Function norm 1.234818752910e+00 
+  2 SNES Function norm 1.091010154409e+00 
+  3 SNES Function norm 8.787405015541e-01 
+  4 SNES Function norm 5.272545170566e-01 
+  5 SNES Function norm 2.767460783094e-01 
+  6 SNES Function norm 1.359327242207e-01 
+  7 SNES Function norm 4.811512717978e-02 
+  8 SNES Function norm 3.536629869036e-15 
+Nonlinear  solve converged due to CONVERGED_FNORM_ABS iterations 8
+done on 64 x 64 square mesh (oper=lap, prob=ball, levs=5, mcoarse=4):  |u-uexact|_h = 5.766e-04
+  0 SNES Function norm 2.788454106477e+00 
+  1 SNES Function norm 9.632593497728e-01 
+  2 SNES Function norm 9.111937223420e-01 
+  3 SNES Function norm 8.604977128661e-01 
+  4 SNES Function norm 8.109480235228e-01 
+  5 SNES Function norm 7.620214898026e-01 
+  6 SNES Function norm 7.072638713436e-01 
+  7 SNES Function norm 6.109336033614e-01 
+  8 SNES Function norm 4.847358070914e-01 
+  9 SNES Function norm 3.614318005059e-01 
+ 10 SNES Function norm 2.622724752507e-01 
+ 11 SNES Function norm 1.811642391034e-01 
+ 12 SNES Function norm 1.113099277377e-01 
+ 13 SNES Function norm 6.626897777421e-02 
+ 14 SNES Function norm 3.548455949599e-02 
+ 15 SNES Function norm 1.604232374417e-02 
+ 16 SNES Function norm 1.230077567855e-04 
+ 17 SNES Function norm 7.193972222226e-15 
+Nonlinear  solve converged due to CONVERGED_FNORM_ABS iterations 17
+done on 128 x 128 square mesh (oper=lap, prob=ball, levs=6, mcoarse=4):  |u-uexact|_h = 1.878e-04
+  0 SNES Function norm 3.784664671516e+00 
+  1 SNES Function norm 7.134093432685e-01 
+  2 SNES Function norm 6.944936618775e-01 
+  3 SNES Function norm 6.758666265175e-01 
+  4 SNES Function norm 6.575109419740e-01 
+  5 SNES Function norm 6.394097773282e-01 
+  6 SNES Function norm 6.215465774591e-01 
+  7 SNES Function norm 6.039047842313e-01 
+  8 SNES Function norm 5.864673315300e-01 
+  9 SNES Function norm 5.692154304364e-01 
+ 10 SNES Function norm 5.521239728495e-01 
+ 11 SNES Function norm 5.351069485797e-01 
+ 12 SNES Function norm 5.184666929932e-01 
+ 13 SNES Function norm 4.976200522405e-01 
+ 14 SNES Function norm 4.623238500520e-01 
+ 15 SNES Function norm 4.201876039434e-01 
+ 16 SNES Function norm 3.746969506894e-01 
+ 17 SNES Function norm 3.265287054436e-01 
+ 18 SNES Function norm 2.797325711634e-01 
+ 19 SNES Function norm 2.401230516847e-01 
+ 20 SNES Function norm 2.046352261655e-01 
+ 21 SNES Function norm 1.725660254091e-01 
+ 22 SNES Function norm 1.433386430168e-01 
+ 23 SNES Function norm 1.160382957225e-01 
+ 24 SNES Function norm 9.296350977015e-02 
+ 25 SNES Function norm 7.234346651860e-02 
+ 26 SNES Function norm 5.385724848939e-02 
+ 27 SNES Function norm 3.971747280681e-02 
+ 28 SNES Function norm 2.767043347537e-02 
+ 29 SNES Function norm 1.811025748199e-02 
+ 30 SNES Function norm 9.723904955180e-03 
+ 31 SNES Function norm 2.159314107477e-03 
+ 32 SNES Function norm 4.009111886771e-05 
+ 33 SNES Function norm 1.409368536152e-14 
+Nonlinear  solve converged due to CONVERGED_FNORM_ABS iterations 33
+done on 256 x 256 square mesh (oper=lap, prob=ball, levs=7, mcoarse=4):  |u-uexact|_h = 5.212e-05
+  0 SNES Function norm 5.281043396981e+00 
+  1 SNES Function norm 5.145316226361e-01 
+  2 SNES Function norm 5.077384729668e-01 
+  3 SNES Function norm 5.009993328282e-01 
+  4 SNES Function norm 4.943124349479e-01 
+  5 SNES Function norm 4.876759436217e-01 
+  6 SNES Function norm 4.810878095003e-01 
+  7 SNES Function norm 4.745451521868e-01 
+  8 SNES Function norm 4.680364343029e-01 
+  9 SNES Function norm 4.616199856869e-01 
+ 10 SNES Function norm 4.552477597979e-01 
+ 11 SNES Function norm 4.489183254604e-01 
+ 12 SNES Function norm 4.426302598253e-01 
+ 13 SNES Function norm 4.363821422177e-01 
+ 14 SNES Function norm 4.301725458606e-01 
+ 15 SNES Function norm 4.240000258765e-01 
+ 16 SNES Function norm 4.178631001718e-01 
+ 17 SNES Function norm 4.117602150476e-01 
+ 18 SNES Function norm 4.056896722288e-01 
+ 19 SNES Function norm 3.996494314900e-01 
+ 20 SNES Function norm 3.936363020527e-01 
+ 21 SNES Function norm 3.876359680111e-01 
+ 22 SNES Function norm 3.817221921387e-01 
+ 23 SNES Function norm 3.758360573529e-01 
+ 24 SNES Function norm 3.699761314379e-01 
+ 25 SNES Function norm 3.641408917046e-01 
+ 26 SNES Function norm 3.581173605165e-01 
+ 27 SNES Function norm 3.493816729883e-01 
+ 28 SNES Function norm 3.371312317555e-01 
+ 29 SNES Function norm 3.230218969421e-01 
+ 30 SNES Function norm 3.079370810994e-01 
+ 31 SNES Function norm 2.923860503548e-01 
+ 32 SNES Function norm 2.762355352913e-01 
+ 33 SNES Function norm 2.596452721616e-01 
+ 34 SNES Function norm 2.423897352828e-01 
+ 35 SNES Function norm 2.248583422319e-01 
+ 36 SNES Function norm 2.086921346825e-01 
+ 37 SNES Function norm 1.934857659623e-01 
+ 38 SNES Function norm 1.791336475154e-01 
+ 39 SNES Function norm 1.655357889489e-01 
+ 40 SNES Function norm 1.525202499330e-01 
+ 41 SNES Function norm 1.405391627577e-01 
+ 42 SNES Function norm 1.291382634063e-01 
+ 43 SNES Function norm 1.182663075852e-01 
+ 44 SNES Function norm 1.078696213964e-01 
+ 45 SNES Function norm 9.782089570483e-02 
+ 46 SNES Function norm 8.856841820795e-02 
+ 47 SNES Function norm 7.973313881782e-02 
+ 48 SNES Function norm 7.129481280210e-02 
+ 49 SNES Function norm 6.322933811690e-02 
+ 50 SNES Function norm 5.541920829574e-02 
+ 51 SNES Function norm 4.844417156121e-02 
+ 52 SNES Function norm 4.194446915834e-02 
+ 53 SNES Function norm 3.576940407045e-02 
+ 54 SNES Function norm 3.041934473830e-02 
+ 55 SNES Function norm 2.543854324578e-02 
+ 56 SNES Function norm 2.067351666215e-02 
+ 57 SNES Function norm 1.666357492889e-02 
+ 58 SNES Function norm 1.300357374302e-02 
+ 59 SNES Function norm 9.524682030123e-03 
+ 60 SNES Function norm 6.764975632433e-03 
+ 61 SNES Function norm 4.462609263865e-03 
+ 62 SNES Function norm 2.622759956134e-03 
+ 63 SNES Function norm 1.351208459185e-03 
+ 64 SNES Function norm 2.278380649878e-04 
+ 65 SNES Function norm 2.856966344897e-14 
+Nonlinear  solve converged due to CONVERGED_FNORM_ABS iterations 65
+done on 512 x 512 square mesh (oper=lap, prob=ball, levs=8, mcoarse=4):  |u-uexact|_h = 1.130e-05
+
+******** -nofas PROB=spiral *******
+  0 SNES Function norm 6.236123840541e+00 
+  1 SNES Function norm 6.232303404164e-16 
+Nonlinear  solve converged due to CONVERGED_FNORM_ABS iterations 1
+done on 4 x 4 square mesh (oper=lap, prob=spiral, levs=1, mcoarse=4)
+  0 SNES Function norm 9.709758397917e+00 
+  1 SNES Function norm 1.259643986241e+00 
+  2 SNES Function norm 2.253478062988e-15 
+Nonlinear  solve converged due to CONVERGED_FNORM_ABS iterations 2
+done on 8 x 8 square mesh (oper=lap, prob=spiral, levs=2, mcoarse=4)
+  0 SNES Function norm 2.054006464139e+01 
+  1 SNES Function norm 5.687183453018e+00 
+  2 SNES Function norm 1.029302950366e+00 
+  3 SNES Function norm 8.943893353361e-02 
+  4 SNES Function norm 4.288452913667e-15 
+Nonlinear  solve converged due to CONVERGED_FNORM_ABS iterations 4
+done on 16 x 16 square mesh (oper=lap, prob=spiral, levs=3, mcoarse=4)
+  0 SNES Function norm 3.153379810972e+01 
+  1 SNES Function norm 1.224809069269e+01 
+  2 SNES Function norm 3.578306787336e+00 
+  3 SNES Function norm 6.869587061193e-01 
+  4 SNES Function norm 2.701204509225e-01 
+  5 SNES Function norm 7.854137883158e-02 
+  6 SNES Function norm 4.849579153797e-03 
+  7 SNES Function norm 1.005180308374e-14 
+Nonlinear  solve converged due to CONVERGED_FNORM_ABS iterations 7
+done on 32 x 32 square mesh (oper=lap, prob=spiral, levs=4, mcoarse=4)
+  0 SNES Function norm 4.596025222432e+01 
+  1 SNES Function norm 1.831788604791e+01 
+  2 SNES Function norm 6.867710532702e+00 
+  3 SNES Function norm 2.981578079314e+00 
+  4 SNES Function norm 1.281682005337e+00 
+  5 SNES Function norm 5.453063543431e-01 
+  6 SNES Function norm 4.005346593570e-01 
+  7 SNES Function norm 1.073286331582e-01 
+  8 SNES Function norm 2.336421533392e-02 
+  9 SNES Function norm 2.237309110647e-14 
+Nonlinear  solve converged due to CONVERGED_FNORM_ABS iterations 9
+done on 64 x 64 square mesh (oper=lap, prob=spiral, levs=5, mcoarse=4)
+  0 SNES Function norm 6.420001471492e+01 
+  1 SNES Function norm 2.567534353300e+01 
+  2 SNES Function norm 1.049731244337e+01 
+  3 SNES Function norm 5.762690727135e+00 
+  4 SNES Function norm 3.905538716562e+00 
+  5 SNES Function norm 2.742535708447e+00 
+  6 SNES Function norm 1.920686176273e+00 
+  7 SNES Function norm 1.296468670632e+00 
+  8 SNES Function norm 8.522396418393e-01 
+  9 SNES Function norm 5.532130946312e-01 
+ 10 SNES Function norm 4.077891295453e-01 
+ 11 SNES Function norm 3.097421235948e-01 
+ 12 SNES Function norm 3.323151372971e-01 
+ 13 SNES Function norm 2.216055418780e-02 
+ 14 SNES Function norm 1.169155092926e-02 
+ 15 SNES Function norm 3.502513822222e-03 
+ 16 SNES Function norm 4.509435562921e-14 
+Nonlinear  solve converged due to CONVERGED_FNORM_ABS iterations 16
+done on 128 x 128 square mesh (oper=lap, prob=spiral, levs=6, mcoarse=4)
+  0 SNES Function norm 8.852562079075e+01 
+  1 SNES Function norm 3.630236451563e+01 
+  2 SNES Function norm 1.497106404063e+01 
+  3 SNES Function norm 8.455274160200e+00 
+  4 SNES Function norm 5.942310117809e+00 
+  5 SNES Function norm 4.634889914656e+00 
+  6 SNES Function norm 3.782859297246e+00 
+  7 SNES Function norm 3.167262007619e+00 
+  8 SNES Function norm 2.682052499896e+00 
+  9 SNES Function norm 2.275829212648e+00 
+ 10 SNES Function norm 1.928191929671e+00 
+ 11 SNES Function norm 1.623566733433e+00 
+ 12 SNES Function norm 1.362758315875e+00 
+ 13 SNES Function norm 1.133980117377e+00 
+ 14 SNES Function norm 9.317065570009e-01 
+ 15 SNES Function norm 7.435522376575e-01 
+ 16 SNES Function norm 5.932673595766e-01 
+ 17 SNES Function norm 4.650963926153e-01 
+ 18 SNES Function norm 3.644931030292e-01 
+ 19 SNES Function norm 3.024827413285e-01 
+ 20 SNES Function norm 2.749201043894e-01 
+ 21 SNES Function norm 2.315637695248e-01 
+ 22 SNES Function norm 2.438102202227e-01 
+ 23 SNES Function norm 1.757431217409e-02 
+ 24 SNES Function norm 6.915417563893e-03 
+ 25 SNES Function norm 2.180268855652e-03 
+ 26 SNES Function norm 7.508692838094e-04 
+ 27 SNES Function norm 9.278986799871e-14 
+Nonlinear  solve converged due to CONVERGED_FNORM_ABS iterations 27
+done on 256 x 256 square mesh (oper=lap, prob=spiral, levs=7, mcoarse=4)
+  0 SNES Function norm 1.270381076691e+02 
+  1 SNES Function norm 5.171954927883e+01 
+  2 SNES Function norm 2.102568902582e+01 
+  3 SNES Function norm 1.190352948738e+01 
+  4 SNES Function norm 8.426246245991e+00 
+  5 SNES Function norm 6.586040837944e+00 
+  6 SNES Function norm 5.420447533962e+00 
+  7 SNES Function norm 4.608591466547e+00 
+  8 SNES Function norm 4.008111821883e+00 
+  9 SNES Function norm 3.544889357218e+00 
+ 10 SNES Function norm 3.173448414919e+00 
+ 11 SNES Function norm 2.869823327554e+00 
+ 12 SNES Function norm 2.612589918309e+00 
+ 13 SNES Function norm 2.392276925862e+00 
+ 14 SNES Function norm 2.199595766730e+00 
+ 15 SNES Function norm 2.027118844045e+00 
+ 16 SNES Function norm 1.871173082949e+00 
+ 17 SNES Function norm 1.727554069207e+00 
+ 18 SNES Function norm 1.594609778598e+00 
+ 19 SNES Function norm 1.472311955138e+00 
+ 20 SNES Function norm 1.356562736552e+00 
+ 21 SNES Function norm 1.249607027971e+00 
+ 22 SNES Function norm 1.148893804566e+00 
+ 23 SNES Function norm 1.056279922437e+00 
+ 24 SNES Function norm 9.681967962550e-01 
+ 25 SNES Function norm 8.855963280608e-01 
+ 26 SNES Function norm 8.110826857704e-01 
+ 27 SNES Function norm 7.378361335977e-01 
+ 28 SNES Function norm 6.679109846007e-01 
+ 29 SNES Function norm 5.985826151898e-01 
+ 30 SNES Function norm 5.386205599304e-01 
+ 31 SNES Function norm 4.776866369506e-01 
+ 32 SNES Function norm 4.235099355394e-01 
+ 33 SNES Function norm 3.747011288623e-01 
+ 34 SNES Function norm 3.313525472223e-01 
+ 35 SNES Function norm 2.996421997947e-01 
+ 36 SNES Function norm 2.628469953856e-01 
+ 37 SNES Function norm 2.354096961576e-01 
+ 38 SNES Function norm 2.152537853373e-01 
+ 39 SNES Function norm 1.957954635367e-01 
+ 40 SNES Function norm 1.882372440323e-01 
+ 41 SNES Function norm 1.764885225513e-01 
+ 42 SNES Function norm 1.738676446506e-01 
+ 43 SNES Function norm 2.078342964506e-01 
+ 44 SNES Function norm 1.100864831481e-02 
+ 45 SNES Function norm 5.858159663518e-03 
+ 46 SNES Function norm 2.501025426060e-03 
+ 47 SNES Function norm 5.300309734854e-04 
+ 48 SNES Function norm 1.859493360819e-13 
+Nonlinear  solve converged due to CONVERGED_FNORM_ABS iterations 48
+done on 512 x 512 square mesh (oper=lap, prob=spiral, levs=8, mcoarse=4)
+
+******** PROB=ball CYCLE=multiplicative *******
+    0 FASCD ncp function norm 1.261762845233e+00
+    1 FASCD ncp function norm 3.056265732929e-16
+FASCD solve converged due to CONVERGED_SINGLE_LEVEL iterations 1
+done on 4 x 4 square mesh (oper=lap, prob=ball, levs=1, mcoarse=4):  |u-uexact|_h = 3.422e-01
+/usr/bin/time
+    0 FASCD ncp function norm 5.283608135106e+00
+    1 FASCD ncp function norm 1.107366643442e+00
+    2 FASCD ncp function norm 6.423256830179e-10
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+done on 8 x 8 square mesh (oper=lap, prob=ball, levs=2, mcoarse=4):  |u-uexact|_h = 1.985e-02
+/usr/bin/time
+    0 FASCD ncp function norm 4.048030866881e+00
+    1 FASCD ncp function norm 5.909269417418e-02
+    2 FASCD ncp function norm 7.400032007189e-08
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+done on 16 x 16 square mesh (oper=lap, prob=ball, levs=3, mcoarse=4):  |u-uexact|_h = 1.637e-02
+/usr/bin/time
+    0 FASCD ncp function norm 2.899836176903e+00
+    1 FASCD ncp function norm 1.735867824043e-01
+    2 FASCD ncp function norm 4.572863940570e-04
+    3 FASCD ncp function norm 6.023021614171e-07
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+done on 32 x 32 square mesh (oper=lap, prob=ball, levs=4, mcoarse=4):  |u-uexact|_h = 4.794e-03
+/usr/bin/time
+    0 FASCD ncp function norm 2.238582221564e+00
+    1 FASCD ncp function norm 2.129715699485e-02
+    2 FASCD ncp function norm 9.411615262332e-05
+    3 FASCD ncp function norm 5.771906187296e-07
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+done on 64 x 64 square mesh (oper=lap, prob=ball, levs=5, mcoarse=4):  |u-uexact|_h = 5.770e-04
+/usr/bin/time
+    0 FASCD ncp function norm 1.588291332592e+00
+    1 FASCD ncp function norm 9.219812126080e-03
+    2 FASCD ncp function norm 3.063358280115e-03
+    3 FASCD ncp function norm 4.737181896540e-06
+    4 FASCD ncp function norm 1.044023598460e-07
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
+done on 128 x 128 square mesh (oper=lap, prob=ball, levs=6, mcoarse=4):  |u-uexact|_h = 1.880e-04
+/usr/bin/time
+    0 FASCD ncp function norm 1.158710039307e+00
+    1 FASCD ncp function norm 5.168245088804e-03
+    2 FASCD ncp function norm 2.354749729358e-03
+    3 FASCD ncp function norm 5.184294343684e-05
+    4 FASCD ncp function norm 6.255848237213e-07
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
+done on 256 x 256 square mesh (oper=lap, prob=ball, levs=7, mcoarse=4):  |u-uexact|_h = 5.308e-05
+/usr/bin/time
+    0 FASCD ncp function norm 8.348074449522e-01
+    1 FASCD ncp function norm 2.938669051827e-03
+    2 FASCD ncp function norm 1.089458357879e-03
+    3 FASCD ncp function norm 3.907160305634e-05
+    4 FASCD ncp function norm 1.506303502559e-06
+    5 FASCD ncp function norm 1.642442900708e-07
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
+done on 512 x 512 square mesh (oper=lap, prob=ball, levs=8, mcoarse=4):  |u-uexact|_h = 1.162e-05
+/usr/bin/time
+    0 FASCD ncp function norm 5.811171352370e-01
+    1 FASCD ncp function norm 1.759050380652e-03
+    2 FASCD ncp function norm 4.384002440362e-04
+    3 FASCD ncp function norm 5.701521376569e-05
+    4 FASCD ncp function norm 2.924822703877e-06
+    5 FASCD ncp function norm 3.850129037114e-07
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
+done on 1024 x 1024 square mesh (oper=lap, prob=ball, levs=9, mcoarse=4):  |u-uexact|_h = 3.951e-06
+/usr/bin/time
+    0 FASCD ncp function norm 4.088815964231e-01
+    1 FASCD ncp function norm 1.230758269141e-03
+    2 FASCD ncp function norm 1.863444513053e-04
+    3 FASCD ncp function norm 6.481871759657e-05
+    4 FASCD ncp function norm 2.899126854342e-06
+    5 FASCD ncp function norm 2.472539924530e-07
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
+done on 2048 x 2048 square mesh (oper=lap, prob=ball, levs=10, mcoarse=4):  |u-uexact|_h = 1.308e-06
+/usr/bin/time
+
+******** PROB=spiral CYCLE=multiplicative *******
+    0 FASCD ncp function norm 1.220424023770e+01
+    1 FASCD ncp function norm 6.661338147751e-16
+FASCD solve converged due to CONVERGED_SINGLE_LEVEL iterations 1
+done on 4 x 4 square mesh (oper=lap, prob=spiral, levs=1, mcoarse=4)
+/usr/bin/time
+    0 FASCD ncp function norm 1.832542493514e+01
+    1 FASCD ncp function norm 2.931362283932e-01
+    2 FASCD ncp function norm 2.848606528337e-14
+FASCD solve converged due to CONVERGED_FNORM_ABS iterations 2
+done on 8 x 8 square mesh (oper=lap, prob=spiral, levs=2, mcoarse=4)
+/usr/bin/time
+    0 FASCD ncp function norm 4.059082733773e+01
+    1 FASCD ncp function norm 4.082426309931e+00
+    2 FASCD ncp function norm 1.048577468436e-04
+    3 FASCD ncp function norm 7.743419087284e-11
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+done on 16 x 16 square mesh (oper=lap, prob=spiral, levs=3, mcoarse=4)
+/usr/bin/time
+    0 FASCD ncp function norm 6.292645024873e+01
+    1 FASCD ncp function norm 4.316553079759e+00
+    2 FASCD ncp function norm 2.923407883252e-03
+    3 FASCD ncp function norm 4.023255437273e-07
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+done on 32 x 32 square mesh (oper=lap, prob=spiral, levs=4, mcoarse=4)
+/usr/bin/time
+    0 FASCD ncp function norm 9.186218051327e+01
+    1 FASCD ncp function norm 6.602734015510e+00
+    2 FASCD ncp function norm 6.234509269759e-01
+    3 FASCD ncp function norm 6.858064750300e-04
+    4 FASCD ncp function norm 4.316511524672e-06
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
+done on 64 x 64 square mesh (oper=lap, prob=spiral, levs=5, mcoarse=4)
+/usr/bin/time
+    0 FASCD ncp function norm 1.283810486893e+02
+    1 FASCD ncp function norm 6.589129332740e+00
+    2 FASCD ncp function norm 5.088550620623e-01
+    3 FASCD ncp function norm 2.555814607327e-03
+    4 FASCD ncp function norm 2.495934602909e-05
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
+done on 128 x 128 square mesh (oper=lap, prob=spiral, levs=6, mcoarse=4)
+/usr/bin/time
+    0 FASCD ncp function norm 1.770440613010e+02
+    1 FASCD ncp function norm 7.052371156297e+00
+    2 FASCD ncp function norm 5.865461308970e-01
+    3 FASCD ncp function norm 4.731754741919e-02
+    4 FASCD ncp function norm 1.437738989185e-04
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
+done on 256 x 256 square mesh (oper=lap, prob=spiral, levs=7, mcoarse=4)
+/usr/bin/time
+    0 FASCD ncp function norm 2.540737945853e+02
+    1 FASCD ncp function norm 8.582787065026e+00
+    2 FASCD ncp function norm 6.011818674530e-01
+    3 FASCD ncp function norm 5.815686197617e-02
+    4 FASCD ncp function norm 2.597459762403e-04
+    5 FASCD ncp function norm 1.324161613244e-05
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
+done on 512 x 512 square mesh (oper=lap, prob=spiral, levs=8, mcoarse=4)
+/usr/bin/time
+    0 FASCD ncp function norm 3.569256288919e+02
+    1 FASCD ncp function norm 1.159657038007e+01
+    2 FASCD ncp function norm 5.687733887051e-01
+    3 FASCD ncp function norm 4.862209672038e-02
+    4 FASCD ncp function norm 6.580421221939e-04
+    5 FASCD ncp function norm 2.009246212864e-05
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
+done on 1024 x 1024 square mesh (oper=lap, prob=spiral, levs=9, mcoarse=4)
+/usr/bin/time
+    0 FASCD ncp function norm 5.060777663026e+02
+    1 FASCD ncp function norm 1.467505010739e+01
+    2 FASCD ncp function norm 6.354643241711e-01
+    3 FASCD ncp function norm 5.834259971457e-02
+    4 FASCD ncp function norm 1.678993945734e-03
+    5 FASCD ncp function norm 4.636138158453e-05
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
+done on 2048 x 2048 square mesh (oper=lap, prob=spiral, levs=10, mcoarse=4)
+/usr/bin/time
+
+******** PROB=ball CYCLE=full *******
+    0 FASCD ncp function norm 1.261762845233e+00
+    1 FASCD ncp function norm 3.056265732929e-16
+FASCD solve converged due to CONVERGED_SINGLE_LEVEL iterations 1
+done on 4 x 4 square mesh (oper=lap, prob=ball, levs=1, mcoarse=4):  |u-uexact|_h = 3.422e-01
+/usr/bin/time
+    0 FASCD ncp function norm 5.283608135106e+00
+    0 FASCD ncp function norm 1.843698233707e+00
+    1 FASCD ncp function norm 9.702882716541e-10
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+done on 8 x 8 square mesh (oper=lap, prob=ball, levs=2, mcoarse=4):  |u-uexact|_h = 1.985e-02
+/usr/bin/time
+    0 FASCD ncp function norm 4.048030866881e+00
+    0 FASCD ncp function norm 6.108533703537e-01
+    1 FASCD ncp function norm 1.894383998791e-04
+    2 FASCD ncp function norm 2.328295953200e-09
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+done on 16 x 16 square mesh (oper=lap, prob=ball, levs=3, mcoarse=4):  |u-uexact|_h = 1.637e-02
+/usr/bin/time
+    0 FASCD ncp function norm 2.899836176903e+00
+    0 FASCD ncp function norm 3.883663549234e-01
+    1 FASCD ncp function norm 4.420335897112e-04
+    2 FASCD ncp function norm 7.171237070811e-07
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+done on 32 x 32 square mesh (oper=lap, prob=ball, levs=4, mcoarse=4):  |u-uexact|_h = 4.794e-03
+/usr/bin/time
+    0 FASCD ncp function norm 2.238582221564e+00
+    0 FASCD ncp function norm 2.170035224435e-01
+    1 FASCD ncp function norm 7.480448269926e-05
+    2 FASCD ncp function norm 1.190299922787e-06
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+done on 64 x 64 square mesh (oper=lap, prob=ball, levs=5, mcoarse=4):  |u-uexact|_h = 5.777e-04
+/usr/bin/time
+    0 FASCD ncp function norm 1.588291332592e+00
+    0 FASCD ncp function norm 1.015415084994e-01
+    1 FASCD ncp function norm 3.677270708027e-05
+    2 FASCD ncp function norm 5.232242583479e-07
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+done on 128 x 128 square mesh (oper=lap, prob=ball, levs=6, mcoarse=4):  |u-uexact|_h = 1.887e-04
+/usr/bin/time
+    0 FASCD ncp function norm 1.158710039307e+00
+    0 FASCD ncp function norm 5.147205128405e-02
+    1 FASCD ncp function norm 4.444621994157e-05
+    2 FASCD ncp function norm 5.265654138757e-07
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+done on 256 x 256 square mesh (oper=lap, prob=ball, levs=7, mcoarse=4):  |u-uexact|_h = 5.300e-05
+/usr/bin/time
+    0 FASCD ncp function norm 8.348074449522e-01
+    0 FASCD ncp function norm 2.581443575856e-02
+    1 FASCD ncp function norm 3.970320195710e-06
+    2 FASCD ncp function norm 3.310635706237e-07
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+done on 512 x 512 square mesh (oper=lap, prob=ball, levs=8, mcoarse=4):  |u-uexact|_h = 1.190e-05
+/usr/bin/time
+    0 FASCD ncp function norm 5.811171352370e-01
+    0 FASCD ncp function norm 1.287887795881e-02
+    1 FASCD ncp function norm 1.101875360855e-05
+    2 FASCD ncp function norm 9.910057895827e-08
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+done on 1024 x 1024 square mesh (oper=lap, prob=ball, levs=9, mcoarse=4):  |u-uexact|_h = 3.647e-06
+/usr/bin/time
+    0 FASCD ncp function norm 4.088815964231e-01
+    0 FASCD ncp function norm 6.434689638725e-03
+    1 FASCD ncp function norm 6.214356773961e-06
+    2 FASCD ncp function norm 5.851503781459e-08
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+done on 2048 x 2048 square mesh (oper=lap, prob=ball, levs=10, mcoarse=4):  |u-uexact|_h = 8.590e-07
+/usr/bin/time
+
+******** PROB=spiral CYCLE=full *******
+    0 FASCD ncp function norm 1.220424023770e+01
+    1 FASCD ncp function norm 6.661338147751e-16
+FASCD solve converged due to CONVERGED_SINGLE_LEVEL iterations 1
+done on 4 x 4 square mesh (oper=lap, prob=spiral, levs=1, mcoarse=4)
+/usr/bin/time
+    0 FASCD ncp function norm 1.832542493514e+01
+    0 FASCD ncp function norm 7.084935054262e+00
+    1 FASCD ncp function norm 1.549223760574e-11
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+done on 8 x 8 square mesh (oper=lap, prob=spiral, levs=2, mcoarse=4)
+/usr/bin/time
+    0 FASCD ncp function norm 4.059082733773e+01
+    0 FASCD ncp function norm 1.128952316953e+01
+    1 FASCD ncp function norm 1.093975659013e-04
+    2 FASCD ncp function norm 4.565917059567e-11
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+done on 16 x 16 square mesh (oper=lap, prob=spiral, levs=3, mcoarse=4)
+/usr/bin/time
+    0 FASCD ncp function norm 6.292645024873e+01
+    0 FASCD ncp function norm 1.013990494402e+01
+    1 FASCD ncp function norm 1.770217679203e-01
+    2 FASCD ncp function norm 7.569418685103e-06
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+done on 32 x 32 square mesh (oper=lap, prob=spiral, levs=4, mcoarse=4)
+/usr/bin/time
+    0 FASCD ncp function norm 9.186218051327e+01
+    0 FASCD ncp function norm 5.286288160843e+00
+    1 FASCD ncp function norm 2.755547679121e-01
+    2 FASCD ncp function norm 1.101209418739e-04
+    3 FASCD ncp function norm 6.415256524242e-07
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+done on 64 x 64 square mesh (oper=lap, prob=spiral, levs=5, mcoarse=4)
+/usr/bin/time
+    0 FASCD ncp function norm 1.283810486893e+02
+    0 FASCD ncp function norm 2.711071666969e+00
+    1 FASCD ncp function norm 1.404989706008e-01
+    2 FASCD ncp function norm 1.307062891152e-04
+    3 FASCD ncp function norm 2.337541708185e-06
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+done on 128 x 128 square mesh (oper=lap, prob=spiral, levs=6, mcoarse=4)
+/usr/bin/time
+    0 FASCD ncp function norm 1.770440613010e+02
+    0 FASCD ncp function norm 1.806719605672e+00
+    1 FASCD ncp function norm 1.170448979575e-01
+    2 FASCD ncp function norm 2.784006993285e-04
+    3 FASCD ncp function norm 9.509592165422e-06
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+done on 256 x 256 square mesh (oper=lap, prob=spiral, levs=7, mcoarse=4)
+/usr/bin/time
+    0 FASCD ncp function norm 2.540737945853e+02
+    0 FASCD ncp function norm 1.172479403618e+00
+    1 FASCD ncp function norm 9.360965925158e-02
+    2 FASCD ncp function norm 3.019111482388e-04
+    3 FASCD ncp function norm 1.041285523351e-05
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+done on 512 x 512 square mesh (oper=lap, prob=spiral, levs=8, mcoarse=4)
+/usr/bin/time
+    0 FASCD ncp function norm 3.569256288919e+02
+    0 FASCD ncp function norm 7.684198426379e-01
+    1 FASCD ncp function norm 6.229024482892e-02
+    2 FASCD ncp function norm 5.740892142689e-04
+    3 FASCD ncp function norm 1.322666275557e-05
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+done on 1024 x 1024 square mesh (oper=lap, prob=spiral, levs=9, mcoarse=4)
+/usr/bin/time
+    0 FASCD ncp function norm 5.060777663026e+02
+    0 FASCD ncp function norm 5.365201121995e-01
+    1 FASCD ncp function norm 5.127724653783e-02
+    2 FASCD ncp function norm 1.057712596746e-03
+    3 FASCD ncp function norm 2.370766281184e-05
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+done on 2048 x 2048 square mesh (oper=lap, prob=spiral, levs=10, mcoarse=4)
+/usr/bin/time
