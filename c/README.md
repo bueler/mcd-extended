@@ -1,5 +1,10 @@
 # mcd-extended/c/
 
+> **Note**  
+> This C+DMDA+2D _attempt_ to implement "NMCD" (old name) is completely
+> deprecated and replaced by the Python+Firedrake+DMPlex+any-dimension
+> implementation of FASCD in https://bitbucket.org/pefarrell/fascd/src/master/.
+
 This directory contains a sequence of PETSc C codes on 2D structured meshes (DMDA)
 which build toward NMCD functionality.  This document gives the sequence of codes
 and their capabilities or performance, especially relative to the previous
