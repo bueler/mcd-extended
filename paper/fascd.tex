@@ -1075,15 +1075,21 @@ $P$ & \emph{levels} & $m_J$ & \emph{F-cycles} & \emph{time} (s) \\ \cmidrule{1-5
 
 \section{Discussion and outlook} \label{sec:discussion}
 
-FIXME the observation that up-smoothing is more efficient seems to be new; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}
+FIXME For the classical obstacle problem, based on the linear, symmetric Laplacian operator, certain multilevel techniques, such as the truncated monotone multigrid method \cite{GraeserKornhuber2009,Kornhuber1994}, are known to improve performance relative to the original multilevel CD method \cite{Tai2003}.  These improved methods modify the nodal basis functions.  By contrast FAScd makes essentially no assumptions about the FE discretization.  Acceleration via basis-level manipulations is a topic for future research.
 
-FIXME smoother could be Newton semi-smooth \cite{BensonMunson2006}; smoother could be interior point method, etc.; smoother could use GMG or AMG on step equations but this is not seen to be necessary in applications so far
+FIXME So the difference between FAScd and \cite{GraeserKornhuber2009} are: (1) FAS coarse corrections, (2) no attempt to do monotone/truncated multigrid which would be a mess (I think) across the FE infrastructure, (3) clarity on what sets you can use in $V(\nu_1,\nu_2)$ cycles, with bigger up-smoother sets in particular, and most importantly (4) implementation within the mature Firedrake/PETSc library framework where one can easily hook up an active-set Newton step as a smoother.
 
 FIXME the fact that FAScd reduces to FAS for PDEs when inequality constraints are removed (Appendix \ref{app:reductions}) suggests it is a completely different strategy from PFAS in \cite{BrandtCryer1983}
 
-FIXME desired extension to nonlocal variational inequalities not tried here
+FIXME main difference relative to monotone multigrid \cite{Kornhuber1994} and PFAS \cite{BrandtCryer1983} is that method is not tied to, or presented in terms of, an PNGS type smoother
 
-FIXME For the classical obstacle problem, based on the linear, symmetric Laplacian operator, certain multilevel techniques, such as the truncated monotone multigrid method \cite{GraeserKornhuber2009,Kornhuber1994}, are known to improve performance relative to the original multilevel CD method \cite{Tai2003}.  These improved methods modify the nodal basis functions.  By contrast FAScd makes essentially no assumptions about the FE discretization.  Acceleration via basis-level manipulations is a topic for future research.
+FIXME at a high level one might say FAScd merely generates coarse VI problems which, once solved, make helpful admissible additions to the eventual V-cycle update; the method is smoother-agnostic; smoother could be Newton semi-smooth \cite{BensonMunson2006}, interior point method, etc.
+
+FIXME VINewton smoother could use GMG or AMG on linear step equations, but this was not seen to be necessary in applications so far and was not even tested
+
+FIXME the observation that up-smoothing is more efficient seems to be new; compare the comments on V(1,0) and V(1,1) cycles in \cite{GraeserKornhuber2009,Tai2003}
+
+FIXME desired extension to nonlocal variational inequalities not tried here
 
 
 \bibliography{fascd}
