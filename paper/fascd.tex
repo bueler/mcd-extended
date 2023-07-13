@@ -874,9 +874,10 @@ Table \ref{tab:results:classical} shows the resulting iteration counts for fines
 \end{example}
 
 %REGENERATE using git@bitbucket.org:pefarrell/fascd.git, in examples/
-%$ timer python3 drape.py -prob ball|spiral -levs 9 -o ball|spiral.pvd -fascd_rtol 1.0e-6 -fascd_atol 1.0e-6 -fascd_cycle_type full
+%$ python3 drape.py -prob ball -levs 9 -o ball -fascd_rtol 1.0e-6 -fascd_atol 1.0e-6 -fascd_cycle_type full
+%$ mpiexec -n 16 python3 drape.py -prob spiral -levs 10 -o spiral.pvd -fascd_levels_snes_converged_reason -fascd_rtol 1.0e-6 -fascd_atol 1.0e-6 -fascd_cycle_type full
 %$ paraview ball|spiral.pvd
-%use preset "xray" and invert colors
+%use preset "xray" and invert colors; for spiral.pvd, show lgap = u - lb as black if above 0.02; for ball i used 0.001
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=0.35\textwidth]{fixfigs/ball-set.png} \qquad \includegraphics[width=0.35\textwidth]{fixfigs/spiral-set.png}
@@ -884,7 +885,8 @@ Table \ref{tab:results:classical} shows the resulting iteration counts for fines
 \caption{Coincidence sets for the ball and spiral problems in Example \ref{ex:results:classical}.}
 \label{fig:results:classical}
 \end{figure}
-\pef{The spiral problem looks under-resolved; is that right?}
+%\pef{The spiral problem looks under-resolved; is that right?}
+% Fixed.
 
 % see git@bitbucket.org:pefarrell/fascd.git: examples/drape.py
 % and https://github.com/bueler/mcd-extended: paper/results/drape.sh|txt
