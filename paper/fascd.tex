@@ -990,7 +990,6 @@ We consider the steady shallow ice approximation (SIA) obstacle problem presente
 \caption{Solution of Example \ref{ex:sia} over a bumpy bedrock topography, with the ice speed as surface coloring, and 100-times vertical exageration.}
 \label{fig:results:siascene}
 \end{figure}
-\pef{Could we make the bedrock grey?}
 
 We applied FAScd F-cycles using $Q_1$ elements and a smoother of four (fixed) iterations of RS Newton (Section \ref{sec:implementation}), with quadratic backtracking line search.  The linear step equations were approximately solved, in parallel, by three (fixed) iterations of preconditioned GMRES and a ASM+ILU preconditioner.  The coarse solver was RS+LU, applied redundantly over all processors.  The coarse mesh was relatively fine, with $m_0=21^2$ vertices and 400 cells.  Because of the low regularity of the solution we used \id{rtol} $= 2 \times 10^{-4}$ and \id{atol} $= 10^{-8}$ in \eqref{eq:stoppingcriterion}.  The initial iterate was zero ice: $s=b$.  These parameters generated a solver with mesh-independent iterations.  
 
