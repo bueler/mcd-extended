@@ -873,14 +873,16 @@ Set $\Omega=(-3,3)$, $\psi(x) = -0.2|x|$, $\mathcal{K} = \{v \ge \psi\} \subset 
 \end{figure}
 
 % figures in the following visualization were generated using branch elbueler/simplefigs
-% of git@bitbucket.org:pefarrell/fascd.git, and the following commands:
+% of git@bitbucket.org:pefarrell/fascd.git, and the following commands (including imagemagick):
 %   cd examples/
-%   python3 plap1d.py -figures -fascd_max_it 2 -fascd_cycle_type multiplicative -mcoarse 2
+%   python3 plap1d.py -fascd_cycle_type multiplicative -mcoarse 4 -levs 3 -figures
+%   [save the images into mcd-extended/paper/fixfigs/vcycle/]
+%   for X in start2 down2 down1 up0 up1 up2 next2; do mogrify -trim $X.png $X.png; done
 \begin{figure}[ht]
 \begin{center}
 \input{tikz/imagesvcycle.tex}
 \end{center}
-\caption{Visualization of one FAScd V-cycle iteration for Example \ref{ex:results:plap}, with $p=1.5$, $J=3$, and a coarsest mesh of $m_0=3$ vertices.  Solutions (i.e.~$w^j$, $y^j$, $z^j$) are lines while obstacles ($\underline{\gamma}^j$, $\underline{\phi}^j$, $\underline{\chi}^j$) are strong dots.  The zero function is shown (dotted), but vertical scale varies.}
+\caption{Visualization of one FAScd V-cycle iteration for Example \ref{ex:results:plap}, with $p=1.5$, $J=3$, and a coarsest mesh of $m_0=5$ vertices.  Solutions (i.e.~$w^j$, $y^j$, $z^j$) are lines, obstacles ($\underline{\gamma}^j$, $\underline{\phi}^j$, $\underline{\chi}^j$) are strong dots, and the zero function is dotted.  Vertical scale varies.}
 \label{fig:imagesvcycle}
 \end{figure}
 

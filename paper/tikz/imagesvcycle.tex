@@ -4,11 +4,9 @@
     \pgfmathsetmacro{\YSTEP}{3.7}
     \pgfmathsetmacro{\YLABEL}{-0.4}
     \pgfmathsetmacro{\NUDGE}{0.5}
-    \node (start3) [] at (0,3*\YSTEP) {\includegraphics[height=\HEIGHT cm]{fixfigs/vcycle/start3.png}};
-    \node (start3label) [below of = start3, yshift=\YLABEL cm] {$w^3 \ge \underline{\gamma}^3$};
-    \node (down3) [] at (1.0*\XSTEP,3*\YSTEP) {\includegraphics[height=\HEIGHT cm]{fixfigs/vcycle/down3.png}};
-    \node (down3label) [below of = down3, yshift=\YLABEL cm] {$y^3 \ge \underline{\phi}^3$};
-    \node (down2) [] at (1.2*\XSTEP,2*\YSTEP) {\includegraphics[height=\HEIGHT cm]{fixfigs/vcycle/down2.png}};
+    \node (start2) [] at (0,2*\YSTEP) {\includegraphics[height=\HEIGHT cm]{fixfigs/vcycle/start2.png}};
+    \node (start2label) [below of = start2, yshift=\YLABEL cm] {$w^2 \ge \underline{\gamma}^2$};
+    \node (down2) [] at (1.0*\XSTEP,2*\YSTEP) {\includegraphics[height=\HEIGHT cm]{fixfigs/vcycle/down2.png}};
     \node (down2label) [below of = down2, yshift=\YLABEL cm] {$y^2 \ge \underline{\phi}^2$};
     \node (down1) [] at (1.4*\XSTEP,1*\YSTEP) {\includegraphics[height=\HEIGHT cm]{fixfigs/vcycle/down1.png}};
     \node (down1label) [below of = down1, yshift=\YLABEL cm] {$y^1 \ge \underline{\phi}^1$};
@@ -16,20 +14,16 @@
     \node (up0label) [below of = up0, yshift=\YLABEL cm] {$z^0 \ge \underline{\chi}^0$};
     \node (up1) [] at (2.4*\XSTEP,1*\YSTEP) {\includegraphics[height=\HEIGHT cm]{fixfigs/vcycle/up1.png}};
     \node (up1label) [below of = up1, yshift=\YLABEL cm] {$z^1 \ge \underline{\chi}^1$};
-    \node (up2) [] at (2.6*\XSTEP,2*\YSTEP) {\includegraphics[height=\HEIGHT cm]{fixfigs/vcycle/up2.png}};
+    \node (up2) [] at (2.8*\XSTEP,2*\YSTEP) {\includegraphics[height=\HEIGHT cm]{fixfigs/vcycle/up2.png}};
     \node (up2label) [below of = up2, yshift=\YLABEL cm] {$z^2 \ge \underline{\chi}^2$};
-    \node (up3) [] at (2.8*\XSTEP,3*\YSTEP) {\includegraphics[height=\HEIGHT cm]{fixfigs/vcycle/up3.png}};
-    \node (up3label) [below of = up3, yshift=\YLABEL cm] {$z^3 \ge \underline{\chi}^3$};
-    \node (next3) [] at (3.8*\XSTEP,3*\YSTEP) {\includegraphics[height=\HEIGHT cm]{fixfigs/vcycle/next3.png}};
-    \node (next3label) [below of = next3, yshift=\YLABEL cm] {$\tilde{w}^3 \ge \underline{\gamma}^3$};
+    \node (next2) [] at (3.8*\XSTEP,2*\YSTEP) {\includegraphics[height=\HEIGHT cm]{fixfigs/vcycle/next2.png}};
+    \node (next2label) [below of = next2, yshift=\YLABEL cm] {$\tilde{w}^2 \ge \underline{\gamma}^2$};
     \graph [edges = {very thick}] {
-        (start3) -> (down3)
-                 -!- [] (down3label) -> (down2)
+        (start2) -> (down2)
                  -!- [] (down2label) -> (down1)
                  -!- [] (down1label) -> (up0)
                  -> (up1label) -!- (up1)
                  -> (up2label) -!- (up2)
-                 -> (up3label) -!- (up3)
-                 -> (next3)
+                 -> (next2)
     };
 \end{tikzpicture}
