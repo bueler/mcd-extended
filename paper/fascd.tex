@@ -495,6 +495,10 @@ To make the construction precise, let $x_q^j$ denote the vertices of mesh $\math
 \end{align}
 For standard refinement a coarse-mesh node $x_p^{j-1}$ is in the set of fine vertices $x_q^j$ such that $\psi_p^{j-1}(x_q^j)>0$, so \eqref{eq:fe:monotonerestrictionprops} follows.
 On the other hand, $z\ge 0$ implies $\minR z \ge 0$ and $z \le 0$ implies $\maxR z \le 0$.  These ordering properties are used in the CD construction of the next two Sections.
+\begin{figure}[ht]
+\input{tikz/Rplusminus.tex}
+\caption{Evaluation of $\maxR$ and $\minR$. The coarse mesh is shown in black and the fine mesh in grey. The monotone injection operators $\maxR$ and $\minR$ assign to a coarse degree of freedom (in blue) the maximum and minimum respectively of the fine function over the patch of coarse cells sharing its vertex (in green; the fine degree of freedom at the same vertex is not shown).}
+\end{figure}
 \pef{It would be good to have a diagram here. I could write one in tikz, if you don't have one handy.}
 
 
@@ -995,7 +999,8 @@ We consider the steady shallow ice approximation (SIA) obstacle problem presente
 \begin{center}
 \includegraphics[width=1.0\textwidth]{fixfigs/sialev8scene.png}
 \end{center}
-\caption{Solution of Example \ref{ex:sia} over a bumpy bedrock topography (grey), with the ice speed as surface coloring and 100-times vertical exageration.}
+\caption{Solution of Example \ref{ex:sia} over a bumpy bedrock topography (grey), with the ice speed as surface coloring and 100-times vertical exaggeration.}
+\pef{Why does the colour bar have grey in it?}
 \label{fig:results:siascene}
 \end{figure}
 
@@ -1032,7 +1037,7 @@ In contrast with monotone multigrid \cite{Kornhuber1994}, FAScd does not modify 
 
 \subsection*{Code availablility} \label{sec:code}  For reproducibility we have archived the exact software versions used to produce the results in this paper, including the correct Firedrake version, at FIXME Zenodo?
 
-\subsection*{Acknowledgements} \label{sec:acknowledgements}  EB was supported by a Faculty Development Travel Award from United Academics, University of Alaska Fairbanks. PEF was supported by EPSRC grants EP/R029423/1 and EP/W026163/1.
+\subsection*{Acknowledgements} \label{sec:acknowledgements}  EB was supported by a Faculty Development Travel Award from United Academics, University of Alaska Fairbanks. PEF was supported by the Engineering and Physical Sciences Research Council [EPSRC grants EP/R029423/1 and EP/W026163/1].
 
 
 \bibliography{fascd}
