@@ -152,6 +152,7 @@ urlcolor=black    % ...
 
 \usepackage{todonotes}
 \newcommand{\pef}[1]{\todo[inline, color=red!20]{PF: #1}}
+\newcommand{\elb}[1]{\todo[inline, color=blue!20]{EB: #1}}
 
 
 \begin{document}
@@ -408,7 +409,7 @@ for all $v_i \in \mathcal{K}_i$, where $\tilde\ell = \ell - f(u)$ incorporates t
 \end{example}
 
 \pef{I confess I just don't get the point of this example. Why is this a substantial implementation simplification? I am sorry I am being dumb. Maybe you can explain it to me on a video call and I will write it in a way that I would have understood it?}
-{\color{blue} ELB: Not being dumb.  I am describing an application I am headed toward.  FAScd applies to both differential \emph{and integral} operators.  (We don't try it out in the latter case, but it is a feature that it does not care about the locality of your operator, unlike monotone multigrid.)  It applies to operators where $f(e_i)$ makes no sense because $e_i\notin \mathcal{K}$ (SIA is an example IMO).  And it does FAS coarse corrections because we don't assume linearity of $f$.}
+\elb{Not being dumb.  I am describing an application I am headed toward.  FAScd applies to both differential \emph{and integral} operators.  (We don't try it out in the latter case, but it is a feature that it does not care about the locality of your operator, unlike monotone multigrid.)  It applies to operators where $f(e_i)$ makes no sense because $e_i\notin \mathcal{K}$ (SIA is an example IMO).  And it does FAS coarse corrections because we don't assume linearity of $f$.}
 
 When $f$ has the locality of Example \ref{ex:fnice}, an FE approximation of VI \eqref{eq:vi} can be solved in any incremental and efficient manner following the techniques in \cite{GraeserKornhuber2009,Tai2003}, namely by computations over basis function supports.\footnote{Compare equations (2.31) and (2.32) in \cite{Farrelletal2021}, which describe the same sense of locality.}  However, for general problems lacking the convenience of Example \ref{ex:fnice}, certain additional ideas are needed for practical implementation of CD-type iterations.  Section \ref{sec:vcycle} constructs such an iteration for a general operator $f:\cK\to\cV'$ by applying the full approximation scheme (FAS) idea of Brandt \cite{Brandt1977}.
 
@@ -791,7 +792,8 @@ However, an F-cycle (Figure \ref{fig:fcycle}), also called a \emph{full multigri
 
 This F-cycle approach is described in Algorithm \ref{alg:fascd-fcycle}.  Injection is used to generate the $\underline{\gamma}^j,\overline{\gamma}^j$ on each level.\footnote{Contrast the construction of LDCs (Section \ref{sec:cdmultilevel}) for V-cycles, based on an existing admissible iterate.}
 \pef{Why is this fine for F-cycles, but not for V-cycles? I think we should spell it out.}
-{\color{blue} ELB: This is the point of Example 5.1.}
+\elb{This is the point of Example 5.1.}
+\pef{The point of Example 5.1 is to show why it is not fine for V-cycles. We don't explain anywhere it is fine for F-cycles, as far as I can see.}
 
 \noindent
 Regarding line \ref{line:fcyclecoarsestinitial}, one may generate an initial iterate $w^0\in\mathcal{K}^0$ by injection and truncation of a finest-level iterate, if one is available.
@@ -1028,7 +1030,7 @@ $P$ & \emph{levels} & $m_J$ & \emph{F-cycles} & \emph{time} (s) \\ \cmidrule{1-5
 \end{table}
 
 \pef{I wonder if there's a Firedrake installation we could use on a supercomputer somewhere. It would be nice to have better weak scaling (not exhausting memory bandwidth) and to go to more cores.}
-{\color{blue} ELB: Yes.  I don't have such access currently.}
+\elb{Yes.  I don't have such access currently.}
 
 \section{Discussion and outlook} \label{sec:discussion}
 
