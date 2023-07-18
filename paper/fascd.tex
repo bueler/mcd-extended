@@ -174,22 +174,29 @@ We present the \emph{full approximation scheme constraint decomposition} (FAScd)
 
 \section{Introduction} \label{sec:intro}
 
-The constraint decomposition (CD) methods of Tai \cite{Tai2003} are designed to solve coercive variational inequality (VI) problems arising as the Karush--Kuhn--Tucker optimality conditions for the minimization of a convex functional over a convex set.  These methods were shown to converge for multilevel and domain decompositions in a finite element (FE) context; in the multilevel case, the CD method has almost grid-independent error bounds, and near-optimal complexity, for elliptic, linear obstacle problems \cite[Subsection 5.4]{Tai2003}, \cite[Theorem 4.6 and Algorithm 4.7]{GraeserKornhuber2009}. \pef{I prefer the semicolon here because the second sentence is filling in the details for the first; without it, at the end of the first sentence, I'm thinking ``there's a citation missing here''.} In this paper we extend Tai's multilevel CD method by replacing the coarser-level corrections with a full approximation scheme (FAS; \cite{Brandt1977,Bruneetal2015}) approach, and we apply this new solver to a variety of general, i.e.~nonlinear and non-optimization, VI problems.
-\pef{Could Tai have applied his algorithm directly to non-optimization problems? I don't think so. If that is true, we're underselling our work by using the word `apply'.}
-
-Specifically, our \emph{full approximation scheme constraint decomposition} (FAScd) method extends the algorithms in \cite{GraeserKornhuber2009} and \cite{Tai2003} in the following five directions:
+The constraint decomposition (CD) methods of Tai \cite{Tai2003} are designed to solve coercive variational inequality (VI) problems arising as the Karush--Kuhn--Tucker optimality conditions for the minimization of a convex functional over a convex set.  These methods were shown to converge for multilevel and domain decompositions in a finite element (FE) context; in the multilevel case, the CD method has almost grid-independent error bounds, and near-optimal complexity, for elliptic, linear obstacle problems \cite[Subsection 5.4]{Tai2003}, \cite[Theorem 4.6 and Algorithm 4.7]{GraeserKornhuber2009}.
+%\pef{I prefer the semicolon here because the second sentence is filling in the details for the first; without it, at the end of the first sentence, I'm thinking ``there's a citation missing here''.}
+% Agreed
+%\pef{Could Tai have applied his algorithm directly to non-optimization problems? I don't think so. If that is true, we're underselling our work by using the word `apply'.}
+% Agreed.  Text compressed; the first item on the list already says this.
+In this paper we extend Tai's multilevel CD method by replacing the coarser-level corrections with a full approximation scheme (FAS; \cite{Brandt1977,Bruneetal2015}) approach.  Specifically, our \emph{full approximation scheme constraint decomposition} (FAScd) method extends the algorithms in \cite{GraeserKornhuber2009} and \cite{Tai2003} in the following five directions:
 \renewcommand{\labelenumi}{\emph{(\roman{enumi})}}
 \begin{enumerate}
 \item The FAS coarse corrections are adapted for general VI problems. The needed computations require neither an objective function nor linearity of the residual operator.
 \item We identify a ``telescoping'' subset property which can be exploited on the up-smoothing side of a V-cycle for greater performance.
 \item Box constraints, namely upper and lower obstacles, are permitted.
-\pef{Should we list this? \cite{GraeserKornhuber2009} say ``We emphasize that all algorithms and convergence results to be presented can be generalized to where an upper obstacle is present''}
+%\pef{Should we list this? \cite{GraeserKornhuber2009} say ``We emphasize that all algorithms and convergence results to be presented can be generalized to where an upper obstacle is present''}
+% Yes.  "can be generalized" is true, but in doing so you discover that (see Section 4) the \Pi_i operators in the general box-constrained CD must have a very different formula.  We actually address this by writing code that works at this level of generality.  At a certain point, if G&K can't make something clear and demo that it works then they did not do it!  We will see what we get from referees ...
 \item We implement V-cycles (Algorithm \ref{alg:fascd}) and F-cycles (full multigrid; Algorithm \ref{alg:fascd-fcycle}).
-\pef{\dots for the first time for VIs beyond linear complementarity problems?}
+%\pef{\dots for the first time for VIs beyond linear complementarity problems?}
+% For F-cycles, maybe.  If something like this has been done before I want a referee to say "here it is ...".  I'd rather not guess what unpublished, undocumented, and closed extensions people have to their methods.  So I'm thinking just say what we did.  See previous point.
 \item We demonstrate that F-cycle FAScd is an optimal solver for the different VI examples in Section \ref{sec:results}, when used in conjunction with reduced-space active set methods as smoothers. The number of Newton and Krylov iterations per step are fixed, so that the work of the smoother is proportional to the number of unknowns on a given level.
 \end{enumerate}
 
-Prior multilevel algorithms for VIs have various substantial limitations compared to the FAScd framework.  The projected full approximation scheme (PFAS) algorithm of Brandt \& Cryer \cite{BrandtCryer1983} is apparently limited to linear complementarity problems and projected (truncated) Gauss--Seidel smoothers.  While FAScd reduces to general, nonlinear FAS for PDEs when the inequality constraints are removed (Appendix \ref{app:reductions}), PFAS apparently reduces to linear multigrid. \pef{I don't like the 2$\times$ apparently.} The multilevel CD iteration of Tai \cite{Tai2003} is formulated in terms of an objective function, so as stated it only applies to optimization-type problems, and furthermore each of its coarser-level problems refers to the finest-level discretization.  The problematic latter property is corrected by reformulation using defect constraints and monotone injection operators (see \cite[Algorithm 4.7]{GraeserKornhuber2009} and Section \ref{sec:cdmultilevel} herein).  The monotone multigrid methods of Kornhuber and co-authors \cite{GraeserKornhuber2009,Kornhuber1994} appear to be formulated only with Gauss--Seidel type smoothers, and applied only to optimization-type VI problems \cite[for example]{JouvetGraeser2013}.  Furthermore, monotone multigrid methods are more difficult to implement in FE libraries because modifications of the FE basis functions are needed to approximate the coarser-level coincidence sets.  No such invasive basis modifications are used either in Tai's original multilevel CD or in FAScd.  Our implementation of FAScd in the Firedrake library \cite{Rathgeberetal2016} requires no modifications of basis functions and yet exhibits excellent performance, including on a problem used to demonstrate the benefits of monotone multigrid (Example \ref{ex:results:classical}; compare \cite[problem 7.1.1]{GraeserKornhuber2009}).
+Prior multilevel algorithms for VIs have various substantial limitations compared to the FAScd framework.  The projected full approximation scheme (PFAS) algorithm of Brandt \& Cryer \cite{BrandtCryer1983} is apparently limited to linear complementarity problems and projected (truncated) Gauss--Seidel smoothers.  While FAScd reduces to general, nonlinear FAS for PDEs when the inequality constraints are removed (Appendix \ref{app:reductions}), PFAS reduces to linear multigrid.
+%\pef{I don't like the 2$\times$ apparently.}
+% Me neither.  Fixed.
+The multilevel CD iteration of Tai \cite{Tai2003} is formulated in terms of an objective function, so as stated it only applies to optimization-type problems, and furthermore each of its coarser-level problems refers to the finest-level discretization.  The problematic latter property is corrected by reformulation using defect constraints and monotone injection operators (see \cite[Algorithm 4.7]{GraeserKornhuber2009} and Section \ref{sec:cdmultilevel} herein).  The monotone multigrid methods of Kornhuber and co-authors \cite{GraeserKornhuber2009,Kornhuber1994} appear to be formulated only with Gauss--Seidel type smoothers, and applied only to optimization-type VI problems \cite[for example]{JouvetGraeser2013}.  Furthermore, monotone multigrid methods are more difficult to implement in FE libraries because modifications of the FE basis functions are needed to approximate the coarser-level coincidence sets.  No such invasive basis modifications are used either in Tai's original multilevel CD or in FAScd.  Our implementation of FAScd in the Firedrake library \cite{Rathgeberetal2016} requires no modifications of basis functions and yet exhibits excellent performance, including on a problem used to demonstrate the benefits of monotone multigrid (Example \ref{ex:results:classical}; compare \cite[problem 7.1.1]{GraeserKornhuber2009}).
 
 In our experiments, FAScd V-cycles exhibit essentially the same mesh-independent convergence rates for VI problems that FAS multigrid V-cycles exhibit for the corresponding (unconstrained) PDE problems.  The F-cycle results in Section \ref{sec:results} show nearly-textbook multigrid efficiency, namely solutions within discretization error in work comparable to few smoother sweeps on the finest-level mesh \cite{BrandtLivne2011}.  Specifically, we see this performance for classical Laplacian obstacle problems, $p$-Laplacian obstacle problems, and nonnegativity-constrained advection-diffusion equations.  Furthermore, these results appear to be insensitive to the length or structure of the free boundary, i.e.~the geometric complexity of the coincidence set.
 
@@ -409,7 +416,9 @@ The basic CD iterations are meaningful whether or not we are in the optimization
 \end{equation}
 for all $v_i \in \mathcal{K}_i$, where $\tilde\ell = \ell - f(u)$ incorporates the initial residual $f(u)$.  Note $e_i = \hat w_i - \Pi_i u \in \cV_i$ is not generally admissible---generally $e_i \notin \cK$---but ``$f(e_i)$'' in \eqref{eq:linearlocalvi} is meaningful because $f$ is defined on all of $\cV$.
 \end{example}
+
 \pef{I confess I just don't get the point of this example. Why is this a substantial implementation simplification? I am sorry I am being dumb. Maybe you can explain it to me on a video call and I will write it in a way that I would have understood it?}
+{\color{blue} ELB: Not being dumb.  I am describing an application I am headed toward.  FAScd applies to both differential \emph{and integral} operators.  (We don't try it out in the latter case, but it is a feature that it does not care about the locality of your operator, unlike monotone multigrid.)  It applies to operators where $f(e_i)$ makes no sense because $e_i\notin \mathcal{K}$ (SIA is an example IMO).  And it does FAS coarse corrections because we don't assume linearity of $f$.}
 
 When $f$ has the locality of Example \ref{ex:fnice}, an FE approximation of VI \eqref{eq:vi} can be solved in any incremental and efficient manner following the techniques in \cite{GraeserKornhuber2009,Tai2003}, namely by computations over basis function supports.\footnote{Compare equations (2.31) and (2.32) in \cite{Farrelletal2021}, which describe the same sense of locality.}  However, for general problems lacking the convenience of Example \ref{ex:fnice}, certain additional ideas are needed for practical implementation of CD-type iterations.  Section \ref{sec:vcycle} constructs such an iteration for a general operator $f:\cK\to\cV'$ by applying the full approximation scheme (FAS) idea of Brandt \cite{Brandt1977}.
 
@@ -488,18 +497,21 @@ The monotone injections $\maxR,\minR$ \cite{GraeserKornhuber2009}, which will on
 \minR z \le z \le \maxR z,  \label{eq:fe:monotonerestrictionprops}
 \end{equation}
 which does not hold for the standard injection operator $\iR$.
-To make the construction precise, let $x_q^j$ denote the vertices of mesh $\mathcal{T}^j$, with corresponding basis functions $\psi_q^j(x)$.  For a $\tilde\RR$-valued nodal function $z\in\tilde{\mathcal{V}}^j$ we define functions in $\tilde{\mathcal{V}}^{j-1}$:
+To make the construction precise, let $x_q^j$ denote the vertices of mesh $\mathcal{T}^j$, with corresponding basis functions $\psi_q^j(x)$.  For a $\tilde\RR$-valued nodal function $z\in\tilde{\mathcal{V}}^j$ we define functions in $\tilde{\mathcal{V}}^{j-1}$ (Figure \ref{fig:Rplusminus}):
 \begin{align}
 (\maxR z)(x_p^{j-1}) &= \max \{z(x_q^j) \,:\, \psi_p^{j-1}(x_q^j) > 0\}, \label{eq:fe:monotonerestrictions} \\
 (\minR z)(x_p^{j-1}) &= \min \{z(x_q^j) \,:\, \psi_p^{j-1}(x_q^j) > 0\}. \notag
 \end{align}
 For standard refinement a coarse-mesh node $x_p^{j-1}$ is in the set of fine vertices $x_q^j$ such that $\psi_p^{j-1}(x_q^j)>0$, so \eqref{eq:fe:monotonerestrictionprops} follows.
 On the other hand, $z\ge 0$ implies $\minR z \ge 0$ and $z \le 0$ implies $\maxR z \le 0$.  These ordering properties are used in the CD construction of the next two Sections.
+
 \begin{figure}[ht]
 \input{tikz/Rplusminus.tex}
-\caption{Evaluation of $\maxR$ and $\minR$. The coarse mesh is shown in black and the fine mesh in grey. The monotone injection operators $\maxR$ and $\minR$ assign to a coarse degree of freedom (in blue) the maximum and minimum respectively of the fine function over the patch of coarse cells sharing its vertex (in green; the fine degree of freedom at the same vertex is not shown).}
+\caption{The monotone injection operators $\maxR$ and $\minR$ assign to a coarse degree of freedom (blue) the maximum and minimum respectively of the fine function over the patch of coarse cells sharing its vertex.  The coarse mesh is in black and the fine in grey.}
+\label{fig:Rplusminus}
 \end{figure}
-\pef{It would be good to have a diagram here. I could write one in tikz, if you don't have one handy.}
+%\pef{It would be good to have a diagram here. I could write one in tikz, if you don't have one handy.}
+% Like it!  I shortened the caption by removing the parenthetical ("(in green; the fine degree of freedom at the same vertex is not shown)"); that's clear because of the coarse edges. 
 
 
 \section{Multilevel CDs from level defect constraints} \label{sec:cdmultilevel}
@@ -789,7 +801,12 @@ However, an F-cycle (Figure \ref{fig:fcycle}), also called a \emph{full multigri
 \label{fig:fcycle}
 \end{figure}
 
-This F-cycle approach is described in Algorithm \ref{alg:fascd-fcycle}.  Injection is used to generate the $\underline{\gamma}^j,\overline{\gamma}^j$ on each level.\pef{Why is this fine for F-cycles, but not for V-cycles? I think we should spell it out.}\footnote{Contrast the construction of LDCs (Section \ref{sec:cdmultilevel}) for V-cycles, based on an existing admissible iterate.}  Regarding line \ref{line:fcyclecoarsestinitial}, one may generate an initial iterate $w^0\in\mathcal{K}^0$ by injection and truncation of a finest-level iterate, if one is available.
+This F-cycle approach is described in Algorithm \ref{alg:fascd-fcycle}.  Injection is used to generate the $\underline{\gamma}^j,\overline{\gamma}^j$ on each level.\footnote{Contrast the construction of LDCs (Section \ref{sec:cdmultilevel}) for V-cycles, based on an existing admissible iterate.}
+\pef{Why is this fine for F-cycles, but not for V-cycles? I think we should spell it out.}
+{\color{blue} ELB: This is the point of Example 5.1.}
+
+\noindent
+Regarding line \ref{line:fcyclecoarsestinitial}, one may generate an initial iterate $w^0\in\mathcal{K}^0$ by injection and truncation of a finest-level iterate, if one is available.
 
 \begin{pseudofloat}[h]
 \begin{pseudo}
@@ -1000,9 +1017,10 @@ We consider the steady shallow ice approximation (SIA) obstacle problem presente
 \includegraphics[width=1.0\textwidth]{fixfigs/sialev8scene.png}
 \end{center}
 \caption{Solution of Example \ref{ex:sia} over a bumpy bedrock topography (grey), with the ice speed as surface coloring and 100-times vertical exaggeration.}
-\pef{Why does the colour bar have grey in it?}
 \label{fig:results:siascene}
 \end{figure}
+%\pef{Why does the colour bar have grey in it?}
+% Cause Paraview does it.  But I have edited it out of the .png.
 
 We applied FAScd F-cycles using $Q_1$ elements and a smoother of four (fixed) iterations of RS Newton (Section \ref{sec:implementation}), with quadratic backtracking line search.  The arising linear systems were approximately solved, in parallel, by three (fixed) iterations of preconditioned GMRES and a ASM+ILU preconditioner.  The coarse solver was RS+LU, applied redundantly over all processors.  The coarse mesh was relatively fine, with $m_0=21^2$ vertices and 400 cells.  Because of the low regularity of the solution we used \id{rtol} $= 2 \times 10^{-4}$ and \id{atol} $= 10^{-8}$ in \eqref{eq:stoppingcriterion}.  The initial iterate was zero ice: $s=b$.  These parameters generated a solver with mesh-independent iterations.  
 
@@ -1020,10 +1038,11 @@ $P$ & \emph{levels} & $m_J$ & \emph{F-cycles} & \emph{time} (s) \\ \cmidrule{1-5
 \end{tabular}
 \bigskip
 \caption{Iterations and run time (wall clock, in seconds) for parallel FAScd F-cycle solutions of Example \ref{ex:sia} on $P$ processes.}
-\pef{I wonder if there's a Firedrake installation we could use on a supercomputer somewhere. It would be nice to have better weak scaling (not exhausting memory bandwidth) and to go to more cores.}
 \label{tab:results:siaweak}
 \end{table}
 
+\pef{I wonder if there's a Firedrake installation we could use on a supercomputer somewhere. It would be nice to have better weak scaling (not exhausting memory bandwidth) and to go to more cores.}
+{\color{blue} ELB: Yes.  I don't have such access currently.}
 
 \section{Discussion and outlook} \label{sec:discussion}
 
@@ -1036,7 +1055,7 @@ In contrast with monotone multigrid \cite{Kornhuber1994}, FAScd does not modify 
 %While an an extension to nonlocal, non-differential VI problems is of interest, it was not tried here
 
 
-\subsection*{Code availablility} \label{sec:code}  For reproducibility we have archived the exact software versions used to produce the results in this paper, including the correct Firedrake version, at FIXME Zenodo?
+\subsection*{Code availability} \label{sec:code}  For reproducibility we have archived the exact software versions used to produce the results in this paper, including the correct Firedrake version, at {\color{blue} ELB: Zenodo?}
 
 \subsection*{Acknowledgements} \label{sec:acknowledgements}  EB was supported by a Faculty Development Travel Award from United Academics, University of Alaska Fairbanks. PEF was supported by the Engineering and Physical Sciences Research Council [EPSRC grants EP/R029423/1 and EP/W026163/1].
 
