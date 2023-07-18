@@ -175,27 +175,17 @@ We present the \emph{full approximation scheme constraint decomposition} (FAScd)
 \section{Introduction} \label{sec:intro}
 
 The constraint decomposition (CD) methods of Tai \cite{Tai2003} are designed to solve coercive variational inequality (VI) problems arising as the Karush--Kuhn--Tucker optimality conditions for the minimization of a convex functional over a convex set.  These methods were shown to converge for multilevel and domain decompositions in a finite element (FE) context; in the multilevel case, the CD method has almost grid-independent error bounds, and near-optimal complexity, for elliptic, linear obstacle problems \cite[Subsection 5.4]{Tai2003}, \cite[Theorem 4.6 and Algorithm 4.7]{GraeserKornhuber2009}.
-%\pef{I prefer the semicolon here because the second sentence is filling in the details for the first; without it, at the end of the first sentence, I'm thinking ``there's a citation missing here''.}
-% Agreed
-%\pef{Could Tai have applied his algorithm directly to non-optimization problems? I don't think so. If that is true, we're underselling our work by using the word `apply'.}
-% Agreed.  Text compressed; the first item on the list already says this.
 In this paper we extend Tai's multilevel CD method by replacing the coarser-level corrections with a full approximation scheme (FAS; \cite{Brandt1977,Bruneetal2015}) approach.  Specifically, our \emph{full approximation scheme constraint decomposition} (FAScd) method extends the algorithms in \cite{GraeserKornhuber2009} and \cite{Tai2003} in the following five directions:
 \renewcommand{\labelenumi}{\emph{(\roman{enumi})}}
 \begin{enumerate}
 \item The FAS coarse corrections are adapted for general VI problems. The needed computations require neither an objective function nor linearity of the residual operator.
 \item We identify a ``telescoping'' subset property which can be exploited on the up-smoothing side of a V-cycle for greater performance.
 \item Box constraints, namely upper and lower obstacles, are permitted.
-%\pef{Should we list this? \cite{GraeserKornhuber2009} say ``We emphasize that all algorithms and convergence results to be presented can be generalized to where an upper obstacle is present''}
-% Yes.  "can be generalized" is true, but in doing so you discover that (see Section 4) the \Pi_i operators in the general box-constrained CD must have a very different formula.  We actually address this by writing code that works at this level of generality.  At a certain point, if G&K can't make something clear and demo that it works then they did not do it!  We will see what we get from referees ...
 \item We implement V-cycles (Algorithm \ref{alg:fascd}) and F-cycles (full multigrid; Algorithm \ref{alg:fascd-fcycle}).
-%\pef{\dots for the first time for VIs beyond linear complementarity problems?}
-% For F-cycles, maybe.  If something like this has been done before I want a referee to say "here it is ...".  I'd rather not guess what unpublished, undocumented, and closed extensions people have to their methods.  So I'm thinking just say what we did.  See previous point.
 \item We demonstrate that F-cycle FAScd is an optimal solver for the different VI examples in Section \ref{sec:results}, when used in conjunction with reduced-space active set methods as smoothers. The number of Newton and Krylov iterations per step are fixed, so that the work of the smoother is proportional to the number of unknowns on a given level.
 \end{enumerate}
 
 Prior multilevel algorithms for VIs have various substantial limitations compared to the FAScd framework.  The projected full approximation scheme (PFAS) algorithm of Brandt \& Cryer \cite{BrandtCryer1983} is apparently limited to linear complementarity problems and projected (truncated) Gauss--Seidel smoothers.  While FAScd reduces to general, nonlinear FAS for PDEs when the inequality constraints are removed (Appendix \ref{app:reductions}), PFAS reduces to linear multigrid.
-%\pef{I don't like the 2$\times$ apparently.}
-% Me neither.  Fixed.
 The multilevel CD iteration of Tai \cite{Tai2003} is formulated in terms of an objective function, so as stated it only applies to optimization-type problems, and furthermore each of its coarser-level problems refers to the finest-level discretization.  The problematic latter property is corrected by reformulation using defect constraints and monotone injection operators (see \cite[Algorithm 4.7]{GraeserKornhuber2009} and Section \ref{sec:cdmultilevel} herein).  The monotone multigrid methods of Kornhuber and co-authors \cite{GraeserKornhuber2009,Kornhuber1994} appear to be formulated only with Gauss--Seidel type smoothers, and applied only to optimization-type VI problems \cite[for example]{JouvetGraeser2013}.  Furthermore, monotone multigrid methods are more difficult to implement in FE libraries because modifications of the FE basis functions are needed to approximate the coarser-level coincidence sets.  No such invasive basis modifications are used either in Tai's original multilevel CD or in FAScd.  Our implementation of FAScd in the Firedrake library \cite{Rathgeberetal2016} requires no modifications of basis functions and yet exhibits excellent performance, including on a problem used to demonstrate the benefits of monotone multigrid (Example \ref{ex:results:classical}; compare \cite[problem 7.1.1]{GraeserKornhuber2009}).
 
 In our experiments, FAScd V-cycles exhibit essentially the same mesh-independent convergence rates for VI problems that FAS multigrid V-cycles exhibit for the corresponding (unconstrained) PDE problems.  The F-cycle results in Section \ref{sec:results} show nearly-textbook multigrid efficiency, namely solutions within discretization error in work comparable to few smoother sweeps on the finest-level mesh \cite{BrandtLivne2011}.  Specifically, we see this performance for classical Laplacian obstacle problems, $p$-Laplacian obstacle problems, and nonnegativity-constrained advection-diffusion equations.  Furthermore, these results appear to be insensitive to the length or structure of the free boundary, i.e.~the geometric complexity of the coincidence set.
@@ -507,11 +497,9 @@ On the other hand, $z\ge 0$ implies $\minR z \ge 0$ and $z \le 0$ implies $\maxR
 
 \begin{figure}[ht]
 \input{tikz/Rplusminus.tex}
-\caption{The monotone injection operators $\maxR$ and $\minR$ assign to a coarse degree of freedom (blue) the maximum and minimum respectively of the fine function over the patch of coarse cells sharing its vertex.  The coarse mesh is in black and the fine in grey.}
+\caption{The monotone injection operators $\maxR$ and $\minR$ assign to a coarse degree of freedom (blue) the maximum and minimum respectively of the fine function over the patch of coarse cells sharing its vertex. The coarse mesh is in black and the fine in grey.}
 \label{fig:Rplusminus}
 \end{figure}
-%\pef{It would be good to have a diagram here. I could write one in tikz, if you don't have one handy.}
-% Like it!  I shortened the caption by removing the parenthetical ("(in green; the fine degree of freedom at the same vertex is not shown)"); that's clear because of the coarse edges. 
 
 
 \section{Multilevel CDs from level defect constraints} \label{sec:cdmultilevel}
@@ -1019,8 +1007,6 @@ We consider the steady shallow ice approximation (SIA) obstacle problem presente
 \caption{Solution of Example \ref{ex:sia} over a bumpy bedrock topography (grey), with the ice speed as surface coloring and 100-times vertical exaggeration.}
 \label{fig:results:siascene}
 \end{figure}
-%\pef{Why does the colour bar have grey in it?}
-% Cause Paraview does it.  But I have edited it out of the .png.
 
 We applied FAScd F-cycles using $Q_1$ elements and a smoother of four (fixed) iterations of RS Newton (Section \ref{sec:implementation}), with quadratic backtracking line search.  The arising linear systems were approximately solved, in parallel, by three (fixed) iterations of preconditioned GMRES and a ASM+ILU preconditioner.  The coarse solver was RS+LU, applied redundantly over all processors.  The coarse mesh was relatively fine, with $m_0=21^2$ vertices and 400 cells.  Because of the low regularity of the solution we used \id{rtol} $= 2 \times 10^{-4}$ and \id{atol} $= 10^{-8}$ in \eqref{eq:stoppingcriterion}.  The initial iterate was zero ice: $s=b$.  These parameters generated a solver with mesh-independent iterations.  
 
