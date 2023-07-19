@@ -1,0 +1,102 @@
+Namespace(bumps=True, epsH=20.0, epsplap=0.0001, levs=8, mcoarse=20, nofas=False, o='', qdegree=4, quad=True)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+   0 FASCD ncp function norm 2.825710954663e+01
+   0 FASCD ncp function norm 3.556112821200e+01
+   1 FASCD ncp function norm 1.824412722905e-01
+   2 FASCD ncp function norm 8.839624026882e-03
+   3 FASCD ncp function norm 3.746874964291e-03
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+Time taken for 16 cores with 8 levels: 111.63340282440186 s
+done (bumps): mcoarse=20, 8 levels, 2560 x 2560 mesh, h=0.703 km
+Namespace(bumps=True, epsH=20.0, epsplap=0.0001, levs=8, mcoarse=20, nofas=False, o='', qdegree=4, quad=True)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+firedrake:WARNING Creating new TransferManager to transfer data to coarse grids
+firedrake:WARNING This might be slow (you probably want to save it on an appctx)
+   0 FASCD ncp function norm 2.825710954663e+01
+   0 FASCD ncp function norm 3.556112822663e+01
+   1 FASCD ncp function norm 1.824409390543e-01
+   2 FASCD ncp function norm 8.839712218921e-03
+   3 FASCD ncp function norm 3.746932760459e-03
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+Time taken for 16 cores with 8 levels: 100.43993425369263 s
+done (bumps): mcoarse=20, 8 levels, 2560 x 2560 mesh, h=0.703 km
