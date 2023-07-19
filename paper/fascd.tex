@@ -996,27 +996,29 @@ We consider the steady shallow ice approximation (SIA) obstacle problem presente
 \label{fig:results:siascene}
 \end{figure}
 
-We applied FAScd F-cycles using $Q_1$ elements and a smoother of four (fixed) iterations of RS Newton (Section \ref{sec:implementation}), with quadratic backtracking line search.  The arising linear systems were approximately solved, in parallel, by three (fixed) iterations of preconditioned GMRES and a ASM+ILU preconditioner.  The coarse solver was RS+LU, applied redundantly over all processors.  The coarse mesh was relatively fine, with $m_0=21^2$ vertices and 400 cells.  Because of the low regularity of the solution we used \id{rtol} $= 2 \times 10^{-4}$ and \id{atol} $= 10^{-8}$ in \eqref{eq:stoppingcriterion}.  The initial iterate was zero ice: $s=b$.  These parameters generated a solver with mesh-independent iterations.  
+We applied FAScd F-cycles using $Q_1$ elements and a smoother of four (fixed) iterations of RS Newton (Section \ref{sec:implementation}), with quadratic backtracking line search.  The arising linear systems were approximately solved, in parallel, by three (fixed) iterations of preconditioned GMRES and a ASM+ILU preconditioner.  The coarse solver was RS+LU, applied redundantly over all processors.  The coarse mesh was relatively fine, with $m_0=21^2$ vertices and 400 cells.  Because of the low regularity of the solution we used \id{rtol} $= 2 \times 10^{-4}$ and \id{atol} $= 10^{-8}$ in \eqref{eq:stoppingcriterion}.  The initial iterate was zero ice: $s=b$.  These parameters generated a solver with mesh-independent iterations.
 
-For a weak-scaling study we fixed the number of degrees of freedom per process at $m_J/P=1281^2 \approx 1.6 \times 10^6$ and solved over $P=1,4,16$ processes.\footnote{Runs were on a single-node workstation with two Intel Xeon 4210 cpus (2.2GHz), a total of 20 physical cores, and 128 GB shared memory.}  The results in Table \ref{tab:results:siaweak} show nearly-constant run time for this parallel refinement path.  The finest mesh result, with $m_J=5121^2=2.6 \times 10^7$ degrees of freedom, needed six minutes to solve for the steady surface elevation of an ice sheet larger than the current Greenland ice sheet ($1.7$ million $\text{km}^2$) at uniform $350$ m resolution.
+For a weak-scaling study we fixed the number of degrees of freedom per process at $m_J/P=641^2 \approx 4.1 \times 10^5$ and solved with $6, 7, 8, 9, $ and 10 refinements.\footnote{The experiments were conducted on ARCHER2, the UK national supercomputer. A maximum of 32 cores per node were employed to avoid saturating the memory bandwidth.}  The results in Table \ref{tab:results:siaweak} show some degradation with increasing core counts, perhaps due to the use of one-level additive Schwarz in the solution of the arising linear systems. Nevertheless, the finest mesh result, with $m_J=10241^2=1.0 \times 10^8$ degrees of freedom, required less than three minutes to solve for the steady surface elevation of an ice sheet larger than the current Greenland ice sheet ($1.7$ million $\text{km}^2$) at uniform $175$ m resolution.
 \end{example}
 
 % see git@bitbucket.org:pefarrell/fascd.git: examples/sia.py
 % and https://github.com/bueler/mcd-extended: paper/results/siaweak.sh|txt
 \begin{table}[ht]
 \begin{tabular}{c@{\hskip 4mm}c@{\hskip 4mm}c@{\hskip 7mm}c@{\hskip 4mm}c}
+\toprule
 $P$ & \emph{levels} & $m_J$ & \emph{F-cycles} & \emph{time} (s) \\ \cmidrule{1-5}
- 1 & 7 & $1281^2$ & 3 & 309 \\
- 4 & 8 & $2561^2$ & 3 & 368 \\
-16 & 9 & $5121^2$ & 3 & 374
+\midrule
+ 1 & 6 & $641^2$ & 3 & 105 \\
+ 4 & 7 & $1281^2$ & 3 & 106 \\
+ 16 & 8 & $2561^2$ & 3 & 100 \\
+ 64 & 9 & $5121^2$ & 3 & 159 \\
+ 256 & 10 & $10241^2$ & 2 & 148 \\
+ \bottomrule
 \end{tabular}
 \bigskip
 \caption{Iterations and run time (wall clock, in seconds) for parallel FAScd F-cycle solutions of Example \ref{ex:sia} on $P$ processes.}
 \label{tab:results:siaweak}
 \end{table}
-
-\pef{I wonder if there's a Firedrake installation we could use on a supercomputer somewhere. It would be nice to have better weak scaling (not exhausting memory bandwidth) and to go to more cores.}
-\elb{Yes.  I don't have such access currently.}
 
 \section{Discussion and outlook} \label{sec:discussion}
 
@@ -1031,7 +1033,8 @@ In contrast with monotone multigrid \cite{Kornhuber1994}, FAScd does not modify 
 
 \subsection*{Code availability} \label{sec:code}  For reproducibility we have archived the exact software versions used to produce the results in this paper, including the correct Firedrake version, at {\color{blue} ELB: Zenodo?}
 
-\subsection*{Acknowledgements} \label{sec:acknowledgements}  EB was supported by a Faculty Development Travel Award from United Academics, University of Alaska Fairbanks. PEF was supported by the Engineering and Physical Sciences Research Council [EPSRC grants EP/R029423/1 and EP/W026163/1].
+\subsection*{Acknowledgements} \label{sec:acknowledgements}  EB was supported by a Faculty Development Travel Award from United Academics, University of Alaska Fairbanks. PEF was supported by the Engineering and Physical Sciences Research Council [EPSRC grants EP/R029423/1 and EP/W026163/1]. This work used the ARCHER2 UK National Supercomputing Service (https://www.archer2.ac.uk).
+
 
 
 \bibliography{fascd}
