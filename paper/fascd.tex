@@ -422,19 +422,17 @@ The mesh hierarchy and FE spaces can be constructed by standard nested refinemen
 \end{equation}
 On the finest-level mesh let $g_D^J \in \mathcal{V}^J$ satisfy $g_D^J = g_D$ on $\partial_D \Omega$; this restricts $g_D$ in \eqref{eq:originalconstraintset} to be piecewise-linear.
 
-In the material which follows, use of higher-order Lagrange elements, i.e.~$P_k$ or $Q_k$ with $k\ge 2$, would imply a ``variational crime'' \cite[Chapter 10]{BrennerScott2007} special to inequality constraints, which we avoid.  Namely, our FE construction of constraint sets (Section \ref{sec:cdmultilevel}) will require \emph{nodal monotonicity},
+As is common in the discretization of variational inequalities, we employ lowest-order continuous Lagrange elements $P_1$ or $Q_1$ on simplices and tensor-product cells respectively. This choice is convenient because this choice enjoys \emph{nodal monotonicity}:
 \begin{equation}
 \bw \ge \bz \quad \implies \quad w \ge z \label{eq:nodalmonotonicity}
 \end{equation}
-for all $w,z \in \mathcal{V}^j$, where $\bw,\bz \in \RR^{m_j}$ denote vectors of nodal values.  However, for $k\ge 2$ there are basis functions in $P_k$ and $Q_k$, i.e.~functions with nodal values one or zero, which take on negative values \cite[Figure 1.7]{Elmanetal2014}.  Evidently \eqref{eq:nodalmonotonicity} is equivalent to the non-existence of such indefinite-sign basis functions.
-\pef{I'm not sure this constitutes a variational crime? We enforce the RHS because it's tractable, and this is only equivalent to what we actually want (the LHS) for P1 and Q1. I don't see where we're departing from the variational framework, however.}
+for all $w,z \in \mathcal{V}^j$, where $\bw,\bz \in \RR^{m_j}$ denote vectors of nodal values. In other words, to enforce an inequality constraint, with $P_1$ or $Q_1$ we only need enforce it pointwise on the degrees of freedom. For $k\ge 2$ there are functions in the standard choices of bases for $P_k$ and $Q_k$ which take on negative values \cite[Figure 1.7]{Elmanetal2014}, violating \eqref{eq:nodalmonotonicity}.
 
-To allow box constraints on all meshes in the hierarchy, let $\tilde{\mathcal{V}}^j$ denote the set of functions on the vertices of $\mathcal{T}^j$ with values in the extended real line $\tilde{\RR} = [-\infty,+\infty]$.  Suppose that the finest-level \emph{lower} and \emph{upper obstacles} $\underline{\gamma}^J, \overline{\gamma}^J \in \tilde{\mathcal{V}}^J$ satisfy
+To allow box constraints on all meshes in the hierarchy, let $\tilde{\mathcal{V}}^j$ denote the set of functions on the vertices of $\mathcal{T}^j$ with values in the extended real line $\tilde{\RR} = [-\infty,+\infty]$.  The finest-level \emph{lower} and \emph{upper obstacles} $\underline{\gamma}^J, \overline{\gamma}^J \in \tilde{\mathcal{V}}^J$ are constructed by suitable interpolation of $\underline{\gamma}$, $\overline{\gamma}$ (e.g.~by applying the Cl\'ement interpolation operator) and satisfy
 \begin{equation}
 \underline{\gamma}^J \le \overline{\gamma}^J, \qquad \underline{\gamma}^J < +\infty, \qquad -\infty < \overline{\gamma}^J. \label{eq:fe:boxconstraintrequirements}
 \end{equation}
-\pef{Shouldn't there be some relation between the continuous bounds and the discrete ones?}
-In analogy to the continuous data, also assume that $\underline{\gamma}^J \le g_D^J \le \overline{\gamma}^J$ on those vertices of $\mathcal{T}^J$ which lie in $\partial_D \Omega$.  Define
+Analogously, we construct the discrete boundary data $g_D^J$ so that $\underline{\gamma}^J \le g_D^J \le \overline{\gamma}^J$ on those vertices of $\mathcal{T}^J$ which lie in $\partial_D \Omega$.  Define
 \begin{equation}
 \mathcal{K}^J = \left\{w\,:\,\underline{\gamma}^J \le w \le \overline{\gamma}^J \text{ on vertices of } \mathcal{T}^J, \, \text{ and } \, w|_{\partial_D\Omega} = g_D^J|_{\partial_D\Omega}\right\} \subset \mathcal{V}^J, \label{eq:fe:fineconstraintset}
 \end{equation}
@@ -446,7 +444,7 @@ Let $f^J:\mathcal{K}^J \to (\mathcal{V}^J)'$ be a discretization of $f$ in \eqre
 \end{equation}
 If $f^J$ is continuous and $p$-coercive on $\mathcal{K}^J$, in the sense that \eqref{eq:pcoercive} holds for all $u,v \in \mathcal{K}^J$, then the discrete VI \eqref{eq:fe:vi} is well-posed.
 
-While \eqref{eq:fe:vi} approximates \eqref{eq:boxdirichletvi}, we warn the reader that it may not technically be conforming for that VI.  That is, even if quadrature and other implementation details for $f^J$ are ignored, and despite the vector space inclusion $\mathcal{V}^J \subset \mathcal{V}$, we do not require or generally expect $\mathcal{K}^J \subset \mathcal{K}$.  Regardless of the smoothness of the continuum obstacles $\underline{\gamma}, \overline{\gamma}$, admissibility with respect to their FE interpolants $\underline{\gamma}^J, \overline{\gamma}^J$ will generally not imply continuum admissibility.\footnote{This caveat is especially relevant in geophysical situations where only nodal values of the obstacle are known.  Nodal elevation data generally misses the actual topographic detail in-between the vertices; compare \cite{Bueler2016}.}
+While \eqref{eq:fe:vi} approximates \eqref{eq:boxdirichletvi}, we warn the reader that it is usually not conforming for that VI.  That is, even if quadrature and other implementation details for $f^J$ are ignored, and despite the vector space inclusion $\mathcal{V}^J \subset \mathcal{V}$, we do not require or expect $\mathcal{K}^J \subset \mathcal{K}$.  Regardless of the smoothness of the continuum obstacles $\underline{\gamma}, \overline{\gamma}$, admissibility with respect to their FE interpolants $\underline{\gamma}^J, \overline{\gamma}^J$ will generally not imply continuum admissibility.\footnote{This caveat is especially relevant in geophysical situations where only nodal values of the obstacle are known.  Nodal elevation data generally misses the actual topographic detail in-between the vertices; compare \cite{Bueler2016}.}
 
 The multilevel algorithm defined in Section \ref{sec:vcycle}, a solver for \eqref{eq:fe:vi}, requires five transfer operators between meshes.  Of these five operators, three are employed in standard FAS \cite{Trottenbergetal2001}.  We include Table \ref{tab:transfers} to help the reader keep track.
 
@@ -469,12 +467,12 @@ Canonical prolongation $P:\mathcal{V}^{j-1}\to\mathcal{V}^j$ implements the vect
 
 To define injection $\iR:\mathcal{V}^j\to\mathcal{V}^{j-1}$, observe that the vertices of $\mathcal{T}^{j-1}$ are vertices of $\mathcal{T}^j$, and that for any values at $\mathcal{T}^j$ vertices there is a unique $\mathcal{V}^j$ function assuming those values.  For $z\in\mathcal{V}^j$ we define the injection $\iR z$ as the element of $\mathcal{V}^{j-1}$ with the same (coarse) nodal values.  Injection is monotonic: if $w \le z$ then $\iR w \le \iR z$.
 
-The monotone injections $\maxR,\minR$ \cite{GraeserKornhuber2009}, which will only be applied to nodal functions $\tilde{\mathcal{V}}^j$, are nonlinear maps which maximize and minimize, respectively, nodal values over the open supports of coarser-mesh basis functions (i.e.~over the \emph{stars} of the coarse vertices). These operators are constructed to enforce the property
+The monotone injections $\maxR,\minR$ \cite{GraeserKornhuber2009}, which will only be applied to nodal functions $\tilde{\mathcal{V}}^j$, are nonlinear maps which maximize and minimize, respectively, nodal values over the open supports of coarser-mesh basis functions (i.e.~over the \emph{stars} of the coarse vertices), Figure \ref{fig:Rplusminus}. These operators are constructed to enforce the property
 \begin{equation}
 \minR z \le z \le \maxR z,  \label{eq:fe:monotonerestrictionprops}
 \end{equation}
 which does not hold for the standard injection operator $\iR$.
-To make the construction precise, let $x_q^j$ denote the vertices of mesh $\mathcal{T}^j$, with corresponding basis functions $\psi_q^j(x)$.  For a $\tilde\RR$-valued nodal function $z\in\tilde{\mathcal{V}}^j$ we define functions in $\tilde{\mathcal{V}}^{j-1}$ (Figure \ref{fig:Rplusminus}):
+To make the construction precise, let $x_q^j$ denote the vertices of mesh $\mathcal{T}^j$, with corresponding basis functions $\psi_q^j(x)$.  For a $\tilde\RR$-valued nodal function $z\in\tilde{\mathcal{V}}^j$ we define functions in $\tilde{\mathcal{V}}^{j-1}$:
 \begin{align}
 (\maxR z)(x_p^{j-1}) &= \max \{z(x_q^j) \,:\, \psi_p^{j-1}(x_q^j) > 0\}, \label{eq:fe:monotonerestrictions} \\
 (\minR z)(x_p^{j-1}) &= \min \{z(x_q^j) \,:\, \psi_p^{j-1}(x_q^j) > 0\}. \notag
