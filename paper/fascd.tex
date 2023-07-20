@@ -184,6 +184,7 @@ In this paper we extend Tai's multilevel CD method by replacing the coarser-leve
 \item Box constraints, namely upper and lower obstacles, are permitted.
 \item We implement V-cycles (Algorithm \ref{alg:fascd}) and F-cycles (full multigrid; Algorithm \ref{alg:fascd-fcycle}).
 \item We demonstrate that F-cycle FASCD is an optimal solver for the different VI examples in Section \ref{sec:results}, when used in conjunction with reduced-space active set methods as smoothers. The number of Newton and Krylov iterations per step are fixed, so that the work of the smoother is proportional to the number of unknowns on a given level.
+\pef{The solver works for VIs where the residual is only defined on the admissible set \dots}
 \end{enumerate}
 
 Prior multilevel algorithms for VIs have various substantial limitations compared to the FASCD framework.  The projected full approximation scheme (PFAS) algorithm of Brandt \& Cryer \cite{BrandtCryer1983} is apparently limited to linear complementarity problems and projected (truncated) Gauss--Seidel smoothers.  While FASCD reduces to general, nonlinear FAS for PDEs when the inequality constraints are removed (Appendix \ref{app:reductions}), PFAS reduces to linear multigrid.
@@ -479,6 +480,7 @@ To make the construction precise, let $x_q^j$ denote the vertices of mesh $\math
 \end{align}
 For standard refinement a coarse-mesh node $x_p^{j-1}$ is in the set of fine vertices $x_q^j$ such that $\psi_p^{j-1}(x_q^j)>0$, so \eqref{eq:fe:monotonerestrictionprops} follows.
 On the other hand, $z\ge 0$ implies $\minR z \ge 0$ and $z \le 0$ implies $\maxR z \le 0$.  These ordering properties are used in the CD construction of the next two Sections.
+\pef{Promote this to its own numbered equation and highlight its importance later on in the construction of LDCs}
 
 \begin{figure}[ht]
 \input{tikz/Rplusminus.tex}
