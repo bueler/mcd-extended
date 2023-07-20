@@ -494,9 +494,15 @@ Our multilevel CD scheme uses \emph{defect constraints} \cite{GraeserKornhuber20
 
 \begin{example}  \label{ex:directRbad}  
 Let $\Omega = (0,L) \subset \RR^1$ and consider a two-level mesh hierarchy ($J=1$).  Let $\underline{\gamma}^1$ be a sawtooth function with minimum value zero, and suppose $\overline{\gamma}^1=C+\underline{\gamma}^1$ with $C>0$ strictly less than the maximum of $\underline{\gamma}^1$.  Figure \ref{fig:directRbad} shows such functions; here levels $\mathcal{T}^1$ and $\mathcal{T}^0$ have $5$ and $3$ vertices, respectively.  Ignoring the boundary for simplicity, the fine-level constraint set $\mathcal{K}^1$ defined by \eqref{eq:fe:fineconstraintset} is nonempty.  However, various natural schemes to coarsen the constraints, applied directly to $\underline{\gamma}^1,\overline{\gamma}^1$, are problematic.  Suppose we propose
-    $$\underline{\gamma}^0, \overline{\gamma}^0 \equiv \iR \underline{\gamma}^1, \iR \overline{\gamma}^1. \qquad \text{\emph{[problematic]}}$$
+\begin{equation}
+    \label{eq:fe:standardinjection}
+    \underline{\gamma}^0, \overline{\gamma}^0 \equiv \iR \underline{\gamma}^1, \iR \overline{\gamma}^1. \qquad \text{\emph{[problematic]}}
+\end{equation}
 Then $\underline{\gamma}^0=0$ and $\overline{\gamma}^0=C$ identically.  In that case the corresponding constraint set $\mathcal{K}^0$ is nonempty, but prolongation $Pw^0$ of an admissible solution of the coarse problem ($\underline{\gamma}^0 \le w^0 \le \overline{\gamma}^0$) is not admissible on the finer level: $Pw^0 \notin \mathcal{K}^1$.  On the other hand, suppose we propose
-    $$\underline{\gamma}^0, \overline{\gamma}^0 \equiv \maxR \underline{\gamma}^1, \minR \overline{\gamma}^1. \qquad \text{\emph{[problematic]}}$$
+\begin{equation}
+    \label{eq:fe:monotoneinjection}
+    \underline{\gamma}^0, \overline{\gamma}^0 \equiv \maxR \underline{\gamma}^1, \minR \overline{\gamma}^1. \qquad \text{\emph{[problematic]}}
+\end{equation}
 The general motivation for this choice---compare \eqref{eq:fe:chilevels} below---is that $w^0 \ge \underline{\gamma}^0 \, \implies \, Pw^0 \ge \underline{\gamma}^1$ and $w^0 \le \overline{\gamma}^0 \, \implies \, Pw^0 \le \overline{\gamma}^1$.  However, in this case the coarse-level set $\mathcal{K}^0$ is empty because the proposed lower bound $\underline{\gamma}^0$ exceeds the proposed upper bound $\overline{\gamma}^0$ (Figure \ref{fig:directRbad}).
 \end{example}
 
@@ -509,8 +515,6 @@ The general motivation for this choice---compare \eqref{eq:fe:chilevels} below--
 \caption{For the finer-level constraints $\underline{\gamma}^1$ (blue) and $\overline{\gamma}^1$ (red) on the left, direct application of $\iR,\minR,\maxR$ is problematic.  For example, if we apply the monotone injections then the resulting coarser-level constraint set $\mathcal{K}^0$ is empty because $\maxR \underline{\gamma}^1 > \minR \overline{\gamma}^1$ (right).  Defect constraints avoid this difficulty.}
 \label{fig:directRbad}
 \end{figure}
-%\pef{Can we put another figure beside it illustrating the choice $\underline{\gamma}^0, \overline{\gamma}^0 \equiv \maxR \underline{\gamma}^1, \minR \overline{\gamma}^1$?}
-%\pef{Maybe use different colours for upper and lower bounds?}
 
 So suppose $w^J \in \cK^J$ is an admissible finest-level iterate for \eqref{eq:fe:vi}.  We define the \emph{finest-level defect constraints} (DCs) \cite{GraeserKornhuber2009} as the following functions in $\tilde{\mathcal{V}}^J$:
 \begin{equation}
@@ -774,13 +778,8 @@ However, an F-cycle (Figure \ref{fig:fcycle}), also called a \emph{full multigri
 \label{fig:fcycle}
 \end{figure}
 
-This F-cycle approach is described in Algorithm \ref{alg:fascd-fcycle}.  Injection is used to generate the $\underline{\gamma}^j,\overline{\gamma}^j$ on each level.\footnote{Contrast the construction of LDCs (Section \ref{sec:cdmultilevel}) for V-cycles, based on an existing admissible iterate.}
-\pef{Why is this fine for F-cycles, but not for V-cycles? I think we should spell it out.}
-\elb{This is the point of Example 5.1.}
-\pef{The point of Example 5.1 is to show why it is not fine for V-cycles. We don't explain anywhere it is fine for F-cycles, as far as I can see.}
-
-\noindent
-Regarding line \ref{line:fcyclecoarsestinitial}, one may generate an initial iterate $w^0\in\mathcal{K}^0$ by injection and truncation of a finest-level iterate, if one is available.
+This F-cycle approach is described in Algorithm \ref{alg:fascd-fcycle}.  In contrast to the construction of LDCs (Section \ref{sec:cdmultilevel}) for V-cycles, standard injection is used to generate the $\underline{\gamma}^j,\overline{\gamma}^j$ on each level during the initial nested iteration. This is because nested iteration approximates the full solution on the coarse grids, not just a correction to an initial iterate; essentially, our choice is between \eqref{eq:fe:standardinjection} (where the coarse constraint set is always nonempty, but the solution may not be admissible on the next level) or \eqref{eq:fe:monotoneinjection} (where the coarse solution is always admissible if it exists, but the constraint set may be empty). We choose \eqref{eq:fe:standardinjection} so that the coarse problems always have nonempty constraint sets, and project pointwise to the bounds as we refine in the nested iteration.
+On line \ref{line:fcyclecoarsestinitial}, one may generate an initial iterate $w^0\in\mathcal{K}^0$ by injection and truncation of a finest-level iterate, if one is available.
 
 \begin{pseudofloat}[h]
 \begin{pseudo}
@@ -1031,7 +1030,7 @@ In contrast with monotone multigrid \cite{Kornhuber1994}, FAScd does not modify 
 
 \subsection*{Code availability} \label{sec:code}  For reproducibility we have archived the exact software versions used to produce the results in this paper, including the correct Firedrake version, at {\color{blue} ELB: Zenodo?}
 
-\subsection*{Acknowledgements} \label{sec:acknowledgements}  EB was supported by a Faculty Development Travel Award from United Academics, University of Alaska Fairbanks. PEF was supported by the Engineering and Physical Sciences Research Council [EPSRC grants EP/R029423/1 and EP/W026163/1]. This work used the ARCHER2 UK National Supercomputing Service (https://www.archer2.ac.uk).
+\subsection*{Acknowledgements} \label{sec:acknowledgements}  EB was supported by a Faculty Development Travel Award from United Academics, University of Alaska Fairbanks. PEF was supported by the Engineering and Physical Sciences Research Council [EPSRC grants EP/R029423/1 and EP/W026163/1]. This work used the ARCHER2 UK National Supercomputing Service (https://www.archer2.ac.uk). PEF thanks Jack D.~Betteridge for assistance with the numerical experiments of Section \ref{ex:results:sia}.
 
 
 
