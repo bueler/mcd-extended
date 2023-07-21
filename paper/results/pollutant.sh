@@ -15,7 +15,7 @@ echo ""
 # which mpiexec
 echo "******** -dim 3: P = 16 parallel, Q1 *******"
 for LEVS in $LIST3D; do
-    mpiexec -n 16 --map-by core --bind-to hwthread python3 pollutant.py -dim 3 -q1 -levs $LEVS
+    mpiexec -n 16 -map-by numa -bind-to core python3 pollutant.py -dim 3 -q1 -levs $LEVS
 done
 echo ""
 
