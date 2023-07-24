@@ -1,14 +1,30 @@
-\documentclass[letterpaper,final,12pt,reqno]{amsart}
+\documentclass[review,hidelinks,onefignum,onetabnum]{siamart220329}
 
-\usepackage[total={6.3in,9.2in},top=1.1in,left=1.1in]{geometry}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\ifpdf
+  \DeclareGraphicsExtensions{.eps,.pdf,.png,.jpg}
+\else
+  \DeclareGraphicsExtensions{.eps}
+\fi
 
-\usepackage{times,bm,bbm,empheq,verbatim,fancyvrb,graphicx,amsthm,amssymb}
-\usepackage[dvipsnames]{xcolor}
+% Add a serial/Oxford comma by default.
+\newcommand{\creflastconjunction}{, and~}
+
+% Used for creating new theorem and remark environments
+\newsiamremark{remark}{Remark}
+\newsiamremark{hypothesis}{Hypothesis}
+\crefname{hypothesis}{Hypothesis}{Hypotheses}
+\newsiamthm{claim}{Claim}
+\newsiamremark{example}{Example}
+
+\usepackage{amsopn}
+\DeclareMathOperator{\diag}{diag}
+
+\usepackage{bm,bbm,empheq,verbatim,fancyvrb,amssymb}
 \usepackage{booktabs,multirow,xspace}
 \usepackage{pifont}
-
-\usepackage{tabto}
-\TabPositions{1.5cm}
 
 \usepackage{tikz}
 \usetikzlibrary{decorations.pathreplacing}
@@ -25,77 +41,12 @@ ct-left=\qquad\qquad(,%
 ct-right=),%
 }
 
-\usepackage{float}
-
-% hyperref should be the last package we load
-\usepackage[pdftex,
-colorlinks=true,
-plainpages=false, % only if colorlinks=true
-linkcolor=blue,   % ...
-citecolor=Red,    % ...
-urlcolor=black    % ...
-]{hyperref}
-
-\renewcommand{\baselinestretch}{1.05}
-
-\allowdisplaybreaks[1]  % allow display breaks in align environments, if they avoid major underfulls
-
-\newtheoremstyle{cstyle}% name
-  {5pt}% space above
-  {5pt}% space below
-  {\itshape}% body font
-  {}% indent amount
-  {\itshape}% theorem head font
-  {.}% punctuation after theorem head
-  {.5em}% space after theorem head
-  {\thmname{#1}\thmnumber{ #2}\thmnote{ (#3)}}% theorem head spec
-\theoremstyle{cstyle}
-
-\newtheorem{theorem}{Theorem}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{corollary}[theorem]{Corollary}
-\newtheorem{assumptions}[theorem]{Assumptions}
-
-\newtheoremstyle{cstyle*}% name
-  {5pt}% space above
-  {5pt}% space below
-  {\itshape}% body font
-  {}% indent amount
-  {\itshape}% theorem head font
-  {.}% punctuation after theorem head
-  {.5em}% space after theorem head
-  {\thmname{#1}}% theorem head spec
-\theoremstyle{cstyle*}
-\newtheorem{assumptions*}{Assumptions}
-
-\newtheoremstyle{dstyle}% name
-  {5pt}% space above
-  {5pt}% space below
-  {}%{\itshape}% body font
-  {}% indent amount
-  {\itshape}% theorem head font
-  {.}% punctuation after theorem head
-  {.5em}% space after theorem head
-  {\thmname{#1}\thmnumber{ #2}\thmnote{ (#3)}}% theorem head spec
-\theoremstyle{dstyle}
-
-\newtheorem{definition}[theorem]{Definition}
-\newtheorem{example}[theorem]{Example}
-
-% numbering
-\numberwithin{equation}{section}
-\numberwithin{figure}{section}
-\numberwithin{table}{section}
-\numberwithin{theorem}{section}
-
 \newcommand{\eps}{\epsilon}
 \newcommand{\RR}{\mathbb{R}}
 
 \newcommand{\grad}{\nabla}
 \newcommand{\Div}{\nabla\cdot}
 \newcommand{\trace}{\operatorname{tr}}
-
-\newcommand{\hbn}{\hat{\mathbf{n}}}
 
 \newcommand{\bb}{\mathbf{b}}
 \newcommand{\be}{\mathbf{e}}
@@ -155,22 +106,35 @@ urlcolor=black    % ...
 \newcommand{\elb}[1]{\todo[inline, color=blue!20]{EB: #1}}
 
 
+% Sets running headers as well as PDF title and authors
+\headers{FAS for nonlinear variational inequalities}{E. Bueler and P. E. Farrell}
+
+\title{A full approximation scheme multilevel method \\ for nonlinear variational inequalities\thanks{Submitted to the editors DATE.
+\funding{EB was supported by a Faculty Development Travel Award from United Academics, University of Alaska Fairbanks. PEF was supported by the Engineering and Physical Sciences Research Council [EPSRC grants EP/R029423/1 and EP/W026163/1]. This work used the ARCHER2 UK National Supercomputing Service (https://www.archer2.ac.uk). PEF thanks Jack D.~Betteridge for assistance with the numerical experiments of Example \ref{ex:results:sia}.}}}
+
+\author{Ed Bueler\thanks{Department of Mathematics and Statistics, University of Alaska Fairbanks, USA
+  (\email{elbueler@alaska.edu}).}
+\and Patrick E. Farrell\thanks{Mathematical Institute, University of Oxford, Oxford, UK
+  (\email{patrick.farrell@maths.ox.ac.uk}).}}
+
+
 \begin{document}
-\title[FAS for nonlinear variational inequalities]{A full approximation scheme multilevel method \\ for nonlinear variational inequalities}
 
-\author{Ed Bueler}
-
-\author{Patrick E.~Farrell}
-
-\date{\today}
+\maketitle
 
 \begin{abstract}
 We present the \emph{full approximation scheme constraint decomposition} (FASCD) multilevel method for solving variational inequalities (VIs).  FASCD is a common extension both of the full approximation scheme (FAS) multigrid technique for nonlinear partial differential equations, due to A.~Brandt, and the constraint decomposition (CD) method introduced by X.-C.~Tai for VIs arising in optimization.  We extend the CD idea by exploiting the telescoping nature of certain function space subset decompositions arising from multilevel mesh hierarchies.  We demonstrate that FASCD V-cycles exhibit excellent mesh-independent convergence rates.  Furthermore, when a reduced-space active set method is applied as a smoother, with work proportional to the number of unknowns on a given mesh level, FASCD F-cycles (full multigrid) are optimal solvers.  The example problems include differential operators which are symmetric linear, nonsymmetric linear, and nonlinear, in unilateral and bilateral VI problems.  Our examples demonstrate very good convergence even on problems where other multilevel VI solvers struggle.
 \end{abstract}
 
-\maketitle
+% REQUIRED
+\begin{keywords}
+FIXME
+\end{keywords}
 
-\thispagestyle{empty}
+% REQUIRED
+\begin{MSCcodes}
+FIXME
+\end{MSCcodes}
 
 
 \section{Introduction} \label{sec:intro}
@@ -1053,13 +1017,11 @@ The observation that up-smoothing is more efficient in a multilevel CD context, 
 
 \subsection*{Code availability} \label{sec:code}  The software used to produce the results is archived at tag \elb{FIX} in the repository \url{https://bitbucket.org/pefarrell/fascd/}, using the Firedrake version \elb{what version?}
 
-
-\subsection*{Acknowledgements} \label{sec:acknowledgements}  EB was supported by a Faculty Development Travel Award from United Academics, University of Alaska Fairbanks. PEF was supported by the Engineering and Physical Sciences Research Council [EPSRC grants EP/R029423/1 and EP/W026163/1]. This work used the ARCHER2 UK National Supercomputing Service (https://www.archer2.ac.uk). PEF thanks Jack D.~Betteridge for assistance with the numerical experiments of Example \ref{ex:results:sia}.
-
+\elb{acknowledge Lawrence for help with monotone injections?}
 
 
+\bibliographystyle{siamplain}
 \bibliography{fascd}
-\bibliographystyle{siam}
 
 
 \appendix
