@@ -110,7 +110,7 @@ ct-right=),%
 \headers{FAS for nonlinear variational inequalities}{E. Bueler and P. E. Farrell}
 
 \title{A full approximation scheme multilevel method \\ for nonlinear variational inequalities\thanks{Submitted to the editors DATE.
-\funding{EB was supported by a Faculty Development Travel Award from United Academics, University of Alaska Fairbanks. PEF was supported by the Engineering and Physical Sciences Research Council [EPSRC grants EP/R029423/1 and EP/W026163/1]. This work used the ARCHER2 UK National Supercomputing Service (https://www.archer2.ac.uk). PEF thanks Jack D.~Betteridge for assistance with the numerical experiments of Example \ref{ex:results:sia}.}}}
+\funding{EB was supported by a Faculty Development Travel Award from United Academics, University of Alaska Fairbanks. PEF was supported by the Engineering and Physical Sciences Research Council [EPSRC grants EP/R029423/1 and EP/W026163/1]. This work used the ARCHER2 UK National Supercomputing Service (https://www.archer2.ac.uk). PEF thanks Lawrence Mitchell for advice on the implementation of FASCD, and thanks Jack D.~Betteridge for assistance with the numerical experiments of Example \ref{ex:results:sia}.}}}
 
 \author{Ed Bueler\thanks{Department of Mathematics and Statistics, University of Alaska Fairbanks, USA
   (\email{elbueler@alaska.edu}).}
@@ -289,6 +289,7 @@ v = \sum_{i=0}^{m-1} \Pi_i v.  \label{eq:constraintrestrictionsum}
 Clearly \eqref{eq:constraintrestrictionsum} implies sense \emph{(i)} for \eqref{eq:constraintdecomp}.  A \emph{constraint decomposition} (CD) of $\cK$ is a choice of $\cV_i,\cK_i,\Pi_i$ satisfying \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum} \cite{Tai2003}.  Figure \ref{fig:cartoon} suggests how a low-dimensional example might look; note $\cK_i \not\subset \cK$ in this and most other cases.
 
 \begin{figure}[ht]
+\centering
 \includegraphics[width=0.6\textwidth]{genfigs/cartoon.pdf}
 \caption{A constraint decomposition (CD) for a unilateral obstacle problem on a two-point space $\Omega=\{x_1,x_2\}$, with $\mathcal{V}=\left\{v \,:\, \Omega \to \RR\right\}$ and $\mathcal{K}=\{v\ge \psi\}$.}
 \label{fig:cartoon}
@@ -421,6 +422,7 @@ While \eqref{eq:fe:vi} approximates \eqref{eq:boxdirichletvi}, we warn the reade
 The multilevel algorithm defined in Section \ref{sec:vcycle}, a solver for \eqref{eq:fe:vi}, requires five transfer operators between meshes.  Of these five operators, three are employed in standard FAS \cite{Trottenbergetal2001}.  We include Table \ref{tab:transfers} to help the reader keep track.
 
 \begin{table}[H]
+\centering
 \begin{tabular}{llc}
 \toprule
 \emph{name}  & \emph{action}  & \emph{linear?} \\ \midrule
@@ -455,6 +457,7 @@ z\ge 0 \implies \minR z \ge 0, \qquad z \le 0 \implies \maxR z \le 0. \label{eq:
 \end{equation}
 
 \begin{figure}[ht]
+\centering
 \input{tikz/Rplusminus.tex}
 \caption{The monotone injection operators $\maxR$ and $\minR$ assign to a coarse degree of freedom (blue) the maximum and minimum respectively of the fine function over the patch of coarse cells sharing its vertex. The coarse mesh is in black and the fine in grey.}
 \label{fig:Rplusminus}
@@ -481,6 +484,7 @@ The general motivation for this choice---compare \eqref{eq:fe:chilevels} below--
 \end{example}
 
 \begin{figure}[ht]
+\centering
 \begin{tabular}{cc}
 \input{tikz/directRbadfine.tex}
 &
@@ -512,6 +516,7 @@ A unilateral $J=4$ example of LDCs $\underline{\chi}^j$ is shown in Figure \ref{
 %$ ./obstacle.py -J 5 -jcoarse 1 -random -randommodes 8 -diagnostics -o defect.pdf
 %fine level 5 (m=63): using 20 V(1,0) cycles -> 38.750 WU
 \begin{figure}[ht]
+\centering
 \includegraphics[width=0.65\textwidth]{fixfigs/chiphilevels.pdf}
 \caption{Unilateral LDCs $\underline{\chi}^j$ are generated from $\underline{\chi}^J = \underline{\gamma}^J - w^J$ using maximum injection: $\underline{\chi}^j = \maxR \underline{\chi}^{j+1}$.}
 \label{fig:chiphilevels}
@@ -606,9 +611,8 @@ The V-cycle applies smoothers in constraint sets $\mathcal{D}^j$ and $\mathcal{U
 Each V-cycle generates a correction to a finest-level iterate $w^J \in \mathcal{K}^J$ by incorporating information from each coarser FE subspace $\mathcal{V}^j$.  By nesting \eqref{eq:fe:nestedspaces} these corrections all live in the fine-level subspace $\mathcal{V}^J$.\footnote{Nonetheless we use prolongation $P$ to indicate where the computer representation changes.}  The corrections are constructed, inductively, so that iterates remain admissible at every level.  Suppose $y^i \in \mathcal{D}^i$, for $i=J,\dots,j+1$, are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:fascdvcycle}).  By \eqref{eq:fe:downwardsuminclusion} the correction at this point is admissible, namely $y^J + \dots + y^{j+1} \in \mathcal{U}^J$, equivalently $w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$.  Smoothing then occurs at the next-coarser level, yielding the next correction $y^j \in \mathcal{D}^j$.  Solving the coarsest-level VI results in the full downward correction $y^J + \dots + y^1 + z^0 \in \mathcal{U}^J$.  Starting upward, $y^1 + z^0 \in \mathcal{U}^1$ is an initial iterate for smoothing on level $j=1$, which then yields $z^1 \in \mathcal{U}^1$ and an admissible correction $y^J + \dots + y^2 + z^1 \in \mathcal{U}^J$, using \eqref{eq:fe:upwardsuminclusion}.  Continuing in this ``telescoping'' way, up-smoothing in the constraint sets $\mathcal{U}^j$, starting from initial iterate $y^j+z^{j-1}$, finally generates $z^J\in \mathcal{U}^J$ as the V-cycle correction.  Then the corrected finest-level iterate is $\tilde{w}^J = w^J + z^J \in \mathcal{K}^J$.
 
 \begin{figure}[ht]
-\begin{center}
+\centering
 \input{tikz/vcycle.tex}
-\end{center}
 \caption{The FASCD V-cycle computes downward corrections $y_j \in \mathcal{D}^j$, but the upward corrections $z_j\in\mathcal{U}^j$ are in larger sets.}
 \label{fig:fascdvcycle}
 \end{figure}
@@ -745,9 +749,8 @@ as the stopping criterion.  In Section \ref{sec:results} we will show that itera
 However, an F-cycle (Figure \ref{fig:fcycle}), also called a \emph{full multigrid cycle}, is even better.  The well-known principle of such a cycle \cite[section 2.6]{Trottenbergetal2001} is to start on the coarsest mesh and solve the problem from any initial iterate.  Then an admissible initial iterate on the next-finer mesh is generated via prolongation, and so on to finer levels.  (In the VI context one must also truncate to the bounds after the prolongation; see lines \ref{line:fcycleprolongtruncone} and \ref{line:fcycleprolongtrunctwo} in Algorithm \ref{alg:fascd-fcycle}.)  During this ``ramp'' one approximately solves on each level by using a fixed number of V-cycles, each down to the coarsest mesh, and then one does full-depth V-cycles from the finest level, to convergence.
 
 \begin{figure}[h]
-\begin{center}
+\centering
 \input{tikz/fcycle.tex}
-\end{center}
 \caption{F-cycle Algorithm \ref{alg:fascd-fcycle} initially restricts and injects the data $\ell^J,\underline{\gamma}^J,\overline{\gamma}^J$ down to level $j=0$ (gray).  Then it prolongs and truncates (doubled edges) to create an admissible initial iterate on the next-finer level.  Solution on each level is by V-cycles. See Figure \ref{fig:fascdvcycle} for the other symbols.}
 \label{fig:fcycle}
 \end{figure}
@@ -801,9 +804,8 @@ Each V-cycle does the work of about eight finest-level preconditioned Krylov (CG
 %$ paraview ball|spiral.pvd
 %use preset "xray" and invert colors; for spiral.pvd, show lgap = u - lb as black if above 0.02; for ball i used 0.001
 \begin{figure}[ht]
-\begin{center}
+\centering
 \includegraphics[width=0.35\textwidth]{fixfigs/ball-set.png} \qquad \includegraphics[width=0.35\textwidth]{fixfigs/spiral-set.png}
-\end{center}
 \caption{Coincidence sets for the ball and spiral problems in Example \ref{ex:results:classical}.}
 \label{fig:results:classical}
 \end{figure}
@@ -811,6 +813,7 @@ Each V-cycle does the work of about eight finest-level preconditioned Krylov (CG
 % see git@bitbucket.org:pefarrell/fascd.git: examples/drape.py
 % and https://github.com/bueler/mcd-extended: paper/results/drape.sh|txt
 \begin{table}[ht]
+\centering
 \begin{tabular}{lr@{\hskip 7mm}cccccc}
 \toprule
 \multirow{2}{*}{\emph{levels}} & \multirow{2}{*}{$m_J$} & \multicolumn{3}{c}{\,\emph{ball}} & \multicolumn{3}{c}{\,\emph{spiral}} \\ \cmidrule(lr){3-5} \cmidrule(lr){6-8}
@@ -842,10 +845,9 @@ Set $\Omega=(-3,3)$, $\psi(x) = -0.2|x|$, $\mathcal{K} = \{v \ge \psi\} \subset 
 % $ python3 plap1d.py -p 1.5 -figures -levs 6 -fascd_cycle_type full && mv solution.pdf plap1d1p5.pdf
 % $ python3 plap1d.py -p 4.0 -figures -levs 6 -fascd_cycle_type full && mv solution.pdf plap1d4p0.pdf
 \begin{figure}[ht]
-\begin{center}
+\centering
 \includegraphics[width=0.45\textwidth]{fixfigs/plap1d1p5.pdf} \quad
 \includegraphics[width=0.45\textwidth]{fixfigs/plap1d4p0.pdf}
-\end{center}
 \caption{Solutions $u\ge \psi$ of the $p$-Laplacian VI in Example \ref{ex:results:plap}, for $p=1.5$ (left) and $p=4.0$ (right).}
 \label{fig:results:plap}
 \end{figure}
@@ -857,9 +859,8 @@ Set $\Omega=(-3,3)$, $\psi(x) = -0.2|x|$, $\mathcal{K} = \{v \ge \psi\} \subset 
 %   [save the images into mcd-extended/paper/fixfigs/vcycle/]
 %   for X in start2 down2 down1 up0 up1 up2 next2; do mogrify -trim $X.png $X.png; done
 \begin{figure}[ht]
-\begin{center}
+\centering
 \input{tikz/imagesvcycle.tex}
-\end{center}
 \caption{Visualization of one FASCD V-cycle iteration for Example \ref{ex:results:plap}, with $p=1.5$, $J=3$, and a coarsest mesh of $m_0=5$ vertices.  Solutions (i.e.~$w^j$, $y^j$, $z^j$) are lines, obstacles ($\underline{\gamma}^j$, $\underline{\phi}^j$, $\underline{\chi}^j$) are strong dots, and the zero function is dotted.  Vertical scale varies.}
 \label{fig:imagesvcycle}
 \end{figure}
@@ -874,6 +875,7 @@ The $p=1.5$ and $p=4$ cases give different convergence rates in the $\|\cdot\|_\
 % see git@bitbucket.org:pefarrell/fascd.git: examples/plap1d.py
 % and https://github.com/bueler/mcd-extended: paper/results/plap1d.sh|txt
 \begin{table}[ht]
+\centering
 \begin{tabular}{lr@{\hskip 7mm}c@{\hskip 3mm}c@{\hskip 3mm}c@{\hskip 4mm}c@{\hskip 5mm}c@{\hskip 6mm}c}
 \toprule
 \emph{levels} & $m_J$ & V(1,0) & V(0,1) & V(1,1) & F & F$_\eps$ & $\|$error$\|_\infty$ \\
@@ -898,6 +900,7 @@ The $p=1.5$ and $p=4$ cases give different convergence rates in the $\|\cdot\|_\
 % see git@bitbucket.org:pefarrell/fascd.git: examples/plap1d.py
 % and https://github.com/bueler/mcd-extended: paper/results/plap1d.sh|txt
 \begin{table}[ht]
+\centering
 \begin{tabular}{lr@{\hskip 7mm}c@{\hskip 4mm}c@{\hskip 4mm}c@{\hskip 6mm}c}
 \toprule
 \emph{levels} & $m_J$ & V & V$_4$ & F & $\|$error$\|_\infty$ \\
@@ -930,9 +933,8 @@ Consider the advection-diffusion VI problem in Example \ref{ex:advectiondiffusio
 % to plot coincidence sets use ranges 0 <= u <= 0.00001 and 0.99999 <= u <= 1 and
 % preset "xray" and invert colors (for u=0) or keep colors (u=1)
 \begin{figure}[ht]
-\begin{center}
+\centering
 \includegraphics[width=0.35\textwidth]{fixfigs/poll2d-zero-set.png} \qquad \includegraphics[width=0.35\textwidth]{fixfigs/poll2d-one-set.png}
-\end{center}
 \caption{Coincidence sets for the 2D bi-obstacle problem in Example \ref{ex:results:advdiff}: $u=0$ (left) and $u=1$ (right).}
 \label{fig:results:advdiff}
 \end{figure}
@@ -945,6 +947,7 @@ F-cycle iteration results are shown in Table \ref{tab:results:advdiff}.  Despite
 % see git@bitbucket.org:pefarrell/fascd.git: examples/pollutant.py
 % and https://github.com/bueler/mcd-extended: paper/results/pollutant.sh|txt
 \begin{table}[ht]
+\centering
 \begin{tabular}{lr@{\hskip 7mm}c@{\hskip 4mm}c}
 \toprule
 \emph{levels} & $m_J$ & $d=2$ & $d=3$ \\
@@ -973,9 +976,8 @@ We consider the steady shallow ice approximation (SIA) obstacle problem presente
 %       -mcoarse 8 -fascd_cycle_type full -fascd_monitor -fascd_rtol 2.0e-4 \
 %       -fascd_atol 1.0e-8 -o sialev8.pvd
 \begin{figure}[ht]
-\begin{center}
+\centering
 \includegraphics[width=1.0\textwidth]{fixfigs/sialev8scene.png}
-\end{center}
 \caption{Solution of Example \ref{ex:sia} over a bumpy bedrock topography (grey), with the ice speed as surface coloring and 100-times vertical exaggeration.}
 \label{fig:results:siascene}
 \end{figure}
@@ -987,6 +989,7 @@ For a weak-scaling study we fixed the number of degrees of freedom per process a
 % see git@bitbucket.org:pefarrell/fascd.git: examples/sia.py
 % and https://github.com/bueler/mcd-extended: paper/results/siaweak.sh|txt
 \begin{table}[ht]
+\centering
 \begin{tabular}{c@{\hskip 4mm}c@{\hskip 4mm}c@{\hskip 7mm}c@{\hskip 4mm}c}
 \toprule
 $P$ & \emph{levels} & $m_J$ & \emph{F-cycles} & \emph{time} (s) \\
@@ -1016,9 +1019,6 @@ The observation that up-smoothing is more efficient in a multilevel CD context, 
 \pef{This last paragraph feels like a flat way to end. Perhaps we could highlight the importance of ICD-TELE in the text, and remove this last paragraph?}
 
 \subsection*{Code availability} \label{sec:code}  The software used to produce the results is archived at tag \elb{FIX} in the repository \url{https://bitbucket.org/pefarrell/fascd/}, using the Firedrake version \elb{what version?}
-
-\elb{acknowledge Lawrence for help with monotone injections?}
-
 
 \bibliographystyle{siamplain}
 \bibliography{fascd}
