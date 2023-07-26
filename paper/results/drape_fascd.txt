@@ -5,117 +5,134 @@
 FASCD solve converged due to CONVERGED_SINGLE_LEVEL iterations 1
 done on 4 x 4 square mesh (oper=lap, prob=ball, levs=1, mcoarse=4, m_J=41, cells=64):  |u-uexact|_h = 5.389e-02
     0 FASCD ncp function norm 4.597248896467e+00
-    1 FASCD ncp function norm 3.175599101243e-05 [ratio 6.907608e-06], |du|/|u|=4.381629797925e-01
-    2 FASCD ncp function norm 5.105996255069e-10 [ratio 1.607884e-05], |du|/|u|=4.293434781321e-06
-    3 FASCD ncp function norm 9.559932489771e-15 [ratio 1.872295e-05], |du|/|u|=6.841712886735e-11
+    1 FASCD ncp function norm 3.175599101245e-05 [ratio 6.907608e-06], |du|/|u|=4.381629797925e-01
+    2 FASCD ncp function norm 5.105995455207e-10 [ratio 1.607884e-05], |du|/|u|=4.293434781313e-06
+    3 FASCD ncp function norm 9.299029163684e-15 [ratio 1.821198e-05], |du|/|u|=6.841713036500e-11
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 3
 done on 8 x 8 square mesh (oper=lap, prob=ball, levs=2, mcoarse=4, m_J=145, cells=256):  |u-uexact|_h = 2.538e-02
     0 FASCD ncp function norm 4.019378820472e+00
     1 FASCD ncp function norm 2.457242657030e-01 [ratio 6.113489e-02], |du|/|u|=4.387403827895e-01
-    2 FASCD ncp function norm 8.743045449902e-05 [ratio 3.558072e-04], |du|/|u|=1.181658337972e-02
-    3 FASCD ncp function norm 3.564413318552e-07 [ratio 4.076856e-03], |du|/|u|=1.834713410706e-05
-    4 FASCD ncp function norm 1.829035941081e-09 [ratio 5.131380e-03], |du|/|u|=8.194695996678e-08
-    5 FASCD ncp function norm 8.653123593459e-12 [ratio 4.730975e-03], |du|/|u|=4.395141037863e-10
-    6 FASCD ncp function norm 3.554800705546e-14 [ratio 4.108113e-03], |du|/|u|=2.213653304482e-12
+    2 FASCD ncp function norm 8.743045449872e-05 [ratio 3.558072e-04], |du|/|u|=1.181658337972e-02
+    3 FASCD ncp function norm 3.564413317229e-07 [ratio 4.076856e-03], |du|/|u|=1.834713410707e-05
+    4 FASCD ncp function norm 1.829035927467e-09 [ratio 5.131380e-03], |du|/|u|=8.194695996132e-08
+    5 FASCD ncp function norm 8.653341919534e-12 [ratio 4.731095e-03], |du|/|u|=4.395141098914e-10
+    6 FASCD ncp function norm 3.548401366476e-14 [ratio 4.100614e-03], |du|/|u|=2.213647695185e-12
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 6
 done on 16 x 16 square mesh (oper=lap, prob=ball, levs=3, mcoarse=4, m_J=545, cells=1024):  |u-uexact|_h = 5.714e-03
     0 FASCD ncp function norm 3.518652347563e+00
     1 FASCD ncp function norm 9.214912699697e-02 [ratio 2.618876e-02], |du|/|u|=4.419431102546e-01
-    2 FASCD ncp function norm 6.382697068474e-04 [ratio 6.926487e-03], |du|/|u|=1.732566415737e-02
-    3 FASCD ncp function norm 1.074489526851e-05 [ratio 1.683441e-02], |du|/|u|=3.184452239304e-04
-    4 FASCD ncp function norm 1.132301876219e-07 [ratio 1.053804e-02], |du|/|u|=6.726585588289e-06
-    5 FASCD ncp function norm 1.701822468236e-09 [ratio 1.502976e-02], |du|/|u|=6.888700819883e-08
-    6 FASCD ncp function norm 2.728088356372e-11 [ratio 1.603039e-02], |du|/|u|=8.743745428708e-10
-    7 FASCD ncp function norm 4.901354009454e-13 [ratio 1.796626e-02], |du|/|u|=1.507490579305e-11
+    2 FASCD ncp function norm 6.382697068471e-04 [ratio 6.926487e-03], |du|/|u|=1.732566415737e-02
+    3 FASCD ncp function norm 1.074489526832e-05 [ratio 1.683441e-02], |du|/|u|=3.184452239304e-04
+    4 FASCD ncp function norm 1.132301878442e-07 [ratio 1.053804e-02], |du|/|u|=6.726585588275e-06
+    5 FASCD ncp function norm 1.701822418659e-09 [ratio 1.502976e-02], |du|/|u|=6.888700819209e-08
+    6 FASCD ncp function norm 2.728092270855e-11 [ratio 1.603042e-02], |du|/|u|=8.743745472813e-10
+    7 FASCD ncp function norm 4.898369539597e-13 [ratio 1.795529e-02], |du|/|u|=1.507490489514e-11
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 7
 done on 32 x 32 square mesh (oper=lap, prob=ball, levs=4, mcoarse=4, m_J=2113, cells=4096):  |u-uexact|_h = 1.292e-03
     0 FASCD ncp function norm 3.989265817522e+00
-    1 FASCD ncp function norm 2.193483181249e-02 [ratio 5.498463e-03], |du|/|u|=4.475435213450e-01
+    1 FASCD ncp function norm 2.193483181250e-02 [ratio 5.498463e-03], |du|/|u|=4.475435213450e-01
     2 FASCD ncp function norm 1.086540657935e-03 [ratio 4.953494e-02], |du|/|u|=1.311829168084e-02
-    3 FASCD ncp function norm 1.409038442552e-05 [ratio 1.296812e-02], |du|/|u|=1.898980813545e-04
-    4 FASCD ncp function norm 9.326832070957e-07 [ratio 6.619289e-02], |du|/|u|=1.006482610324e-05
-    5 FASCD ncp function norm 5.623882432771e-08 [ratio 6.029788e-02], |du|/|u|=7.401171398773e-07
-    6 FASCD ncp function norm 3.300398310264e-09 [ratio 5.868541e-02], |du|/|u|=5.000773409537e-08
-    7 FASCD ncp function norm 1.697479935638e-10 [ratio 5.143258e-02], |du|/|u|=3.117132689792e-09
-    8 FASCD ncp function norm 1.062978830586e-11 [ratio 6.262100e-02], |du|/|u|=1.730211948753e-10
-    9 FASCD ncp function norm 5.346018429697e-13 [ratio 5.029280e-02], |du|/|u|=9.082231426656e-12
+    3 FASCD ncp function norm 1.409038442508e-05 [ratio 1.296812e-02], |du|/|u|=1.898980813545e-04
+    4 FASCD ncp function norm 9.326832068440e-07 [ratio 6.619289e-02], |du|/|u|=1.006482610328e-05
+    5 FASCD ncp function norm 5.623882431401e-08 [ratio 6.029788e-02], |du|/|u|=7.401171398642e-07
+    6 FASCD ncp function norm 3.300398476821e-09 [ratio 5.868541e-02], |du|/|u|=5.000773409402e-08
+    7 FASCD ncp function norm 1.697479105150e-10 [ratio 5.143255e-02], |du|/|u|=3.117132661061e-09
+    8 FASCD ncp function norm 1.062962183276e-11 [ratio 6.262005e-02], |du|/|u|=1.730212215901e-10
+    9 FASCD ncp function norm 5.346032356444e-13 [ratio 5.029372e-02], |du|/|u|=9.082252340965e-12
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 9
 done on 64 x 64 square mesh (oper=lap, prob=ball, levs=5, mcoarse=4, m_J=8321, cells=16384):  |u-uexact|_h = 4.349e-04
     0 FASCD ncp function norm 5.149110069199e+00
     1 FASCD ncp function norm 1.176337562558e-02 [ratio 2.284545e-03], |du|/|u|=4.481597246182e-01
     2 FASCD ncp function norm 2.816423514542e-03 [ratio 2.394231e-01], |du|/|u|=1.341298646164e-02
-    3 FASCD ncp function norm 1.762584810437e-04 [ratio 6.258238e-02], |du|/|u|=7.802944975082e-04
-    4 FASCD ncp function norm 1.117215404116e-05 [ratio 6.338506e-02], |du|/|u|=7.210543445889e-05
-    5 FASCD ncp function norm 1.164058097729e-06 [ratio 1.041928e-01], |du|/|u|=6.944932974875e-06
-    6 FASCD ncp function norm 1.205036417662e-07 [ratio 1.035203e-01], |du|/|u|=7.637876096233e-07
-    7 FASCD ncp function norm 1.356858925875e-08 [ratio 1.125990e-01], |du|/|u|=9.077716707822e-08
-    8 FASCD ncp function norm 1.428379359831e-09 [ratio 1.052710e-01], |du|/|u|=1.015548191863e-08
-    9 FASCD ncp function norm 1.491244154607e-10 [ratio 1.044011e-01], |du|/|u|=1.102955778736e-09
-   10 FASCD ncp function norm 1.593089611962e-11 [ratio 1.068296e-01], |du|/|u|=1.206235444136e-10
-   11 FASCD ncp function norm 1.684272178651e-12 [ratio 1.057236e-01], |du|/|u|=1.298358007382e-11
+    3 FASCD ncp function norm 1.762584810433e-04 [ratio 6.258238e-02], |du|/|u|=7.802944975081e-04
+    4 FASCD ncp function norm 1.117215404110e-05 [ratio 6.338506e-02], |du|/|u|=7.210543445889e-05
+    5 FASCD ncp function norm 1.164058097774e-06 [ratio 1.041928e-01], |du|/|u|=6.944932974840e-06
+    6 FASCD ncp function norm 1.205036418108e-07 [ratio 1.035203e-01], |du|/|u|=7.637876096370e-07
+    7 FASCD ncp function norm 1.356858904992e-08 [ratio 1.125990e-01], |du|/|u|=9.077716708711e-08
+    8 FASCD ncp function norm 1.428379313748e-09 [ratio 1.052710e-01], |du|/|u|=1.015548197906e-08
+    9 FASCD ncp function norm 1.491242732653e-10 [ratio 1.044010e-01], |du|/|u|=1.102955752833e-09
+   10 FASCD ncp function norm 1.593078932918e-11 [ratio 1.068289e-01], |du|/|u|=1.206235516608e-10
+   11 FASCD ncp function norm 1.683050131619e-12 [ratio 1.056476e-01], |du|/|u|=1.298355710188e-11
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 11
 done on 128 x 128 square mesh (oper=lap, prob=ball, levs=6, mcoarse=4, m_J=33025, cells=65536):  |u-uexact|_h = 1.237e-04
     0 FASCD ncp function norm 7.072193804686e+00
-    1 FASCD ncp function norm 8.126101587931e-03 [ratio 1.149021e-03], |du|/|u|=4.497760410888e-01
+    1 FASCD ncp function norm 8.126101587932e-03 [ratio 1.149021e-03], |du|/|u|=4.497760410888e-01
     2 FASCD ncp function norm 2.072150659823e-03 [ratio 2.549994e-01], |du|/|u|=1.205674288991e-02
-    3 FASCD ncp function norm 1.596605464984e-04 [ratio 7.705065e-02], |du|/|u|=7.456626255888e-04
-    4 FASCD ncp function norm 9.992356676117e-06 [ratio 6.258501e-02], |du|/|u|=6.953544731927e-05
-    5 FASCD ncp function norm 1.295419365990e-06 [ratio 1.296410e-01], |du|/|u|=8.551306367867e-06
-    6 FASCD ncp function norm 1.646952586285e-07 [ratio 1.271366e-01], |du|/|u|=1.117074218078e-06
-    7 FASCD ncp function norm 2.188274500669e-08 [ratio 1.328681e-01], |du|/|u|=1.489422064330e-07
-    8 FASCD ncp function norm 2.801131401932e-09 [ratio 1.280064e-01], |du|/|u|=1.967022790038e-08
-    9 FASCD ncp function norm 3.676174202690e-10 [ratio 1.312389e-01], |du|/|u|=2.629199325541e-09
-   10 FASCD ncp function norm 4.736971318902e-11 [ratio 1.288560e-01], |du|/|u|=3.435226627226e-10
-   11 FASCD ncp function norm 6.220561346250e-12 [ratio 1.313194e-01], |du|/|u|=4.495820933095e-11
+    3 FASCD ncp function norm 1.596605464972e-04 [ratio 7.705065e-02], |du|/|u|=7.456626255889e-04
+    4 FASCD ncp function norm 9.992356675958e-06 [ratio 6.258501e-02], |du|/|u|=6.953544731927e-05
+    5 FASCD ncp function norm 1.295419366035e-06 [ratio 1.296410e-01], |du|/|u|=8.551306367819e-06
+    6 FASCD ncp function norm 1.646952584269e-07 [ratio 1.271366e-01], |du|/|u|=1.117074218088e-06
+    7 FASCD ncp function norm 2.188274473335e-08 [ratio 1.328681e-01], |du|/|u|=1.489422064505e-07
+    8 FASCD ncp function norm 2.801131124716e-09 [ratio 1.280064e-01], |du|/|u|=1.967022788613e-08
+    9 FASCD ncp function norm 3.676175010126e-10 [ratio 1.312389e-01], |du|/|u|=2.629199321257e-09
+   10 FASCD ncp function norm 4.736955769283e-11 [ratio 1.288556e-01], |du|/|u|=3.435226252905e-10
+   11 FASCD ncp function norm 6.219113662073e-12 [ratio 1.312892e-01], |du|/|u|=4.495822394435e-11
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 11
 done on 256 x 256 square mesh (oper=lap, prob=ball, levs=7, mcoarse=4, m_J=131585, cells=262144):  |u-uexact|_h = 2.155e-05
     0 FASCD ncp function norm 9.929467647243e+00
     1 FASCD ncp function norm 1.044426350440e-02 [ratio 1.051845e-03], |du|/|u|=4.500999892716e-01
-    2 FASCD ncp function norm 1.226993166976e-03 [ratio 1.174801e-01], |du|/|u|=1.208289062667e-02
-    3 FASCD ncp function norm 2.402029995955e-04 [ratio 1.957656e-01], |du|/|u|=6.620349472226e-04
-    4 FASCD ncp function norm 1.335457590784e-05 [ratio 5.559704e-02], |du|/|u|=6.698389013659e-05
-    5 FASCD ncp function norm 1.407586775439e-06 [ratio 1.054011e-01], |du|/|u|=8.186501517342e-06
-    6 FASCD ncp function norm 2.480884181365e-07 [ratio 1.762509e-01], |du|/|u|=1.336372545326e-06
-    7 FASCD ncp function norm 4.161967110660e-08 [ratio 1.677614e-01], |du|/|u|=2.350947319735e-07
-    8 FASCD ncp function norm 7.061157018246e-09 [ratio 1.696591e-01], |du|/|u|=4.023536758320e-08
-    9 FASCD ncp function norm 1.236434450667e-09 [ratio 1.751037e-01], |du|/|u|=7.159344850282e-09
-   10 FASCD ncp function norm 2.158400943959e-10 [ratio 1.745665e-01], |du|/|u|=1.282699146969e-09
-   11 FASCD ncp function norm 3.758878053991e-11 [ratio 1.741511e-01], |du|/|u|=2.262952727792e-10
-   12 FASCD ncp function norm 6.637630894213e-12 [ratio 1.765854e-01], |du|/|u|=3.981924934159e-11
+    2 FASCD ncp function norm 1.226993166979e-03 [ratio 1.174801e-01], |du|/|u|=1.208289062667e-02
+    3 FASCD ncp function norm 2.402029995977e-04 [ratio 1.957656e-01], |du|/|u|=6.620349472227e-04
+    4 FASCD ncp function norm 1.335457590768e-05 [ratio 5.559704e-02], |du|/|u|=6.698389013649e-05
+    5 FASCD ncp function norm 1.407586775119e-06 [ratio 1.054011e-01], |du|/|u|=8.186501517290e-06
+    6 FASCD ncp function norm 2.480884177831e-07 [ratio 1.762509e-01], |du|/|u|=1.336372545288e-06
+    7 FASCD ncp function norm 4.161967092420e-08 [ratio 1.677614e-01], |du|/|u|=2.350947319721e-07
+    8 FASCD ncp function norm 7.061156854907e-09 [ratio 1.696591e-01], |du|/|u|=4.023536758682e-08
+    9 FASCD ncp function norm 1.236434206474e-09 [ratio 1.751036e-01], |du|/|u|=7.159344872104e-09
+   10 FASCD ncp function norm 2.158397396646e-10 [ratio 1.745663e-01], |du|/|u|=1.282699137171e-09
+   11 FASCD ncp function norm 3.758721239868e-11 [ratio 1.741441e-01], |du|/|u|=2.262952986976e-10
+   12 FASCD ncp function norm 6.630087376663e-12 [ratio 1.763921e-01], |du|/|u|=3.981924124893e-11
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 12
 done on 512 x 512 square mesh (oper=lap, prob=ball, levs=8, mcoarse=4, m_J=525313, cells=1048576):  |u-uexact|_h = 5.822e-06
     0 FASCD ncp function norm 1.401524016881e+01
     1 FASCD ncp function norm 1.333434120963e-02 [ratio 9.514172e-04], |du|/|u|=4.505742271313e-01
-    2 FASCD ncp function norm 4.895327622668e-04 [ratio 3.671218e-02], |du|/|u|=1.179134723719e-02
-    3 FASCD ncp function norm 1.621720984836e-04 [ratio 3.312794e-01], |du|/|u|=5.662464840927e-04
-    4 FASCD ncp function norm 1.737919969458e-05 [ratio 1.071652e-01], |du|/|u|=6.537771943445e-05
-    5 FASCD ncp function norm 2.349802773420e-06 [ratio 1.352078e-01], |du|/|u|=9.635374965189e-06
-    6 FASCD ncp function norm 3.737319082937e-07 [ratio 1.590482e-01], |du|/|u|=1.693281741913e-06
-    7 FASCD ncp function norm 7.885814684164e-08 [ratio 2.110019e-01], |du|/|u|=3.333389799645e-07
-    8 FASCD ncp function norm 1.597051481749e-08 [ratio 2.025221e-01], |du|/|u|=6.668517909960e-08
-    9 FASCD ncp function norm 3.188005969150e-09 [ratio 1.996182e-01], |du|/|u|=1.343644931981e-08
-   10 FASCD ncp function norm 6.495142415122e-10 [ratio 2.037368e-01], |du|/|u|=2.693694110264e-09
-   11 FASCD ncp function norm 1.304324843058e-10 [ratio 2.008154e-01], |du|/|u|=5.598840574489e-10
-   12 FASCD ncp function norm 2.642864790146e-11 [ratio 2.026232e-01], |du|/|u|=1.172545348435e-10
-   13 FASCD ncp function norm 5.844978144896e-12 [ratio 2.211607e-01], |du|/|u|=2.418896253329e-11
+    2 FASCD ncp function norm 4.895327622776e-04 [ratio 3.671218e-02], |du|/|u|=1.179134723719e-02
+    3 FASCD ncp function norm 1.621720984839e-04 [ratio 3.312794e-01], |du|/|u|=5.662464840927e-04
+    4 FASCD ncp function norm 1.737919969658e-05 [ratio 1.071652e-01], |du|/|u|=6.537771943443e-05
+    5 FASCD ncp function norm 2.349802773307e-06 [ratio 1.352078e-01], |du|/|u|=9.635374965128e-06
+    6 FASCD ncp function norm 3.737319080978e-07 [ratio 1.590482e-01], |du|/|u|=1.693281741829e-06
+    7 FASCD ncp function norm 7.885814644305e-08 [ratio 2.110019e-01], |du|/|u|=3.333389798986e-07
+    8 FASCD ncp function norm 1.597051488314e-08 [ratio 2.025221e-01], |du|/|u|=6.668517909418e-08
+    9 FASCD ncp function norm 3.188005614500e-09 [ratio 1.996182e-01], |du|/|u|=1.343644931335e-08
+   10 FASCD ncp function norm 6.495137919308e-10 [ratio 2.037367e-01], |du|/|u|=2.693694079073e-09
+   11 FASCD ncp function norm 1.304304844501e-10 [ratio 2.008125e-01], |du|/|u|=5.598840864618e-10
+   12 FASCD ncp function norm 2.642012183733e-11 [ratio 2.025609e-01], |du|/|u|=1.172545288283e-10
+   13 FASCD ncp function norm 5.806872030903e-12 [ratio 2.197898e-01], |du|/|u|=2.418890265698e-11
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 13
 done on 1024 x 1024 square mesh (oper=lap, prob=ball, levs=9, mcoarse=4, m_J=2099201, cells=4194304):  |u-uexact|_h = 1.531e-06
     0 FASCD ncp function norm 1.981030784949e+01
-    1 FASCD ncp function norm 1.920316818249e-02 [ratio 9.693523e-04], |du|/|u|=4.499111280969e-01
-    2 FASCD ncp function norm 1.656053601548e-04 [ratio 8.623856e-03], |du|/|u|=1.278616892121e-02
-    3 FASCD ncp function norm 1.125635843964e-04 [ratio 6.797098e-01], |du|/|u|=6.133048951773e-04
-    4 FASCD ncp function norm 1.960950889666e-05 [ratio 1.742083e-01], |du|/|u|=7.249799230384e-05
-    5 FASCD ncp function norm 2.762625373547e-06 [ratio 1.408819e-01], |du|/|u|=1.047982783514e-05
-    6 FASCD ncp function norm 5.505482712694e-07 [ratio 1.992844e-01], |du|/|u|=2.046519959943e-06
-    7 FASCD ncp function norm 1.174928472047e-07 [ratio 2.134106e-01], |du|/|u|=4.265195088317e-07
-    8 FASCD ncp function norm 2.789024702037e-08 [ratio 2.373783e-01], |du|/|u|=9.302603194736e-08
-    9 FASCD ncp function norm 6.456621134117e-09 [ratio 2.315010e-01], |du|/|u|=2.073396986460e-08
-   10 FASCD ncp function norm 1.515751875941e-09 [ratio 2.347593e-01], |du|/|u|=4.656576660623e-09
-   11 FASCD ncp function norm 3.550467583168e-10 [ratio 2.342380e-01], |du|/|u|=1.063079223060e-09
-   12 FASCD ncp function norm 8.250707039842e-11 [ratio 2.323837e-01], |du|/|u|=2.482516132949e-10
-   13 FASCD ncp function norm 1.881912166574e-11 [ratio 2.280910e-01], |du|/|u|=5.828023320129e-11
+    1 FASCD ncp function norm 1.920316818252e-02 [ratio 9.693523e-04], |du|/|u|=4.499111280969e-01
+    2 FASCD ncp function norm 1.656053601629e-04 [ratio 8.623856e-03], |du|/|u|=1.278616892121e-02
+    3 FASCD ncp function norm 1.125635844057e-04 [ratio 6.797098e-01], |du|/|u|=6.133048951777e-04
+    4 FASCD ncp function norm 1.960950889838e-05 [ratio 1.742083e-01], |du|/|u|=7.249799230415e-05
+    5 FASCD ncp function norm 2.762625374988e-06 [ratio 1.408819e-01], |du|/|u|=1.047982783479e-05
+    6 FASCD ncp function norm 5.505482712094e-07 [ratio 1.992844e-01], |du|/|u|=2.046519959905e-06
+    7 FASCD ncp function norm 1.174928471851e-07 [ratio 2.134106e-01], |du|/|u|=4.265195087724e-07
+    8 FASCD ncp function norm 2.789024649154e-08 [ratio 2.373783e-01], |du|/|u|=9.302603188886e-08
+    9 FASCD ncp function norm 6.456620789001e-09 [ratio 2.315010e-01], |du|/|u|=2.073396982693e-08
+   10 FASCD ncp function norm 1.515751043225e-09 [ratio 2.347592e-01], |du|/|u|=4.656576675351e-09
+   11 FASCD ncp function norm 3.550431855272e-10 [ratio 2.342358e-01], |du|/|u|=1.063079211938e-09
+   12 FASCD ncp function norm 8.249348286872e-11 [ratio 2.323477e-01], |du|/|u|=2.482516072973e-10
+   13 FASCD ncp function norm 1.876069712594e-11 [ratio 2.274204e-01], |du|/|u|=5.828024132502e-11
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 13
 done on 2048 x 2048 square mesh (oper=lap, prob=ball, levs=10, mcoarse=4, m_J=8392705, cells=16777216):  |u-uexact|_h = 3.662e-07
+    0 FASCD ncp function norm 2.801197654214e+01
+    1 FASCD ncp function norm 2.718942759140e-02 [ratio 9.706358e-04], |du|/|u|=4.497421783141e-01
+    2 FASCD ncp function norm 9.420272891880e-05 [ratio 3.464682e-03], |du|/|u|=1.302218409014e-02
+    3 FASCD ncp function norm 4.313110908079e-05 [ratio 4.578541e-01], |du|/|u|=6.795212254935e-04
+    4 FASCD ncp function norm 1.727357797302e-05 [ratio 4.004900e-01], |du|/|u|=6.442961185725e-05
+    5 FASCD ncp function norm 2.503647311211e-06 [ratio 1.449409e-01], |du|/|u|=9.922151836873e-06
+    6 FASCD ncp function norm 5.089702378360e-07 [ratio 2.032915e-01], |du|/|u|=1.888531218375e-06
+    7 FASCD ncp function norm 1.288245811894e-07 [ratio 2.531083e-01], |du|/|u|=4.084204791081e-07
+    8 FASCD ncp function norm 3.522228846331e-08 [ratio 2.734128e-01], |du|/|u|=9.363001462577e-08
+    9 FASCD ncp function norm 8.305151530999e-09 [ratio 2.357925e-01], |du|/|u|=2.233208336382e-08
+   10 FASCD ncp function norm 2.155188790349e-09 [ratio 2.595002e-01], |du|/|u|=5.449686969742e-09
+   11 FASCD ncp function norm 5.634748984874e-10 [ratio 2.614504e-01], |du|/|u|=1.359833259533e-09
+   12 FASCD ncp function norm 1.432673534748e-10 [ratio 2.542569e-01], |du|/|u|=3.413797859714e-10
+   13 FASCD ncp function norm 3.697382738897e-11 [ratio 2.580757e-01], |du|/|u|=8.614665552538e-11
+   14 FASCD ncp function norm 1.004260356580e-11 [ratio 2.716138e-01], |du|/|u|=2.194424896476e-11
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 14
+done on 4096 x 4096 square mesh (oper=lap, prob=ball, levs=11, mcoarse=4, m_J=33562625, cells=67108864):  |u-uexact|_h = 9.319e-08
 
 ******** PROB=spiral, V-cycles, tight tolerance (over-solving) *******
     0 FASCD ncp function norm 1.250364911422e+01
@@ -124,267 +141,304 @@ FASCD solve converged due to CONVERGED_SINGLE_LEVEL iterations 1
 done on 4 x 4 square mesh (oper=lap, prob=spiral, levs=1, mcoarse=4, m_J=41, cells=64)
     0 FASCD ncp function norm 3.581030295829e+01
     1 FASCD ncp function norm 1.054766784642e+00 [ratio 2.945428e-02], |du|/|u|=3.598412285754e-01
-    2 FASCD ncp function norm 6.192151464768e-04 [ratio 5.870636e-04], |du|/|u|=2.220233488570e-02
-    3 FASCD ncp function norm 9.918518460070e-10 [ratio 1.601789e-06], |du|/|u|=5.892625933972e-06
-    4 FASCD ncp function norm 1.402789773722e-14 [ratio 1.414314e-05], |du|/|u|=2.460836061046e-11
+    2 FASCD ncp function norm 6.192151464765e-04 [ratio 5.870636e-04], |du|/|u|=2.220233488570e-02
+    3 FASCD ncp function norm 9.918517372657e-10 [ratio 1.601789e-06], |du|/|u|=5.892625933978e-06
+    4 FASCD ncp function norm 1.356576646565e-14 [ratio 1.367721e-05], |du|/|u|=2.460834101495e-11
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 4
 done on 8 x 8 square mesh (oper=lap, prob=spiral, levs=2, mcoarse=4, m_J=145, cells=256)
     0 FASCD ncp function norm 5.195274377477e+01
     1 FASCD ncp function norm 4.806055717299e+00 [ratio 9.250822e-02], |du|/|u|=4.041583120167e-01
     2 FASCD ncp function norm 5.323146609003e-02 [ratio 1.107592e-02], |du|/|u|=5.321539828742e-02
-    3 FASCD ncp function norm 5.120017975428e-05 [ratio 9.618405e-04], |du|/|u|=4.903779144897e-04
-    4 FASCD ncp function norm 2.931236431232e-08 [ratio 5.725051e-04], |du|/|u|=2.318064415814e-06
-    5 FASCD ncp function norm 2.683865356901e-11 [ratio 9.156086e-04], |du|/|u|=1.590126760205e-09
+    3 FASCD ncp function norm 5.120017975488e-05 [ratio 9.618405e-04], |du|/|u|=4.903779144897e-04
+    4 FASCD ncp function norm 2.931236423465e-08 [ratio 5.725051e-04], |du|/|u|=2.318064415812e-06
+    5 FASCD ncp function norm 2.683842615342e-11 [ratio 9.156009e-04], |du|/|u|=1.590126756283e-09
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
 done on 16 x 16 square mesh (oper=lap, prob=spiral, levs=3, mcoarse=4, m_J=545, cells=1024)
     0 FASCD ncp function norm 7.324445644144e+01
     1 FASCD ncp function norm 5.509427414457e+00 [ratio 7.521972e-02], |du|/|u|=4.299741793429e-01
     2 FASCD ncp function norm 1.898140515768e-01 [ratio 3.445259e-02], |du|/|u|=4.197015250587e-02
-    3 FASCD ncp function norm 2.353986596130e-04 [ratio 1.240154e-03], |du|/|u|=1.422443800420e-03
-    4 FASCD ncp function norm 1.994694458751e-06 [ratio 8.473687e-03], |du|/|u|=1.747508190082e-05
-    5 FASCD ncp function norm 3.138752422583e-08 [ratio 1.573550e-02], |du|/|u|=1.111360457784e-07
-    6 FASCD ncp function norm 4.415477176953e-10 [ratio 1.406762e-02], |du|/|u|=1.487910766025e-09
-    7 FASCD ncp function norm 8.422185430553e-12 [ratio 1.907424e-02], |du|/|u|=3.307136699699e-11
+    3 FASCD ncp function norm 2.353986596125e-04 [ratio 1.240154e-03], |du|/|u|=1.422443800420e-03
+    4 FASCD ncp function norm 1.994694458793e-06 [ratio 8.473687e-03], |du|/|u|=1.747508190082e-05
+    5 FASCD ncp function norm 3.138752410552e-08 [ratio 1.573550e-02], |du|/|u|=1.111360457845e-07
+    6 FASCD ncp function norm 4.415480800189e-10 [ratio 1.406763e-02], |du|/|u|=1.487910758360e-09
+    7 FASCD ncp function norm 8.422103502963e-12 [ratio 1.907403e-02], |du|/|u|=3.307136877056e-11
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 7
 done on 32 x 32 square mesh (oper=lap, prob=spiral, levs=4, mcoarse=4, m_J=2113, cells=4096)
     0 FASCD ncp function norm 1.069563682455e+02
     1 FASCD ncp function norm 6.655335803246e+00 [ratio 6.222477e-02], |du|/|u|=4.446734471326e-01
     2 FASCD ncp function norm 6.210954116553e-01 [ratio 9.332293e-02], |du|/|u|=3.249643876880e-02
-    3 FASCD ncp function norm 2.235626384742e-03 [ratio 3.599489e-03], |du|/|u|=2.808807760584e-03
-    4 FASCD ncp function norm 2.406496332072e-04 [ratio 1.076430e-01], |du|/|u|=1.118529611817e-04
-    5 FASCD ncp function norm 2.505028378768e-06 [ratio 1.040944e-02], |du|/|u|=4.997242041022e-06
-    6 FASCD ncp function norm 9.593706752585e-08 [ratio 3.829780e-02], |du|/|u|=2.013495515365e-07
-    7 FASCD ncp function norm 5.503165247299e-09 [ratio 5.736224e-02], |du|/|u|=9.513832792273e-09
-    8 FASCD ncp function norm 3.630427324088e-10 [ratio 6.596980e-02], |du|/|u|=3.982789605049e-10
-    9 FASCD ncp function norm 1.703027697406e-11 [ratio 4.690984e-02], |du|/|u|=2.356226688148e-11
+    3 FASCD ncp function norm 2.235626384743e-03 [ratio 3.599489e-03], |du|/|u|=2.808807760584e-03
+    4 FASCD ncp function norm 2.406496332085e-04 [ratio 1.076430e-01], |du|/|u|=1.118529611817e-04
+    5 FASCD ncp function norm 2.505028378526e-06 [ratio 1.040944e-02], |du|/|u|=4.997242041029e-06
+    6 FASCD ncp function norm 9.593706805305e-08 [ratio 3.829780e-02], |du|/|u|=2.013495515334e-07
+    7 FASCD ncp function norm 5.503165594617e-09 [ratio 5.736224e-02], |du|/|u|=9.513832794635e-09
+    8 FASCD ncp function norm 3.630430957252e-10 [ratio 6.596987e-02], |du|/|u|=3.982789498068e-10
+    9 FASCD ncp function norm 1.703081752902e-11 [ratio 4.691128e-02], |du|/|u|=2.356228705329e-11
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 9
 done on 64 x 64 square mesh (oper=lap, prob=spiral, levs=5, mcoarse=4, m_J=8321, cells=16384)
     0 FASCD ncp function norm 1.517759488345e+02
     1 FASCD ncp function norm 8.751516406589e+00 [ratio 5.766076e-02], |du|/|u|=4.515849404051e-01
-    2 FASCD ncp function norm 8.310507087425e-01 [ratio 9.496077e-02], |du|/|u|=2.778373461026e-02
-    3 FASCD ncp function norm 1.600112330552e-02 [ratio 1.925409e-02], |du|/|u|=2.721680121517e-03
-    4 FASCD ncp function norm 2.728244734888e-04 [ratio 1.705033e-02], |du|/|u|=1.644788181797e-04
-    5 FASCD ncp function norm 1.650450996253e-05 [ratio 6.049498e-02], |du|/|u|=1.376810387624e-05
-    6 FASCD ncp function norm 1.325707004130e-06 [ratio 8.032392e-02], |du|/|u|=1.203997553371e-06
-    7 FASCD ncp function norm 1.015042807497e-07 [ratio 7.656615e-02], |du|/|u|=8.703246748601e-08
-    8 FASCD ncp function norm 9.716870006349e-09 [ratio 9.572867e-02], |du|/|u|=7.961203874422e-09
-    9 FASCD ncp function norm 6.943443204934e-10 [ratio 7.145761e-02], |du|/|u|=6.251788972313e-10
-   10 FASCD ncp function norm 6.241350458924e-11 [ratio 8.988841e-02], |du|/|u|=5.621133921225e-11
+    2 FASCD ncp function norm 8.310507087426e-01 [ratio 9.496077e-02], |du|/|u|=2.778373461026e-02
+    3 FASCD ncp function norm 1.600112330553e-02 [ratio 1.925409e-02], |du|/|u|=2.721680121516e-03
+    4 FASCD ncp function norm 2.728244734885e-04 [ratio 1.705033e-02], |du|/|u|=1.644788181794e-04
+    5 FASCD ncp function norm 1.650450996271e-05 [ratio 6.049498e-02], |du|/|u|=1.376810387634e-05
+    6 FASCD ncp function norm 1.325707005267e-06 [ratio 8.032392e-02], |du|/|u|=1.203997553375e-06
+    7 FASCD ncp function norm 1.015042818229e-07 [ratio 7.656615e-02], |du|/|u|=8.703246748184e-08
+    8 FASCD ncp function norm 9.716869968193e-09 [ratio 9.572867e-02], |du|/|u|=7.961203870075e-09
+    9 FASCD ncp function norm 6.943444962812e-10 [ratio 7.145763e-02], |du|/|u|=6.251788986957e-10
+   10 FASCD ncp function norm 6.241169671924e-11 [ratio 8.988578e-02], |du|/|u|=5.621135918939e-11
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 10
 done on 128 x 128 square mesh (oper=lap, prob=spiral, levs=6, mcoarse=4, m_J=33025, cells=65536)
     0 FASCD ncp function norm 2.119960943342e+02
     1 FASCD ncp function norm 1.141870907889e+01 [ratio 5.386283e-02], |du|/|u|=4.554588332023e-01
     2 FASCD ncp function norm 9.339867312051e-01 [ratio 8.179442e-02], |du|/|u|=2.449103746047e-02
-    3 FASCD ncp function norm 8.695220229812e-02 [ratio 9.309790e-02], |du|/|u|=2.271981661912e-03
-    4 FASCD ncp function norm 1.102868473483e-03 [ratio 1.268362e-02], |du|/|u|=2.384259495727e-04
-    5 FASCD ncp function norm 5.944837173436e-05 [ratio 5.390341e-02], |du|/|u|=2.423569856411e-05
-    6 FASCD ncp function norm 4.276935278468e-06 [ratio 7.194369e-02], |du|/|u|=3.014068149377e-06
-    7 FASCD ncp function norm 4.933986571406e-07 [ratio 1.153627e-01], |du|/|u|=3.406359804728e-07
-    8 FASCD ncp function norm 4.696872096605e-08 [ratio 9.519426e-02], |du|/|u|=3.485611599649e-08
-    9 FASCD ncp function norm 4.679654026486e-09 [ratio 9.963341e-02], |du|/|u|=3.576606744131e-09
-   10 FASCD ncp function norm 5.290702629463e-10 [ratio 1.130576e-01], |du|/|u|=4.119841634779e-10
-   11 FASCD ncp function norm 6.428773145154e-11 [ratio 1.215108e-01], |du|/|u|=4.702901318308e-11
+    3 FASCD ncp function norm 8.695220229815e-02 [ratio 9.309790e-02], |du|/|u|=2.271981661912e-03
+    4 FASCD ncp function norm 1.102868473489e-03 [ratio 1.268362e-02], |du|/|u|=2.384259495726e-04
+    5 FASCD ncp function norm 5.944837173443e-05 [ratio 5.390341e-02], |du|/|u|=2.423569856404e-05
+    6 FASCD ncp function norm 4.276935277712e-06 [ratio 7.194369e-02], |du|/|u|=3.014068149380e-06
+    7 FASCD ncp function norm 4.933986566716e-07 [ratio 1.153627e-01], |du|/|u|=3.406359804887e-07
+    8 FASCD ncp function norm 4.696872045241e-08 [ratio 9.519426e-02], |du|/|u|=3.485611599713e-08
+    9 FASCD ncp function norm 4.679653777861e-09 [ratio 9.963341e-02], |du|/|u|=3.576606746850e-09
+   10 FASCD ncp function norm 5.290703998109e-10 [ratio 1.130576e-01], |du|/|u|=4.119841621048e-10
+   11 FASCD ncp function norm 6.428954633272e-11 [ratio 1.215142e-01], |du|/|u|=4.702901207301e-11
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 11
 done on 256 x 256 square mesh (oper=lap, prob=spiral, levs=7, mcoarse=4, m_J=131585, cells=262144)
     0 FASCD ncp function norm 3.016400256848e+02
     1 FASCD ncp function norm 1.435628420501e+01 [ratio 4.759410e-02], |du|/|u|=4.576145611470e-01
     2 FASCD ncp function norm 8.467357056749e-01 [ratio 5.898014e-02], |du|/|u|=2.166490571172e-02
-    3 FASCD ncp function norm 9.294437359406e-02 [ratio 1.097679e-01], |du|/|u|=1.763535086938e-03
-    4 FASCD ncp function norm 3.275049164381e-03 [ratio 3.523666e-02], |du|/|u|=2.375413339836e-04
-    5 FASCD ncp function norm 2.329646786180e-04 [ratio 7.113319e-02], |du|/|u|=3.369206322086e-05
-    6 FASCD ncp function norm 2.151841457286e-05 [ratio 9.236771e-02], |du|/|u|=5.279614074675e-06
-    7 FASCD ncp function norm 1.920287997052e-06 [ratio 8.923929e-02], |du|/|u|=8.421162390931e-07
-    8 FASCD ncp function norm 2.023925159758e-07 [ratio 1.053970e-01], |du|/|u|=1.239717237311e-07
-    9 FASCD ncp function norm 3.171988084760e-08 [ratio 1.567246e-01], |du|/|u|=1.894806721341e-08
-   10 FASCD ncp function norm 5.028738499970e-09 [ratio 1.585359e-01], |du|/|u|=2.928552856424e-09
-   11 FASCD ncp function norm 7.922540897733e-10 [ratio 1.575453e-01], |du|/|u|=4.580729966965e-10
-   12 FASCD ncp function norm 1.293845615060e-10 [ratio 1.633120e-01], |du|/|u|=7.635226408244e-11
+    3 FASCD ncp function norm 9.294437359407e-02 [ratio 1.097679e-01], |du|/|u|=1.763535086938e-03
+    4 FASCD ncp function norm 3.275049164385e-03 [ratio 3.523666e-02], |du|/|u|=2.375413339835e-04
+    5 FASCD ncp function norm 2.329646786183e-04 [ratio 7.113319e-02], |du|/|u|=3.369206322068e-05
+    6 FASCD ncp function norm 2.151841457595e-05 [ratio 9.236771e-02], |du|/|u|=5.279614074674e-06
+    7 FASCD ncp function norm 1.920287996661e-06 [ratio 8.923929e-02], |du|/|u|=8.421162390775e-07
+    8 FASCD ncp function norm 2.023925155302e-07 [ratio 1.053970e-01], |du|/|u|=1.239717237413e-07
+    9 FASCD ncp function norm 3.171988009649e-08 [ratio 1.567246e-01], |du|/|u|=1.894806721852e-08
+   10 FASCD ncp function norm 5.028736235040e-09 [ratio 1.585358e-01], |du|/|u|=2.928552892279e-09
+   11 FASCD ncp function norm 7.922536582945e-10 [ratio 1.575453e-01], |du|/|u|=4.580729690748e-10
+   12 FASCD ncp function norm 1.293809842620e-10 [ratio 1.633075e-01], |du|/|u|=7.635220257386e-11
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 12
 done on 512 x 512 square mesh (oper=lap, prob=spiral, levs=8, mcoarse=4, m_J=525313, cells=1048576)
     0 FASCD ncp function norm 4.275614401535e+02
     1 FASCD ncp function norm 1.830380760815e+01 [ratio 4.280977e-02], |du|/|u|=4.585525998992e-01
-    2 FASCD ncp function norm 9.796119183463e-01 [ratio 5.351957e-02], |du|/|u|=2.010283671008e-02
-    3 FASCD ncp function norm 9.232026908456e-02 [ratio 9.424168e-02], |du|/|u|=1.454571926438e-03
-    4 FASCD ncp function norm 4.644779786423e-03 [ratio 5.031159e-02], |du|/|u|=2.067273213577e-04
-    5 FASCD ncp function norm 5.600506694744e-04 [ratio 1.205764e-01], |du|/|u|=3.467039363585e-05
-    6 FASCD ncp function norm 6.612607801566e-05 [ratio 1.180716e-01], |du|/|u|=6.453195847689e-06
-    7 FASCD ncp function norm 8.367221401416e-06 [ratio 1.265344e-01], |du|/|u|=1.262130904078e-06
-    8 FASCD ncp function norm 9.340347178116e-07 [ratio 1.116302e-01], |du|/|u|=2.438251982220e-07
-    9 FASCD ncp function norm 1.138872625892e-07 [ratio 1.219304e-01], |du|/|u|=4.621962427326e-08
-   10 FASCD ncp function norm 1.662955311583e-08 [ratio 1.460177e-01], |du|/|u|=8.566380484103e-09
-   11 FASCD ncp function norm 2.914914215505e-09 [ratio 1.752852e-01], |du|/|u|=1.592330020183e-09
-   12 FASCD ncp function norm 5.725619680815e-10 [ratio 1.964250e-01], |du|/|u|=3.103741147053e-10
-   13 FASCD ncp function norm 1.178121259012e-10 [ratio 2.057631e-01], |du|/|u|=6.280579516627e-11
+    2 FASCD ncp function norm 9.796119183465e-01 [ratio 5.351957e-02], |du|/|u|=2.010283671008e-02
+    3 FASCD ncp function norm 9.232026908464e-02 [ratio 9.424168e-02], |du|/|u|=1.454571926438e-03
+    4 FASCD ncp function norm 4.644779786459e-03 [ratio 5.031159e-02], |du|/|u|=2.067273213570e-04
+    5 FASCD ncp function norm 5.600506694907e-04 [ratio 1.205764e-01], |du|/|u|=3.467039363532e-05
+    6 FASCD ncp function norm 6.612607801953e-05 [ratio 1.180716e-01], |du|/|u|=6.453195847697e-06
+    7 FASCD ncp function norm 8.367221405110e-06 [ratio 1.265344e-01], |du|/|u|=1.262130904089e-06
+    8 FASCD ncp function norm 9.340347159537e-07 [ratio 1.116302e-01], |du|/|u|=2.438251982290e-07
+    9 FASCD ncp function norm 1.138872620131e-07 [ratio 1.219304e-01], |du|/|u|=4.621962427989e-08
+   10 FASCD ncp function norm 1.662955246888e-08 [ratio 1.460177e-01], |du|/|u|=8.566380482386e-09
+   11 FASCD ncp function norm 2.914911567545e-09 [ratio 1.752850e-01], |du|/|u|=1.592330047643e-09
+   12 FASCD ncp function norm 5.725535046327e-10 [ratio 1.964223e-01], |du|/|u|=3.103743540847e-10
+   13 FASCD ncp function norm 1.177739303183e-10 [ratio 2.056994e-01], |du|/|u|=6.280564166483e-11
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 13
 done on 1024 x 1024 square mesh (oper=lap, prob=spiral, levs=9, mcoarse=4, m_J=2099201, cells=4194304)
     0 FASCD ncp function norm 6.031903763444e+02
     1 FASCD ncp function norm 2.030411102261e+01 [ratio 3.366120e-02], |du|/|u|=4.588149132016e-01
-    2 FASCD ncp function norm 9.395484294011e-01 [ratio 4.627380e-02], |du|/|u|=1.975547037754e-02
-    3 FASCD ncp function norm 1.019452928032e-01 [ratio 1.085046e-01], |du|/|u|=1.314806247222e-03
-    4 FASCD ncp function norm 1.019536115437e-02 [ratio 1.000082e-01], |du|/|u|=1.958992264266e-04
-    5 FASCD ncp function norm 8.736291580128e-04 [ratio 8.568889e-02], |du|/|u|=3.689820993590e-05
-    6 FASCD ncp function norm 1.479991634892e-04 [ratio 1.694073e-01], |du|/|u|=8.006207038526e-06
-    7 FASCD ncp function norm 2.273307330299e-05 [ratio 1.536027e-01], |du|/|u|=1.716522473981e-06
-    8 FASCD ncp function norm 3.531624895999e-06 [ratio 1.553518e-01], |du|/|u|=3.795371082077e-07
-    9 FASCD ncp function norm 5.833150321349e-07 [ratio 1.651690e-01], |du|/|u|=8.505382621978e-08
-   10 FASCD ncp function norm 9.200467358733e-08 [ratio 1.577272e-01], |du|/|u|=1.844400003533e-08
-   11 FASCD ncp function norm 1.583791614342e-08 [ratio 1.721425e-01], |du|/|u|=3.804151717616e-09
-   12 FASCD ncp function norm 3.000335561160e-09 [ratio 1.894400e-01], |du|/|u|=8.034749173593e-10
-   13 FASCD ncp function norm 6.175491525654e-10 [ratio 2.058267e-01], |du|/|u|=1.748224934928e-10
-   14 FASCD ncp function norm 1.317230366830e-10 [ratio 2.132997e-01], |du|/|u|=3.910732905057e-11
+    2 FASCD ncp function norm 9.395484294019e-01 [ratio 4.627380e-02], |du|/|u|=1.975547037754e-02
+    3 FASCD ncp function norm 1.019452928033e-01 [ratio 1.085046e-01], |du|/|u|=1.314806247222e-03
+    4 FASCD ncp function norm 1.019536115441e-02 [ratio 1.000082e-01], |du|/|u|=1.958992264258e-04
+    5 FASCD ncp function norm 8.736291580414e-04 [ratio 8.568889e-02], |du|/|u|=3.689820993460e-05
+    6 FASCD ncp function norm 1.479991635210e-04 [ratio 1.694073e-01], |du|/|u|=8.006207036756e-06
+    7 FASCD ncp function norm 2.273307330902e-05 [ratio 1.536027e-01], |du|/|u|=1.716522472209e-06
+    8 FASCD ncp function norm 3.531624897208e-06 [ratio 1.553518e-01], |du|/|u|=3.795371081774e-07
+    9 FASCD ncp function norm 5.833150491073e-07 [ratio 1.651690e-01], |du|/|u|=8.505382628901e-08
+   10 FASCD ncp function norm 9.200467288363e-08 [ratio 1.577272e-01], |du|/|u|=1.844400009672e-08
+   11 FASCD ncp function norm 1.583791056762e-08 [ratio 1.721425e-01], |du|/|u|=3.804151796982e-09
+   12 FASCD ncp function norm 3.000294370599e-09 [ratio 1.894375e-01], |du|/|u|=8.034750037436e-10
+   13 FASCD ncp function norm 6.173928200436e-10 [ratio 2.057774e-01], |du|/|u|=1.748225342753e-10
+   14 FASCD ncp function norm 1.310547032348e-10 [ratio 2.122712e-01], |du|/|u|=3.910742147975e-11
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 14
 done on 2048 x 2048 square mesh (oper=lap, prob=spiral, levs=10, mcoarse=4, m_J=8392705, cells=16777216)
+    0 FASCD ncp function norm 8.529374614123e+02
+    1 FASCD ncp function norm 2.198209391991e+01 [ratio 2.577222e-02], |du|/|u|=4.592268990472e-01
+    2 FASCD ncp function norm 8.558077233843e-01 [ratio 3.893204e-02], |du|/|u|=1.934128542857e-02
+    3 FASCD ncp function norm 8.936601761082e-02 [ratio 1.044230e-01], |du|/|u|=1.343256733584e-03
+    4 FASCD ncp function norm 1.421968833760e-02 [ratio 1.591174e-01], |du|/|u|=2.002564163750e-04
+    5 FASCD ncp function norm 1.261230282170e-03 [ratio 8.869606e-02], |du|/|u|=3.873037834540e-05
+    6 FASCD ncp function norm 3.221919536476e-04 [ratio 2.554585e-01], |du|/|u|=8.946129444213e-06
+    7 FASCD ncp function norm 6.417438612929e-05 [ratio 1.991806e-01], |du|/|u|=2.141931942580e-06
+    8 FASCD ncp function norm 1.719286988619e-05 [ratio 2.679086e-01], |du|/|u|=5.640028975771e-07
+    9 FASCD ncp function norm 4.981514346676e-06 [ratio 2.897430e-01], |du|/|u|=1.444454551396e-07
+   10 FASCD ncp function norm 1.711218884966e-06 [ratio 3.435138e-01], |du|/|u|=3.644096830559e-08
+   11 FASCD ncp function norm 6.611133376131e-07 [ratio 3.863406e-01], |du|/|u|=9.952228423249e-09
+   12 FASCD ncp function norm 2.120259495964e-07 [ratio 3.207104e-01], |du|/|u|=2.864998054644e-09
+   13 FASCD ncp function norm 7.543079901941e-08 [ratio 3.557621e-01], |du|/|u|=8.713444399407e-10
+   14 FASCD ncp function norm 2.855121682090e-08 [ratio 3.785087e-01], |du|/|u|=2.803368801892e-10
+   15 FASCD ncp function norm 1.034946778394e-08 [ratio 3.624878e-01], |du|/|u|=9.526653730713e-11
+   16 FASCD ncp function norm 3.934285473839e-09 [ratio 3.801437e-01], |du|/|u|=3.399355400627e-11
+   17 FASCD ncp function norm 1.454635511578e-09 [ratio 3.697331e-01], |du|/|u|=1.266468050340e-11
+   18 FASCD ncp function norm 5.472658274103e-10 [ratio 3.762220e-01], |du|/|u|=4.777108060896e-12
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 18
+done on 4096 x 4096 square mesh (oper=lap, prob=spiral, levs=11, mcoarse=4, m_J=33562625, cells=67108864)
 
-******** PROB=ball, F-cycles, to discretization error *******
+******** PROB=ball, F-cycles, to discretization error, with default rtol 1.0e-8 *******
     0 FASCD ncp function norm 2.977687712552e+00
     1 FASCD ncp function norm 5.592593521511e-16
 FASCD solve converged due to CONVERGED_SINGLE_LEVEL iterations 1
 done on 4 x 4 square mesh (oper=lap, prob=ball, levs=1, mcoarse=4, m_J=41, cells=64):  |u-uexact|_h = 5.389e-02
     0 FASCD ncp function norm 4.597248896467e+00
     0 FASCD ncp function norm 1.019022405653e+00
-    1 FASCD ncp function norm 3.316209002781e-06 [ratio 3.254304e-06], |du|/|u|=3.665672348109e-02
-    2 FASCD ncp function norm 5.171630638846e-11 [ratio 1.559501e-05], |du|/|u|=2.832015588588e-07
+    1 FASCD ncp function norm 3.316209002900e-06 [ratio 3.254304e-06], |du|/|u|=3.665672348109e-02
+    2 FASCD ncp function norm 5.171621777801e-11 [ratio 1.559498e-05], |du|/|u|=2.832015588583e-07
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 done on 8 x 8 square mesh (oper=lap, prob=ball, levs=2, mcoarse=4, m_J=145, cells=256):  |u-uexact|_h = 2.538e-02
     0 FASCD ncp function norm 4.019378820472e+00
     0 FASCD ncp function norm 5.526596448665e-01
-    1 FASCD ncp function norm 7.491293387797e-05 [ratio 1.355499e-04], |du|/|u|=1.589328849117e-02
-    2 FASCD ncp function norm 1.251049688277e-07 [ratio 1.670005e-03], |du|/|u|=2.276694982934e-05
-    3 FASCD ncp function norm 2.552430810288e-10 [ratio 2.040231e-03], |du|/|u|=3.449641499179e-08
+    1 FASCD ncp function norm 7.491293387813e-05 [ratio 1.355499e-04], |du|/|u|=1.589328849117e-02
+    2 FASCD ncp function norm 1.251049690232e-07 [ratio 1.670005e-03], |du|/|u|=2.276694982931e-05
+    3 FASCD ncp function norm 2.552431276417e-10 [ratio 2.040232e-03], |du|/|u|=3.449641499546e-08
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
 done on 16 x 16 square mesh (oper=lap, prob=ball, levs=3, mcoarse=4, m_J=545, cells=1024):  |u-uexact|_h = 5.714e-03
     0 FASCD ncp function norm 3.518652347563e+00
     0 FASCD ncp function norm 2.618541144097e-01
-    1 FASCD ncp function norm 1.425412587190e-04 [ratio 5.443537e-04], |du|/|u|=3.859215535947e-03
-    2 FASCD ncp function norm 2.406862183495e-06 [ratio 1.688537e-02], |du|/|u|=6.349373251206e-05
-    3 FASCD ncp function norm 2.109533659451e-08 [ratio 8.764663e-03], |du|/|u|=1.278645769317e-06
+    1 FASCD ncp function norm 1.425412587191e-04 [ratio 5.443537e-04], |du|/|u|=3.859215535947e-03
+    2 FASCD ncp function norm 2.406862183606e-06 [ratio 1.688537e-02], |du|/|u|=6.349373251203e-05
+    3 FASCD ncp function norm 2.109533647811e-08 [ratio 8.764663e-03], |du|/|u|=1.278645769297e-06
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
 done on 32 x 32 square mesh (oper=lap, prob=ball, levs=4, mcoarse=4, m_J=2113, cells=4096):  |u-uexact|_h = 1.292e-03
     0 FASCD ncp function norm 3.989265817522e+00
     0 FASCD ncp function norm 1.367673408532e-01
-    1 FASCD ncp function norm 2.020099795530e-04 [ratio 1.477034e-03], |du|/|u|=8.481404020169e-04
-    2 FASCD ncp function norm 1.040522768475e-05 [ratio 5.150848e-02], |du|/|u|=1.059193019717e-04
-    3 FASCD ncp function norm 6.786840739231e-07 [ratio 6.522530e-02], |du|/|u|=7.793019578687e-06
-    4 FASCD ncp function norm 3.919205260400e-08 [ratio 5.774712e-02], |du|/|u|=5.416308390044e-07
+    1 FASCD ncp function norm 2.020099795538e-04 [ratio 1.477034e-03], |du|/|u|=8.481404020170e-04
+    2 FASCD ncp function norm 1.040522768473e-05 [ratio 5.150848e-02], |du|/|u|=1.059193019717e-04
+    3 FASCD ncp function norm 6.786840739363e-07 [ratio 6.522530e-02], |du|/|u|=7.793019578685e-06
+    4 FASCD ncp function norm 3.919205256958e-08 [ratio 5.774712e-02], |du|/|u|=5.416308389821e-07
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
 done on 64 x 64 square mesh (oper=lap, prob=ball, levs=5, mcoarse=4, m_J=8321, cells=16384):  |u-uexact|_h = 4.349e-04
     0 FASCD ncp function norm 5.149110069199e+00
     0 FASCD ncp function norm 7.004711874920e-02
-    1 FASCD ncp function norm 6.214365737081e-04 [ratio 8.871694e-03], |du|/|u|=3.092907728651e-04
-    2 FASCD ncp function norm 8.231287426545e-06 [ratio 1.324558e-02], |du|/|u|=5.472132504626e-05
-    3 FASCD ncp function norm 8.543410301890e-07 [ratio 1.037919e-01], |du|/|u|=4.984310288886e-06
-    4 FASCD ncp function norm 8.839626305969e-08 [ratio 1.034672e-01], |du|/|u|=5.530064250272e-07
-    5 FASCD ncp function norm 9.814383994326e-09 [ratio 1.110271e-01], |du|/|u|=6.523534100360e-08
+    1 FASCD ncp function norm 6.214365737079e-04 [ratio 8.871694e-03], |du|/|u|=3.092907728652e-04
+    2 FASCD ncp function norm 8.231287426570e-06 [ratio 1.324558e-02], |du|/|u|=5.472132504632e-05
+    3 FASCD ncp function norm 8.543410298937e-07 [ratio 1.037919e-01], |du|/|u|=4.984310288852e-06
+    4 FASCD ncp function norm 8.839626287870e-08 [ratio 1.034672e-01], |du|/|u|=5.530064250333e-07
+    5 FASCD ncp function norm 9.814383812737e-09 [ratio 1.110271e-01], |du|/|u|=6.523534102213e-08
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
 done on 128 x 128 square mesh (oper=lap, prob=ball, levs=6, mcoarse=4, m_J=33025, cells=65536):  |u-uexact|_h = 1.237e-04
     0 FASCD ncp function norm 7.072193804686e+00
     0 FASCD ncp function norm 3.573745679597e-02
-    1 FASCD ncp function norm 4.059474450450e-05 [ratio 1.135916e-03], |du|/|u|=1.124822496275e-04
-    2 FASCD ncp function norm 3.918158285193e-06 [ratio 9.651886e-02], |du|/|u|=2.159855132815e-05
-    3 FASCD ncp function norm 4.982629017921e-07 [ratio 1.271676e-01], |du|/|u|=2.908304386932e-06
-    4 FASCD ncp function norm 6.431669405287e-08 [ratio 1.290818e-01], |du|/|u|=3.905549515550e-07
+    1 FASCD ncp function norm 4.059474450664e-05 [ratio 1.135916e-03], |du|/|u|=1.124822496276e-04
+    2 FASCD ncp function norm 3.918158285363e-06 [ratio 9.651886e-02], |du|/|u|=2.159855132825e-05
+    3 FASCD ncp function norm 4.982629019145e-07 [ratio 1.271676e-01], |du|/|u|=2.908304386919e-06
+    4 FASCD ncp function norm 6.431669414168e-08 [ratio 1.290818e-01], |du|/|u|=3.905549515568e-07
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
 done on 256 x 256 square mesh (oper=lap, prob=ball, levs=7, mcoarse=4, m_J=131585, cells=262144):  |u-uexact|_h = 2.163e-05
     0 FASCD ncp function norm 9.929467647243e+00
-    0 FASCD ncp function norm 1.791428168710e-02
-    1 FASCD ncp function norm 1.465082857360e-05 [ratio 8.178295e-04], |du|/|u|=3.088677772407e-05
-    2 FASCD ncp function norm 1.034716144374e-06 [ratio 7.062509e-02], |du|/|u|=5.333524457055e-06
-    3 FASCD ncp function norm 1.658186745270e-07 [ratio 1.602552e-01], |du|/|u|=8.785533800941e-07
-    4 FASCD ncp function norm 2.700078683059e-08 [ratio 1.628332e-01], |du|/|u|=1.519757094448e-07
+    0 FASCD ncp function norm 1.791428168711e-02
+    1 FASCD ncp function norm 1.465082857383e-05 [ratio 8.178295e-04], |du|/|u|=3.088677772419e-05
+    2 FASCD ncp function norm 1.034716144284e-06 [ratio 7.062509e-02], |du|/|u|=5.333524457105e-06
+    3 FASCD ncp function norm 1.658186744545e-07 [ratio 1.602552e-01], |du|/|u|=8.785533800803e-07
+    4 FASCD ncp function norm 2.700078670743e-08 [ratio 1.628332e-01], |du|/|u|=1.519757094276e-07
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
 done on 512 x 512 square mesh (oper=lap, prob=ball, levs=8, mcoarse=4, m_J=525313, cells=1048576):  |u-uexact|_h = 5.868e-06
     0 FASCD ncp function norm 1.401524016881e+01
-    0 FASCD ncp function norm 8.993585508914e-03
-    1 FASCD ncp function norm 5.155835065290e-06 [ratio 5.732792e-04], |du|/|u|=7.679057703979e-06
-    2 FASCD ncp function norm 3.483393518348e-07 [ratio 6.756216e-02], |du|/|u|=1.706581241481e-06
-    3 FASCD ncp function norm 6.359703304651e-08 [ratio 1.825721e-01], |du|/|u|=3.002589509914e-07
+    0 FASCD ncp function norm 8.993585508906e-03
+    1 FASCD ncp function norm 5.155835067377e-06 [ratio 5.732792e-04], |du|/|u|=7.679057704109e-06
+    2 FASCD ncp function norm 3.483393520798e-07 [ratio 6.756216e-02], |du|/|u|=1.706581241577e-06
+    3 FASCD ncp function norm 6.359703269222e-08 [ratio 1.825721e-01], |du|/|u|=3.002589509916e-07
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
 done on 1024 x 1024 square mesh (oper=lap, prob=ball, levs=9, mcoarse=4, m_J=2099201, cells=4194304):  |u-uexact|_h = 1.633e-06
     0 FASCD ncp function norm 1.981030784949e+01
-    0 FASCD ncp function norm 4.504745749124e-03
-    1 FASCD ncp function norm 1.947469076056e-06 [ratio 4.323150e-04], |du|/|u|=2.273404690112e-06
-    2 FASCD ncp function norm 1.473621584050e-07 [ratio 7.566855e-02], |du|/|u|=5.564022684023e-07
+    0 FASCD ncp function norm 4.504745749160e-03
+    1 FASCD ncp function norm 1.947469076342e-06 [ratio 4.323150e-04], |du|/|u|=2.273404690296e-06
+    2 FASCD ncp function norm 1.473621580497e-07 [ratio 7.566855e-02], |du|/|u|=5.564022684856e-07
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 done on 2048 x 2048 square mesh (oper=lap, prob=ball, levs=10, mcoarse=4, m_J=8392705, cells=16777216):  |u-uexact|_h = 5.721e-07
+    0 FASCD ncp function norm 2.801197654214e+01
+    0 FASCD ncp function norm 2.253924055688e-03
+    1 FASCD ncp function norm 4.390089897257e-07 [ratio 1.947754e-04], |du|/|u|=6.864459287524e-07
+    2 FASCD ncp function norm 7.895263999760e-08 [ratio 1.798429e-01], |du|/|u|=1.725610505384e-07
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+done on 4096 x 4096 square mesh (oper=lap, prob=ball, levs=11, mcoarse=4, m_J=33562625, cells=67108864):  |u-uexact|_h = 1.630e-07
 
-******** PROB=spiral, F-cycles, to discretization error *******
+******** PROB=spiral, F-cycles, to discretization error, with default rtol 1.0e-8 *******
     0 FASCD ncp function norm 1.250364911422e+01
     1 FASCD ncp function norm 1.441420557646e-15
 FASCD solve converged due to CONVERGED_SINGLE_LEVEL iterations 1
 done on 4 x 4 square mesh (oper=lap, prob=spiral, levs=1, mcoarse=4, m_J=41, cells=64)
     0 FASCD ncp function norm 3.581030295829e+01
     0 FASCD ncp function norm 1.106768900954e+01
-    1 FASCD ncp function norm 6.183878356137e-04 [ratio 5.587326e-05], |du|/|u|=1.039062805032e-01
-    2 FASCD ncp function norm 1.127342595849e-09 [ratio 1.823035e-06], |du|/|u|=5.991112738971e-06
+    1 FASCD ncp function norm 6.183878356151e-04 [ratio 5.587326e-05], |du|/|u|=1.039062805032e-01
+    2 FASCD ncp function norm 1.127342945693e-09 [ratio 1.823035e-06], |du|/|u|=5.991112738985e-06
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 done on 8 x 8 square mesh (oper=lap, prob=spiral, levs=2, mcoarse=4, m_J=145, cells=256)
     0 FASCD ncp function norm 5.195274377477e+01
     0 FASCD ncp function norm 1.278301764787e+01
     1 FASCD ncp function norm 6.928530605841e-01 [ratio 5.420106e-02], |du|/|u|=8.964217068106e-02
-    2 FASCD ncp function norm 2.171516348086e-04 [ratio 3.134166e-04], |du|/|u|=5.528944705259e-03
-    3 FASCD ncp function norm 6.032636646316e-08 [ratio 2.778076e-04], |du|/|u|=1.084585469229e-05
+    2 FASCD ncp function norm 2.171516348082e-04 [ratio 3.134166e-04], |du|/|u|=5.528944705259e-03
+    3 FASCD ncp function norm 6.032636604632e-08 [ratio 2.778076e-04], |du|/|u|=1.084585469224e-05
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
 done on 16 x 16 square mesh (oper=lap, prob=spiral, levs=3, mcoarse=4, m_J=545, cells=1024)
     0 FASCD ncp function norm 7.324445644144e+01
     0 FASCD ncp function norm 6.033200686127e+00
     1 FASCD ncp function norm 2.115488349739e-01 [ratio 3.506411e-02], |du|/|u|=3.273659617847e-02
-    2 FASCD ncp function norm 3.863380378217e-04 [ratio 1.826236e-03], |du|/|u|=1.464374861957e-03
-    3 FASCD ncp function norm 4.293649318880e-06 [ratio 1.111371e-02], |du|/|u|=1.939151058856e-05
-    4 FASCD ncp function norm 4.746555130686e-08 [ratio 1.105483e-02], |du|/|u|=1.866745463452e-07
+    2 FASCD ncp function norm 3.863380378218e-04 [ratio 1.826236e-03], |du|/|u|=1.464374861957e-03
+    3 FASCD ncp function norm 4.293649318675e-06 [ratio 1.111371e-02], |du|/|u|=1.939151058852e-05
+    4 FASCD ncp function norm 4.746555119075e-08 [ratio 1.105483e-02], |du|/|u|=1.866745463479e-07
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
 done on 32 x 32 square mesh (oper=lap, prob=spiral, levs=4, mcoarse=4, m_J=2113, cells=4096)
     0 FASCD ncp function norm 1.069563682455e+02
     0 FASCD ncp function norm 4.487256446044e+00
     1 FASCD ncp function norm 2.346011130616e-01 [ratio 5.228164e-02], |du|/|u|=1.902861984786e-02
-    2 FASCD ncp function norm 9.387391518973e-04 [ratio 4.001427e-03], |du|/|u|=1.053124353571e-03
-    3 FASCD ncp function norm 2.201643188701e-05 [ratio 2.345319e-02], |du|/|u|=3.102059618891e-05
-    4 FASCD ncp function norm 7.947986814565e-07 [ratio 3.610025e-02], |du|/|u|=1.793413108546e-06
+    2 FASCD ncp function norm 9.387391519012e-04 [ratio 4.001427e-03], |du|/|u|=1.053124353571e-03
+    3 FASCD ncp function norm 2.201643188608e-05 [ratio 2.345319e-02], |du|/|u|=3.102059618891e-05
+    4 FASCD ncp function norm 7.947986809938e-07 [ratio 3.610025e-02], |du|/|u|=1.793413108561e-06
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
 done on 64 x 64 square mesh (oper=lap, prob=spiral, levs=5, mcoarse=4, m_J=8321, cells=16384)
     0 FASCD ncp function norm 1.517759488345e+02
     0 FASCD ncp function norm 2.087537194972e+00
     1 FASCD ncp function norm 1.590127377823e-01 [ratio 7.617241e-02], |du|/|u|=5.817359335305e-03
-    2 FASCD ncp function norm 3.769135143976e-02 [ratio 2.370335e-01], |du|/|u|=5.202389427204e-04
-    3 FASCD ncp function norm 7.570337997147e-05 [ratio 2.008508e-03], |du|/|u|=7.220423961844e-05
-    4 FASCD ncp function norm 3.461429764300e-06 [ratio 4.572358e-02], |du|/|u|=2.458038133152e-06
-    5 FASCD ncp function norm 2.499340312676e-07 [ratio 7.220543e-02], |du|/|u|=2.156044772367e-07
+    2 FASCD ncp function norm 3.769135143976e-02 [ratio 2.370335e-01], |du|/|u|=5.202389427203e-04
+    3 FASCD ncp function norm 7.570337997168e-05 [ratio 2.008508e-03], |du|/|u|=7.220423961843e-05
+    4 FASCD ncp function norm 3.461429764668e-06 [ratio 4.572358e-02], |du|/|u|=2.458038133145e-06
+    5 FASCD ncp function norm 2.499340302625e-07 [ratio 7.220543e-02], |du|/|u|=2.156044772451e-07
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
 done on 128 x 128 square mesh (oper=lap, prob=spiral, levs=6, mcoarse=4, m_J=33025, cells=65536)
     0 FASCD ncp function norm 2.119960943342e+02
     0 FASCD ncp function norm 1.511432234901e+00
-    1 FASCD ncp function norm 9.046463535539e-02 [ratio 5.985358e-02], |du|/|u|=2.589336378056e-03
-    2 FASCD ncp function norm 1.340419210660e-03 [ratio 1.481705e-02], |du|/|u|=2.354764877583e-04
-    3 FASCD ncp function norm 6.976286979981e-05 [ratio 5.204556e-02], |du|/|u|=2.141072688214e-05
-    4 FASCD ncp function norm 4.382252362266e-06 [ratio 6.281640e-02], |du|/|u|=2.679876303100e-06
-    5 FASCD ncp function norm 4.278666729756e-07 [ratio 9.763625e-02], |du|/|u|=3.126004073386e-07
+    1 FASCD ncp function norm 9.046463535541e-02 [ratio 5.985358e-02], |du|/|u|=2.589336378055e-03
+    2 FASCD ncp function norm 1.340419210664e-03 [ratio 1.481705e-02], |du|/|u|=2.354764877582e-04
+    3 FASCD ncp function norm 6.976286979949e-05 [ratio 5.204556e-02], |du|/|u|=2.141072688249e-05
+    4 FASCD ncp function norm 4.382252362542e-06 [ratio 6.281640e-02], |du|/|u|=2.679876303098e-06
+    5 FASCD ncp function norm 4.278666728493e-07 [ratio 9.763625e-02], |du|/|u|=3.126004073437e-07
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
 done on 256 x 256 square mesh (oper=lap, prob=spiral, levs=7, mcoarse=4, m_J=131585, cells=262144)
     0 FASCD ncp function norm 3.016400256848e+02
-    0 FASCD ncp function norm 8.175142023342e-01
-    1 FASCD ncp function norm 6.384242490552e-02 [ratio 7.809335e-02], |du|/|u|=9.353105397069e-04
-    2 FASCD ncp function norm 1.569241445130e-03 [ratio 2.457992e-02], |du|/|u|=1.137271452436e-04
-    3 FASCD ncp function norm 1.668872588984e-04 [ratio 1.063490e-01], |du|/|u|=1.406500806171e-05
-    4 FASCD ncp function norm 1.396383838337e-05 [ratio 8.367229e-02], |du|/|u|=2.125915739419e-06
-    5 FASCD ncp function norm 1.116517990469e-06 [ratio 7.995781e-02], |du|/|u|=3.106805960902e-07
+    0 FASCD ncp function norm 8.175142023344e-01
+    1 FASCD ncp function norm 6.384242490553e-02 [ratio 7.809335e-02], |du|/|u|=9.353105397072e-04
+    2 FASCD ncp function norm 1.569241445141e-03 [ratio 2.457992e-02], |du|/|u|=1.137271452425e-04
+    3 FASCD ncp function norm 1.668872589060e-04 [ratio 1.063490e-01], |du|/|u|=1.406500806163e-05
+    4 FASCD ncp function norm 1.396383838409e-05 [ratio 8.367229e-02], |du|/|u|=2.125915739320e-06
+    5 FASCD ncp function norm 1.116517987612e-06 [ratio 7.995781e-02], |du|/|u|=3.106805959759e-07
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
 done on 512 x 512 square mesh (oper=lap, prob=spiral, levs=8, mcoarse=4, m_J=525313, cells=1048576)
     0 FASCD ncp function norm 4.275614401535e+02
-    0 FASCD ncp function norm 6.887076161765e-01
-    1 FASCD ncp function norm 6.290389360936e-02 [ratio 9.133614e-02], |du|/|u|=4.653149326770e-04
-    2 FASCD ncp function norm 2.640218226484e-03 [ratio 4.197225e-02], |du|/|u|=6.571622764955e-05
-    3 FASCD ncp function norm 3.106540176735e-04 [ratio 1.176623e-01], |du|/|u|=9.969575089931e-06
-    4 FASCD ncp function norm 7.392240152114e-05 [ratio 2.379573e-01], |du|/|u|=1.792930418574e-06
-    5 FASCD ncp function norm 5.922015593208e-06 [ratio 8.011124e-02], |du|/|u|=3.241372010398e-07
-    6 FASCD ncp function norm 6.853095211669e-07 [ratio 1.157223e-01], |du|/|u|=5.706981112524e-08
+    0 FASCD ncp function norm 6.887076161766e-01
+    1 FASCD ncp function norm 6.290389360942e-02 [ratio 9.133614e-02], |du|/|u|=4.653149326766e-04
+    2 FASCD ncp function norm 2.640218226516e-03 [ratio 4.197225e-02], |du|/|u|=6.571622764850e-05
+    3 FASCD ncp function norm 3.106540176867e-04 [ratio 1.176623e-01], |du|/|u|=9.969575089529e-06
+    4 FASCD ncp function norm 7.392240153883e-05 [ratio 2.379573e-01], |du|/|u|=1.792930418670e-06
+    5 FASCD ncp function norm 5.922015594722e-06 [ratio 8.011124e-02], |du|/|u|=3.241372010069e-07
+    6 FASCD ncp function norm 6.853095214533e-07 [ratio 1.157223e-01], |du|/|u|=5.706981112852e-08
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 6
 done on 1024 x 1024 square mesh (oper=lap, prob=spiral, levs=9, mcoarse=4, m_J=2099201, cells=4194304)
     0 FASCD ncp function norm 6.031903763444e+02
-    0 FASCD ncp function norm 4.459654811915e-01
-    1 FASCD ncp function norm 3.307279359043e-02 [ratio 7.415999e-02], |du|/|u|=1.854476398283e-04
-    2 FASCD ncp function norm 2.061382041565e-03 [ratio 6.232863e-02], |du|/|u|=3.026986282084e-05
-    3 FASCD ncp function norm 3.315559820887e-04 [ratio 1.608416e-01], |du|/|u|=5.520622809512e-06
-    4 FASCD ncp function norm 5.434611450049e-05 [ratio 1.639123e-01], |du|/|u|=1.176640814852e-06
-    5 FASCD ncp function norm 1.246126831807e-05 [ratio 2.292946e-01], |du|/|u|=2.525810596125e-07
-    6 FASCD ncp function norm 1.615522137032e-06 [ratio 1.296435e-01], |du|/|u|=5.287379675715e-08
+    0 FASCD ncp function norm 4.459654811920e-01
+    1 FASCD ncp function norm 3.307279359050e-02 [ratio 7.415999e-02], |du|/|u|=1.854476398285e-04
+    2 FASCD ncp function norm 2.061382041605e-03 [ratio 6.232863e-02], |du|/|u|=3.026986282063e-05
+    3 FASCD ncp function norm 3.315559821025e-04 [ratio 1.608416e-01], |du|/|u|=5.520622809571e-06
+    4 FASCD ncp function norm 5.434611451230e-05 [ratio 1.639123e-01], |du|/|u|=1.176640813423e-06
+    5 FASCD ncp function norm 1.246126833580e-05 [ratio 2.292946e-01], |du|/|u|=2.525810595986e-07
+    6 FASCD ncp function norm 1.615522136513e-06 [ratio 1.296435e-01], |du|/|u|=5.287379650673e-08
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 6
 done on 2048 x 2048 square mesh (oper=lap, prob=spiral, levs=10, mcoarse=4, m_J=8392705, cells=16777216)
+    0 FASCD ncp function norm 8.529374614123e+02
+    0 FASCD ncp function norm 2.983000757767e-01
+    1 FASCD ncp function norm 3.176496979278e-02 [ratio 1.064866e-01], |du|/|u|=7.380424758176e-05
+    2 FASCD ncp function norm 4.436778976561e-03 [ratio 1.396752e-01], |du|/|u|=1.532097631377e-05
+    3 FASCD ncp function norm 4.267959135545e-04 [ratio 9.619499e-02], |du|/|u|=3.287371643908e-06
+    4 FASCD ncp function norm 1.102771626479e-04 [ratio 2.583838e-01], |du|/|u|=7.835742220953e-07
+    5 FASCD ncp function norm 2.009912560301e-05 [ratio 1.822601e-01], |du|/|u|=1.950325543621e-07
+    6 FASCD ncp function norm 4.344645162933e-06 [ratio 2.161609e-01], |du|/|u|=4.757524772052e-08
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 6
+done on 4096 x 4096 square mesh (oper=lap, prob=spiral, levs=11, mcoarse=4, m_J=33562625, cells=67108864)
