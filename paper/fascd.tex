@@ -782,20 +782,19 @@ On line \ref{line:fcyclecoarsestinitial}, one may generate an initial iterate $w
 smoother semantics: in our implementation of the V-cycle we actually shift to solve a VI for $\tilde w^j = w^j+y^j$, then compute $y^j = \tilde w^j - w^j$ after the solve, etc.; this is evidently equivalent
 \end{comment}
 
-A large space of smoothers could be explored, but in Section \ref{sec:results} we apply a fixed number of iterations of the active-set (reduced-space) Newton method from \cite{BensonMunson2006}, the \texttt{VINEWTONRSLS} solver in PETSc \cite{Balayetal2023}, denoted as \emph{RS Newton}.  A fixed number of preconditioned Krylov iterations are applied to approximately solve the arising linear systems.  For the symmetric Laplacian in Example \ref{ex:results:classical} we apply conjugate gradients (CG) with incomplete Cholesky (IC) preconditioning, but for other operators we apply the generalized minimum residual (GMRES) method with incomplete LU (ILU) preconditioning.  This smoother requires $O(m_j)$ work per iteration. The coarse solver is also RS Newton, but iterated to convergence, with a direct solver for the arising linear systems.
+A large space of smoothers could be explored, but in the next Section we will only apply an active-set (reduced-space) Newton method \cite{Balayetal2023,BensonMunson2006}, denoted as \emph{RS Newton}.  A fixed number of preconditioned Krylov iterations approximately solve the arising linear systems, thus $O(m_j)$ work per smoother application.  For the symmetric Laplacian (Example \ref{ex:results:classical}) we apply conjugate gradients (CG) with incomplete Cholesky (IC) preconditioning.  The generalized minimum residual (GMRES) with incomplete LU (ILU) preconditioning is used in other cases.  The coarse solver is also RS Newton, but iterated to convergence using a direct linear solver.
 
 
 \section{Results} \label{sec:results}
 
-Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} were implemented in Python, for $P_1$ and $Q_1$ elements, using the Firedrake library \cite{Rathgeberetal2016}.  Here we show numerical results for the example problems presented in Section \ref{sec:vi}, with a focus on the scaling of FASCD iterations as the mesh resolution increases.  Our primary observations are that each V-cycle greatly reduces the residual norm, and that very few F-cycles solve most examples to within discretization error.
+For $P_1$ and $Q_1$ elements, Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} were implemented in Python using the Firedrake library \cite{Rathgeberetal2016}.  The numerical results in this Section follow the Section \ref{sec:vi} examples, with a focus on the scaling of FASCD iterations as the mesh resolution increases.  Our primary observations are that each V-cycle greatly reduces the residual norm, and that a few F-cycles solve most examples to within discretization error.
 
 \begin{example} \label{ex:results:classical}
-Consider the unilateral 2D Laplacian obstacle problem, Example \ref{ex:plaplacian} with $p=2$ and admissible set $\mathcal{K} = \{v \ge \psi\} \subset W^{1,2}(\Omega)$.  We consider two problems, both over square domains $\Omega$, with the very different coincidence (active) sets $\{x\in\Omega \,:\, u(x)=\psi(x)\}$ shown in Figure \ref{fig:results:classical}.  The standard ``ball'' problem has an upper hemisphere obstacle $\psi$ \cite[Chapter 12]{Bueler2021}.  For the ``spiral'' problem \cite[problem 7.1.1]{GraeserKornhuber2009}, $\psi$ is constructed to produce the coincidence set shown.  For this experiment we used a coarsest regular-triangulation mesh with $m_0=5^2$ vertices (32 triangles).  The finest mesh, built by standard refinement, had $m_9=2049^2 \approx 4.2 \times 10^{6}$ vertices.  As our smoother we applied a single RS Newton iteration (Section \ref{sec:implementation}), with three (fixed) IC-preconditioned CG iterations to approximately solve the arising linear systems.  The coarse solver was RS$+$LU, iterated to convergence.  Tolerances \texttt{rtol} $= 10^{-6}$ and \texttt{atol} $= 10^{-12}$ were used in stopping criterion \eqref{eq:stoppingcriterion}.  The initial iterate was set to $w=\max\{0,\psi\}$.
-\pef{For a fair comparison with the spiral problem in \cite{GraeserKornhuber2009}, I think we should set rtol = 1e-12}
+Consider the unilateral 2D Laplacian obstacle problem, Example \ref{ex:plaplacian} with $p=2$ and admissible set $\mathcal{K} = \{v \ge \psi\}$.  We consider two problems over square domains $\Omega$, with the different coincidence (active) sets $\{x\in\Omega \,:\, u(x)=\psi(x)\}$ shown in Figure \ref{fig:results:classical}.  The standard ``ball'' problem has an upper hemisphere obstacle \cite[Chapter 12]{Bueler2021}, but in the ``spiral'' problem \cite[problem 7.1.1]{GraeserKornhuber2009} the obstacle is constructed to produce the coincidence set shown.  For this experiment we used a coarsest regular-triangulation mesh with $m_0=41$ nodes (64 triangles).  The finest mesh had $m_{10} \approx 3.4 \times 10^7$ nodes ($6.7\times 10^7$ triangles).  As our smoother we applied a single RS Newton iteration (Section \ref{sec:implementation}), with three (fixed) IC-preconditioned CG iterations to approximately solve the arising linear systems.  The coarse solver was RS$+$LU, iterated to convergence.  Tolerances \texttt{rtol} $= 10^{-6}$ and \texttt{atol} $= 10^{-12}$ were used in stopping criterion \eqref{eq:stoppingcriterion}.  The initial iterate was set to $w=\max\{0,\psi\}$.
 
-Table \ref{tab:results:classical} shows the resulting iteration counts.  When the RS Newton smoother is applied by itself as a solver (``RS only''), as expected it shows rapidly-increasing iterations, roughly proportional to resolution.  By contrast, V-cycle iterations increase slowly, perhaps logarithmically with the resolution.  For F-cycles we report the number of V-cycles after the ramp (Section \ref{sec:implementation}); a constant number solves the problem.  Comparing the ball and spiral results, the complexity of the coincidence set or free boundary does not appear to strongly influence FASCD performance.  For the spiral results, note that \cite{GraeserKornhuber2009} reports more than 30 iterations of all their tested methods were required to achieve similar tolerance for $m_J \approx 5\times 10^5$.
+Table \ref{tab:results:classical} shows the resulting iteration counts.  When RS Newton is applied by itself as a solver, as expected it shows rapidly-increasing iterations, roughly proportional to resolution.  By contrast, V-cycle iterations increase slowly, logarithmically with the resolution; note this experiment over-solves, with \texttt{rtol} $= 10^{-12}$ in stopping criterion \eqref{eq:stoppingcriterion}.  For F-cycles, using \texttt{rtol} $= 10^{-12}$ to reach discretization error, we report the number of V-cycles after the ramp (Section \ref{sec:implementation}); a constant number solves the problem.  Comparing the ball and spiral results, the complexity of the coincidence set or free boundary does not appear to strongly influence FASCD performance.  For the spiral results, note that for $m_J \approx 5\times 10^5$ resolution, \cite{GraeserKornhuber2009} report FIXME.
 
-Each V-cycle does the work of about eight finest-level preconditioned Krylov (CG+IC) iterations.  Thus for the F-cycle results, where three iterations suffice at all resolutions, we see close to textbook multigrid efficiency\footnote{Textbook multigrid efficiency is imperfectly defined, but consider \cite{BrownSmithAhmadia2013}: ``an order of magnitude reduction in residual per iteration and solution of the fine-level system at a small multiple of the cost of a residual evaluation.''  Work of less than ten residual evaluations is often mentioned as the standard.} despite the low solution regularity.
+Each V-cycle does the work of about eight finest-level preconditioned Krylov (CG+IC) iterations.  Thus the F-cycle results, where FIXME iterations suffice at all resolutions, yield close to textbook multigrid efficiency\footnote{Textbook multigrid efficiency is imperfectly defined, but consider \cite{BrownSmithAhmadia2013}: ``an order of magnitude reduction in residual per iteration and solution of the fine-level system at a small multiple of the cost of a residual evaluation.''  Work of less than ten residual evaluations is often mentioned as the standard.} despite the low solution regularity.
 \end{example}
 
 %REGENERATE using git@bitbucket.org:pefarrell/fascd.git, in examples/
@@ -811,7 +810,7 @@ Each V-cycle does the work of about eight finest-level preconditioned Krylov (CG
 \end{figure}
 
 % see git@bitbucket.org:pefarrell/fascd.git: examples/drape.py
-% and https://github.com/bueler/mcd-extended: paper/results/drape.sh|txt
+% and https://github.com/bueler/mcd-extended: paper/results/drape_{nofas,fascd}.sh|txt
 \begin{table}[ht]
 \centering
 \begin{tabular}{lr@{\hskip 7mm}cccccc}
@@ -819,20 +818,21 @@ Each V-cycle does the work of about eight finest-level preconditioned Krylov (CG
 \multirow{2}{*}{\emph{levels}} & \multirow{2}{*}{$m_J$} & \multicolumn{3}{c}{\,\emph{ball}} & \multicolumn{3}{c}{\,\emph{spiral}} \\ \cmidrule(lr){3-5} \cmidrule(lr){6-8}
    &          & V-cycle & F-cycle & RS only & V-cycle & F-cycle & RS only \\
 \midrule
- 1 &    $5^2$ &  1 &  1 &  1  &  1 &  1 &  1 \\
- 2 &    $9^2$ &  2 &  1 &  2  &  2 &  1 &  2 \\
- 3 &   $17^2$ &  2 &  2 &  3  &  3 &  2 &  4 \\
- 4 &   $33^2$ &  3 &  2 &  6  &  3 &  2 &  7 \\
- 5 &   $65^2$ &  3 &  2 &  8  &  4 &  3 &  9 \\
- 6 &  $129^2$ &  4 &  2 & 17  &  4 &  3 & 16 \\
- 7 &  $257^2$ &  4 &  2 & 33  &  4 &  3 & 27 \\
- 8 &  $513^2$ &  5 &  2 & 65  &  5 &  3 & 48 \\
- 9 & $1025^2$ &  5 &  2 & \XX &  5 &  3 & \XX \\
-10 & $2049^2$ &  5 &  2 & \XX &  5 &  3 & \XX \\
+ 1 &             $41$ &  1 & FIXME  &  1  &  1 &   &  2 \\
+ 2 &            $145$ &  3 &   &  1  &  4 &   &  4 \\
+ 3 &            $545$ &  6 &   &  3  &  5 &   &  6 \\
+ 4 & $2.1\times 10^3$ &  7 &   &  6  &  7 &   &  7 \\
+ 5 & $8.3\times 10^3$ &  9 &   & 13  &  9 &   & 11 \\
+ 6 & $3.3\times 10^4$ & 11 &   & 23  & 10 &   & 20 \\
+ 7 & $1.3\times 10^5$ & 11 &   & 46  & 11 &   & 35 \\
+ 8 & $5.3\times 10^5$ & 12 &   & 90  & 12 &   & 67 \\
+ 9 & $2.1\times 10^6$ & 13 &   & \XX & 13 &   & \XX \\
+10 & $8.4\times 10^6$ & 13 &   & \XX & 14 &   & \XX \\
+11 & $3.4\times 10^7$ & 14 &    & \XX & FIXME   &    & \XX \\
 \bottomrule
 \end{tabular}
 \bigskip
-\caption{Iterations for FASCD V-cycle and F-cycle algorithms in Example \ref{ex:results:classical}.  Smoother-only runs marked \XX\xspace were not attempted.}
+\caption{Iterations for FASCD V-cycle and F-cycle algorithms in Example \ref{ex:results:classical}.  Runs marked \XX\xspace were not attempted.}
 \label{tab:results:classical}
 \end{table}
 
