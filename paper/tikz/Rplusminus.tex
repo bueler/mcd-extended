@@ -2,7 +2,7 @@
 \definecolor{seaborngreen}{rgb}{0.3333333333333333, 0.6588235294117647, 0.40784313725490196}
 \definecolor{seabornred}{rgb}{0.7686274509803922, 0.3058823529411765, 0.3215686274509804}
 
-\begin{tikzpicture}[scale=2.0]
+\begin{tikzpicture}[scale=1.3]
   \foreach \k in {0, 1, 2, 3, 4} {
     %\filldraw[seabornblue, fill=seabornblue] ({cos(deg(2*\k*pi/5))}, {sin(deg(2*\k*pi/5))}) circle (1.5pt);
     \node (A) at ({0.5*cos(deg(2*\k*pi/5)) + 0.5*cos(deg(2*(\k+1)*pi/5))}, {0.5*sin(deg(2*\k*pi/5)) + 0.5*sin(deg(2*(\k+1)*pi/5))}) {};
@@ -25,10 +25,10 @@
     \filldraw[seaborngreen] (E) circle (1.5pt);
 
   }
-  \filldraw[seabornblue] (0, 0) circle (1.5pt);
-  \node (expl) at (1.5, 0.5) {};
-  \filldraw[seabornblue] (expl) circle (1.5pt);
-  \node at (2.9, 0.5125) {$= \text{max/min over patch of cells}$};  % I'm sure there's a better way to place this, but tikz mystifies me
-  \node at (2.31, 0.2925) {$= \text{max/min of }$};  % I'm sure there's a better way to place this, but tikz mystifies me
-  \filldraw[seaborngreen] (2.95, 0.29) circle (1.5pt);
+  \filldraw[seabornblue] (0, 0) circle (2.5pt);
+  
+  \filldraw[seabornblue] (2.5, 0.5) circle (2.5pt);
+  \node at (4.1, 0.5) {$= \text{coarse mesh node $x_p$}$};
+  \filldraw[seaborngreen] (2.5, 0.0) circle (1.5pt);
+  \node (fine) at (3.75, 0.0) {$= \text{fine mesh node}$};
 \end{tikzpicture}

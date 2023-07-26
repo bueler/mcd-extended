@@ -1,4 +1,4 @@
-\begin{tikzpicture}[scale=1.0]
+\begin{tikzpicture}[scale=0.7]
   \pgfmathsetmacro\hstep{0.5}
   \pgfmathsetmacro\vstep{0.75}
   \pgfmathsetmacro\ceps{0.08}   % size of square for coarse grid
@@ -6,11 +6,11 @@
 % V-cycle with MCD down-obstacle and up-obstacle annotations
   \draw[black,thin] (-\hstep,3*\vstep) -- (0.0,2*\vstep) -- (\hstep,\vstep) --  (2*\hstep,0.0)
                     -- (3*\hstep,\vstep) -- (4*\hstep,2*\vstep) -- (5*\hstep,3*\vstep);
-  \filldraw (-\hstep,3*\vstep) node[xshift=-12mm] {$y_3 \in \mathcal{D}^3$} circle (2.5pt);
-  \filldraw (0.0,2*\vstep) node[xshift=-12mm] {$y_2 \in \mathcal{D}^2$} circle (2.5pt);
-  \filldraw (\hstep,\vstep) node[xshift=-12mm] {$y_1 \in \mathcal{D}^1$} circle (2.5pt);
-  \draw     (2*\hstep-\ceps,-\ceps) node[xshift=1mm,yshift=-5mm] {$z_0 \in \mathcal{U}^0 = \mathcal{D}^0$} rectangle (2*\hstep+\ceps,+\ceps);
-  \draw     (3*\hstep,\vstep) node[xshift=11mm] {$z_1 \in \mathcal{U}^1$} circle (2.5pt);
-  \draw     (4*\hstep,2*\vstep) node[xshift=11mm] {$z_2 \in \mathcal{U}^2$} circle (2.5pt);
-  \draw     (5*\hstep,3*\vstep) node[xshift=11mm] {$z_3 \in \mathcal{U}^3$} circle (2.5pt);
+  \filldraw (-\hstep,3*\vstep) node[xshift=-10mm] {$y_3 \in \mathcal{D}^3$} circle (2.5pt);
+  \filldraw (0.0,2*\vstep) node[xshift=-10mm] {$y_2 \in \mathcal{D}^2$} circle (2.5pt);
+  \filldraw (\hstep,\vstep) node[xshift=-10mm] {$y_1 \in \mathcal{D}^1$} circle (2.5pt);
+  \draw     (2*\hstep-\ceps,-\ceps) node[xshift=1mm,yshift=-4mm] {$z_0 \in \mathcal{U}^0$} rectangle (2*\hstep+\ceps,+\ceps);
+  \draw     (3*\hstep,\vstep) node[xshift=9mm] {$z_1 \in \mathcal{U}^1$} circle (2.5pt);
+  \draw     (4*\hstep,2*\vstep) node[xshift=9mm] {$z_2 \in \mathcal{U}^2$} circle (2.5pt);
+  \draw     (5*\hstep,3*\vstep) node[xshift=9mm] {$z_3 \in \mathcal{U}^3$} circle (2.5pt);
 \end{tikzpicture}
