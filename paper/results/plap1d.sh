@@ -22,16 +22,16 @@ for EPSREG in 0.0 1.0e-8; do
     echo ""
 done
 
-for ITS in 3 4; do
-    echo "******** p = 4.0 V-cycle ITS=${ITS} *******"
-    for LEVS in $LLIST; do
-        python3 plap1d.py -p 4.0 -fascd_levels_snes_max_it $ITS -levs $LEVS
-    done
-    echo ""
-done
+# for ITS in 3 4; do
+#     echo "******** p = 4.0 V-cycle ITS=${ITS} *******"
+#     for LEVS in $LLIST; do
+#         python3 plap1d.py -p 4.0 -fascd_levels_snes_max_it $ITS -levs $LEVS
+#     done
+#     echo ""
+# done
 
-echo "******** p = 4.0 F-cycle *******"
-for LEVS in $LLIST; do
-    python3 plap1d.py -fascd_cycle_type full -p 4.0 -levs $LEVS
-done
-echo ""
+# echo "******** p = 4.0 F-cycle *******"
+# for LEVS in $LLIST; do
+#     python3 plap1d.py -fascd_cycle_type full -p 4.0 -levs $LEVS
+# done
+# echo ""

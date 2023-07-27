@@ -1,5 +1,7 @@
 # notes
 
+WARNING:  These notes are far out of date, but might contain something future useful.
+
 ## achievements
 
   * `examples/drape.py`: all four 2D Laplacian problems (3 obstacle, one PDE) tested show FASCD pure V-cycle flying colors, with nearly mesh-independent iterations when memory-limited:
