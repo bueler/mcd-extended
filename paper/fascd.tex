@@ -142,7 +142,6 @@ multigrid, variational inequalities, full approximation scheme, constraint decom
 The constraint decomposition (CD) methods of Tai \cite{Tai2003} are designed to solve variational inequality (VI) problems arising as the Karush--Kuhn--Tucker optimality conditions for the minimization of a convex functional over a convex set.  In a finite element (FE) context, these methods converge for multilevel and domain decompositions.  The multilevel CD method has almost grid-independent error bounds, and near-optimal complexity, for elliptic, linear obstacle problems \cite[Subsection 5.4]{Tai2003}, \cite[Theorem 4.6]{GraeserKornhuber2009}.
 
 Here we extend Tai's multilevel CD method by replacing the coarser-level corrections with a full approximation scheme (FAS; \cite{Brandt1977,Bruneetal2015}) approach.  Specifically, our \emph{full approximation scheme constraint decomposition} (FASCD) method enjoys the following advantages:
-
 \renewcommand{\labelenumi}{\emph{(\roman{enumi})}}
 \begin{enumerate}
 \item The FAS coarse corrections are adapted for general VI problems. The method requires neither an objective function nor linearity of the residual.
@@ -153,9 +152,8 @@ Here we extend Tai's multilevel CD method by replacing the coarser-level correct
 \item When a (mesh-dependent) reduced-space active set method is used as relaxation, we demonstrate that F-cycles are an optimal solver for the examples in Section \ref{sec:results}; smoother effort is proportional to the number of unknowns on a given level because the number of Newton and Krylov iterations is fixed.
 \end{enumerate}
 
-Prior multilevel algorithms for VIs have limitations compared to the FASCD framework.  The projected full approximation scheme (PFAS) algorithm of Brandt \& Cryer \cite{BrandtCryer1983} applies to linear complementarity problems and projected (truncated) Gauss--Seidel smoothers.  While FASCD reduces to general, nonlinear FAS for PDEs when the inequality constraints are removed (Appendix \ref{app:reductions}), PFAS reduces to linear multigrid.  The multilevel CD iteration of Tai \cite{Tai2003} is formulated in terms of an objective function, so as stated it only applies to optimization-type problems, and furthermore each of its coarser-level problems refers to the finest-level discretization.  The latter property is improved by reformulation using defect constraints and monotone injection operators (see \cite[Algorithm 4.7]{GraeserKornhuber2009}, or Section \ref{sec:cdmultilevel} herein).  The monotone multigrid methods of Kornhuber and co-authors \cite{GraeserKornhuber2009,Kornhuber1994} appear to be formulated only with Gauss--Seidel type smoothers, and may have been applied only to optimization-type VI problems \cite[for example]{JouvetGraeser2013}.  Unlike the fastest variants of monotone multigrid, no zeroing of the basis functions associated with the active set (truncation) is employed in our method, both simplifying the implementation and allowing the coarse grid corrections to update the estimate of the active set on the fine grid. Numerical evidence indicates that our coarse grid corrections are useful for this purpose, even when the coarse grids are too coarse to usefully resolve the active set.  On a problem for which the truncated Newton/monotone multigrid methods were designed \cite[problem 7.1.1]{GraeserKornhuber2009}, the performance of FASCD is at least as good (Example \ref{ex:results:classical}).
-
-A known limitation of FASCD is that, as formulated, it only solves bound-constrained VI problems.
+Prior multilevel algorithms for VIs have limitations compared to the FASCD framework.  The projected full approximation scheme (PFAS) algorithm of Brandt \& Cryer \cite{BrandtCryer1983} applies to linear complementarity problems and projected (truncated) Gauss--Seidel smoothers.  While FASCD reduces to general, nonlinear FAS for PDEs when the inequality constraints are removed, PFAS reduces to linear multigrid.  The multilevel CD iteration of Tai \cite{Tai2003} is formulated in terms of an objective function, so as stated it only applies to optimization-type problems, and furthermore each of its coarser-level problems refers to the finest-level discretization.  The latter property is improved by reformulation using defect constraints and monotone injection operators (see \cite[Algorithm 4.7]{GraeserKornhuber2009}, or Section \ref{sec:cdmultilevel} herein).  The monotone multigrid methods of Kornhuber and co-authors \cite{GraeserKornhuber2009,Kornhuber1994} appear to be formulated only with Gauss--Seidel type smoothers, and may have been applied only to optimization-type VI problems \cite[for example]{JouvetGraeser2013}.  Unlike the fastest variants of monotone multigrid, no zeroing of the basis functions associated with the active set (truncation) is employed in our method, both simplifying the implementation and allowing the coarse grid corrections to update the estimate of the active set on the fine grid. Numerical evidence indicates that our coarse grid corrections are useful for this purpose, even when the coarse grids are too coarse to usefully resolve the active set.  On a problem for which the truncated Newton/monotone multigrid methods were designed \cite[problem 7.1.1]{GraeserKornhuber2009}, the performance of FASCD is at least as good (Example \ref{ex:results:classical}).
+A limitation of FASCD is that, as formulated, it only solves bound-constrained VI problems.
 
 In our experiments, FASCD V-cycles exhibit essentially the same mesh-independent convergence rates for VI problems that FAS multigrid V-cycles exhibit for corresponding unconstrained PDE problems.  The F-cycle results in Section \ref{sec:results} show nearly-textbook multigrid efficiency, namely solutions within discretization error in work comparable to few smoother sweeps on the finest-level mesh \cite{BrandtLivne2011}.  Specifically, we see this performance for classical (unilateral, Laplacian) obstacle problems, $p$-Laplacian obstacle problems, and box-constrained advection-diffusion equations.  Furthermore, these results appear to be relatively insensitive to the geometric complexity of the coincidence set and free boundary.
 
@@ -239,7 +237,7 @@ Integration by parts gives $b(u,v) = - b(v,u) + \int_{\partial \Omega} uv \bX\cd
 \begin{equation}
 \ip{f(u)}{v} = \eps \left(\grad u, \grad v\right)_{L^2(\Omega)} + b(u,v) - \ip{\phi}{v}. \label{eq:advectiondiffusion}
 \end{equation}
-With this operator, consider VI \eqref{eq:vi} with $\ell = 0$ for any closed and convex $\cK \subset \cV$. The interior condition, i.e.~PDE strong form, is the following linear advection-diffusion equation
+With this operator, consider VI \eqref{eq:vi} with $\ell = 0$ for any closed and convex $\cK \subset \cV$. The interior condition in strong form is the following linear advection-diffusion equation
 \begin{equation}
 -\eps \grad^2 u + \bX\cdot \grad u = \phi.
 \label{eq:advectiondiffusionstrong}
@@ -592,14 +590,17 @@ A convergence analysis extending the arguments of \cite{GraeserKornhuber2009,Tai
 
 \section{FASCD V-cycle} \label{sec:vcycle}
 
-The V-cycle applies smoothers in constraint sets $\mathcal{D}^j$ and $\mathcal{U}^j$ during the downward and upward stages, respectively.  It extends the multilevel CD schemes of Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear full approximation scheme (FAS) approach \cite{BrandtLivne2011}, and in fact it reduces to FAS for PDEs when inequality constraints are removed (Appendix \ref{app:reductions}).
+The V-cycle applies smoothers in constraint sets $\mathcal{D}^j$ and $\mathcal{U}^j$ during the downward and upward stages, respectively.  It extends the multilevel CD schemes of Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear full approximation scheme (FAS) approach \cite{BrandtLivne2011}, and in fact it reduces to FAS for PDEs when inequality constraints are removed.
 
 Each V-cycle generates a correction to a finest-level iterate $w^J \in \mathcal{K}^J$ by incorporating information from each coarser FE subspace $\mathcal{V}^j$.  By nesting \eqref{eq:fe:nestedspaces} these corrections all live in the fine-level subspace $\mathcal{V}^J$.\footnote{Nonetheless we use prolongation $P$ to indicate where the computer representation changes.}  The corrections are constructed, inductively, so that iterates remain admissible at every level.  Suppose $y^i \in \mathcal{D}^i$, for $i=J,\dots,j+1$, are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:fascdcycles}).  By \eqref{eq:fe:downwardsuminclusion} the correction at this point is admissible, namely $y^J + \dots + y^{j+1} \in \mathcal{U}^J$, equivalently $w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$.  Smoothing then occurs at the next-coarser level, yielding the next correction $y^j \in \mathcal{D}^j$.  Solving the coarsest-level VI results in the full downward correction $y^J + \dots + y^1 + z^0 \in \mathcal{U}^J$.  Starting upward, $y^1 + z^0 \in \mathcal{U}^1$ is an initial iterate for smoothing on level $j=1$, which then yields $z^1 \in \mathcal{U}^1$ and an admissible correction $y^J + \dots + y^2 + z^1 \in \mathcal{U}^J$, using \eqref{eq:fe:upwardsuminclusion}.  Continuing in this ``telescoping'' way, up-smoothing in the constraint sets $\mathcal{U}^j$, starting from initial iterate $y^j+z^{j-1}$, finally generates $z^J\in \mathcal{U}^J$ as the V-cycle correction.  Then the corrected finest-level iterate is $\tilde{w}^J = w^J + z^J \in \mathcal{K}^J$.
 
 \begin{figure}[ht]
 \centering
-\mbox{\input{tikz/vcycle.tex} \quad
-\input{tikz/fcycle.tex}}
+\begin{tabular}{cc}
+\input{tikz/vcycle.tex}
+&
+\input{tikz/fcycle.tex}
+\end{tabular}
 \caption{Left: The FASCD V-cycle Algorithm \ref{alg:fascd} computes downward corrections $y_j \in \mathcal{D}^j$, but the upward corrections $z_j\in\mathcal{U}^j$ are in larger sets. Right: F-cycle Algorithm \ref{alg:fascd-fcycle} initially restricts and injects the data $\ell^J,\underline{\gamma}^J,\overline{\gamma}^J$ down to level $j=0$ (gray), then it prolongs and truncates (doubled edges) to create an admissible initial iterate on the next-finer level, and then it applies V-cycles.}
 \label{fig:fascdcycles}
 \end{figure}
@@ -712,7 +713,7 @@ This MCP interpretation allows us to construct expressions whose norms should ap
     0, & \underline{\gamma}^J(x_p)=w^J(x_p)=\overline{\gamma}^J(x_p), \\
     w^J(x_p) - g_D^J(x_p), & x_p \in \partial_D\Omega. \end{cases} \label{eq:rNC}
 \end{equation}
-The first four cases assume $x_p \notin \partial_D\Omega$.  For PDEs one uses only the first and last cases.
+The first four cases assume $x_p \notin \partial_D\Omega$.  For PDEs only the first and last apply.
 
 The computable nonlinear map $\rNC : \mathcal{K}^J \to \RR^{m_J}$ in \eqref{eq:rNC} is defined using only the finest-level objects $f^J,\ell^J,\underline{\gamma}^J,\overline{\gamma}^J$.  A value $\rNC(w^J)_p$ is nonzero only at vertices where the MCP is violated, and the formula applies as stated if $\underline{\gamma}^J(x_p)=-\infty$ or $\overline{\gamma}^J(x_p)=+\infty$.  However, direct implementation of \eqref{eq:rNC} is sensitive to rounding error because $\rNC$ is a discontinuous function of $w^J(x_p)$.  For example, if $w^J(x_p)$ exceeds $\underline{\gamma}^J(x_p)$ by $10^{-16}$, then evaluation of $\rNC$ would falsely suggest that the iteration is far from converging.  Thus we instead measure convergence using the Fischer-Burmeister function \cite{BensonMunson2006,Ulbrich2011} on $a,b\in\RR$:
 \begin{equation}
@@ -762,7 +763,7 @@ On line \ref{line:fcyclecoarsestinitial}, one may generate an initial iterate $w
 smoother semantics: in our implementation of the V-cycle we actually shift to solve a VI for $\tilde w^j = w^j+y^j$, then compute $y^j = \tilde w^j - w^j$ after the solve, etc.; this is evidently equivalent
 \end{comment}
 
-A large space of smoothers could be explored, but in the next Section we will only apply an active-set (reduced-space) Newton method \cite{Balayetal2023,BensonMunson2006}, denoted as \emph{RS Newton}.  A fixed number of preconditioned Krylov iterations approximately solve the arising linear systems, thus $O(m_j)$ work per smoother application.  For the symmetric Laplacian (Example \ref{ex:results:classical}) we apply conjugate gradients (CG) with incomplete Cholesky (IC) preconditioning.  The generalized minimum residual (GMRES) with incomplete LU (ILU) preconditioning is used in other cases.  The coarse solver is also RS Newton, but iterated to convergence using a direct linear solver.
+A large space of smoothers could be explored, but in the next Section we will only apply an active-set (reduced-space) Newton method \cite{Balayetal2023,BensonMunson2006}, denoted as \emph{RS Newton}.  A fixed number of preconditioned Krylov iterations approximately solve the arising linear systems, thus $O(m_j)$ work per smoother application.  For the symmetric Laplacian (Example \ref{ex:results:classical}) we apply conjugate gradients (CG) with incomplete Cholesky (IC) preconditioning.  The generalized minimum residual (GMRES) with incomplete LU (ILU) preconditioning is used in other cases.  The coarse solver is also RS Newton, but iterated to convergence using the MUMPS sparse direct linear solver~\cite{Amestoy2001}.
 
 
 \section{Results} \label{sec:results}
@@ -871,7 +872,7 @@ Note that convergence is at rate $O(h^{2.005})$; compare \cite{ChoeLewis1991}.
 Solvers implemented in Firedrake can exploit parallel solvers from the PETSc library \cite{Balayetal2023}, and in fact the above Examples, which were run in serial so as to fix the smoother, also run efficiently in parallel.  The next Examples apply parallel solvers, and Example \ref{ex:results:sia} demonstrates the parallel weak scaling \cite{Bueler2021} of FASCD.
 
 \begin{example}  \label{ex:results:advdiff}
-Consider the advection-diffusion VI problem in Example \ref{ex:advectiondiffusion} with $\Omega=(-1,1)^d$, $d=2,3$, diffusivity $\eps=0.1$ in equation \eqref{eq:advectiondiffusionstrong}, and zero Dirichlet boundary conditions.  We made the 2D problem satisfy the coercivity hypothesis with a divergence-free velocity field $\bX = (7+5y,-5x)$, but in 3D, for variety's sake, we set $\bX = (7+5y,-5x,2z)$ so $\grad\cdot\bX \ne 0$.  The chosen discontinuous source term $\phi \in L^\infty(\Omega)$ satisfies $\phi\ge 0$ in half of the domain, with positive circular patches, with negative values in the other half; details are in the associated code.  While the other Examples in this Section are unilateral, here the solution is box-constrained: $0 \le u \le 1$.  Figure \ref{fig:results:advdiff} shows coincidence sets for the 2D problem; the 3D sets are comparable in regularity and general pattern.
+Consider the advection-diffusion VI problem in Example \ref{ex:advectiondiffusion} with $\Omega=(-1,1)^d$, $d=2,3$, diffusivity $\eps=0.1$ in \eqref{eq:advectiondiffusionstrong}, and zero Dirichlet boundary conditions.  We made the 2D problem satisfy the coercivity hypothesis with a divergence-free velocity field $\bX = (7+5y,-5x)$, but in 3D set $\bX = (7+5y,-5x,2z)$ so $\grad\cdot\bX \ne 0$.  The chosen discontinuous source term $\phi \in L^\infty(\Omega)$ satisfies $\phi\ge 0$ in half of the domain, with positive circular patches, with negative values in the other half; details are in the associated code.  While the other Examples in this Section are unilateral, here the solution is box-constrained: $0 \le u \le 1$.  Figure \ref{fig:results:advdiff} shows coincidence sets for the 2D problem; the 3D sets are comparable in regularity and general pattern.
 
 % REGENERATE using git@bitbucket.org:pefarrell/fascd.git, in examples/
 %   mpiexec -n 16 --map-by core --bind-to hwthread python3 pollutant.py -dim 2 -levs 7 -o poll2d.pvd
@@ -885,7 +886,7 @@ Consider the advection-diffusion VI problem in Example \ref{ex:advectiondiffusio
 \label{fig:results:advdiff}
 \end{figure}
 
-The 2D solver applied $P_1$ elements on a single core, but in 3D the elements were chosen to be $Q_1$ (hexahedra) on $P=16$ cores.  A coarse mesh with $m_0=16^d$ vertices minimally-resolved the coincidence set.  The smoother was two (fixed) RS Newton iterations, with three preconditioned GMRES iterations to approximately solve the arising linear systems; the preconditioning was additive Schwarz method (ASM) with incomplete factorization (ILU) on each process.  The coarse solver was RS Newton and LU, iterated to convergence.  Tolerances \id{rtol} $=10^{-5}$ and \id{atol} $=10^{-9}$ were used in \eqref{eq:stoppingcriterion}.
+The 2D solver applied $P_1$ elements on a single core, but in 3D the elements were chosen to be $Q_1$ (hexahedra) on $P=16$ cores.  A coarse mesh with $m_0=16^d$ vertices minimally-resolved the coincidence set.  The smoother was two (fixed) RS Newton iterations, with three preconditioned GMRES iterations for the arising linear systems; the preconditioning was additive Schwarz method (ASM) with incomplete factorization (ILU) on each process.  The coarse solver was RS Newton and LU, iterated to convergence.  Tolerances \id{rtol} $=10^{-5}$ and \id{atol} $=10^{-9}$ were used in \eqref{eq:stoppingcriterion}.
 
 F-cycle iteration results are shown in Table \ref{tab:results:advdiff}.  Despite the hint of growing iterations under mesh refinement, a few iterations sufficed up to memory-limited resolutions.  For any of the higher resolution runs, the FASCD F-cycle solver took less time than generating the mesh hierarchy.  The local Péclet number $\text{Pe}=\|\bX(x,y,z)\|_2 L \eps^{-1}$, with $L=2$ the width of $\Omega$, varied from 40 to 260.  The mesh Péclet number $m_J^{-1/d}\,\text{Pe}$ varied accordingly, and though the $m_J\le 121^d$ problems were advection-dominated, those with $m_J\ge 481^d$ were diffusion-dominated, and the smoother was the same in all cases, with nearly-constant iterations.
 \end{example}
@@ -967,30 +968,30 @@ As a multilevel solver for VI problems, the FASCD method is a strategy for gener
 \bibliography{fascd}
 
 
-\appendix
-\section{Reduction to FAS multigrid for PDEs} \label{app:reductions}
-
-When all inequality constraints are removed the FASCD V-cycle Algorithm \ref{alg:fascd} reduces to the classical FAS multigrid V-cycle for nonlinear PDEs \cite{Brandt1977,Trottenbergetal2001}, which itself generalizes linear multigrid.  In fact, suppose we replace $\underline{\gamma}^J,\overline{\gamma}^J$ in definition \eqref{eq:fe:fineconstraintset} with $-\infty,+\infty$, respectively.  The finest-level admissible set $\mathcal{K}^J$ is then determined only by the Dirichlet boundary conditions.  Let $\mathcal{V}_0^J \subset \mathcal{V}^J$ denote the linear subspace with zero values on $\partial_D\Omega$.  Since $v-u^J\in\mathcal{V}_0^J$ is now arbitrary we can rewrite \eqref{eq:fe:vi} as the FE discretization of strong-form PDE $f(u)=\ell$: find $u^J \in \mathcal{V}^J$ such that
-\begin{equation}
-\ip{f^J(u^J)}{v} = \ip{\ell^J}{v} \qquad \text{for all } v\in \mathcal{V}_0^J. \label{eq:app:fas:pde}
-\end{equation}
-
-The downward $\mathcal{D}^j$ and upward $\mathcal{U}^j$ constraint sets are also enlarged to vector spaces, and the corrections $y^j$ and $z^j$ are unconstrained; lines \ref{line:vcyclegenchifinest}, \ref{line:vcyclegenchi}, and \ref{line:vcyclegenphi} in Algorithm \ref{alg:fascd} can be removed.  Then VI problems \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi} can be rewritten as the weak form problem $\ip{f^j(u^j)}{v} = \ip{\ell^j}{v}$ over $v\in \mathcal{V}_0^j$, where $u^j=w^j+y^j$ when down-smoothing and $u^j=w^j+z^j$ when up-smoothing, and the smoothers can be regarded as unconstrained, in-place modifications of $u^j$.  Noting line \ref{line:vcyclerestrictsolution} now says $u^{j-1}=\iR u^j$, after down-smoothing the coarsened source functional computed by line \ref{line:vcyclerestrictell} can be rewritten as $\ell^{j-1} = f^{j-1}\left(u^{j-1}\right) + R\left(\ell^j-f^j(u^j)\right)$.
-
-Going upward we must be careful that only the coarse correction, and not the coarse solution, is prolonged \cite[remark 5.3.9]{Trottenbergetal2001}.  After up-smoothing on the $j-1$ level the coarse iterate is $u^{j-1}$, but at this point $u^j=w^j + y^j$ contains the result of $j$th-level down-smoothing.  The initial value of the correction $z^j$, before up-smoothing on the $j$th level, is $z^j = y^j + P z^{j-1}$, where $z^{j-1}$ contains the total correction from coarser corrections and $j-1$ level up-smoothing.  Thus the $j$th-level iterate \emph{before} up-smoothing must be set to $w^j + y^j + P z^{j-1} = u^j + P(u^{j-1} - \iR u^j)$, which replaces line \ref{line:vcycleupsmoothinitial}.
-
-With these modifications, Algorithm \ref{alg:fascd} becomes the FAS V-cycle below, as a solver for \eqref{eq:app:fas:pde}. This algorithm appears in various sources in the literature, for example \cite[Algorithm 14]{Bruneetal2015} and \cite[section 5.3.4]{Trottenbergetal2001}.
-
-\begin{pseudo*}
-\pr{fas-vcycle}(\ell^J; u^J)\text{:} \\+
-    for $j=J$ downto $j=1$ \\+
-      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j;u^j)$ \\
-      $u^{j-1} = \iR u^j$ \\
-      $\ell^{j-1} = f^{j-1}(u^{j-1}) + R \left(\ell^j - f^j(u^j)\right)$ \\-
-    $\text{\pr{solve}}(\ell^0;u^0)$ \\
-    for $j=1$ to $j=J$ \\+
-      $u^j \gets u^j + P (u^{j-1} - \iR u^j)$ \\
-      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j;u^j)$ \\-
-\end{pseudo*}
+%\appendix
+%\section{Reduction to FAS multigrid for PDEs} \label{app:reductions}
+%
+%When all inequality constraints are removed the FASCD V-cycle Algorithm \ref{alg:fascd} reduces to the classical FAS multigrid V-cycle for nonlinear PDEs \cite{Brandt1977,Trottenbergetal2001}, which itself generalizes linear multigrid.  In fact, suppose we replace $\underline{\gamma}^J,\overline{\gamma}^J$ in definition \eqref{eq:fe:fineconstraintset} with $-\infty,+\infty$, respectively.  The finest-level admissible set $\mathcal{K}^J$ is then determined only by the Dirichlet boundary conditions.  Let $\mathcal{V}_0^J \subset \mathcal{V}^J$ denote the linear subspace with zero values on $\partial_D\Omega$.  Since $v-u^J\in\mathcal{V}_0^J$ is now arbitrary we can rewrite \eqref{eq:fe:vi} as the FE discretization of strong-form PDE $f(u)=\ell$: find $u^J \in \mathcal{V}^J$ such that
+%\begin{equation}
+%\ip{f^J(u^J)}{v} = \ip{\ell^J}{v} \qquad \text{for all } v\in \mathcal{V}_0^J. \label{eq:app:fas:pde}
+%\end{equation}
+%
+%The downward $\mathcal{D}^j$ and upward $\mathcal{U}^j$ constraint sets are also enlarged to vector spaces, and the corrections $y^j$ and $z^j$ are unconstrained; lines \ref{line:vcyclegenchifinest}, \ref{line:vcyclegenchi}, and \ref{line:vcyclegenphi} in Algorithm \ref{alg:fascd} can be removed.  Then VI problems \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi} can be rewritten as the weak form problem $\ip{f^j(u^j)}{v} = \ip{\ell^j}{v}$ over $v\in \mathcal{V}_0^j$, where $u^j=w^j+y^j$ when down-smoothing and $u^j=w^j+z^j$ when up-smoothing, and the smoothers can be regarded as unconstrained, in-place modifications of $u^j$.  Noting line \ref{line:vcyclerestrictsolution} now says $u^{j-1}=\iR u^j$, after down-smoothing the coarsened source functional computed by line \ref{line:vcyclerestrictell} can be rewritten as $\ell^{j-1} = f^{j-1}\left(u^{j-1}\right) + R\left(\ell^j-f^j(u^j)\right)$.
+%
+%Going upward we must be careful that only the coarse correction, and not the coarse solution, is prolonged \cite[remark 5.3.9]{Trottenbergetal2001}.  After up-smoothing on the $j-1$ level the coarse iterate is $u^{j-1}$, but at this point $u^j=w^j + y^j$ contains the result of $j$th-level down-smoothing.  The initial value of the correction $z^j$, before up-smoothing on the $j$th level, is $z^j = y^j + P z^{j-1}$, where $z^{j-1}$ contains the total correction from coarser corrections and $j-1$ level up-smoothing.  Thus the $j$th-level iterate \emph{before} up-smoothing must be set to $w^j + y^j + P z^{j-1} = u^j + P(u^{j-1} - \iR u^j)$, which replaces line \ref{line:vcycleupsmoothinitial}.
+%
+%With these modifications, Algorithm \ref{alg:fascd} becomes the FAS V-cycle below, as a solver for \eqref{eq:app:fas:pde}. This algorithm appears in various sources in the literature, for example \cite[Algorithm 14]{Bruneetal2015} and \cite[section 5.3.4]{Trottenbergetal2001}.
+%
+%\begin{pseudo*}
+%\pr{fas-vcycle}(\ell^J; u^J)\text{:} \\+
+%    for $j=J$ downto $j=1$ \\+
+%      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j;u^j)$ \\
+%      $u^{j-1} = \iR u^j$ \\
+%      $\ell^{j-1} = f^{j-1}(u^{j-1}) + R \left(\ell^j - f^j(u^j)\right)$ \\-
+%    $\text{\pr{solve}}(\ell^0;u^0)$ \\
+%    for $j=1$ to $j=J$ \\+
+%      $u^j \gets u^j + P (u^{j-1} - \iR u^j)$ \\
+%      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j;u^j)$ \\-
+%\end{pseudo*}
 
 \end{document}
