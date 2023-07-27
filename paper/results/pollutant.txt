@@ -1,102 +1,102 @@
 ******** -dim 2: serial, P1 *******
     0 FASCD ncp function norm 1.911506232917e+00
-    1 FASCD ncp function norm 4.303832913872e-12
+    1 FASCD ncp function norm 7.379975115942e-14
 FASCD solve converged due to CONVERGED_SINGLE_LEVEL iterations 1
 done on 15 x 15 square mesh (1 levels, mcoarse=15, m_J=256 dof)
-  wall times: mesh hierarchy gen = 0.107 (1.8%), whole run = 6.106
+  wall times: mesh hierarchy gen = 0.108 (18.1%), whole run = 0.594
     0 FASCD ncp function norm 1.231937702197e+00
-    0 FASCD ncp function norm 4.329922206382e-01
-    1 FASCD ncp function norm 4.428134502830e-04
-    2 FASCD ncp function norm 4.403802404232e-09
-FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+    0 FASCD ncp function norm 4.329922206373e-01
+    1 FASCD ncp function norm 4.428134223707e-04 [ratio 1.022682e-03], |du|/|u|=1.523247554528e-01
+    2 FASCD ncp function norm 1.390765037636e-11 [ratio 3.140747e-08], |du|/|u|=5.842084557968e-05
+FASCD solve converged due to CONVERGED_FNORM_ABS iterations 2
 done on 30 x 30 square mesh (2 levels, mcoarse=15, m_J=961 dof)
-  wall times: mesh hierarchy gen = 0.155 (4.2%), whole run = 3.678
+  wall times: mesh hierarchy gen = 0.136 (8.8%), whole run = 1.547
     0 FASCD ncp function norm 6.503077621862e-01
-    0 FASCD ncp function norm 2.178319064701e-01
-    1 FASCD ncp function norm 1.345982359201e-05
-    2 FASCD ncp function norm 9.214323203835e-09
-FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+    0 FASCD ncp function norm 2.178319064618e-01
+    1 FASCD ncp function norm 1.345867335172e-05 [ratio 6.178467e-05], |du|/|u|=7.781344967031e-02
+    2 FASCD ncp function norm 4.999257834878e-12 [ratio 3.714525e-07], |du|/|u|=4.437212048217e-06
+FASCD solve converged due to CONVERGED_FNORM_ABS iterations 2
 done on 60 x 60 square mesh (3 levels, mcoarse=15, m_J=3721 dof)
-  wall times: mesh hierarchy gen = 0.228 (9.5%), whole run = 2.393
+  wall times: mesh hierarchy gen = 0.222 (11.6%), whole run = 1.908
     0 FASCD ncp function norm 3.352739024891e-01
-    0 FASCD ncp function norm 1.130409127066e-01
-    1 FASCD ncp function norm 1.428727106229e-04
-    2 FASCD ncp function norm 5.501414783342e-08
+    0 FASCD ncp function norm 1.130409146893e-01
+    1 FASCD ncp function norm 1.429099816436e-04 [ratio 1.264232e-03], |du|/|u|=1.657766003254e-02
+    2 FASCD ncp function norm 5.491263332270e-08 [ratio 3.842463e-04], |du|/|u|=1.397060503155e-04
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 done on 120 x 120 square mesh (4 levels, mcoarse=15, m_J=14641 dof)
-  wall times: mesh hierarchy gen = 0.624 (18.9%), whole run = 3.305
+  wall times: mesh hierarchy gen = 0.598 (21.9%), whole run = 2.732
     0 FASCD ncp function norm 1.702639733809e-01
-    0 FASCD ncp function norm 6.190175137597e-02
-    1 FASCD ncp function norm 2.563560610539e-05
-    2 FASCD ncp function norm 5.262179264643e-07
+    0 FASCD ncp function norm 6.190175315995e-02
+    1 FASCD ncp function norm 2.563557028037e-05 [ratio 4.141332e-04], |du|/|u|=5.420383344949e-03
+    2 FASCD ncp function norm 5.262327644902e-07 [ratio 2.052745e-02], |du|/|u|=1.788670679541e-04
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 done on 240 x 240 square mesh (5 levels, mcoarse=15, m_J=58081 dof)
-  wall times: mesh hierarchy gen = 2.159 (34.6%), whole run = 6.234
+  wall times: mesh hierarchy gen = 2.072 (36.6%), whole run = 5.656
     0 FASCD ncp function norm 8.563989793453e-02
-    0 FASCD ncp function norm 3.289967741351e-02
-    1 FASCD ncp function norm 2.993256963799e-05
-    2 FASCD ncp function norm 7.402696006472e-07
+    0 FASCD ncp function norm 3.289967711622e-02
+    1 FASCD ncp function norm 2.993258236709e-05 [ratio 9.098139e-04], |du|/|u|=1.997337604208e-03
+    2 FASCD ncp function norm 7.401799147675e-07 [ratio 2.472823e-02], |du|/|u|=1.757125187334e-04
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 done on 480 x 480 square mesh (6 levels, mcoarse=15, m_J=231361 dof)
-  wall times: mesh hierarchy gen = 8.465 (48.4%), whole run = 17.500
+  wall times: mesh hierarchy gen = 8.323 (50.0%), whole run = 16.646
     0 FASCD ncp function norm 4.294992448941e-02
-    0 FASCD ncp function norm 1.712303564612e-02
-    1 FASCD ncp function norm 2.067036100859e-05
-    2 FASCD ncp function norm 6.887337511413e-07
-    3 FASCD ncp function norm 3.250416195032e-08
+    0 FASCD ncp function norm 1.712303564781e-02
+    1 FASCD ncp function norm 2.067033944883e-05 [ratio 1.207166e-03], |du|/|u|=1.056848231388e-03
+    2 FASCD ncp function norm 6.886957583622e-07 [ratio 3.331807e-02], |du|/|u|=1.223130637472e-04
+    3 FASCD ncp function norm 3.169223957201e-08 [ratio 4.601777e-02], |du|/|u|=5.106562270137e-06
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
 done on 960 x 960 square mesh (7 levels, mcoarse=15, m_J=923521 dof)
-  wall times: mesh hierarchy gen = 33.668 (49.4%), whole run = 68.149
+  wall times: mesh hierarchy gen = 32.303 (49.1%), whole run = 65.852
     0 FASCD ncp function norm 2.150587625601e-02
-    0 FASCD ncp function norm 8.754313502141e-03
-    1 FASCD ncp function norm 8.210454594754e-06
-    2 FASCD ncp function norm 5.358541048384e-07
-    3 FASCD ncp function norm 4.184000878799e-08
+    0 FASCD ncp function norm 8.754313501345e-03
+    1 FASCD ncp function norm 8.210428814230e-06 [ratio 9.378724e-04], |du|/|u|=5.174623561833e-04
+    2 FASCD ncp function norm 5.355143593820e-07 [ratio 6.522368e-02], |du|/|u|=6.360305449394e-05
+    3 FASCD ncp function norm 3.546342171412e-08 [ratio 6.622310e-02], |du|/|u|=4.089614016509e-06
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
 done on 1920 x 1920 square mesh (8 levels, mcoarse=15, m_J=3690241 dof)
-  wall times: mesh hierarchy gen = 139.463 (51.8%), whole run = 269.477
+  wall times: mesh hierarchy gen = 134.176 (50.7%), whole run = 264.493
     0 FASCD ncp function norm 1.075945908846e-02
-    0 FASCD ncp function norm 4.429899667347e-03
-    1 FASCD ncp function norm 1.735119536520e-06
-    2 FASCD ncp function norm 1.629913812121e-07
-    3 FASCD ncp function norm 4.175741642812e-08
+    0 FASCD ncp function norm 4.429899670856e-03
+    1 FASCD ncp function norm 1.734690864854e-06 [ratio 3.915869e-04], |du|/|u|=1.262308995870e-04
+    2 FASCD ncp function norm 1.594422401698e-07 [ratio 9.191392e-02], |du|/|u|=1.425558630699e-05
+    3 FASCD ncp function norm 1.389611843217e-08 [ratio 8.715456e-02], |du|/|u|=1.164812033121e-06
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
 done on 3840 x 3840 square mesh (9 levels, mcoarse=15, m_J=14753281 dof)
-  wall times: mesh hierarchy gen = 593.237 (51.7%), whole run = 1146.471
+  wall times: mesh hierarchy gen = 570.519 (51.3%), whole run = 1112.081
 
 ******** -dim 3: P = 16 parallel, Q1 *******
     0 FASCD ncp function norm 4.969273185808e-01
-    1 FASCD ncp function norm 2.548561368887e-09
+    1 FASCD ncp function norm 2.721639154799e-11
 FASCD solve converged due to CONVERGED_SINGLE_LEVEL iterations 1
 done on 15 x 15 x 15 cube mesh (1 levels, mcoarse=15, m_J=4096 dof)
-  wall times: mesh hierarchy gen = 0.169 (1.4%), whole run = 12.475
+  wall times: mesh hierarchy gen = 0.168 (18.5%), whole run = 0.908
     0 FASCD ncp function norm 2.032855898932e-01
-    0 FASCD ncp function norm 8.471830412061e-02
-    1 FASCD ncp function norm 9.612744806107e-05
-    2 FASCD ncp function norm 1.216819283649e-08
+    0 FASCD ncp function norm 8.471830412012e-02
+    1 FASCD ncp function norm 9.612439090128e-05 [ratio 1.134635e-03], |du|/|u|=1.314672563183e-01
+    2 FASCD ncp function norm 3.320652036664e-09 [ratio 3.454536e-05], |du|/|u|=1.603849550759e-04
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 done on 30 x 30 x 30 cube mesh (2 levels, mcoarse=15, m_J=29791 dof)
-  wall times: mesh hierarchy gen = 0.446 (2.1%), whole run = 21.062
+  wall times: mesh hierarchy gen = 0.409 (3.3%), whole run = 12.215
     0 FASCD ncp function norm 7.479369064281e-02
-    0 FASCD ncp function norm 2.705237717747e-02
-    1 FASCD ncp function norm 3.403624870817e-05
-    2 FASCD ncp function norm 1.046961662878e-08
+    0 FASCD ncp function norm 2.705238089896e-02
+    1 FASCD ncp function norm 3.403460951056e-05 [ratio 1.258100e-03], |du|/|u|=6.376007582032e-02
+    2 FASCD ncp function norm 9.857025503407e-09 [ratio 2.896177e-04], |du|/|u|=4.396013649726e-04
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 done on 60 x 60 x 60 cube mesh (3 levels, mcoarse=15, m_J=226981 dof)
-  wall times: mesh hierarchy gen = 1.994 (13.9%), whole run = 14.327
+  wall times: mesh hierarchy gen = 2.022 (15.3%), whole run = 13.208
     0 FASCD ncp function norm 2.721377244701e-02
-    0 FASCD ncp function norm 9.157343060381e-03
-    1 FASCD ncp function norm 1.572957476463e-05
-    2 FASCD ncp function norm 2.245014061123e-07
+    0 FASCD ncp function norm 9.157343038002e-03
+    1 FASCD ncp function norm 1.572953735954e-05 [ratio 1.717697e-03], |du|/|u|=1.535388532766e-02
+    2 FASCD ncp function norm 2.244873506875e-07 [ratio 1.427171e-02], |du|/|u|=3.684299786873e-04
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 done on 120 x 120 x 120 cube mesh (4 levels, mcoarse=15, m_J=1771561 dof)
-  wall times: mesh hierarchy gen = 13.646 (31.2%), whole run = 43.727
+  wall times: mesh hierarchy gen = 13.262 (31.1%), whole run = 42.574
     0 FASCD ncp function norm 9.773630292135e-03
-    0 FASCD ncp function norm 3.287856294767e-03
-    1 FASCD ncp function norm 4.893803101622e-06
-    2 FASCD ncp function norm 2.763244013622e-07
-    3 FASCD ncp function norm 1.979544214654e-08
+    0 FASCD ncp function norm 3.287856290090e-03
+    1 FASCD ncp function norm 4.893789262022e-06 [ratio 1.488444e-03], |du|/|u|=3.203379154101e-03
+    2 FASCD ncp function norm 2.759003350957e-07 [ratio 5.637765e-02], |du|/|u|=4.883517753245e-04
+    3 FASCD ncp function norm 8.198016368831e-09 [ratio 2.971369e-02], |du|/|u|=1.993787128329e-05
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
 done on 240 x 240 x 240 cube mesh (5 levels, mcoarse=15, m_J=13997521 dof)
-  wall times: mesh hierarchy gen = 106.959 (31.4%), whole run = 340.744
+  wall times: mesh hierarchy gen = 110.274 (31.5%), whole run = 349.530
 
