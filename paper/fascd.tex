@@ -152,8 +152,7 @@ Here we extend Tai's multilevel CD method by replacing the coarser-level correct
 \item When a (mesh-dependent) reduced-space active set method is used as relaxation, we demonstrate that F-cycles are an optimal solver for the examples in Section \ref{sec:results}; smoother effort is proportional to the number of unknowns on a given level because the number of Newton and Krylov iterations is fixed.
 \end{enumerate}
 
-Prior multilevel algorithms for VIs have limitations compared to the FASCD framework.  The projected full approximation scheme (PFAS) algorithm of Brandt \& Cryer \cite{BrandtCryer1983} applies to linear complementarity problems and projected (truncated) Gauss--Seidel smoothers.  While FASCD reduces to general, nonlinear FAS for PDEs when the inequality constraints are removed, PFAS reduces to linear multigrid.  The multilevel CD iteration of Tai \cite{Tai2003} is formulated in terms of an objective function, so as stated it only applies to optimization-type problems, and furthermore each of its coarser-level problems refers to the finest-level discretization.  The latter property is improved by reformulation using defect constraints and monotone injection operators (see \cite[Algorithm 4.7]{GraeserKornhuber2009}, or Section \ref{sec:cdmultilevel} herein).  The monotone multigrid methods of Kornhuber and co-authors \cite{GraeserKornhuber2009,Kornhuber1994} appear to be formulated only with Gauss--Seidel type smoothers, and may have been applied only to optimization-type VI problems \cite[for example]{JouvetGraeser2013}.  Unlike the fastest variants of monotone multigrid, no zeroing of the basis functions associated with the active set (truncation) is employed in our method, both simplifying the implementation and allowing the coarse grid corrections to update the estimate of the active set on the fine grid. Numerical evidence indicates that our coarse grid corrections are useful for this purpose, even when the coarse grids are too coarse to usefully resolve the active set.  On a problem for which the truncated Newton/monotone multigrid methods were designed \cite[problem 7.1.1]{GraeserKornhuber2009}, the performance of FASCD is at least as good (Example \ref{ex:results:classical}).
-A limitation of FASCD is that, as formulated, it only solves bound-constrained VI problems.
+Prior multilevel algorithms for VIs have limitations compared to the FASCD framework.  The projected full approximation scheme (PFAS) algorithm of Brandt \& Cryer \cite{BrandtCryer1983} applies to linear complementarity problems and projected (truncated) Gauss--Seidel smoothers.  While FASCD reduces to general, nonlinear FAS for PDEs when the inequality constraints are removed, PFAS reduces to linear multigrid.  The multilevel CD iteration of Tai \cite{Tai2003} is formulated in terms of an objective function, so as stated it only applies to optimization-type problems, and furthermore each of its coarser-level problems refers to the finest-level discretization.  The latter property is improved by reformulation using defect constraints and monotone injection operators (see \cite[Algorithm 4.7]{GraeserKornhuber2009}, or Section \ref{sec:cdmultilevel} herein).  The monotone multigrid methods of Kornhuber and co-authors \cite{GraeserKornhuber2009,Kornhuber1994} appear to be formulated only with Gauss--Seidel type smoothers, and may have been applied only to optimization-type VI problems \cite[for example]{JouvetGraeser2013}.  Unlike the fastest variants of monotone multigrid, no zeroing of the basis functions associated with the active set (truncation) is employed in our method, both simplifying the implementation and allowing the coarse grid corrections to update the estimate of the active set on the fine grid. Numerical evidence indicates that our coarse grid corrections are useful for this purpose, even when the coarse grids are too coarse to usefully resolve the active set.  On a problem for which the truncated Newton/monotone multigrid methods were designed \cite[problem 7.1.1]{GraeserKornhuber2009}, the performance of FASCD is at least as good (Example \ref{ex:results:classical}).  A limitation of FASCD is that, as formulated, it only solves bound-constrained VI problems.
 
 In our experiments, FASCD V-cycles exhibit essentially the same mesh-independent convergence rates for VI problems that FAS multigrid V-cycles exhibit for corresponding unconstrained PDE problems.  The F-cycle results in Section \ref{sec:results} show nearly-textbook multigrid efficiency, namely solutions within discretization error in work comparable to few smoother sweeps on the finest-level mesh \cite{BrandtLivne2011}.  Specifically, we see this performance for classical (unilateral, Laplacian) obstacle problems, $p$-Laplacian obstacle problems, and box-constrained advection-diffusion equations.  Furthermore, V-cycle results appear to be insensitive to the geometric complexity of the coincidence set and free boundary.
 
@@ -734,6 +733,8 @@ Suppose an iteration starts with $w^{J,0} \in \mathcal{K}^J$, generating (fine-l
 \end{equation}
 as the stopping criterion.  In Section \ref{sec:results} we will show that iteration of the V-cycle Algorithm \ref{alg:fascd}, starting with some finest-mesh initial iterate $w^{J,0}$ and repeated until \eqref{eq:stoppingcriterion} holds, is an effective solver.
 
+\elb{add \id{stol}}
+
 However, an F-cycle (Figure \ref{fig:fascdcycles}), also called a \emph{full multigrid cycle}, is even better.  The well-known principle of such a cycle \cite[section 2.6]{Trottenbergetal2001} is to start on the coarsest mesh and solve the problem from any initial iterate.  Then an admissible initial iterate on the next-finer mesh is generated via prolongation, and so on to finer levels.  (In the VI context one must also truncate to the bounds after the prolongation; see lines \ref{line:fcycleprolongtruncone} and \ref{line:fcycleprolongtrunctwo} in Algorithm \ref{alg:fascd-fcycle}.)  During this ``ramp'' one approximately solves on each level by using a fixed number of V-cycles, each down to the coarsest mesh, and then one does full-depth V-cycles from the finest level, to convergence.
 
 This F-cycle approach is described in Algorithm \ref{alg:fascd-fcycle}.  In contrast to the construction of LDCs (Section \ref{sec:cdmultilevel}) for V-cycles, standard injection is used to generate the $\underline{\gamma}^j,\overline{\gamma}^j$ on each level during the initial nested iteration. This is because nested iteration approximates the full solution on the coarse grids, not just a correction to an initial iterate; essentially, our choice is between \eqref{eq:fe:badstandard} (where the coarse constraint set is always nonempty, but the solution may not be admissible on the next level) or \eqref{eq:fe:badmonotone} (where the coarse solution is always admissible if it exists, but the constraint set may be empty). We choose \eqref{eq:fe:badstandard} so that the coarse problems always have nonempty constraint sets, and project pointwise to the bounds as we refine in the nested iteration.
@@ -759,25 +760,21 @@ On line \ref{line:fcyclecoarsestinitial}, one may generate an initial iterate $w
 \label{alg:fascd-fcycle}
 \end{pseudofloat}
 
-\begin{comment}
-smoother semantics: in our implementation of the V-cycle we actually shift to solve a VI for $\tilde w^j = w^j+y^j$, then compute $y^j = \tilde w^j - w^j$ after the solve, etc.; this is evidently equivalent
-\end{comment}
-
 A large space of smoothers could be explored, but in the next Section we will only apply an active-set (reduced-space) Newton method \cite{Balayetal2023,BensonMunson2006}, denoted as \emph{RS Newton}.  A fixed number of preconditioned Krylov iterations approximately solve the arising linear systems, thus $O(m_j)$ work per smoother application.  For the symmetric Laplacian (Example \ref{ex:results:classical}) we apply conjugate gradients (CG) with incomplete Cholesky (IC) preconditioning.  The generalized minimum residual (GMRES) with incomplete LU (ILU) preconditioning is used in other cases.  The coarse solver is also RS Newton, but iterated to convergence using the MUMPS sparse direct linear solver~\cite{Amestoy2001}.
 
 
 \section{Results} \label{sec:results}
 
-For $P_1$ and $Q_1$ elements, Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} were implemented in Python using the Firedrake library \cite{Rathgeberetal2016}.  The numerical results in this Section, which follow the Section \ref{sec:vi} examples, focus on the scaling of FASCD iterations as the mesh resolution increases.  Our primary observations are that each V-cycle greatly reduces the residual norm, and that a few F-cycles solve most examples to within discretization error.
+For $P_1$ and $Q_1$ elements, Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} were implemented in Python using the Firedrake library \cite{Rathgeberetal2016}.  The numerical results in this Section, which follow the Section \ref{sec:vi} examples, focus on the scaling of FASCD iterations with mesh resolution.  We see that each V-cycle greatly reduces the residual norm, and that a few F-cycles solve most of these problems to within discretization error.
 
 \begin{example} \label{ex:results:classical}
-Consider the classical unilateral 2D Laplacian obstacle problem, Example \ref{ex:plaplacian} with $p=2$ and admissible set $\mathcal{K} = \{v \ge \psi\}$.  We consider two problems over square domains $\Omega$, with different coincidence (active) sets $\{x\in\Omega \,:\, u(x)=\psi(x)\}$ (Figure \ref{fig:results:classical}).  The standard ``ball'' problem has an upper hemisphere obstacle \cite[Chapter 12]{Bueler2021}, but in the ``spiral'' problem the obstacle is constructed to produce the coincidence set shown \cite[problem 7.1.1]{GraeserKornhuber2009}.  For this experiment we used a coarsest regular-triangulation mesh with $m_0=41$ nodes.  The finest mesh had $m_{10} \approx 3.4 \times 10^7$ nodes.  The smoother applied a single RS Newton iteration (Section \ref{sec:implementation}), with three IC-preconditioned CG iterations.  The initial iterate was set to $w=\max\{0,\psi\}$.
+Consider the classical unilateral 2D Laplacian obstacle problem, Example \ref{ex:plaplacian} with $p=2$ and admissible set $\mathcal{K} = \{v \ge \psi\}$.  We consider two cases, over square domains $\Omega$, with different coincidence (active) sets $\{x\in\Omega \,:\, u(x)=\psi(x)\}$ (Figure \ref{fig:results:classical}).  The standard ``ball'' problem has an upper hemisphere obstacle \cite[Chapter 12]{Bueler2021}, but the ``spiral'' problem's obstacle is constructed to produce the coincidence set shown \cite[problem 7.1.1]{GraeserKornhuber2009}.  For this experiment we used a coarsest (regular triangulation) mesh with $m_0=41$ nodes, and the finest mesh had $m_{10} \approx 3.4 \times 10^7$ nodes.  The smoother applied a single RS Newton iteration (Section \ref{sec:implementation}), with three IC-preconditioned CG iterations.  The initial iterate was $w=\max\{0,\psi\}$.
 
-Table \ref{tab:results:classical} shows the resulting iteration counts.  As expected, RS Newton applied by itself as a solver shows rapidly-increasing iterations, roughly proportional to resolution, but V-cycle iterations increase slowly, logarithmically with the resolution.  These experiments over-solve, with \texttt{rtol} $=$ \texttt{atol} $= 10^{-12}$ in stopping criterion \eqref{eq:stoppingcriterion}.  The complexity of the coincidence set or free boundary does not appear to strongly influence FASCD V-cycle performance.  For the spiral problem \cite{GraeserKornhuber2009} reports that for $m_J \approx 5\times 10^5$ resolution \elb{describe GK results}
+Table \ref{tab:results:classical} shows the resulting iteration counts.  As expected, RS Newton, by itself as a solver, shows rapidly-increasing iterations, roughly proportional to resolution, but V-cycle iterations increase slowly, logarithmically with the resolution.  These experiments over-solve, with \texttt{rtol} $=$ \texttt{atol} $= 10^{-12}$ in stopping criterion \eqref{eq:stoppingcriterion}.  The complexity of the coincidence set or free boundary does not appear to strongly influence FASCD V-cycle performance.  For the spiral problem \cite{GraeserKornhuber2009} reports that for $m_J \approx 5\times 10^5$ resolution \elb{describe GK results}
 
 \elb{asymp rate figure?}
 
-For F-cycles we instead used \texttt{rtol} $= 10^{-8}$, sufficient to reach discretization error, and we report the number of V-cycles after the ramp (Section \ref{sec:implementation}).  A small, constant number solves the problem, though spiral needs more V-cycles to clean-up error remaining after the ramp.  Since each V-cycle does the work of about eight finest-level Krylov iterations, the ball results show nearly textbook multigrid efficiency\footnote{Textbook multigrid efficiency is imperfectly defined, but consider \cite{BrownSmithAhmadia2013}: ``an order of magnitude reduction in residual per iteration and solution of the fine-level system at a small multiple of the cost of a residual evaluation.''  Work of less than ten residual evaluations is often mentioned as the standard.} at the highest resolutions despite the low solution regularity.
+For F-cycles we instead used \texttt{rtol} $= 10^{-8}$, sufficient to reach discretization error, and we report the number of V-cycles after the ramp.  A small, constant number of cycles solves the problem, though spiral needs more V-cycles to clean-up error remaining after the ramp.  Since each V-cycle does the work of about eight finest-level Krylov iterations, the ball results show nearly textbook multigrid efficiency at the highest resolutions despite the low solution regularity.
 \end{example}
 
 %REGENERATE using git@bitbucket.org:pefarrell/fascd.git, in examples/
@@ -820,9 +817,9 @@ For F-cycles we instead used \texttt{rtol} $= 10^{-8}$, sufficient to reach disc
 \end{table}
 
 \begin{example}  \label{ex:results:plap}
-We again consider Example \ref{ex:plaplacian} with a unilateral constraint, but now for the nonlinear $p=1.5$-Laplacian, a ``fast'' diffusion with diffusivity limit $D=|\grad u|^{p-2}\to \infty$ as $|\grad u|\to 0$.  Note that Example \ref{ex:results:sia} applies a doubly-nonlinear version of a $p=4$ ``degenerate'' diffusion operator.  Well-posedness and solution regularity for $p$-Laplacian obstacle problems is considered in \cite{ChoeLewis1991}.
+We again consider Example \ref{ex:plaplacian}, with a unilateral constraint, but now for the nonlinear $p$-Laplacian \cite{ChoeLewis1991}.  Setting $p=1.5$ yields a fast diffusion ($D=|\grad u|^{p-2}\to \infty$ as $|\grad u|\to 0$).  Note that Example \ref{ex:results:sia} below considers a doubly-nonlinear operator with $p=4$ degenerate diffusion.
 
-This example reveals the strong contrast between $V(1,0)$ and $V(0,1)$ results (\pr{up}, \pr{down} $=0$ in Algorithm \ref{alg:fascd}, respectively), and the need for robust smoothers when the operator is nonlinear.  Set $\Omega=(-3,3)$, $\psi(x) = -0.2|x|$, $\mathcal{K} = \{v \ge \psi\} \subset W^{1,p}(\Omega)$, and $\ip\ell v = \int_\Omega g v$, where $g(x)=1$ for $|x|<1$ and $g(x)=-1$ for $|x|>1$, in VI \eqref{eq:vi}.  The exact solution is easily computed for any $p$; see the codes accompanying this paper.  For this experiment we used a coarsest mesh of $m_0=7$ vertices and a finest mesh with $m_9=3073$.  The default smoother uses three (fixed) iterations of RS Newton, with LU solution of the arising linear systems.  The coarse solver is the same but iterated to convergence.  The initial iterate was $w=\psi$, and \texttt{rtol} $= 10^{-6}$ and \texttt{atol} $= 10^{-12}$.  Figure \ref{fig:imagesvcycle} illustrates the major steps of an example V-cycle, showing each of the coarse-correction VI subproblems and solutions; the result $\tilde w^2$ is visually close to the exact solution.
+This example reveals the strong contrast between $V(1,0)$ and $V(0,1)$ results (\pr{up}, \pr{down} $=0$ in Algorithm \ref{alg:fascd}, respectively).  Set $\Omega=(-3,3)$, $\psi(x) = -0.2|x|$, $\mathcal{K} = \{v \ge \psi\} \subset W^{1,p}(\Omega)$, and $\ip\ell v = \int_\Omega g v$, where $g(x)=1$ for $|x|<1$ and $g(x)=-1$ for $|x|>1$, in VI \eqref{eq:vi}.  The exact solution is easily computed for any $p$; see the codes accompanying this paper.  For this experiment the coarsest mesh has $m_0=7$ nodes and the finest $m_9=3073$.  The default smoother uses three (fixed) iterations of RS Newton, with LU.  We set \texttt{rtol} $= 10^{-6}$ and \texttt{atol} $=$ \texttt{stol} $= 10^{-12}$.  Figure \ref{fig:imagesvcycle} illustrates the major steps of a V-cycle, showing each of the coarse-correction VI subproblems and solutions; the result $\tilde w^2$ is visually close to the exact solution.
 
 % figures in the following visualization were generated using branch elbueler/simplefigs
 % of git@bitbucket.org:pefarrell/fascd.git, and the following commands (including imagemagick):
@@ -837,42 +834,38 @@ This example reveals the strong contrast between $V(1,0)$ and $V(0,1)$ results (
 \label{fig:imagesvcycle}
 \end{figure}
 
-Iteration results are shown in Table \ref{tab:results:fastplap1d}.  We see that $V(1,0)$ cycles, essentially Algorithm 4.7 in \cite{GraeserKornhuber2009} but with a stronger smoother, often do not converge.  By contrast, $V(0,1)$ cycles, up-smoothing in the larger sets $\mathcal{U}^j$ (Section \ref{sec:cdmultilevel}), are as good as the default $V(1,1)$ cycles ($=$ Algorithm \ref{alg:fascd}).  F-cycles are even more efficient except when they fail entirely, but these failures arise from singular diffusivity.  If we regularize  $D=|\grad u|^{-0.5}$ to $D_\eps = \left(\eps + |\grad u|^2\right)^{-0.25}$, with $\eps=10^{-8}$, then a single F-cycle suffices at every resolution (column ``F$_\eps$'').  
-
-\elb{check if regularization is even necessary when you re-run with \texttt{-fascd\_levels\_snes\_vi\_zero\_tolerance 1.0e-12}}
-
-Note that convergence is at rate $O(h^{2.005})$; compare \cite{ChoeLewis1991}.
+Iteration results are shown in Table \ref{tab:results:fastplap1d}.  We see that $V(1,0)$ cycles, Algorithm 4.7 in \cite{GraeserKornhuber2009} but with a stronger smoother, often do not converge.  By contrast, $V(0,1)$ cycles, up-smoothing in the larger sets $\mathcal{U}^j$ (Section \ref{sec:cdmultilevel}), are as good as the default $V(1,1)$ cycles (Algorithm \ref{alg:fascd}).  F-cycles are even more efficient; a single cycle suffices at all higher resolutions.   Note that convergence is at rate $O(h^{2.005})$; compare \cite{ChoeLewis1991}.
 \end{example}
 
 % see git@bitbucket.org:pefarrell/fascd.git: examples/plap1d.py
 % and https://github.com/bueler/mcd-extended: paper/results/plap1d.sh|txt
 \begin{table}[ht]
 \centering
-\begin{tabular}{lr@{\hskip 7mm}c@{\hskip 3mm}c@{\hskip 3mm}c@{\hskip 4mm}c@{\hskip 5mm}c@{\hskip 6mm}c}
+\begin{tabular}{lr@{\hskip 7mm}c@{\hskip 3mm}c@{\hskip 3mm}c@{\hskip 4mm}c@{\hskip 6mm}c}
 \toprule
-\emph{levels} & $m_J$ & V(1,0) & V(0,1) & V(1,1) & F & F$_\eps$ & $\|$error$\|_\infty$ \\
+\emph{levels} & $m_J$ & V(1,0) & V(0,1) & V(1,1) & F & $\|$error$\|_\infty$ \\
 \midrule
- 1 &    $7$ &  1 &  1 &  1 &  1 &  1 & $2.3\times 10^{-1}$ \\
- 2 &   $13$ &  3 &  3 &  2 &  2 &  1 & $3.3 \times 10^{-2}$ \\
- 3 &   $25$ & 12 &  4 &  2 &  1 &  1 & $9.1 \times 10^{-3}$ \\
- 4 &   $49$ & NC &  4 &  2 &  1 &  1 & $3.2 \times 10^{-3}$ \\
- 5 &   $97$ & NC &  3 &  3 &  1 &  1 & $5.5 \times 10^{-4}$ \\
- 6 &  $193$ & NC &  3 &  3 & NC &  1 & $1.7 \times 10^{-4}$ \\
- 7 &  $385$ & NC &  3 &  3 &  1 &  1 & $4.7 \times 10^{-5}$ \\
- 8 &  $769$ & NC &  4 &  7 &  1 &  1 & $9.5 \times 10^{-6}$ \\
- 9 & $1537$ & NC &  5 &  6 & NC &  1 & $3.6 \times 10^{-6}$ \\
-10 & $3073$ & NC & 11 & 19 &  1 &  1 & $4.9 \times 10^{-7}$ \\
+ 1 &    $7$ &  1 &  1 &  1 &  1 & $2.3\times 10^{-1}$ \\
+ 2 &   $13$ &  3 &  3 &  2 &  2 & $3.3 \times 10^{-2}$ \\
+ 3 &   $25$ & 12 &  4 &  2 &  1 & $9.1 \times 10^{-3}$ \\
+ 4 &   $49$ & NC &  4 &  2 &  1 & $3.2 \times 10^{-3}$ \\
+ 5 &   $97$ & NC &  3 &  3 &  1 & $5.5 \times 10^{-4}$ \\
+ 6 &  $193$ & NC &  3 &  3 &  1 & $1.7 \times 10^{-4}$ \\
+ 7 &  $385$ & NC &  3 &  3 &  1 & $4.7 \times 10^{-5}$ \\
+ 8 &  $769$ & NC &  4 &  7 &  1 & $9.5 \times 10^{-6}$ \\
+ 9 & $1537$ & NC &  5 &  6 &  1 & $3.6 \times 10^{-6}$ \\
+10 & $3073$ & NC & 11 & 19 &  1 & $4.9 \times 10^{-7}$ \\
 \bottomrule
 \end{tabular}
 \bigskip
-\caption{Iterations for V- and F-cycles in Example \ref{ex:results:plap}.  NC $=$ did not converge after 50 iterations.  See text regarding F$_\eps$.}
+\caption{Iterations for V- and F-cycles in Example \ref{ex:results:plap}.  NC $=$ did not converge after 50 iterations.}
 \label{tab:results:fastplap1d}
 \end{table}
 
-Solvers implemented in Firedrake can exploit parallel solvers from the PETSc library \cite{Balayetal2023}, and in fact the above Examples, which were run in serial so as to fix the smoother, also run efficiently in parallel.  The next Examples apply parallel solvers, and Example \ref{ex:results:sia} demonstrates the parallel weak scaling \cite{Bueler2021} of FASCD.
+Firedrake applications can exploit the PETSc \cite{Balayetal2023} library's parallel solvers.  The above Examples, which were run in serial to fix the smoother, also run efficiently in parallel.  The next Examples apply parallel solvers and then demonstrate the weak scaling of FASCD F-cycles.
 
 \begin{example}  \label{ex:results:advdiff}
-Consider the advection-diffusion VI problem in Example \ref{ex:advectiondiffusion} with $\Omega=(-1,1)^d$, $d=2,3$, diffusivity $\eps=0.1$ in \eqref{eq:advectiondiffusionstrong}, and zero Dirichlet boundary conditions.  We made the 2D problem satisfy the coercivity hypothesis with a divergence-free velocity field $\bX = (7+5y,-5x)$, but in 3D set $\bX = (7+5y,-5x,2z)$ so $\grad\cdot\bX \ne 0$.  The chosen discontinuous source term $\phi \in L^\infty(\Omega)$ satisfies $\phi\ge 0$ in half of the domain, with positive circular patches, with negative values in the other half; details are in the associated code.  While the other Examples in this Section are unilateral, here the solution is box-constrained: $0 \le u \le 1$.  Figure \ref{fig:results:advdiff} shows coincidence sets for the 2D problem; the 3D sets are comparable in regularity and general pattern.
+Consider the advection-diffusion VI problem in Example \ref{ex:advectiondiffusion} with $\Omega=(-1,1)^d$, $d=2,3$, diffusivity $\eps=0.1$ in \eqref{eq:advectiondiffusionstrong}, and zero Dirichlet boundary conditions.  The 2D problem satisfies the coercivity hypothesis, with a divergence-free velocity field $\bX = (7+5y,-5x)$, but in 3D we set $\bX = (7+5y,-5x,2z)$ so $\grad\cdot\bX \ne 0$.  The discontinuous source term $\phi \in L^\infty(\Omega)$ satisfies $\phi\ge 0$ in half of the domain, with positive circular patches, but values are negative in the other half; details are in the associated code.  While the other Examples in this Section are unilateral, here the solution is box-constrained: $0 \le u \le 1$.  Figure \ref{fig:results:advdiff} shows coincidence sets for the 2D problem; the 3D sets are comparable in regularity and general pattern.
 
 % REGENERATE using git@bitbucket.org:pefarrell/fascd.git, in examples/
 %   mpiexec -n 16 --map-by core --bind-to hwthread python3 pollutant.py -dim 2 -levs 7 -o poll2d.pvd
@@ -882,13 +875,11 @@ Consider the advection-diffusion VI problem in Example \ref{ex:advectiondiffusio
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.35\textwidth]{fixfigs/poll2d-zero-set.png} \qquad \includegraphics[width=0.35\textwidth]{fixfigs/poll2d-one-set.png}
-\caption{Coincidence sets for the 2D bi-obstacle problem in Example \ref{ex:results:advdiff}: $u=0$ (left) and $u=1$ (right).}
+\caption{Coincidence sets for the 2D problem in Example \ref{ex:results:advdiff}: $u=0$ (left) and $u=1$ (right).}
 \label{fig:results:advdiff}
 \end{figure}
 
-The 2D solver applied $P_1$ elements on a single core, but in 3D the elements were chosen to be $Q_1$ (hexahedra) on $P=16$ cores.  A coarse mesh with $m_0=16^d$ vertices minimally-resolved the coincidence set.  The smoother was two (fixed) RS Newton iterations, with three preconditioned GMRES iterations for the arising linear systems; the preconditioning was additive Schwarz method (ASM) with incomplete factorization (ILU) on each process.  The coarse solver was RS Newton and LU, iterated to convergence.  Tolerances \id{rtol} $=10^{-5}$ and \id{atol} $=10^{-9}$ were used in \eqref{eq:stoppingcriterion}.
-
-F-cycle iteration results are shown in Table \ref{tab:results:advdiff}.  Despite the hint of growing iterations under mesh refinement, a few iterations sufficed up to memory-limited resolutions.  For any of the higher resolution runs, the FASCD F-cycle solver took less time than generating the mesh hierarchy.  The local Péclet number $\text{Pe}=\|\bX(x,y,z)\|_2 L \eps^{-1}$, with $L=2$ the width of $\Omega$, varied from 40 to 260.  The mesh Péclet number $m_J^{-1/d}\,\text{Pe}$ varied accordingly, and though the $m_J\le 121^d$ problems were advection-dominated, those with $m_J\ge 481^d$ were diffusion-dominated, and the smoother was the same in all cases, with nearly-constant iterations.
+The 2D solver applied $P_1$ elements on a single core, but in 3D the elements were chosen to be $Q_1$ (hexahedra) on $16$ cores.  A coarse mesh with $m_0=16^d$ vertices minimally-resolved the coincidence set.  The local Péclet number $\text{Pe}=\|\bX(x,y,z)\|_2 L \eps^{-1}$, with $L=2$ the width of $\Omega$, varied from 40 to 260, and the mesh Péclet number $m_J^{-1/d}\,\text{Pe}$ varied further with resolution, so the $m_J\le 121^d$ problems were advection-dominated, and those with $m_J\ge 481^d$ diffusion-dominated.  However, the smoother was the same in all cases: two (fixed) RS Newton iterations, with three preconditioned (additive Schwarz method (ASM) with ILU on each process) GMRES iterations.  The coarse solver was RS Newton and LU, iterated to convergence.  Tolerances were set to \id{rtol} $=10^{-5}$ and \id{atol} $=$ \id{stol} $= 10^{-9}$.  F-cycle iteration results are shown in Table \ref{tab:results:advdiff}.  A few F-cycles sufficed up to these memory-limited resolutions.
 \end{example}
 
 % see git@bitbucket.org:pefarrell/fascd.git: examples/pollutant.py
@@ -916,7 +907,7 @@ F-cycle iteration results are shown in Table \ref{tab:results:advdiff}.  Despite
 \end{table}
 
 \begin{example}   \label{ex:results:sia}
-We consider the steady shallow ice approximation (SIA) obstacle problem presented in Example \ref{ex:sia}, in which the surface elevation is constrained to exceed the bedrock elevation, $s\ge b$.  We set $\Omega=(0,L)^2$ with $L=1800$ km.  The data consist of a radial surface mass balance function $a$ \cite[equation (5.122)]{GreveBlatter2009} and a bumpy, synthetic map $b\in C^1(\Omega)$, with an elevation range of $1800$ m; details for $b$ are in the associated code.  A numerical solution is shown in Figure \ref{fig:results:siascene}, colored by the solution surface flow speed, i.e.~the magnitude of $\mathbf{u} = (n+1)(n+2)^{-1} \Gamma (s-b)^{n+1} |\grad s|^{n-1} \grad s$.  As noted in Example \ref{ex:sia}, and seen in this Figure, $|\grad s|$ is unbounded at the free boundary; the solution $s$, while continuous, has very low regularity.
+Consider the steady shallow ice approximation (SIA) obstacle problem (Example \ref{ex:sia}), in which the surface elevation is constrained to exceed the bedrock elevation, $s\ge b$, on $\Omega=(0,L)^2$ with $L=1800$ km.  The data consist of a radial surface mass balance function $a$ \cite[equation (5.122)]{GreveBlatter2009} and a bumpy, synthetic map $b\in C^1(\Omega)$, with an elevation range of $1800$ m; details are in the associated code.  A numerical solution is shown in Figure \ref{fig:results:siascene}, colored by the solution surface flow speed, the magnitude of $\mathbf{u} = (n+1)(n+2)^{-1} \Gamma (s-b)^{n+1} |\grad s|^{n-1} \grad s$.  Note $|\grad s|$ is unbounded at the free boundary; the solution $s$, while continuous, has very low regularity.
 
 % to regenerate from git@bitbucket.org:pefarrell/fascd.git: examples/:
 %   $ mpiexec -n 16 --map-by core --bind-to hwthread python3 sia.py -levs 8 -bumps \
@@ -925,13 +916,13 @@ We consider the steady shallow ice approximation (SIA) obstacle problem presente
 \begin{figure}[ht]
 \centering
 \includegraphics[width=1.0\textwidth]{fixfigs/sialev8scene.png}
-\caption{Solution of Example \ref{ex:sia} over a bumpy bedrock topography (grey), with the ice speed as surface coloring and 100-times vertical exaggeration.}
+\caption{Example \ref{ex:results:sia} solution over a bumpy bedrock topography (grey), with 100-times vertical exaggeration and surface coloring by flow speed.}
 \label{fig:results:siascene}
 \end{figure}
 
-We applied FASCD F-cycles using $Q_1$ elements and a smoother of four (fixed) iterations of RS Newton (Section \ref{sec:implementation}), with quadratic backtracking line search.  The arising linear systems were approximately solved, in parallel, by three (fixed) iterations of preconditioned GMRES and a ASM+ILU preconditioner.  The coarse solver was RS+LU, applied redundantly over all processors.  The coarse mesh was relatively fine, with $m_0=21^2$ vertices and 400 cells.  Because of the low regularity of the solution we used \id{rtol} $= 2 \times 10^{-4}$ and \id{atol} $= 10^{-8}$ in \eqref{eq:stoppingcriterion}.  The initial iterate was zero ice: $s=b$.  These parameters generated a solver with mesh-independent iterations.
+We applied FASCD F-cycles using $Q_1$ elements and a smoother of four (fixed) iterations of RS Newton (Section \ref{sec:implementation}), with quadratic backtracking line search.  The arising linear systems were approximately solved by three (fixed) iterations of preconditioned GMRES and a ASM+ILU preconditioner.  The coarse mesh was relatively fine, with $m_0=21^2$ vertices and 400 cells.  Because of the low regularity of the solution we used \id{rtol} $= 2 \times 10^{-4}$ and \id{atol} $= 10^{-8}$.  The initial iterate was zero ice: $s=b$.  These choices generated a solver with mesh-independent iterations.
 
-For a weak-scaling study we fixed the number of degrees of freedom per process at $m_J/P=641^2 \approx 4.1 \times 10^5$ and solved with $6, \dots, 11$ refinements.\footnote{The experiments were conducted on ARCHER2, the UK national supercomputer. Each node has 16 memory channels, so a maximum of 16 cores per node were employed.}  The results in Table \ref{tab:results:siaweak} show some degradation in time per cycle with increasing core counts, perhaps due to the use of one-level additive Schwarz in the solution of the arising linear systems. Nevertheless, the finest mesh result, with $m_J=20481^2=4.1 \times 10^8$ degrees of freedom, required less than three minutes to solve for the steady surface elevation of an ice sheet larger than the current Greenland ice sheet ($1.7$ million $\text{km}^2$) at uniform $87.5$ m resolution.
+For a weak-scaling study we fixed the number of degrees of freedom per process at $m_J/P=641^2 \approx 4.1 \times 10^5$ and solved with $6, \dots, 11$ refinements.\footnote{The experiments were conducted on ARCHER2, the UK national supercomputer. Each node has 16 memory channels, so a maximum of 16 cores per node were employed.}  The results in Table \ref{tab:results:siaweak} show some degradation in time per cycle with increasing core counts, perhaps due to the use of one-level additive Schwarz.  Nevertheless, the finest mesh result, with $m_J=20481^2=4.1 \times 10^8$ degrees of freedom, required less than three minutes to solve for the steady surface elevation of an ice sheet larger than the current Greenland ice sheet ($1.7$ million $\text{km}^2$) at uniform $87.5$ m resolution.
 
 % see git@bitbucket.org:pefarrell/fascd.git: examples/sia.py
 % and https://github.com/bueler/mcd-extended: paper/results/siaweak.sh|txt
@@ -950,7 +941,7 @@ $P$ & \emph{levels} & $m_J$ & \emph{F-cycles} & \emph{time} (s) \\
  \bottomrule
 \end{tabular}
 \bigskip
-\caption{Iterations and run time (wall clock, in seconds) for parallel FASCD F-cycle solutions of Example \ref{ex:sia} on $P$ processes.}
+\caption{Iterations and wall clock time for parallel FASCD solutions of Example \ref{ex:results:sia} on $P$ processes.}
 \label{tab:results:siaweak}
 \end{table}
 \end{example}
@@ -958,40 +949,13 @@ $P$ & \emph{levels} & $m_J$ & \emph{F-cycles} & \emph{time} (s) \\
 
 \section{Discussion and outlook} \label{sec:discussion}
 
-As a multilevel solver for VI problems, the FASCD method is a strategy for generating coarser-level problems which, once solved, make helpful admissible additions to a V-cycle update.  The method is smoother-agnostic, and our implementation within the extensible Firedrake \cite{Rathgeberetal2016} and PETSc \cite{Balayetal2023} library framework should allow easy experimentation with other smoothers (projected Gauss--Seidel, semi-smooth Newton, interior-point, etc.), beyond the active-set Newton method \cite{BensonMunson2006} chosen for demonstration here.  For box-constrained smoothers of Newton-Krylov type one could also add linear geometric or algebraic multigrid preconditioning \cite{Trottenbergetal2001}, instead of our simple choice of incomplete factorization and (in parallel) additive Schwarz preconditioners.  However, the performance illustrated in Section \ref{sec:results} is already excellent.
+As a multilevel solver for VI problems, the FASCD method is a strategy for generating coarser-level problems which, once solved, make helpful admissible additions to a V-cycle update.  The method is smoother-agnostic, and our implementation within the extensible Firedrake \cite{Rathgeberetal2016} and PETSc \cite{Balayetal2023} library framework will allow easy experimentation with other smoothers (projected Gauss--Seidel, semi-smooth Newton, interior-point, etc.), beyond the active-set Newton method chosen for demonstration here.  For smoothers of Newton-Krylov type one could also add linear geometric or algebraic multigrid preconditioning \cite{Trottenbergetal2001}, instead of our simple choice of incomplete factorization preconditioners.  However, the performance seen in Section \ref{sec:results} is already excellent.
 
 
-\subsection*{Code availability} \label{sec:code}  The software used to produce the results is archived at tag \elb{FIX} in the repository \url{https://bitbucket.org/pefarrell/fascd/}, using the Firedrake version \elb{what version?}
+\subsection*{Code availability} \label{sec:code}  The software used to produce the results is archived at tag \texttt{v1.0} in the repository \texttt{\url{https://bitbucket.org/pefarrell/fascd/}}, using the Firedrake version \texttt{3fb16ad47}.
 
 
 \bibliographystyle{siamplain}
 \bibliography{fascd}
-
-
-%\appendix
-%\section{Reduction to FAS multigrid for PDEs} \label{app:reductions}
-%
-%When all inequality constraints are removed the FASCD V-cycle Algorithm \ref{alg:fascd} reduces to the classical FAS multigrid V-cycle for nonlinear PDEs \cite{Brandt1977,Trottenbergetal2001}, which itself generalizes linear multigrid.  In fact, suppose we replace $\underline{\gamma}^J,\overline{\gamma}^J$ in definition \eqref{eq:fe:fineconstraintset} with $-\infty,+\infty$, respectively.  The finest-level admissible set $\mathcal{K}^J$ is then determined only by the Dirichlet boundary conditions.  Let $\mathcal{V}_0^J \subset \mathcal{V}^J$ denote the linear subspace with zero values on $\partial_D\Omega$.  Since $v-u^J\in\mathcal{V}_0^J$ is now arbitrary we can rewrite \eqref{eq:fe:vi} as the FE discretization of strong-form PDE $f(u)=\ell$: find $u^J \in \mathcal{V}^J$ such that
-%\begin{equation}
-%\ip{f^J(u^J)}{v} = \ip{\ell^J}{v} \qquad \text{for all } v\in \mathcal{V}_0^J. \label{eq:app:fas:pde}
-%\end{equation}
-%
-%The downward $\mathcal{D}^j$ and upward $\mathcal{U}^j$ constraint sets are also enlarged to vector spaces, and the corrections $y^j$ and $z^j$ are unconstrained; lines \ref{line:vcyclegenchifinest}, \ref{line:vcyclegenchi}, and \ref{line:vcyclegenphi} in Algorithm \ref{alg:fascd} can be removed.  Then VI problems \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi} can be rewritten as the weak form problem $\ip{f^j(u^j)}{v} = \ip{\ell^j}{v}$ over $v\in \mathcal{V}_0^j$, where $u^j=w^j+y^j$ when down-smoothing and $u^j=w^j+z^j$ when up-smoothing, and the smoothers can be regarded as unconstrained, in-place modifications of $u^j$.  Noting line \ref{line:vcyclerestrictsolution} now says $u^{j-1}=\iR u^j$, after down-smoothing the coarsened source functional computed by line \ref{line:vcyclerestrictell} can be rewritten as $\ell^{j-1} = f^{j-1}\left(u^{j-1}\right) + R\left(\ell^j-f^j(u^j)\right)$.
-%
-%Going upward we must be careful that only the coarse correction, and not the coarse solution, is prolonged \cite[remark 5.3.9]{Trottenbergetal2001}.  After up-smoothing on the $j-1$ level the coarse iterate is $u^{j-1}$, but at this point $u^j=w^j + y^j$ contains the result of $j$th-level down-smoothing.  The initial value of the correction $z^j$, before up-smoothing on the $j$th level, is $z^j = y^j + P z^{j-1}$, where $z^{j-1}$ contains the total correction from coarser corrections and $j-1$ level up-smoothing.  Thus the $j$th-level iterate \emph{before} up-smoothing must be set to $w^j + y^j + P z^{j-1} = u^j + P(u^{j-1} - \iR u^j)$, which replaces line \ref{line:vcycleupsmoothinitial}.
-%
-%With these modifications, Algorithm \ref{alg:fascd} becomes the FAS V-cycle below, as a solver for \eqref{eq:app:fas:pde}. This algorithm appears in various sources in the literature, for example \cite[Algorithm 14]{Bruneetal2015} and \cite[section 5.3.4]{Trottenbergetal2001}.
-%
-%\begin{pseudo*}
-%\pr{fas-vcycle}(\ell^J; u^J)\text{:} \\+
-%    for $j=J$ downto $j=1$ \\+
-%      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j;u^j)$ \\
-%      $u^{j-1} = \iR u^j$ \\
-%      $\ell^{j-1} = f^{j-1}(u^{j-1}) + R \left(\ell^j - f^j(u^j)\right)$ \\-
-%    $\text{\pr{solve}}(\ell^0;u^0)$ \\
-%    for $j=1$ to $j=J$ \\+
-%      $u^j \gets u^j + P (u^{j-1} - \iR u^j)$ \\
-%      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j;u^j)$ \\-
-%\end{pseudo*}
 
 \end{document}
