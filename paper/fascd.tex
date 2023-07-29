@@ -552,7 +552,7 @@ for all $v\in \mathcal{D}^{j+1}$.  However, because the down-smoother has made p
 \end{align}
 for all $v\in \mathcal{D}^{j}$.  This is VI problem \eqref{eq:fe:downvi}, but in cluttered form, motivating definitions \eqref{eq:fe:definew} and \eqref{eq:fe:levelsource}.  The explanation for problem \eqref{eq:fe:upvi} is similar.
 
-These ideas come together in Algorithm \ref{alg:fascd}, \pr{fascd-vcycle}, which updates $w^J$.  It assumes that the \pr{smooth} and \pr{solve} procedures do in-place modifications of their final arguments, without modifying their first four arguments.  Parameters \id{down} and \id{up} determine the number of smoother iterations, respectively.
+These ideas come together in Algorithm \ref{alg:fascd}, \pr{fascd-vcycle}, which updates $w^J$.  The \pr{smooth} and \pr{solve} procedures are assumed to do in-place modifications of their final arguments, without modifying the others.
 
 \begin{pseudofloat}[ht]
 \begin{pseudo}
@@ -562,34 +562,34 @@ These ideas come together in Algorithm \ref{alg:fascd}, \pr{fascd-vcycle}, which
       $\underline{\chi}^{j-1}, \, \overline{\chi}^{j-1} = \maxR \underline{\chi}^j, \, \minR \overline{\chi}^j {\large \strut}$ \label{line:vcyclegenchi} \\
       $\underline{\phi}^j, \, \overline{\phi}^j = \underline{\chi}^j - P\underline{\chi}^{j-1}, \, \overline{\chi}^j - P\overline{\chi}^{j-1} {\large \strut}$ \label{line:vcyclegenphi} \\
       $y^j = 0$ \\
-      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j,\underline{\phi}^j,\overline{\phi}^j,w^j;y^j)$  \ct{smoothing of \eqref{eq:fe:downvi} in $\mathcal{D}^j$}\\
+      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j,\underline{\phi}^j,\overline{\phi}^j,w^j;y^j)$  \ct{problem \eqref{eq:fe:downvi} in $\mathcal{D}^j$}\\
       $w^{j-1} = \iR(w^j + y^j)$ \label{line:vcyclerestrictsolution} \\
       $\ell^{j-1} = f^{j-1}(w^{j-1}) + R \left(\ell^j - f^j(w^j+y^j)\right)$ \label{line:vcyclerestrictell} \\-
     $z^0 = 0$ \\
-    $\text{\pr{solve}}(\ell^0,\underline{\chi}^0,\overline{\chi}^0,w^0;z^0)$ \hspace{1.0cm} \ct{solving of \eqref{eq:fe:upvi} in $\mathcal{U}^0$} \\
+    $\text{\pr{solve}}(\ell^0,\underline{\chi}^0,\overline{\chi}^0,w^0;z^0)$ \hspace{1.0cm} \ct{problem \eqref{eq:fe:upvi} in $\mathcal{U}^0$} \\
     for $j=1$ to $j=J$ \\+
       $z^j = y^{j} + P z^{j-1}$ \label{line:vcycleupsmoothinitial} \\
-      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j,\underline{\chi}^j,\overline{\chi}^j,w^j;z^j)$  \ct{smoothing of \eqref{eq:fe:upvi} in $\mathcal{U}^j$} \\-
+      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j,\underline{\chi}^j,\overline{\chi}^j,w^j;z^j)$  \ct{problem \eqref{eq:fe:upvi} in $\mathcal{U}^j$} \\-
     return $w^J+z^J$
 \end{pseudo}
-\caption{The FASCD V-cycle is an iteration for solving VI problem \eqref{eq:fe:vi}.  Here $f^j$ denotes an FE discretization of $f$ in problem \eqref{eq:boxdirichletvi}.}
+\caption{The FASCD V-cycle, an iteration for solving VI problem \eqref{eq:fe:vi}.}
 \label{alg:fascd}
 \end{pseudofloat}
 
-Algorithm \ref{alg:fascd} is a $V(1,1)$ cycle with \id{down}, \id{up} smoother iterations on each level.  For \id{up} $=0$ it becomes a $V(1,0)$ cycle, and for \id{down} $=0$ a $V(0,1)$ cycle.  The $V(1,0)$ cycle is similar to Algorithm 4.7 in \cite{GraeserKornhuber2009}, but generalizes it by applying FAS-type corrections and allowing any smoother or nonlinear operator $f$.  One iteration of \pr{fascd-vcycle} is an application of \pr{cd-mult} (Section \ref{sec:cd}) over CD\footnote{Strictly speaking, this statement is restricted to unilateral cases.} \eqref{eq:fe:downwardsuminclusion} followed by an application of \pr{icd-tele} (Section \ref{sec:cdmultilevel}) over incomplete CD \eqref{eq:fe:upwardsuminclusion}, and in this sense $V(1,1)=V(1,0)+V(0,1)$.
+Algorithm \ref{alg:fascd} is a $V(1,1)$ cycle with \id{down}, \id{up} smoother iterations on each level.  The $V(1,0)$ cycle, \id{up} $=0$, is similar to Algorithm 4.7 in \cite{GraeserKornhuber2009}, but generalized by applying FAS-type corrections and allowing any smoother or nonlinear operator $f$.  In unilateral cases one iteration of \pr{fascd-vcycle} is an application of \pr{cd-mult} (Section \ref{sec:cd}) over CD \eqref{eq:fe:downwardsuminclusion} followed by an application of \pr{icd-tele} (Section \ref{sec:cdmultilevel}) over CDs \eqref{eq:fe:upwardsuminclusion}, and in this sense $V(1,1)=V(1,0)+V(0,1)$.
 
-Regarding the storage required, let us assume all box constraints are nontrivial. In this case, seven vectors must be allocated on each level: $\underline{\chi}^j$, $\overline{\chi}^j$, $\underline{\phi}^j$, $\overline{\phi}^j$, $w^j$, $\ell^j$, $y^j$.  Note $z^j$ can use the same storage as $y^j$.  On the finest level one must also store $\underline{\gamma}^J$ and $\overline{\gamma}^J$, while on the coarsest level there are only five vectors because $\underline{\phi}^0=\underline{\chi}^0$ and $\overline{\phi}^0=\overline{\chi}^0$.  Therefore, using $m_j=2^d m_{j-1}$, plus a geometric series argument, the total storage, excluding smoother and coarse-solver implementations, is
+Regarding the storage required, if all box constraints are nontrivial then 7 vectors must be allocated on each level: $\underline{\chi}^j$, $\overline{\chi}^j$, $\underline{\phi}^j$, $\overline{\phi}^j$, $w^j$, $\ell^j$, $y^j$; vectors $z^j$ and $y^j$ can use the same storage.  On the finest level one must also store $\underline{\gamma}^J$ and $\overline{\gamma}^J$.  Therefore, using $m_j=2^d m_{j-1}$ and a geometric series argument, the total storage is at most
 \begin{equation}
-9 m_J + 7 m_{J-1} + \dots + 7 m_1 + 5 m_0 \le \left(9 + \frac{7}{2^d - 1}\right) m_J.
+9 m_J + 7 m_{J-1} + \dots + 7 m_1 + 7 m_0 \le \left(9 + \frac{7}{2^d - 1}\right) m_J,
 \end{equation}
-This gives storage at most $16m_J$, $12m_J$, and $10m_J$ in dimensions $d=1,2,3$, respectively.  For comparison, a single-level method needs $4 m_J$ storage (i.e.~$\underline{\gamma}^J,\overline{\gamma}^J,\ell^J,w^J$).  If some of the obstacles are trivial, for instance in the unilateral case $\overline{\gamma}^J=+\infty$, storage can be correspondingly reduced at all levels.
+namely $16m_J$, $12m_J$, and $10m_J$ in dimensions $d=1,2,3$, respectively.  For comparison, a single-level method needs $4 m_J$ storage (i.e.~$\underline{\gamma}^J,\overline{\gamma}^J,\ell^J,w^J$).  In unilateral cases the storage can be reduced at all levels.
 
 
 \section{Implementation} \label{sec:implementation}
 
-Implementations of FASCD methods must choose a concrete convergence criterion.  In this section we also construct the F-cycle extension, and we describe the active set Newton method we will use as a smoother and coarse solver.
+Implementations of FASCD methods must choose a convergence criterion.  In this section we also construct the F-cycle extension, and we describe the active set Newton method used as the smoother and coarse solver in Section \ref{sec:results}.
 
-Because the problem is inequality-constrained, repeated application of Algorithm \ref{alg:fascd} to solve the finite-dimensional, box-constrained VI \eqref{eq:fe:vi} will not generally reduce the residual $f^J(w^J) - \ell^J$ to zero everywhere.  To construct appropriate convergence criteria for the discretization, note \eqref{eq:fe:vi} is equivalent to a \emph{mixed complementarity problem} (MCP) \cite{FacchineiPang2003}.  By definition, this says that certain node-wise conditions hold for $u^J$ at $x_p \in \mathcal{T}^J$.  Let $r(u^J)_p = \ip{f^J(w^J)-\ell^J}{\psi_p}$ be the pointwise (ordinary) residual.  If $x_p \notin \partial_D\Omega$ then one of these four conditions must hold:
+Repeated application of Algorithm \ref{alg:fascd} to solve VI problem \eqref{eq:fe:vi} will not generally reduce the residual $f^J(w^J) - \ell^J$ to zero everywhere, but the VI is equivalent to a \emph{mixed complementarity problem} (MCP) \cite{FacchineiPang2003}, which says, by definition, that certain nodal conditions hold for $u^J$ at $x_p \in \mathcal{T}^J$.  Let $r(u^J)_p = \ip{f^J(w^J)-\ell^J}{\psi_p}$ be the pointwise (ordinary) residual.  If $x_p \notin \partial_D\Omega$ then one of these four conditions must hold:
 \begin{itemize}
 \item $\underline{\gamma}^J(x_p)<u^J(x_p)<\overline{\gamma}^J(x_p)$ and $r(u^J)_p = 0$,
 \item $\underline{\gamma}^J(x_p)=u^J(x_p)<\overline{\gamma}^J(x_p)$ and $r(u^J)_p \ge 0$,
@@ -600,44 +600,28 @@ Otherwise, if $x_p \in \partial_D\Omega$ then
 \begin{itemize}
 \item $u^J(x_p)=g_D^J(x_p)$.
 \end{itemize}
-These five cases might be labeled \emph{inactive}, \emph{lower active}, \emph{upper active}, \emph{pinched} (\emph{both active}), and \emph{boundary}, respectively.  Where \emph{pinched} or \emph{boundary} apply, $r(u^J)_p$ can have any value.
+These 5 cases might be labeled \emph{inactive}, \emph{lower active}, \emph{upper active}, \emph{pinched} (\emph{both active}), and \emph{boundary}, respectively.  Where \emph{pinched} or \emph{boundary} apply, $r(u^J)_p$ can have any value.
 
-This MCP interpretation allows us to construct expressions whose norms should approach zero.  For $w^J \in \mathcal{K}^J$ we define the finest-level \emph{nodal complementarity residual} $\rNC(w^J)$ from the five cases:
-\begin{equation}
-\rNC(w^J)_p = \begin{cases}
-    r(w^J)_p, & \underline{\gamma}^J(x_p) < w^J(x_p) < \overline{\gamma}^J(x_p), \\
-    \min\{r(w^J)_p,0\}, & w^J(x_p) = \underline{\gamma}^J(x_p), \\
-    \max\{r(w^J)_p,0\}, & w^J(x_p) = \overline{\gamma}^J(x_p), \\
-    0, & \underline{\gamma}^J(x_p)=w^J(x_p)=\overline{\gamma}^J(x_p), \\
-    w^J(x_p) - g_D^J(x_p), & x_p \in \partial_D\Omega. \end{cases} \label{eq:rNC}
-\end{equation}
-The first four cases assume $x_p \notin \partial_D\Omega$.  For PDEs only the first and last apply.
-
-The computable nonlinear map $\rNC : \mathcal{K}^J \to \RR^{m_J}$ in \eqref{eq:rNC} is defined using only the finest-level objects $f^J,\ell^J,\underline{\gamma}^J,\overline{\gamma}^J$.  A value $\rNC(w^J)_p$ is nonzero only at vertices where the MCP is violated, and the formula applies as stated if $\underline{\gamma}^J(x_p)=-\infty$ or $\overline{\gamma}^J(x_p)=+\infty$.  However, direct implementation of \eqref{eq:rNC} is sensitive to rounding error because $\rNC$ is a discontinuous function of $w^J(x_p)$.  For example, if $w^J(x_p)$ exceeds $\underline{\gamma}^J(x_p)$ by $10^{-16}$, then evaluation of $\rNC$ would falsely suggest that the iteration is far from converging.  Thus we instead measure convergence using the Fischer-Burmeister function \cite{BensonMunson2006,Ulbrich2011} on $a,b\in\RR$:
+The MCP interpretation allows us to construct expressions whose norms should approach zero.  Define the Fischer-Burmeister function \cite{BensonMunson2006,Ulbrich2011} on $a,b\in\RR$:
 \begin{equation}
 \phi(a,b) = a + b - \sqrt{a^2 + b^2}. \label{eq:phiFB}
 \end{equation}
-Observe that $\phi$ is semi-smooth, thus continuous, and that $\phi(a,b)=0$ if and only if $a,b$ are complementary.  For convenience denote $\underline{g}_p = w^J(x_p) - \underline{\gamma}^J(x_p)$ and $\overline{g}_p = \overline{\gamma}^J(x_p) - w^J(x_p)$, the nonnegative gaps at $x_p$.  Now define the \emph{semi-smooth residual}
+Observe that $\phi$ is semi-smooth, thus continuous, and that $\phi(a,b)=0$ if and only if $a,b$ are complementary, i.e.~$a\ge 0$, $b\ge 0$, and $ab=0$.  For $w^J\in \mathcal{K}^J$ denote $\underline{g}_p = w^J(x_p) - \underline{\gamma}^J(x_p)$ and $\overline{g}_p = \overline{\gamma}^J(x_p) - w^J(x_p)$, the nonnegative \emph{gaps} at $x_p$.  Now define the \emph{semi-smooth residual}
 \begin{equation}
 \rSS(w^J)_p = \begin{cases}
 \max\big\{\phi\big(\underline{g}_p, r(w^J)_p\big), \phi\left(\overline{g}_p, -r(w^J)_p\right)\big\}, & x_p \notin \partial_D\Omega, \\
 w^J(x_p) - g_D^J(x_p), & x_p \in \partial_D\Omega.
 \end{cases} \label{eq:rSS}
 \end{equation}
-Straightforward modifications apply for unconstrained degrees of freedom, where $\overline{\gamma}^J(x_p) = +\infty$ or $\underline{\gamma}^J(x_p) = -\infty$ or both.
+Straightforward modifications apply for unconstrained degrees of freedom, where $\overline{\gamma}^J(x_p) = +\infty$ or $\underline{\gamma}^J(x_p) = -\infty$ or both.  VI problem \eqref{eq:fe:vi} is exactly solved by $u^J\in\cK^J$ if and only if $\rSS(u^J)=0$ identically.
 
-Suppose an iteration starts with $w^{J,0} \in \mathcal{K}^J$, generating (fine-level) iterates $w^{J,k} \in \mathcal{K}^J$.  Let $\id{atol}\ge 0$, $\id{rtol}\ge 0$ be given tolerances.  We employ
+Suppose that iteration of Algorithm \ref{alg:fascd} starts with $w^{J,0} \in \mathcal{K}^J$ and generates (fine-level) iterates $w^{J,k} \in \mathcal{K}^J$.  Let $\id{atol}$, $\id{rtol}$, $\id{stol} \ge 0$ be given absolute, relative, and step tolerances, respectively.  We employ
 \begin{equation}
-\|\rSS(w^{J,k})\|_2 < \id{atol} \qquad \text{or} \qquad \frac{\|\rSS(w^{J,k})\|_2}{\|\rSS(w^{J,0})\|_2} < \id{rtol} \label{eq:stoppingcriterion}
+\|\rSS(w^{J,k})\|_2 < \id{atol} \quad \text{or} \quad \frac{\|\rSS(w^{J,k})\|_2}{\|\rSS(w^{J,0})\|_2} < \id{rtol} \quad \text{or} \quad \frac{\|\Delta w^{J,k}\|_2}{\|w^{J,k}\|_2} < \id{stol}, \label{eq:stoppingcriterion}
 \end{equation}
-as the stopping criterion.  In Section \ref{sec:results} we will show that iteration of the V-cycle Algorithm \ref{alg:fascd}, starting with some finest-mesh initial iterate $w^{J,0}$ and repeated until \eqref{eq:stoppingcriterion} holds, is an effective solver.
+where $\Delta w^{J,k} = w^{J,k} -  w^{J,k-1}$, as the stopping criterion.\footnote{The defaults in our Firedrake implementation match those of PETSc SNES \cite{Balayetal2023}: $\id{atol}=10^{-50}$, $\id{rtol}=10^{-8}$, $\id{stol}=10^{-8}$.  See Section \ref{sec:results} for specific settings in Examples.}
 
-\elb{add \id{stol}}
-
-However, an F-cycle (Figure \ref{fig:fascdcycles}), also called a \emph{full multigrid cycle}, is even better.  The well-known principle of such a cycle \cite[section 2.6]{Trottenbergetal2001} is to start on the coarsest mesh and solve the problem from any initial iterate.  Then an admissible initial iterate on the next-finer mesh is generated via prolongation, and so on to finer levels.  (In the VI context one must also truncate to the bounds after the prolongation; see lines \ref{line:fcycleprolongtruncone} and \ref{line:fcycleprolongtrunctwo} in Algorithm \ref{alg:fascd-fcycle}.)  During this ``ramp'' one approximately solves on each level by using a fixed number of V-cycles, each down to the coarsest mesh, and then one does full-depth V-cycles from the finest level, to convergence.
-
-This F-cycle approach is described in Algorithm \ref{alg:fascd-fcycle}.  In contrast to the construction of LDCs (Section \ref{sec:cdmultilevel}) for V-cycles, standard injection is used to generate the $\underline{\gamma}^j,\overline{\gamma}^j$ on each level during the initial nested iteration. This is because nested iteration approximates the full solution on the coarse grids, not just a correction to an initial iterate; essentially, our choice is between \eqref{eq:fe:badstandard} (where the coarse constraint set is always nonempty, but the solution may not be admissible on the next level) or \eqref{eq:fe:badmonotone} (where the coarse solution is always admissible if it exists, but the constraint set may be empty). We choose \eqref{eq:fe:badstandard} so that the coarse problems always have nonempty constraint sets, and project pointwise to the bounds as we refine in the nested iteration.
-On line \ref{line:fcyclecoarsestinitial}, one may generate an initial iterate $w^0\in\mathcal{K}^0$ by injection and truncation of a finest-level iterate, if one is available.
+In Section \ref{sec:results} we will show that V-cycle iterations alone, starting with some finest-mesh initial iterate $w^{J,0}$ and repeated until \eqref{eq:stoppingcriterion} holds, forms an effective solver.  However, an F-cycle, Algorithm \ref{alg:fascd-fcycle} and Figure \ref{fig:fascdcycles} (right), also called a \emph{full multigrid cycle}, is even better.  The well-known principle \cite[section 2.6]{Trottenbergetal2001} is to start on the coarsest mesh and solve the problem from any initial iterate $w^0\in\mathcal{K}^0$; one may generate it by injection and projection/truncation of $w^{J,0}$.  Then an admissible initial iterate on the next-finer mesh is generated via prolongation.  In the VI context one must also project (truncate) to the bounds after the prolongation; see lines \ref{line:fcycleprolongtruncone} and \ref{line:fcycleprolongtrunctwo} in Algorithm \ref{alg:fascd-fcycle}.  During this nested-iteration ``ramp'' one approximately solves on each level using a fixed number of V-cycles, each down to the coarsest mesh.  When the ramp is complete, one does full-depth V-cycles to convergence.
 
 \begin{pseudofloat}[h]
 \begin{pseudo}
@@ -659,7 +643,9 @@ On line \ref{line:fcyclecoarsestinitial}, one may generate an initial iterate $w
 \label{alg:fascd-fcycle}
 \end{pseudofloat}
 
-A large space of smoothers could be explored, but in the next Section we will only apply an active-set (reduced-space) Newton method \cite{Balayetal2023,BensonMunson2006}, denoted as \emph{RS Newton}.  A fixed number of preconditioned Krylov iterations approximately solve the arising linear systems, thus $O(m_j)$ work per smoother application.  For the symmetric Laplacian (Example \ref{ex:results:classical}) we apply conjugate gradients (CG) with incomplete Cholesky (IC) preconditioning.  The generalized minimum residual (GMRES) with incomplete LU (ILU) preconditioning is used in other cases.  The coarse solver is also RS Newton, but iterated to convergence using the MUMPS sparse direct linear solver~\cite{Amestoy2001}.
+In contrast to the construction of LDCs (Section \ref{sec:cdmultilevel}) for V-cycles, standard injection is used to generate the constraints $\underline{\gamma}^j,\overline{\gamma}^j$ on each level because, during the ramp, a full solution iterate is immediately needed, not just a correction to an initial iterate.  Essentially, our choice is between \eqref{eq:fe:badstandard} (where the coarse constraint set is always nonempty, but the solution may not be admissible on the next level) or \eqref{eq:fe:badmonotone} (where the coarse solution is always admissible if it exists, but the constraint set may be empty). We choose \eqref{eq:fe:badstandard} so that the coarse problems always have nonempty constraint sets, and project (truncate) pointwise to the bounds as we refine.
+
+A large space of smoothers could be explored, but in the next Section we will only apply an active-set (reduced-space) Newton method \cite{Balayetal2023,BensonMunson2006}, denoted as \emph{RS Newton}.  A fixed number of preconditioned Krylov iterations approximately solve the arising linear systems, thus $O(m_j)$ work is done per smoother application.  For the symmetric Laplacian (Example \ref{ex:results:classical}) we apply conjugate gradients (CG) with incomplete Cholesky (IC) preconditioning, but otherwise generalized minimum residual (GMRES) with incomplete LU (ILU) preconditioning is used.  The coarse solver is also RS Newton, iterated to convergence using the MUMPS sparse direct linear solver~\cite{Amestoy2001}.
 
 
 \section{Results} \label{sec:results}
