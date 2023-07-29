@@ -473,37 +473,35 @@ One might attempt to convert \eqref{eq:fe:downwardsuminclusion} into a full CD f
 Let $a > 0$ be an arbitrary positive number.  Consider a 2-level hierarchy ($J=1$), and suppose the lower defect constraint is the constant function $\underline{\chi}^1=-a$.  Note $\underline{\chi}^0=\maxR \underline{\chi}^1=-a$ also, so $\underline{\phi}^1=0$ and $\underline{\phi}^0=-a$.  Suppose $z^1$ is a ``sawtooth'' function which takes on value $-a$ on the coarse vertices and value $0$ on the other vertices.  Then, for any $\overline{\chi}^1\ge 0$, we have $\overline{\chi}^1 \ge 0 \ge z^1\ge \underline{\chi}^1$, so $z^j \in \mathcal{U}^1$.  However, $I_{1\to 0}^\ominus(z^1 - \underline{\chi}^1) = \minR(z^1 - \underline{\chi}^1) = 0$ identically.  From \eqref{eq:fe:unilateraldecompositionoperator}, $\Pi_1 z^1$ simplifies to $\Pi_1 z^1 = z^1 - \underline{\chi}^1$.  But then $\Pi_1 z^1$ attains a maximum $a\ge 0$.  This maximum can be chosen to exceed any upper defect obstacle $\overline{\phi}^1$, and $\Pi_1 z^1 \notin \mathcal{D}^1$ would occur.
 \end{example}
 
-Each upward set $\mathcal{U}^j$ can also be decomposed (incompletely) down to an arbitrary coarser level.  The next Lemma, which does not follow from Lemma \ref{lem:downwardadmissibility}, justifies upward admissibility in Algorithm \ref{alg:fascd}.
+Each upward set $\mathcal{U}^j$ can also be decomposed, incompletely in the sense of \eqref{eq:fe:downwardsuminclusion}, down to an arbitrary coarser level.  The next Lemma, which does not follow from Lemma \ref{lem:downwardadmissibility}, justifies upward admissibility in Algorithm \ref{alg:fascd}.
 
 \begin{lemma}  \label{lem:upwardadmissibility}  For any $j=0,1,\dots,J$ and $0\le k\le j$,
 \begin{equation}
 \mathcal{U}^j \supseteq \mathcal{D}^j + \mathcal{D}^{j-1} + \dots + \mathcal{D}^{k+1} + \mathcal{U}^k \label{eq:fe:upwardsuminclusion}
 \end{equation}
-In unilateral cases, where either $\underline{\gamma}^J=-\infty$ or $\overline{\gamma}^J=+\infty$, actually $\mathcal{U}^j = \mathcal{U}^k + \sum_{i=k+1}^j \mathcal{D}^i$. \end{lemma}
+In unilateral cases, where either $\underline{\gamma}^J=-\infty$ or $\overline{\gamma}^J=+\infty$, actually $\mathcal{U}^j = \mathcal{U}^k + \sum_{i=k+1}^j \mathcal{D}^i$ as a full CD. \end{lemma}
 
-\begin{proof}  Definition \eqref{eq:fe:philevels} shows that $\underline{\chi}^j = \underline{\phi}^j + \dots + \underline{\phi}^{k+1} + \underline{\chi}^k$ and $\overline{\chi}^j = \overline{\phi}^j + \dots + \overline{\phi}^{k+1} + \overline{\chi}^k$.  If $y^i \in \mathcal{D}^i$ for $k+1 \le i \le j$ and $z^k \in \mathcal{U}^k$ then $\underline{\chi}^j \le y^j + \dots + y^{k+1} + z^k \le \overline{\chi}^j$ and \eqref{eq:fe:upwardsuminclusion}.
-
-In unilateral cases we follow the proof of Lemma \ref{lem:downwardadmissibility}.  We can use \eqref{eq:fe:unilateraldecompositionoperator} unchanged for $i=k+1,\dots,j$, but it must be modified in the $i=k$ case: $\Pi_k z^j = I_{j\to k}^\ominus(z^j - \underline{\chi}^j) + \underline{\chi}^k$.  The remainder of the proof goes through as before.
+\begin{proof}  Definition \eqref{eq:fe:philevels} shows that $\underline{\chi}^j = \underline{\phi}^j + \dots + \underline{\phi}^{k+1} + \underline{\chi}^k$ and $\overline{\chi}^j = \overline{\phi}^j + \dots + \overline{\phi}^{k+1} + \overline{\chi}^k$.  If $y^i \in \mathcal{D}^i$ for $k+1 \le i \le j$ and $z^k \in \mathcal{U}^k$ then $\underline{\chi}^j \le y^j + \dots + y^{k+1} + z^k \le \overline{\chi}^j$, thus \eqref{eq:fe:upwardsuminclusion} holds.  In unilateral cases we may follow the proof of Lemma \ref{lem:downwardadmissibility} with \eqref{eq:fe:unilateraldecompositionoperator} unchanged for $i=k+1,\dots,j$, but modified in the $i=k$ case: $\Pi_k z^j = I_{j\to k}^\ominus(z^j - \underline{\chi}^j) + \underline{\chi}^k$.  Now the proof goes through as before.
 \end{proof}
 
-Inclusions \eqref{eq:fe:downwardsuminclusion} and \eqref{eq:fe:upwardsuminclusion} suffice to show the admissibility of all iterates and corrections in Algorithm \ref{alg:fascd} below.  These inclusions are special to multilevel schemes based on defect constraints, and they hold regardless of whether CD operators $\Pi_i$ can be constructed.  A different ``basic'' iteration, an incomplete variant of \pr{cd-mult}, does not need $\Pi_i$ operators.  Application of \pr{icd-tele} requires $w^J\in\mathcal{K}^J$, property \eqref{eq:fe:finestlevelequivalent}, and \eqref{eq:fe:upwardsuminclusion}.
+Inclusions \eqref{eq:fe:downwardsuminclusion} and \eqref{eq:fe:upwardsuminclusion} show the admissibility of all iterates and corrections in Algorithm \ref{alg:fascd} below.  These inclusions are special to multilevel schemes based on defect constraints, and we have seen that they hold regardless of whether decomposition operators $\Pi_i$ can be constructed.  Thus a new ``basic'' iteration, an incomplete variant of \pr{cd-mult}, can be applied to $w^J\in\mathcal{K}^J$:
 
 \begin{pseudo*}
 \pr{icd-tele}(w^J)\text{:} \\+
     for $j = 0,\dots,J$: \\+
         \rm{find} $z^j\in \mathcal{U}^j$ \rm{so that for all} $v \in \mathcal{U}^j$, \\+
-            $\displaystyle \ip{f\Big(w^J + \alpha \sum_{i<j} z^i + \alpha z^j\Big)}{v-z^j} \ge \ip{\ell}{v-z^j}$ \\--
+            $\displaystyle \Big<f\Big(w^J + \alpha \sum_{i<j} z^i + \alpha z^j\Big),v-z^j\Big> \ge \ip{\ell}{v-z^j}$ \\--
     return $\tilde w^J=w^J + \alpha \sum_{i\le J} z^i$
 \end{pseudo*}
 
-A convergence analysis extending the arguments of \cite{GraeserKornhuber2009,Tai2003} to VIs which are not of minimization type, or to box constraints, would seem to require full CDs.  On the other hand, the observation that up-smoothing is more efficient in a multilevel CD context, illustrated by Example \ref{ex:results:plap} in particular, seems to be new.\footnote{Compare comments on $V(1,1)$ cycles in \cite{GraeserKornhuber2009} and \cite{Tai2003}.}
+Algorithm \ref{alg:fascd} incorporates \pr{icd-tele} for up-smoothing in larger constraint sets.  The observation that this is more efficient, illustrated by Example \ref{ex:results:plap} in particular, seems to be new; compare comments on $V(1,1)$ cycles in \cite{GraeserKornhuber2009} and \cite{Tai2003}.  However, a convergence analysis extending the arguments of \cite{GraeserKornhuber2009,Tai2003}, either to non-optimization VIs or box constraints, or both, would seem to require full CDs.
 
 
 \section{FASCD V-cycle} \label{sec:vcycle}
 
-The V-cycle applies smoothers in constraint sets $\mathcal{D}^j$ and $\mathcal{U}^j$ during the downward and upward stages, respectively.  It extends the multilevel CD schemes of Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear full approximation scheme (FAS) approach \cite{BrandtLivne2011}, and in fact it reduces to FAS for PDEs when inequality constraints are removed.
+The V-cycle in this Section extends the multilevel CD schemes of Tai \cite{Tai2003} and Gr\"aser \& Kornhuber \cite[Algorithm 4.7]{GraeserKornhuber2009} by following a nonlinear full approximation scheme (FAS) approach \cite{BrandtLivne2011}; it reduces to FAS for PDEs when inequality constraints are removed.  Each V-cycle generates a correction to a finest-level iterate $w^J \in \mathcal{K}^J$, via information from each coarser FE subspace $\mathcal{V}^j$, by approximately solving VI problems in constraint sets $\mathcal{D}^j$ and $\mathcal{U}^j$ during the downward and upward stages, respectively; by \eqref{eq:fe:nestedspaces} these corrections all live in the fine-level subspace $\mathcal{V}^J$.  The corrections are inductively constructed so that iterates remain admissible at every level.  A key idea is that, by inclusion \eqref{eq:fe:upwardsuminclusion}, up-smoothing solves less-restricted VI problems than down-smoothing.  Going downward one does not know what coarse corrections are coming, thus one must choose smaller constraint sets ($\mathcal{D}^j$) such that the correction sum is admissible once we return to a given level.  Going upward, however, no further coarse corrections can violate admissibility.
 
-Each V-cycle generates a correction to a finest-level iterate $w^J \in \mathcal{K}^J$ by incorporating information from each coarser FE subspace $\mathcal{V}^j$.  By nesting \eqref{eq:fe:nestedspaces} these corrections all live in the fine-level subspace $\mathcal{V}^J$.\footnote{Nonetheless we use prolongation $P$ to indicate where the computer representation changes.}  The corrections are constructed, inductively, so that iterates remain admissible at every level.  Suppose $y^i \in \mathcal{D}^i$, for $i=J,\dots,j+1$, are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:fascdcycles}).  By \eqref{eq:fe:downwardsuminclusion} the correction at this point is admissible, namely $y^J + \dots + y^{j+1} \in \mathcal{U}^J$, equivalently $w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$.  Smoothing then occurs at the next-coarser level, yielding the next correction $y^j \in \mathcal{D}^j$.  Solving the coarsest-level VI results in the full downward correction $y^J + \dots + y^1 + z^0 \in \mathcal{U}^J$.  Starting upward, $y^1 + z^0 \in \mathcal{U}^1$ is an initial iterate for smoothing on level $j=1$, which then yields $z^1 \in \mathcal{U}^1$ and an admissible correction $y^J + \dots + y^2 + z^1 \in \mathcal{U}^J$, using \eqref{eq:fe:upwardsuminclusion}.  Continuing in this ``telescoping'' way, up-smoothing in the constraint sets $\mathcal{U}^j$, starting from initial iterate $y^j+z^{j-1}$, finally generates $z^J\in \mathcal{U}^J$ as the V-cycle correction.  Then the corrected finest-level iterate is $\tilde{w}^J = w^J + z^J \in \mathcal{K}^J$.
+Suppose $y^i \in \mathcal{D}^i$, for $i=J,\dots,j+1$, are already-computed corrections during the downward part of the V-cycle (Figure \ref{fig:fascdcycles}, left).  By \eqref{eq:fe:downwardsuminclusion} the correction at this point is admissible, namely $y^J + \dots + y^{j+1} \in \mathcal{U}^J$, equivalently $w^J + y^J + \dots + y^{j+1} \in \mathcal{K}^J$.  Relaxation then occurs at the next-coarser level, yielding the next correction $y^j \in \mathcal{D}^j$.  Solving the coarsest-level VI results in the full downward correction $y^J + \dots + y^1 + z^0 \in \mathcal{U}^J$.  Starting upward, $y^1 + z^0 \in \mathcal{U}^1$ is an initial iterate for relaxation on level $j=1$, which then yields $z^1 \in \mathcal{U}^1$ and an admissible correction $y^J + \dots + y^2 + z^1 \in \mathcal{U}^J$, using \eqref{eq:fe:upwardsuminclusion}.  Continuing in this ``telescoping'' way, up-smoothing in the constraint sets $\mathcal{U}^j$, starting from initial iterate $y^j+z^{j-1}$, finally generates $z^J\in \mathcal{U}^J$ as the V-cycle correction.  The new finest-level iterate is $\tilde{w}^J = w^J + z^J \in \mathcal{K}^J$.
 
 \begin{figure}[ht]
 \centering
@@ -512,58 +510,47 @@ Each V-cycle generates a correction to a finest-level iterate $w^J \in \mathcal{
 &
 \input{tikz/fcycle.tex}
 \end{tabular}
-\caption{Left: The FASCD V-cycle Algorithm \ref{alg:fascd} computes downward corrections $y_j \in \mathcal{D}^j$, but the upward corrections $z_j\in\mathcal{U}^j$ are in larger sets. Right: F-cycle Algorithm \ref{alg:fascd-fcycle} initially restricts and injects the data $\ell^J,\underline{\gamma}^J,\overline{\gamma}^J$ down to level $j=0$ (gray), then it prolongs and truncates (doubled edges) to create an admissible initial iterate on the next-finer level, and then it applies V-cycles.}
+\caption{Left: The FASCD V-cycle Algorithm \ref{alg:fascd} computes downward corrections $y_j \in \mathcal{D}^j$, but the upward corrections $z_j\in\mathcal{U}^j$ are in larger sets. Right: F-cycle Algorithm \ref{alg:fascd-fcycle} initially restricts and injects the finest-level problem down to the coarsest level (gray).  It generates each next-finer initial iterate by injection and truncation (doubled edges), then it iterates V-cycles.}
 \label{fig:fascdcycles}
 \end{figure}
 
-A key idea is that, because of inclusions \eqref{eq:fe:upwardsuminclusion}, up-smoothing solves less-restricted VI problems than down-smoothing.  Intuitively-speaking, going downward one does not know what the next coarse corrections will be, and thus on any level one must choose conservative constraint sets $\mathcal{D}^j$ so that the sum of the corrections is admissible once we return to a given level.  Going upward, however, no further coarse corrections can violate admissibility.
+To state the V-cycle algorithm we must specify the problems solved at each mesh level.  As in FAS multigrid for nonlinear PDEs \cite{BrandtLivne2011,Bruneetal2015,Trottenbergetal2001}, both the solution approximation and the residual must be coarsened, and a source functional created.  On mesh level $j$ we assume a re-discretized nonlinear operator $f^j$, with output in $(\cV^j)'$, which is an FE discretization of $f$ in \eqref{eq:boxdirichletvi}.\footnote{Presumably it uses quadrature etc.~in the same scheme which generated $f^J$ in \eqref{eq:fe:vi}.}  At the start of each V-cycle we assume that an admissible iterate $w^J \in \mathcal{K}^J$ has been used to generate the LDCs and constraint sets $\mathcal{D}^j$, $\mathcal{U}^j$ at each level (Section \ref{sec:cdmultilevel}); they do not depend on the coarse-level corrections.
 
-To state the V-cycle algorithm below we must also clarify the problems solved at each mesh level.  As in FAS multigrid for nonlinear PDEs \cite{BrandtLivne2011,Bruneetal2015,Trottenbergetal2001}, both the solution approximation and the residual must be coarsened, and a source functional created.  On mesh level $j$ we assume a re-discretized nonlinear operator $f^j$, with output in $(\cV^j)'$, which is an FE discretization of $f$ in \eqref{eq:boxdirichletvi}.\footnote{Presumably it uses quadrature etc.~in the same scheme which generated $f^J$ in \eqref{eq:fe:vi}.}  Finally, we assume that an admissible iterate $w^J \in \mathcal{K}^J$ has already\footnote{In practice the LDCs $\underline{\chi}^j,\overline{\chi}^j,\underline{\phi}^j,\overline{\phi}^j$ are generated during the descent stage; see Algorithm \ref{alg:fascd}.} been used to generate the LDCs and constraint sets $\mathcal{D}^j$, $\mathcal{U}^j$ at each level (Section \ref{sec:cdmultilevel}); these LDCs do not depend on the coarse-level corrections.
-
-As we descend we define new $j$th-level iterates
+As we descend we define the initial $j$th-level iterates
 \begin{equation}
 w^j = \iR(w^{j+1} + y^{j+1}).  \label{eq:fe:definew}
 \end{equation}
-(These are the states before smoothing or correction.)  From $w^j$ we define $\ell^j \in (\cV^j)'$:
+From $w^j$ we define $\ell^j \in (\cV^j)'$:
 \begin{equation}
 \ell^j = \begin{cases} \ell^J, & j=J \\
                        f^j(w^j) + R\left(\ell^{j+1}-f^{j+1}(w^{j+1}+y^{j+1})\right), & j<J. \end{cases} \label{eq:fe:levelsource}
 \end{equation}
-Observe that injection $\iR$ coarsens the (primal) iterates---injection is commonly used in classical FAS \cite[section 5.3]{Trottenbergetal2001}---but canonical restriction $R$ coarsens (dual) linear functionals; recall Table \ref{tab:transfers}.  On descent, at levels $j=J,J-1,\dots,1$, we solve the following VI for $y^j \in \mathcal{D}^j$:
+As is typical of FAS \cite[section 5.3]{Trottenbergetal2001}, injection $\iR$ coarsens the (primal) iterates, but canonical restriction $R$ coarsens (dual) linear functionals.  Descending through the levels $j=J,J-1,\dots,1$ we solve the following VI problems for $y^j \in \mathcal{D}^j$:
 \begin{equation}
-\ip{f^j(w^j + y^j)}{v-y^j} \ge \ip{\ell^j}{v-y^j} \qquad \text{for all } v\in \mathcal{D}^j, \label{eq:fe:downvi}
+\ip{f^j(w^j + y^j)}{v-y^j} \ge \ip{\ell^j}{v-y^j} \qquad \text{for all } v\in \mathcal{D}^j. \label{eq:fe:downvi}
 \end{equation}
-for which the initial iterate is $y_{(0)}^j=0$.  (Zero is admissible; see the comment after \eqref{eq:fe:philevels}.)
+The initial iterate is $y_{(0)}^j=0$; this is admissible because $\underline{\phi}^j \le 0 \le \overline{\phi}^j$.
 
 On ascent, $j=0,1,\dots,J$, the same VI is solved but for $z^j \in \mathcal{U}^j$:
 \begin{equation}
 \ip{f^j(w^j + z^j)}{v-z^j} \ge \ip{\ell^j}{v-z^j} \qquad \text{for all } v\in \mathcal{U}^j. \label{eq:fe:upvi}
 \end{equation}
-The nontrivial initial iterate for this problem is found by prolonging $z^{j-1}$ and using it to correct the current (i.e.~down-smoothed) correction on the level:
+However, the nontrivial initial iterate for this problem is found by prolonging $z^{j-1}$ and then updating the current (i.e.~down-smoothed) correction:
 \begin{equation}
 z_{(0)}^j = y^j + P z^{j-1}.  \label{eq:fe:upwardinitial}
 \end{equation}
 An exception is that $z_{(0)}^0=0$ on the coarsest level.  Note $z_{(0)}^j$ is admissible by \eqref{eq:fe:upwardsuminclusion}.
 
-%If we were to inject the original box constraints \eqref{eq:fe:fineconstraintset} downward to coarser meshes, i.e.~$\underline{\gamma}^j = \iR \underline{\gamma}^{j+1}$ and $\overline{\gamma}^j = \iR \overline{\gamma}^{j+1}$, then, because injection preserves inequalities, and because $y^{j+1} \in \mathcal{D}^{j+1}$, it would follow from \eqref{eq:fe:definew} that $\underline{\gamma}^j \le w^j \le \overline{\gamma}^j$.  In this sense $w^j$ is admissible with respect to the box constraints.  However, while $w^j \in \cV^j \subset \cV^J$ holds, generally $w^j \notin \cK^J$, and furthermore our use of LDCs (Section \ref{sec:cdmultilevel}) avoids the need to generate these $\underline{\gamma}^j, \overline{\gamma}^j$.
-
-Observe that formula \eqref{eq:fe:levelsource} for functional $\ell^j$ is a classical FAS construction for PDEs; compare equation (8.5b) in \cite{BrandtLivne2011} or equation (5.3.14) in \cite{Trottenbergetal2001}.  It has the following explanation, which simultaneously justifies VI problems \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi}.  First, the $j+1$ level problem \eqref{eq:fe:downvi} is not solved exactly by the finer-level correction $y^{j+1}$---the down-smoother was only approximate---so we seek a further correction $y$ on the $j+1$ level such that
+Formula \eqref{eq:fe:levelsource} for $\ell^j$ is a classical FAS construction; compare equation (8.5b) in \cite{BrandtLivne2011} or equation (5.3.14) in \cite{Trottenbergetal2001}.  It has the following explanation, which also justifies VI problems \eqref{eq:fe:downvi} and \eqref{eq:fe:upvi}.  First, problem \eqref{eq:fe:downvi} was not solved exactly by the finer-level correction $y^{j+1}$---the down-smoother was only approximate---so we seek a further correction $y$ on the $j+1$ level such that
 \begin{equation}
-\ip{f^{j+1}(w^{j+1}+y^{j+1}+y)}{v-y^{j+1}-y} \ge \ip{\ell^{j+1}}{v-y^{j+1}-y} \quad \text{\emph{(notional)}} \label{eq:fe:downvinotional}
+\ip{f^{j+1}(w^{j+1}+y^{j+1}+y)}{v-y^{j+1}-y} \ge \ip{\ell^{j+1}}{v-y^{j+1}-y} \quad \text{\emph{[notional]}} \label{eq:fe:downvinotional}
 \end{equation}
-for all $v\in \mathcal{D}^j$.  However, in fact $y$ will be approximated by solving a coarser, $j$th-level problem generated by modifying \eqref{eq:fe:downvinotional} in 4 steps:
-\begin{enumerate}
-\item subtract the computable quantity $f^{j+1}(w^{j+1}+y^{j+1}) \in (\mathcal{V}^{j+1})'$ from both sides,
-\item replace the residual $\ell^{j+1}-f^{j+1}(w^{j+1}+y^{j+1})$ on the right by its restriction,
-\item replace $w^{j+1}+y^{j+1}$, where it appears on the left, by its injection, and
-\item where it appears on the left, replace $f^{j+1}$ by the coarser rediscretization $f^j$.
-\end{enumerate}
-Steps \emph{(ii)}--\emph{(iv)} are justified when the residual and the error are smooth; such smoothness should result from application of the down-smoother.  These steps yield a problem for the $j$th-level correction $y^j \in \mathcal{D}^j$:
+for all $v\in \mathcal{D}^{j+1}$.  However, because the down-smoother has made progress, $y$ can be approximated by solving a coarser, $j$th-level problem generated by modifying \eqref{eq:fe:downvinotional} in 4 steps: \emph{(i)} subtract the computable quantity $f^{j+1}(w^{j+1}+y^{j+1}) \in (\mathcal{V}^{j+1})'$ from both sides, \emph{(ii)} replace the residual $\ell^{j+1}-f^{j+1}(w^{j+1}+y^{j+1})$ on the right by its restriction, \emph{(iii)} replace $w^{j+1}+y^{j+1}$, where it appears on the left, by its injection, and \emph{(iv)} where it appears on the left, replace $f^{j+1}$ by the coarser rediscretization $f^j$.  These steps yield a problem for the $j$th-level correction $y^j \in \mathcal{D}^j$:
 \begin{align}
 &\ip{f^j\left(\iR(w^{j+1}+y^{j+1})+y^j\right)}{v-y^j} - \ip{f^j\left(\iR(w^{j+1}+y^{j+1})\right)}{v-y^j} \label{eq:fe:downvicluttered} \\
-&\qquad \ge \ip{R\left(\ell^{j+1}-f^{j+1}(w^{j+1}+y^{j+1})\right)}{v-y^j} \notag
+&\qquad \ge \ip{R\left(\ell^{j+1}-f^{j+1}(w^{j+1}+y^{j+1})\right)}{v-y^j}, \notag
 \end{align}
-This is the same as VI problem \eqref{eq:fe:downvi}, but in cluttered form, motivating definitions \eqref{eq:fe:definew} and \eqref{eq:fe:levelsource}.  The explanation for VI \eqref{eq:fe:upvi} is similar.
+for all $v\in \mathcal{D}^{j}$.  This is VI problem \eqref{eq:fe:downvi}, but in cluttered form, motivating definitions \eqref{eq:fe:definew} and \eqref{eq:fe:levelsource}.  The explanation for problem \eqref{eq:fe:upvi} is similar.
 
 These ideas come together in Algorithm \ref{alg:fascd}, \pr{fascd-vcycle}, which updates $w^J$.  It assumes that the \pr{smooth} and \pr{solve} procedures do in-place modifications of their final arguments, without modifying their first four arguments.  Parameters \id{down} and \id{up} determine the number of smoother iterations, respectively.
 
