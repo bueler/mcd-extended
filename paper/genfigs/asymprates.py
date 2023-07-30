@@ -26,7 +26,8 @@ resnormspir = [[ 1, 1.250364911422e+01, 1.441420557646e-15],
                [11, 2.119960943342e+02, 6.428954633272e-11],
                [12, 3.016400256848e+02, 1.293809842620e-10],
                [13, 4.275614401535e+02, 1.177739303183e-10],
-               [14, 6.031903763444e+02, 1.310547032348e-10]] # FIXME add final row
+               [14, 6.031903763444e+02, 1.310547032348e-10],
+               [18, 8.529374614123e+02, 5.472658274103e-10]]
 
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["mathtext.fontset"] = "cm"
@@ -41,11 +42,11 @@ mJ = (mcoarse * 2**J + 1)**2 + (mcoarse * 2**J)**2
 rnball = np.array(resnormball)
 kball = rnball[1:,0]
 rhoball = (rnball[1:,2] / rnball[1:,1])**(1.0/kball)
-plt.semilogx(mJ, rhoball, 'ko:', ms=10.0, label='ball')
+plt.semilogx(mJ, rhoball, 'ko:', ms=10.0, markerfacecolor='w', label='ball')
 rnspir = np.array(resnormspir)
 kspir = rnspir[1:,0]
 rhospir = (rnspir[1:,2] / rnspir[1:,1])**(1.0/kspir)
-plt.semilogx(mJ[:-1], rhospir, 'k*:', ms=12.0, label='spiral')  # FIXME
+plt.semilogx(mJ, rhospir, 'k*:', ms=12.0, label='spiral')
 plt.xlabel(r'degrees of freedom $m_J$', fontsize=fsize)
 plt.ylabel(r'asymptotic rate $\rho_J$', fontsize=fsize)
 #plt.gca().set_xticklabels(mJ)
