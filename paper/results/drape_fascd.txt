@@ -273,7 +273,7 @@ done on 2048 x 2048 square mesh (oper=lap, prob=spiral, levs=10, mcoarse=4, m_J=
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 18
 done on 4096 x 4096 square mesh (oper=lap, prob=spiral, levs=11, mcoarse=4, m_J=33562625, cells=67108864)
 
-******** PROB=ball, F-cycles, to discretization error, with default rtol 1.0e-8 *******
+******** PROB=ball, F-cycles, to discretization error, with defaults rtol=stol=1.0e-8 and atol=1.0e-50 *******
     0 FASCD ncp function norm 2.977687712552e+00
     1 FASCD ncp function norm 5.592593521511e-16
 FASCD solve converged due to CONVERGED_SINGLE_LEVEL iterations 1
@@ -351,7 +351,7 @@ done on 2048 x 2048 square mesh (oper=lap, prob=ball, levs=10, mcoarse=4, m_J=83
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 done on 4096 x 4096 square mesh (oper=lap, prob=ball, levs=11, mcoarse=4, m_J=33562625, cells=67108864):  |u-uexact|_h = 1.630e-07
 
-******** PROB=spiral, F-cycles, to discretization error, with default rtol 1.0e-8 *******
+******** PROB=spiral, F-cycles, to discretization error, with defaults rtol=stol=1.0e-8 and atol=1.0e-50 *******
     0 FASCD ncp function norm 1.250364911422e+01
     1 FASCD ncp function norm 1.441420557646e-15
 FASCD solve converged due to CONVERGED_SINGLE_LEVEL iterations 1
