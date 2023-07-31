@@ -23,6 +23,6 @@ fascd.pdf: fascd.tex fascd.bib cropfigures
 .PHONY: clean
 
 clean:
-	@rm -f *~ *.out *.aux *.log *.blg *.snm *.toc *.nav *.vrb *.bbl *.synctex.gz
+	@rm -f *~ *.out *.aux *.log *.blg *.snm *.toc *.nav *.vrb *.bbl *.synctex.gz *.thm *.dvi
 	@rm -rf genfigs/*.pdf
 	@rm -rf genfigs/__pycache__/
