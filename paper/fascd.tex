@@ -73,8 +73,8 @@ ct-right=),%
 \newfloat{pseudofloat}{t}{xyz}[section]
 \floatname{pseudofloat}{Algorithm}
 
-\usepackage{todonotes}
-\newcommand{\pef}[1]{\todo[inline, color=red!20]{PF: #1}}
+%\usepackage{todonotes}
+%\newcommand{\pef}[1]{\todo[inline, color=red!20]{PF: #1}}
 %\newcommand{\elb}[1]{\todo[inline, color=blue!20]{EB: #1}}
 
 
@@ -292,8 +292,7 @@ Next we will numerically solve VI problem \eqref{eq:vi} over a constraint set \e
 \begin{equation}
 \ip{f(u^\star)}{v-u^\star} \ge \ip{\ell}{v-u^\star} \qquad \text{for all } v\in \cK \label{eq:boxdirichletvi}
 \end{equation}
-is well-posed for $u^\star\in \cK$.  Note that $v-u^\star \in W_0^{1,p}(\Omega)$.
-\pef{Is this really true? Shouldn't the test function only match the solution on $\partial_D \Omega$?}
+is well-posed for $u^\star\in \cK$.
 
 
 \section{Multilevel finite elements} \label{sec:femultilevel}
