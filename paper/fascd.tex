@@ -227,7 +227,7 @@ The numerical results in Section \ref{sec:results} apply FASCD Algorithms \ref{a
 
 \section{Constraint decomposition (CD)} \label{sec:cd}
 
-Suppose that there are $m<\infty$ closed subspaces $\cV_i \subset \cV$, so that the sum
+Suppose that there are $m<\infty$ closed linear subspaces $\cV_i \subset \cV$, so that the sum
 \begin{equation}
 \cV = \sum_{i=0}^{m-1} \cV_i \label{eq:subspacedecomp}
 \end{equation}
@@ -235,7 +235,7 @@ holds in the sense that if $w \in \cV$ then there exist $w_i \in \cV_i$ so that 
 \begin{equation}
 \cK = \sum_{i=0}^{m-1} \cK_i. \label{eq:constraintdecomp}
 \end{equation}
-The sum in \eqref{eq:constraintdecomp} must hold in two senses \cite{TaiTseng2002}: \emph{(i)}~if $w \in \cK$ then there exist $w_i \in \cK_i$ so that $w = \sum_i w_i$, and \emph{(ii)}~if $z_i \in \cK_i$ for each $i$ then $\sum_i z_i \in \cK$.  Note that neither decomposition \eqref{eq:subspacedecomp} or \eqref{eq:constraintdecomp} is required to be unique, and also notice that sense \emph{(ii)} is automatic for \eqref{eq:subspacedecomp} because the $\cV_i$ are subspaces.  Finally, suppose there are bounded, generally nonlinear, \emph{decomposition operators}\footnote{Denoted ``$R_i$'' in \cite{Tai2003}; our notation avoids conflict with the transfer operators in Section \ref{sec:femultilevel}.} $\Pi_i : \cK \to \cK_i$ such that if $v \in \cK$ then
+The sum in \eqref{eq:constraintdecomp} must hold in two senses \cite{TaiTseng2002}: \emph{(i)}~if $w \in \cK$ then there exist $w_i \in \cK_i$ so that $w = \sum_i w_i$, and \emph{(ii)}~if $z_i \in \cK_i$ for each $i$ then $\sum_i z_i \in \cK$.  Note that neither decomposition \eqref{eq:subspacedecomp} or \eqref{eq:constraintdecomp} is required to be unique, and also notice that sense \emph{(ii)} is automatic for \eqref{eq:subspacedecomp} because the $\cV_i$ are subspaces.  Finally, suppose there are bounded, generally nonlinear, \emph{decomposition operators} $\Pi_i : \cK \to \cK_i$ such that if $v \in \cK$ then
 \begin{equation}
 v = \sum_{i=0}^{m-1} \Pi_i v.  \label{eq:constraintrestrictionsum}
 \end{equation}
@@ -248,39 +248,27 @@ Clearly \eqref{eq:constraintrestrictionsum} implies sense \emph{(i)} for \eqref{
 \label{fig:cartoon}
 \end{figure}
 
-Although a multilevel FE CD discretization is our purpose (Sections \ref{sec:femultilevel}--\ref{sec:implementation}), the CD concept can be applied at the level of the continuum problem.  For example, in an obstacle problem ($\cK = \{v \ge \psi\}$) one can construct a overlapping domain decomposition of a Sobolev space $\cV$ by using a smooth, finite partition of unity $\{\varphi_i\}$, subspaces $\cV_i = \{w \in \cV : w = 0 \text{ if } \varphi_i = 0\}$, constraint sets $\cK_i = \{v \in \cV_i : v \ge \varphi_i \psi\}$, and decomposition operators $\Pi_i(v) = \varphi_i v$.  One may also construct a CD which is a disjoint frequency decomposition of a Hilbert space of periodic functions on a cube $\Omega=(0,1)^d$.  A multilevel CD over a finite-dimensional FE discretization (Sections \ref{sec:femultilevel}--\ref{sec:cdmultilevel}) will, in a vague sense, approximate such a frequency decomposition.
+We will construct a multilevel FE CD discretization in Sections \ref{sec:femultilevel}--\ref{sec:implementation}.  However, the CD concept can be applied at the level of the continuum problem.  For example, in a unilateral obstacle problem ($\cK = \{v \ge \psi\}$) one can construct a overlapping domain decomposition of $\cV$ by using a smooth, finite partition of unity $\{\varphi_i\}$, subspaces $\cV_i = \{w \in \cV : w = 0 \text{ if } \varphi_i = 0\}$, constraint sets $\cK_i = \{v \in \cV_i : v \ge \varphi_i \psi\}$, and decomposition operators $\Pi_i(v) = \varphi_i v$.  One may also construct a CD which is a disjoint frequency decomposition of a Hilbert space of periodic functions on a cube $\Omega=(0,1)^d$.  The multilevel CD, over a finite-dimensional FE discretization, will, in a vague sense, approximate such a frequency decomposition.
 
-Associated to any CD are certain iterative methods \cite{Tai2003,Xu1992}.  The following algorithms, which replace $u \in \cK$ with a new iterate $w\in\cK$, which should be closer to $u^\star \in \cK$ solving \eqref{eq:vi}, solve smaller VI problems over each subset $\cK_i$.  The additive/parallel \pr{cd-add} algorithm generalizes the classical Jacobi iteration.  Note that ``$u-\Pi_iu+\hat w_i$'' removes the $\mathcal{K}_i$ part of $u$ and then adds-back the $\mathcal{K}_i$ solution $\hat w_i$.  The multiplicative/successive \pr{cd-mult} algorithm generalizes the Gauss--Seidel iteration.  Each subset solution corrects the global iterate immediately, so here the ordering of the $\cK_i$ is important.  The sum ``$\sum_{j>i} \Pi_j u$'' should be read as ``those parts of $u$ which need improvement''.
-
-\begin{pseudo*}
-\pr{cd-add}(u)\text{:} \\+
-    for all $i \in \{0,\dots,m-1\}$: \\+
-        \rm{find} $\hat w_i\in \cK_i$ \rm{such that} \\+
-            $\ip{f(u - \Pi_i u + \hat w_i)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i} \textnormal{ for all } v_i \in \cK_i$ \\--
-    $\hat w = \sum_i \hat w_i\in\cK$ \\
-    return $w=(1-\alpha) u + \alpha \hat w$
-\end{pseudo*}
+Associated to any CD are certain iterative methods \cite{Tai2003,Xu1992}.  The following multiplicative/successive \pr{cd-mult} algorithm, which generalizes the Gauss--Seidel iteration, replaces $u \in \cK$ with a new iterate $w\in\cK$ which should be closer to $u^\star \in \cK$ solving \eqref{eq:vi}.  The idea is to solve smaller VI problems over each subset $\cK_i$.  Each subset solution corrects the global iterate immediately, so the ordering of the $\cK_i$ is important.  The sum ``$\sum_{j>i} \Pi_j u$'' should be read as ``those parts of $u$ which need improvement''.  Tai \cite{Tai2003} also proposes an additive/parallel version of the algorithm, one which we will not use here and whose convergence proof requires substantial damping.
 
 \begin{pseudo*}
 \pr{cd-mult}(u)\text{:} \\+
     for $i = 0,\dots,m-1$: \\+
-        \rm{find} $\hat w_i\in \cK_i$ \rm{such that} \\+
-            $\displaystyle \Big<f\Big(\sum_{j<i} w_j + \hat w_i + \sum_{j>i} \Pi_j u\Big),\, v_i-\hat w_i\Big> \ge \ip{\ell}{v_i-\hat w_i} \textnormal{ for all } v_i \in \cK_i$ \\-
-            $w_i = (1-\alpha) \Pi_i u + \alpha \hat w_i\in\cK_i$ \\-
-    $\hat w = \sum_i \hat w_i\in\cK$ \\
-    return $w=(1-\alpha) u + \alpha \hat w$
+        \rm{find} $w_i\in \cK_i$ \rm{such that} \\+
+            $\displaystyle \Big<f\Big(\sum_{j<i} w_j + w_i + \sum_{j>i} \Pi_j u\Big),\, v_i - w_i\Big> \ge \ip{\ell}{v_i - w_i} \textnormal{ for all } v_i \in \cK_i$ \\--
+    return $w=\sum_i w_i\in\cK$
 \end{pseudo*}
 
-We call \pr{cd-add} and \pr{cd-mult} the \emph{basic CD iterations}.  The VI problems in these iterations reduce to constrained line searches when the $\cV_i$ are one-dimensional.  In fact, let $e_i = \hat w_i - \Pi_i u \in \cV_i$ be the correction from $\cK_i$.  Noting the damping parameter\footnote{FASCD Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} are presented without damping, as it seems to be unnecessary, but the convergence of the general CD iterations depends upon damping.} $0\le \alpha \le 1$, the reader may confirm that $w = u + \alpha \sum_i e_i$.  Thus the new iterate is computed by adding a correction from each sub\emph{space} $\cV_i$, but so that $w \in \cK$; the corrections preserve admissibility.  If VI problem \eqref{eq:vi} corresponds to convex optimization \eqref{eq:minimization} then, subject to bounds on $\alpha$, the basic iterations generate monotonically-decreasing objective values.
+The VI problems in \pr{cd-mult} reduce to constrained line searches when the $\cV_i$ are one-dimensional.  If $e_i = w_i - \Pi_i u \in \cV_i$ denotes the correction from $\cK_i$, then we see that the new iterate $w = u + \sum_i e_i$ is computed by adding a correction from each sub\emph{space} $\cV_i$, but so that $w \in \cK$; the corrections preserve admissibility.  Furthermore, if VI problem \eqref{eq:vi} corresponds to convex optimization \eqref{eq:minimization} then \pr{cd-mult} generates monotonically-decreasing objective values.
 
-\begin{lemma} \cite{Tai2003}  Suppose $f=F'$ for $F:\cK\to\RR$ convex and differentiable, and let $u\in\cK$.  For $0 \le \alpha \le 1$ the output $w \in \cK$ from \pr{cd-mult} satisfies
+\begin{lemma} \cite{Tai2003}  Suppose $f=F'$ for $F:\cK\to\RR$ convex and differentiable, and let $u\in\cK$.  The output $w \in \cK$ from \pr{cd-mult} satisfies
 \begin{equation}
 F(w) - \ip{\ell}{w} \le F(u) - \ip{\ell}{u}.  \label{eq:objectivemonotone}
 \end{equation}
-If $0 \le \alpha \le 1/m$ then \pr{cd-add} likewise satisfies \eqref{eq:objectivemonotone}.
 \end{lemma}
 
-The basic CD iterations are meaningful whether or not we are in the optimization case $f=F'$, and even if $f$ is nonlinear, non-local, or defined only on $\cK$.  The practical and efficient FE implementation for such general operators $f$ seems not to have been addressed in the literature.  (References \cite{GraeserKornhuber2009,Tai2003} only apply the CD method to the classical obstacle problem, wherein $f=F'$ is linear, local, and defined on all of $\mathcal{V}$.)  In Section \ref{sec:vcycle} we will extend multilevel CD iterations to general nonlinear operators by applying the full approximation scheme (FAS) idea of Brandt \cite{Brandt1977}, and then illustrate its application to general operators in Examples \ref{ex:results:plap}--\ref{ex:results:sia}.
+\pr{cd-mult} is meaningful whether or not we are in the optimization case $f=F'$, and even if $f$ is nonlinear, non-local, or defined only on $\cK$, but its practical and efficient FE implementation for such general operators $f$ seems not to have been addressed in the literature.  In particular, references \cite{GraeserKornhuber2009,Tai2003} only apply the multilevel CD method to the classical obstacle problem, wherein $f=F'$ is linear, local, and defined on all of $\mathcal{V}$.  In Section \ref{sec:vcycle} we will extend multilevel CD iterations to general nonlinear operators by applying the full approximation scheme (FAS) idea of Brandt \cite{Brandt1977}, and then illustrate its application to general operators in Examples \ref{ex:results:plap}--\ref{ex:results:sia}.
 
 From now on we restrict to the case of \emph{box constraints} \cite{BensonMunson2006,FerrisPang1997}, equivalently \emph{bilateral obstacle problems}.  Suppose $\Omega \subset \RR^d$ is open and let $\mathcal{V}=W^{1,p}(\Omega)$.  The \emph{lower obstacle} $\underline{\gamma}$ and \emph{upper obstacle} $\overline{\gamma}$ are given measurable functions, defined on the closure $\overline{\Omega}$, with values in the extended real line $\tilde\RR = [-\infty,+\infty]$, satisfying the following properties: $\underline{\gamma} < +\infty$, $\overline{\gamma}>-\infty$, and $\underline{\gamma} \le \overline{\gamma}$.  Also suppose $\partial\Omega$ is split into disjoint sets $\partial\Omega = \partial_D \Omega \cup \partial_N \Omega$, with $\partial_D \Omega$ of positive Hausdorff measure, and $\partial_N \Omega$ possibly empty.  Dirichlet data\footnote{Boundary values are in the trace sense \cite{Evans2010}, and $g_D$ is assumed to be as regular as needed.} is given by $g_D:\partial_D \Omega \to \RR$, and we assume $\underline{\gamma} \le g_D \le \overline{\gamma}$ on $\partial_D \Omega$.  Now define
 \begin{equation}
@@ -471,17 +459,17 @@ In unilateral cases, where either $\underline{\gamma}^J=-\infty$ or $\overline{\
 \begin{proof}  Definition \eqref{eq:fe:philevels} shows that $\underline{\chi}^j = \underline{\phi}^j + \dots + \underline{\phi}^{k+1} + \underline{\chi}^k$ and $\overline{\chi}^j = \overline{\phi}^j + \dots + \overline{\phi}^{k+1} + \overline{\chi}^k$.  If $y^i \in \mathcal{D}^i$ for $k+1 \le i \le j$ and $z^k \in \mathcal{U}^k$ then $\underline{\chi}^j \le y^j + \dots + y^{k+1} + z^k \le \overline{\chi}^j$, thus \eqref{eq:fe:upwardsuminclusion} holds.  In unilateral cases we may follow the proof of Lemma \ref{lem:downwardadmissibility} with \eqref{eq:fe:unilateraldecompositionoperator} unchanged for $i=k+1,\dots,j$, but modified in the $i=k$ case: $\Pi_k z^j = I_{j\to k}^\ominus(z^j - \underline{\chi}^j) + \underline{\chi}^k$.  Now the proof goes through as before.
 \end{proof}
 
-Inclusions \eqref{eq:fe:downwardsuminclusion} and \eqref{eq:fe:upwardsuminclusion} show the admissibility of all iterates and corrections in Algorithm \ref{alg:fascd} below.  These inclusions are special to multilevel schemes based on defect constraints, and we have seen that they hold regardless of whether decomposition operators $\Pi_i$ can be constructed.  Thus a new ``basic'' iteration, an incomplete variant of \pr{cd-mult}, can be applied to $w^J\in\mathcal{K}^J$:
+Inclusions \eqref{eq:fe:downwardsuminclusion} and \eqref{eq:fe:upwardsuminclusion} show the admissibility of all iterates and corrections in Algorithm \ref{alg:fascd} below.  These inclusions are special to multilevel schemes based on defect constraints, and we have seen that they hold regardless of whether decomposition operators $\Pi_i$ can be constructed.  Thus we have a new, incomplete variant of \pr{cd-mult}.  For $w^J\in\mathcal{K}^J$, it applies in the multilevel CD case where \eqref{eq:fe:upwardsuminclusion} holds:
 
 \begin{pseudo*}
 \pr{icd-tele}(w^J)\text{:} \\+
     for $j = 0,\dots,J$: \\+
         \rm{find} $z^j\in \mathcal{U}^j$ \rm{so that for all} $v \in \mathcal{U}^j$, \\+
-            $\displaystyle \Big<f\Big(w^J + \alpha \sum_{i<j} z^i + \alpha z^j\Big),v-z^j\Big> \ge \ip{\ell}{v-z^j}$ \\--
-    return $\tilde w^J=w^J + \alpha \sum_{i\le J} z^i$
+            $\displaystyle \Big<f\Big(w^J + \sum_{i<j} z^i + z^j\Big),v-z^j\Big> \ge \ip{\ell}{v-z^j}$ \\--
+    return $\tilde w^J=w^J + \sum_{i\le J} z^i$
 \end{pseudo*}
 
-Algorithm \ref{alg:fascd} incorporates \pr{icd-tele} for up-smoothing in larger constraint sets.  The observation that this is more efficient, illustrated by Example \ref{ex:results:plap} in particular, seems to be new.  Specifically, $V(1,1)$ cycles in \cite{GraeserKornhuber2009} use half-size versions of the smaller sets $\mathcal{D}^j$ both on descent and ascent; see also \cite[section 5.4]{Tai2003}.  However, a convergence analysis extending the arguments of \cite{GraeserKornhuber2009,Tai2003}, either to non-optimization VIs or box constraints, or both, would seem to require full CDs.
+Algorithm \ref{alg:fascd} below incorporates \pr{icd-tele} for up-smoothing in the larger constraint sets $\mathcal{U}^j$.  The observation that this is more efficient, illustrated by Example \ref{ex:results:plap} in particular, seems to be new.  Specifically, $V(1,1)$ cycles in \cite{GraeserKornhuber2009} use half-size versions of the smaller sets $\mathcal{D}^j$ both on descent and ascent; see also \cite[section 5.4]{Tai2003}.  However, a convergence analysis extending the arguments of \cite{GraeserKornhuber2009,Tai2003}, either to non-optimization VIs or box constraints, or both, would seem to require full CDs.
 
 
 \section{FASCD V-cycle} \label{sec:vcycle}
@@ -827,7 +815,7 @@ $P$ & \emph{levels} & $m_J$ & \emph{F-cycles} & \emph{time} (s) \\
 
 \section{Discussion and outlook} \label{sec:discussion}
 
-As a multilevel solver for VI problems, the FASCD method is a strategy for generating coarser-level problems which, once solved, make helpful admissible additions to a V-cycle update.  The method is smoother-agnostic, and our implementation within the extensible Firedrake \cite{Rathgeberetal2016} and PETSc \cite{Balayetal2023} library framework will allow easy experimentation with other smoothers (projected Gauss--Seidel, semi-smooth Newton, interior-point, etc.), beyond the active-set Newton method chosen for demonstration here.  For smoothers of Newton-Krylov type one could also add linear geometric or algebraic multigrid preconditioning \cite{Trottenbergetal2001}, instead of our simple choice of incomplete factorization preconditioners.  However, the performance observed in Section \ref{sec:results} is already excellent on the tested examples.
+As a multilevel solver for VI problems, the FASCD method is a strategy for generating coarser-level problems which, once solved, make helpful admissible additions to a V-cycle update.  The method is smoother-agnostic, and our implementation within the extensible Firedrake \cite{Rathgeberetal2016} and PETSc \cite{Balayetal2023} library framework will allow easy experimentation with other smoothers (projected Gauss--Seidel, semi-smooth Newton, interior-point, etc.), beyond the active-set Newton method chosen for demonstration here.  For smoothers of Newton-Krylov type one could also add linear geometric or algebraic multigrid preconditioning \cite{Trottenbergetal2001} for the linear step problems, instead of our simpler choice of incomplete factorization preconditioners.  A restructured multilevel CD approach which applies the additive/parallel CD iteration \cite{Tai2003} might be considered, in pursuit of a VI algorithm analogous to the BPX multigrid method for PDEs \cite{BramblePasciakXu1990}.  However, the performance observed in Section \ref{sec:results} is already excellent on the tested examples.
 
 
 \subsection*{Code availability} \label{sec:code}  The software used to produce the results is archived at tag \texttt{v1.0} in the repository \texttt{\url{https://bitbucket.org/pefarrell/fascd/}}, using the Firedrake version \texttt{3fb16ad47}.
