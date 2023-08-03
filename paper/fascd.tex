@@ -794,16 +794,16 @@ For a weak-scaling study we fixed the number of degrees of freedom per process a
 % and https://github.com/bueler/mcd-extended: paper/results/siaweak.sh|txt
 \begin{table}[ht]
 \centering
-\begin{tabular}{c@{\hskip 4mm}c@{\hskip 4mm}c@{\hskip 7mm}c@{\hskip 4mm}c}
+\begin{tabular}{c@{\hskip 4mm}c@{\hskip 4mm}c@{\hskip 7mm}c@{\hskip 4mm}cc}
 \toprule
-$P$ & \emph{levels} & $m_J$ & \emph{F-cycles} & \emph{time} (s) \\
+$P$ & \emph{levels} & $m_J$ & \emph{F-cycles} & \emph{time} (s) & \emph{time per cycle} (s) \\
 \midrule
- 1 & 6 & $641^2$ & 3 & 98 \\
- 4 & 7 & $1281^2$ & 3 & 98 \\
- 16 & 8 & $2561^2$ & 3 & 124 \\
- 64 & 9 & $5121^2$ & 3 & 136 \\
- 256 & 10 & $10241^2$ & 2 & 95 \\
- 1024 & 11 & $20481^2$ & 2 & 177 \\
+ 1 & 6 & $641^2$ & 3 & 98 & 32.7 \\
+ 4 & 7 & $1281^2$ & 3 & 98 & 32.7 \\
+ 16 & 8 & $2561^2$ & 3 & 124 & 41.3 \\
+ 64 & 9 & $5121^2$ & 3 & 136 & 45.3 \\
+ 256 & 10 & $10241^2$ & 2 & 95 & 47.5 \\
+ 1024 & 11 & $20481^2$ & 2 & 177 & 88.5 \\
  \bottomrule
 \end{tabular}
 \bigskip
