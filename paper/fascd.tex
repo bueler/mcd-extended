@@ -219,7 +219,7 @@ where $n>1$ and $\Gamma>0$ are physical constants for ice; $n=3$ is a typical va
 \begin{equation}
 \ip{f(s)}{v} = \int_\Omega \Gamma (s-b)^{n+2} |\grad s|^{n-1} \grad s \cdot \grad v\dx. \label{eq:siaoperator}
 \end{equation}
-If the bed is flat ($b=0$) then a power transformation converts \eqref{eq:siaoperator} into form \eqref{eq:plaplacian} with $p=n+1$.  For general beds $b$ less is understood, but existence holds for \eqref{eq:siavi} \cite{JouvetBueler2012} and a power of the solution lives in a Sobolev space: $(s-b)^{2p/(p-1)} \in W^{1,p}(\Omega)$.  This theory, and also observations of ice sheets, shows that $|\grad s|$ may be unbounded as one approaches the free boundary from the icy ($s>b$) side.
+If the bed is flat ($b=0$) then a power transformation converts \eqref{eq:siaoperator} into form \eqref{eq:plaplacian} with $p=n+1$. Less is understood for general beds $b$, but existence holds for \eqref{eq:siavi} \cite{JouvetBueler2012} and a power of the solution lives in a Sobolev space: $(s-b)^{2p/(p-1)} \in W^{1,p}(\Omega)$.  This theory, and also observations of ice sheets, shows that $|\grad s|$ may be unbounded as one approaches the free boundary from the icy ($s>b$) side.
 \end{example}
 
 The numerical results in Section \ref{sec:results} apply FASCD Algorithms \ref{alg:fascd} and \ref{alg:fascd-fcycle} to the above Examples.
