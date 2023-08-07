@@ -73,8 +73,8 @@ ct-right=),%
 \newfloat{pseudofloat}{t}{xyz}[section]
 \floatname{pseudofloat}{Algorithm}
 
-%\usepackage{todonotes}
-%\newcommand{\pef}[1]{\todo[inline, color=red!20]{PF: #1}}
+\usepackage{todonotes}
+\newcommand{\pef}[1]{\todo[inline, color=red!20]{PF: #1}}
 %\newcommand{\elb}[1]{\todo[inline, color=blue!20]{EB: #1}}
 
 
@@ -237,9 +237,13 @@ holds in the sense that if $w \in \cV$ then there exist $w_i \in \cV_i$ so that 
 \end{equation}
 The sum in \eqref{eq:constraintdecomp} must hold in two senses \cite{TaiTseng2002}: \emph{(i)}~if $w \in \cK$ then there exist $w_i \in \cK_i$ so that $w = \sum_i w_i$, and \emph{(ii)}~if $z_i \in \cK_i$ for each $i$ then $\sum_i z_i \in \cK$.  Note that neither decomposition \eqref{eq:subspacedecomp} or \eqref{eq:constraintdecomp} is required to be unique, and also notice that sense \emph{(ii)} is automatic for \eqref{eq:subspacedecomp} because the $\cV_i$ are subspaces.  Finally, suppose there are bounded, generally nonlinear, \emph{decomposition operators} $\Pi_i : \cK \to \cK_i$ such that if $v \in \cK$ then
 \begin{equation}
-v = \sum_{i=0}^{m-1} \Pi_i v.  \label{eq:constraintrestrictionsum}
+v = \sum_{i=0}^{m-1} \Pi_i v,  \label{eq:constraintrestrictionsum}
 \end{equation}
-Clearly \eqref{eq:constraintrestrictionsum} implies sense \emph{(i)} for \eqref{eq:constraintdecomp}.  A \emph{constraint decomposition} (CD) of $\cK$ is a choice of $\cV_i,\cK_i,\Pi_i$ satisfying \eqref{eq:subspacedecomp}--\eqref{eq:constraintrestrictionsum} \cite{Tai2003}.  Figure \ref{fig:cartoon} suggests how a low-dimensional example might look; note $\cK_i \not\subset \cK$ in this and many other cases.
+with the decomposition operators satisfying the stability property
+\begin{equation} \label{eq:decompositionstability}
+\left(\sum_{i=0}^{m-1} \| \Pi_i u - \Pi_i v \|^2\right)^{1/2} \lesssim \|u - v\|.
+\end{equation}
+Clearly \eqref{eq:constraintrestrictionsum} implies sense \emph{(i)} for \eqref{eq:constraintdecomp}.  A \emph{constraint decomposition} (CD) of $\cK$ is a choice of $\cV_i,\cK_i,\Pi_i$ satisfying \eqref{eq:subspacedecomp}--\eqref{eq:decompositionstability} \cite{Tai2003}.  Figure \ref{fig:cartoon} suggests how a low-dimensional example might look; note $\cK_i \not\subset \cK$ in this and many other cases.
 
 \begin{figure}[ht]
 \centering
@@ -285,7 +289,7 @@ is well-posed for $u^\star\in \cK$.
 
 \section{Multilevel finite elements} \label{sec:femultilevel}
 
-We seek to rapidly compute the approximate solution of box-constrained VI problems \eqref{eq:boxdirichletvi} using finite elements (FE).  In this Section a multilevel $P_1$ or $Q_1$ element \cite{Elmanetal2014} approximation to \eqref{eq:boxdirichletvi} is constructed by refinement of a coarse mesh.  The mesh-refinement hierarchy permits the construction of a multilevel CD of the finest-level constraint set.
+We seek to rapidly compute the approximate solution of box-constrained VI problems \eqref{eq:boxdirichletvi} using finite elements (FE).  In this Section a nested multilevel $P_1$ or $Q_1$ element \cite{Elmanetal2014} approximation to \eqref{eq:boxdirichletvi} is constructed by refinement of a coarse mesh.  The mesh-refinement hierarchy permits the construction of a multilevel CD of the finest-level constraint set.
 
 The mesh hierarchy and FE spaces can be constructed by standard nested refinement.  Let $\Omega \subset \RR^d$ be an open bounded polygon.  Let $\mathcal{T}^0$ be the \emph{coarsest mesh}, a finite set of non-overlapping, nondegenerate cells with union equal to $\overline{\Omega}$ and maximum cell diameter (mesh size) $h_0>0$.  We assume $\mathcal{T}^0$ is conforming, with no hanging nodes.  For $j=1,\dots,J$, let $\mathcal{T}^j$ be the uniform refinement of $\mathcal{T}^{j-1}$; each $\mathcal{T}^{j-1}$ cell becomes $2^d$ cells in $\mathcal{T}^j$ with mesh size $h_j = 2^{-j} h_0$.  We call $\mathcal{T}^J$ the \emph{finest-level mesh} and $J+1$ the \emph{number of levels}.  Let $m_j$ be the number of vertices in $\mathcal{T}^j$, the \emph{degrees of freedom} at the $j$th level.
 
@@ -331,7 +335,7 @@ minimum injection           & $\minR:\tilde{\mathcal{V}}^j\to\tilde{\mathcal{V}}
 \label{tab:transfers}
 \end{table}
 
-The monotone injections $\maxR,\minR$ \cite{Tai2003,GraeserKornhuber2009}, which will only be applied to constraints in $\tilde{\mathcal{V}}^j$, are nonlinear maps which maximize and minimize, respectively, nodal values over the open supports of coarser-mesh basis functions (i.e.~over the stars of the coarse vertices), Figure \ref{fig:Rplusminus}.  To make the construction precise, let $x_q^j$ denote the vertices of mesh $\mathcal{T}^j$, with corresponding basis functions $\psi_q^j(x)$.  For a $\tilde\RR$-valued nodal function $z\in\tilde{\mathcal{V}}^j$ we define functions in $\tilde{\mathcal{V}}^{j-1}$:
+The monotone injections $\maxR,\minR$ \cite{Tai2003,GraeserKornhuber2009}, which will only be applied to constraints in $\tilde{\mathcal{V}}^j$, are nonlinear maps which maximize and minimize, respectively, nodal values over the open supports of coarser-mesh basis functions (i.e.~over the stars of the coarse vertices).  To make the construction precise, let $x_q^j$ denote the vertices of mesh $\mathcal{T}^j$, with corresponding basis functions $\psi_q^j$.  For a $\tilde\RR$-valued nodal function $z\in\tilde{\mathcal{V}}^j$ we define functions in $\tilde{\mathcal{V}}^{j-1}$:
 \begin{align}
 (\maxR z)(x_p^{j-1}) &= \max \{z(x_q^j) \,:\, \psi_p^{j-1}(x_q^j) > 0\}, \label{eq:fe:monotoneinjections} \\
 (\minR z)(x_p^{j-1}) &= \min \{z(x_q^j) \,:\, \psi_p^{j-1}(x_q^j) > 0\}. \notag
@@ -340,7 +344,7 @@ These operators are constructed to enforce the property
 \begin{equation}
 \minR z \le z \le \maxR z,  \label{eq:fe:monotoneproperty}
 \end{equation}
-which does not hold for the injection operator $\iR$.  In the next Section we will use $\maxR,\minR$ to construct ``level defect constraints'' such that the zero function is always admissible.  This construction depends on additional ordering properties:
+which does not hold for the injection operator $\iR$. An illustration of the construction on nested meshes is given in Figure \ref{fig:Rplusminus}; implementing these operators on non-nested meshes could be efficiently done using a supermesh~\cite{Farrell2011}. In the next Section we will use $\maxR,\minR$ to construct ``level defect constraints'' such that the zero function is always admissible.  This construction depends on additional ordering properties:
 \begin{equation}
 z\ge 0 \implies \minR z \ge 0 \quad \text{ and } \quad z \le 0 \implies \maxR z \le 0. \label{eq:fe:monotoneadditional}
 \end{equation}
@@ -431,9 +435,9 @@ Thus if $y^i \in \mathcal{D}^i$ for $0 \le i \le j$ then
 \end{equation}
 so \eqref{eq:fe:downwardsuminclusion} holds for any box constraints.
 
-In unilateral cases we can also construct decomposition operators $\Pi_i$ and thereby show \eqref{eq:constraintrestrictionsum}.  For concreteness suppose $\overline{\gamma}^J=+\infty$, thus $\overline{\chi}^j=+\infty$ and $\overline{\phi}^i = +\infty$ for all levels; the $\underline{\gamma}^J=-\infty$ case is similar.  For $v\in \mathcal{V}^j$ and $0\le i \le j$, let $I_{j\to i}^\ominus$ be the operator applying the minimum (monotone) injection $j-i$ times, mapping into $\mathcal{V}^i$: $I_{j\to i}^\ominus v = \minR(\dots(\minR v)\dots) $.  (Set $I_{j\to j}^\ominus v = v$ and $I_{j\to -1}^\ominus=0$ by definition.)  Now define nonlinear decomposition operators $\Pi_i:\mathcal{U}^j \to \mathcal{D}^i$:
+In unilateral cases we can also construct decomposition operators $\Pi_i$ and thereby show \eqref{eq:constraintrestrictionsum}.  For concreteness suppose $\overline{\gamma}^J=+\infty$, thus $\overline{\chi}^j=+\infty$ and $\overline{\phi}^i = +\infty$ for all levels; the $\underline{\gamma}^J=-\infty$ case is similar.  For $v\in \mathcal{V}^j$ and $0\le i \le j$, let $I_{j\to i}^\ominus$ be the operator applying the minimum (monotone) injection $j-i$ times, mapping into $\mathcal{V}^i$: $I_{j\to i}^\ominus v = \minR(\cdots(\minR v)\cdots) $.  (Set $I_{j\to j}^\ominus v = v$ and $I_{j\to -1}^\ominus=0$ by definition.)  Now define nonlinear decomposition operators $\Pi_i:\mathcal{U}^j \to \mathcal{D}^i$:
 \begin{equation}
-\Pi_i z^j = I_{j\to i}^\ominus(z^j - \underline{\chi}^j) - I_{j\to i-1}^\ominus(z^j - \underline{\chi}^j) + \underline{\phi}^i.  \label{eq:fe:unilateraldecompositionoperator}
+\Pi_i z^j \coloneqq I_{j\to i}^\ominus(z^j - \underline{\chi}^j) - I_{j\to i-1}^\ominus(z^j - \underline{\chi}^j) + \underline{\phi}^i.  \label{eq:fe:unilateraldecompositionoperator}
 \end{equation}
 (Compare equation (4.9) in \cite{GraeserKornhuber2009}.)  Property \eqref{eq:fe:monotoneproperty} implies $I_{j\to i}^\ominus(z^j - \underline{\chi}^j) \ge I_{j\to i-1}^\ominus(z^j - \underline{\chi}^j)$, thus $\Pi_i z^j \ge \underline{\phi}^i$, so $\Pi_i z^j \in \mathcal{D}^i$.  On the other hand, the following sum telescopes, leaving only its first term plus the sum in \eqref{eq:fe:telescoping}:
 \begin{align*}
@@ -445,7 +449,7 @@ This shows \eqref{eq:constraintrestrictionsum}, thus \eqref{eq:constraintdecomp}
 One might attempt to convert \eqref{eq:fe:downwardsuminclusion} into a full CD for arbitrary box constraints by constructing different decomposition maps $\Pi_i$, for example by splitting $z^j = \min\{z^j,0\} + \max\{z^j,0\}$ and applying unilateral formulas \eqref{eq:fe:unilateraldecompositionoperator} to $\min\{z^j,0\}$ and $\max\{z^j,0\}$ separately.  The above proof shows that the lower bound $\Pi_i (\min\{z^j,0\}) \ge \underline{\phi}^i$ indeed holds.  However, the following Example shows why $\Pi_i(\min\{z^j,0\})$ may have an arbitrarily large maximum, and thus exceed any finite upper LDC $\overline{\phi}^i$.  In fact, $\Pi_i$ does not generally map all non-positive elements of $\mathcal{U}^J$ into $\mathcal{D}^i$ if a finite upper LDC is present.  On the other hand, we can not exclude entirely-different strategies for showing full CDs in the general box-constrained case.
 
 \begin{example}  \label{ex:notfullcd}
-Let $a > 0$ be an arbitrary positive number.  Consider a 2-level hierarchy ($J=1$), and suppose the lower defect constraint is the constant function $\underline{\chi}^1=-a$.  Note $\underline{\chi}^0=\maxR \underline{\chi}^1=-a$ also, so $\underline{\phi}^1=0$ and $\underline{\phi}^0=-a$.  Suppose $z^1$ is a ``sawtooth'' function which takes on value $-a$ on the coarse vertices and value $0$ on the other vertices.  Then, for any $\overline{\chi}^1\ge 0$, we have $\overline{\chi}^1 \ge 0 \ge z^1\ge \underline{\chi}^1$, so $z^j \in \mathcal{U}^1$.  However, $I_{1\to 0}^\ominus(z^1 - \underline{\chi}^1) = \minR(z^1 - \underline{\chi}^1) = 0$ identically.  From \eqref{eq:fe:unilateraldecompositionoperator}, $\Pi_1 z^1$ simplifies to $\Pi_1 z^1 = z^1 - \underline{\chi}^1$.  But then $\Pi_1 z^1$ attains a maximum $a\ge 0$.  This maximum can be chosen to exceed any upper defect obstacle $\overline{\phi}^1$, and $\Pi_1 z^1 \notin \mathcal{D}^1$ would occur.
+Let $a > 0$ be an arbitrary positive number.  Consider a 2-level hierarchy ($J=1$), and suppose the lower defect constraint is the constant function $\underline{\chi}^1=-a$.  Note $\underline{\chi}^0=\maxR \underline{\chi}^1=-a$ also, so $\underline{\phi}^1=0$ and $\underline{\phi}^0=-a$.  Suppose $z^1$ is a ``sawtooth'' function which takes on value $-a$ on the coarse vertices and value $0$ on the other vertices.  Then, for any $\overline{\chi}^1\ge 0$, we have $\overline{\chi}^1 \ge 0 \ge z^1\ge \underline{\chi}^1$, so $z^1 \in \mathcal{U}^1$.  However, $I_{1\to 0}^\ominus(z^1 - \underline{\chi}^1) = \minR(z^1 - \underline{\chi}^1) = 0$ identically.  From \eqref{eq:fe:unilateraldecompositionoperator}, $\Pi_1 z^1$ simplifies to $\Pi_1 z^1 = z^1 - \underline{\chi}^1$.  But then $\Pi_1 z^1$ attains a maximum $a\ge 0$.  This maximum can be chosen to exceed any upper defect obstacle $\overline{\phi}^1$, and $\Pi_1 z^1 \notin \mathcal{D}^1$ would occur.
 \end{example}
 
 Each upward set $\mathcal{U}^j$ can also be decomposed, incompletely in the sense of \eqref{eq:fe:downwardsuminclusion}, down to an arbitrary coarser level.  The next Lemma, which does not follow from Lemma \ref{lem:downwardadmissibility}, justifies upward admissibility in Algorithm \ref{alg:fascd}.
@@ -510,7 +514,7 @@ On ascent, $j=0,1,\dots,J$, the same VI is solved but for $z^j \in \mathcal{U}^j
 \begin{equation}
 \ip{f^j(w^j + z^j)}{v-z^j} \ge \ip{\ell^j}{v-z^j} \qquad \text{for all } v\in \mathcal{U}^j. \label{eq:fe:upvi}
 \end{equation}
-However, the nontrivial initial iterate for this problem is found by prolonging $z^{j-1}$ and then updating the current (i.e.~down-smoothed) correction:
+However, the nontrivial initial iterate for this problem is found by prolonging $z^{j-1} \in \mathcal{U}^{j-1}$ and then updating the current (i.e.~down-smoothed) correction:
 \begin{equation}
 z_{(0)}^j = y^j + P z^{j-1}.  \label{eq:fe:upwardinitial}
 \end{equation}
@@ -525,6 +529,7 @@ for all $v\in \mathcal{D}^{j+1}$.  However, because the down-smoother has made p
 &\ip{f^j\left(\iR(w^{j+1}+y^{j+1})+y^j\right)}{v-y^j} - \ip{f^j\left(\iR(w^{j+1}+y^{j+1})\right)}{v-y^j} \label{eq:fe:downvicluttered} \\
 &\qquad \ge \ip{R\left(\ell^{j+1}-f^{j+1}(w^{j+1}+y^{j+1})\right)}{v-y^j}, \notag
 \end{align}
+\pef{I don't see where in steps \emph{(i)-(iv)} the expression in the right of the angle brackets changes from $v - y^{j+1} - y$ (as in \eqref{eq:fe:downvinotional}) to $v - y^j$ (as in \eqref{eq:fe:downvicluttered}). From comparing the left hand sides, clearly $y^j$ in \eqref{eq:fe:downvicluttered} approximates $y$ in \eqref{eq:fe:downvinotional}, but from comparing the right hand sides, you want $y^j = y^{j+1} + y$. Maybe add a sentence, or another step, explaining what happened to the test expression?}
 for all $v\in \mathcal{D}^{j}$.  This is VI problem \eqref{eq:fe:downvi}, but in cluttered form, motivating definitions \eqref{eq:fe:definew} and \eqref{eq:fe:levelsource}.  The explanation for problem \eqref{eq:fe:upvi} is similar.
 
 These ideas come together in Algorithm \ref{alg:fascd}, \pr{fascd-vcycle}, which updates $w^J$.  The \pr{smooth} and \pr{solve} procedures are assumed to do in-place modifications of their final arguments, without modifying the others.
@@ -564,7 +569,7 @@ namely $16m_J$, $12m_J$, and $10m_J$ in dimensions $d=1,2,3$, respectively.  For
 
 Implementations of FASCD methods must choose a convergence criterion.  In this section we also construct the F-cycle extension, and we describe the active set Newton method later used as the smoother and coarse solver.
 
-Repeated application of Algorithm \ref{alg:fascd} to solve VI problem \eqref{eq:fe:vi} will not generally reduce the residual $f^J(w^J) - \ell^J$ to zero everywhere, but the VI is equivalent to a \emph{mixed complementarity problem} (MCP) \cite{FacchineiPang2003}, which says, by definition, that certain nodal conditions hold for $u^J$ at $x_p \in \mathcal{T}^J$.  Let $r(u^J)_p = \ip{f^J(w^J)-\ell^J}{\psi_p}$ be the pointwise (ordinary) residual.  If $x_p \notin \partial_D\Omega$ then one of these four conditions must hold:
+Repeated application of Algorithm \ref{alg:fascd} to solve VI problem \eqref{eq:fe:vi} will not generally reduce the residual $f^J(w^J) - \ell^J$ to zero everywhere, but the VI is equivalent to a \emph{mixed complementarity problem} (MCP) \cite{FacchineiPang2003}, which says, by definition, that certain nodal conditions hold for $u^J$ at $x_p \in \mathcal{T}^J$.  Let $r(u^J)_p = \ip{f^J(u^J)-\ell^J}{\psi_p}$ be the pointwise (ordinary) residual.  If $x_p \notin \partial_D\Omega$ then one of these four conditions must hold:
 \begin{itemize}
 \item $\underline{\gamma}^J(x_p)<u^J(x_p)<\overline{\gamma}^J(x_p)$ and $r(u^J)_p = 0$,
 \item $\underline{\gamma}^J(x_p)=u^J(x_p)<\overline{\gamma}^J(x_p)$ and $r(u^J)_p \ge 0$,
