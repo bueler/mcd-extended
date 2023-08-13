@@ -459,17 +459,20 @@ In unilateral cases, where either $\underline{\gamma}^J=-\infty$ or $\overline{\
 \begin{proof}  Definition \eqref{eq:fe:philevels} shows that $\underline{\chi}^j = \underline{\phi}^j + \dots + \underline{\phi}^{k+1} + \underline{\chi}^k$ and $\overline{\chi}^j = \overline{\phi}^j + \dots + \overline{\phi}^{k+1} + \overline{\chi}^k$.  If $y^i \in \mathcal{D}^i$ for $k+1 \le i \le j$ and $z^k \in \mathcal{U}^k$ then $\underline{\chi}^j \le y^j + \dots + y^{k+1} + z^k \le \overline{\chi}^j$, thus \eqref{eq:fe:upwardsuminclusion} holds.  In unilateral cases we may follow the proof of Lemma \ref{lem:downwardadmissibility} with \eqref{eq:fe:unilateraldecompositionoperator} unchanged for $i=k+1,\dots,j$, but modified in the $i=k$ case: $\Pi_k z^j = I_{j\to k}^\ominus(z^j - \underline{\chi}^j) + \underline{\chi}^k$.  Now the proof goes through as before.
 \end{proof}
 
-Inclusions \eqref{eq:fe:downwardsuminclusion} and \eqref{eq:fe:upwardsuminclusion} show the admissibility of all iterates and corrections in Algorithm \ref{alg:fascd} below.  These inclusions are special to multilevel schemes based on defect constraints, and we have seen that they hold regardless of whether decomposition operators $\Pi_i$ can be constructed.  Thus we have a new, incomplete variant of \pr{cd-mult}.  For $w^J\in\mathcal{K}^J$, it applies in the multilevel CD case where \eqref{eq:fe:upwardsuminclusion} holds:
+Inclusions \eqref{eq:fe:downwardsuminclusion} and \eqref{eq:fe:upwardsuminclusion} show the admissibility of all iterates and corrections in Algorithm \ref{alg:fascd} below.  These inclusions are special to multilevel schemes based on defect constraints, and we have seen that they hold regardless of whether decomposition operators $\Pi_i$ can be constructed.  In fact we can propose a new, incomplete variant of the \pr{cd-mult} iteration.  For $w^J\in\mathcal{K}^J$, and existing downward perturbations $y^i\in\mathcal{D}^i$, the iteration applies in the special case where inclusion \eqref{eq:fe:upwardsuminclusion} holds:
 
 \begin{pseudo*}
-\pr{icd-tele}(w^J)\text{:} \\+
+\pr{icd-tele}(w^J, \{y^i\}_{i=1}^J)\text{:} \\+
     for $j = 0,\dots,J$: \\+
         \rm{find} $z^j\in \mathcal{U}^j$ \rm{so that for all} $v \in \mathcal{U}^j$, \\+
-            $\displaystyle \Big<f\Big(w^J + \sum_{i<j} z^i + z^j\Big),v-z^j\Big> \ge \ip{\ell}{v-z^j}$ \\--
-    return $\tilde w^J=w^J + \sum_{i\le J} z^i$
+            $\displaystyle \Big<f\Big(w^J + \sum_{i>j} y^i + z^j\Big),v-z^j\Big> \ge \ip{\ell}{v-z^j}$ \\--
+    return $\tilde w^J=w^J + z^J$
 \end{pseudo*}
 
-Algorithm \ref{alg:fascd} below incorporates \pr{icd-tele} for up-smoothing in the larger constraint sets $\mathcal{U}^j$.  The observation that this is more efficient, illustrated by Example \ref{ex:results:plap} in particular, seems to be new.  Specifically, $V(1,1)$ cycles in \cite{GraeserKornhuber2009} use half-size versions of the smaller sets $\mathcal{D}^j$ both on descent and ascent; see also \cite[section 5.4]{Tai2003}.  However, a convergence analysis extending the arguments of \cite{GraeserKornhuber2009,Tai2003}, either to non-optimization VIs or box constraints, or both, would seem to require full CDs.
+\noindent
+Note that the downward perturbations $y^i$, which apparently disappear as \pr{icd-tele} proceeds, can actually play a practical role in solving each VI problem, namely when constructing an initial iterate for $z^j$; see the next Section.
+
+Algorithm \ref{alg:fascd} below incorporates \pr{icd-tele} for up-smoothing in the larger constraint sets $\mathcal{U}^j$.  The observation that this can be more efficient, illustrated by Example \ref{ex:results:plap} in particular, seems to be new.  For comparison, $V(1,1)$ cycles in \cite{GraeserKornhuber2009} use half-size versions of the smaller sets $\mathcal{D}^j$ both on descent and ascent; see also \cite[section 5.4]{Tai2003}.  However, any convergence analysis extending the arguments of \cite{GraeserKornhuber2009,Tai2003} might require full CDs.
 
 
 \section{FASCD V-cycle} \label{sec:vcycle}
