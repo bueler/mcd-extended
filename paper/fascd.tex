@@ -1,5 +1,5 @@
-\documentclass[hidelinks,onefignum,onetabnum,final]{siamart220329}  % for arxiv
-%\documentclass[review,hidelinks,onefignum,onetabnum,final]{siamart220329}  % for submission
+%\documentclass[hidelinks,onefignum,onetabnum,final]{siamart220329}  % for arxiv
+\documentclass[review,hidelinks,onefignum,onetabnum,final]{siamart220329}  % for submission
 
 \usepackage{amsfonts}
 \usepackage{graphicx}
@@ -100,6 +100,9 @@ ct-right=),%
 \begin{abstract}
 We present the \emph{full approximation scheme constraint decomposition} (FASCD) multilevel method for solving variational inequalities (VIs).  FASCD is a common extension of both the full approximation scheme (FAS) multigrid technique for nonlinear partial differential equations, due to A.~Brandt, and the constraint decomposition (CD) method introduced by X.-C.~Tai for VIs arising in optimization.  We extend the CD idea by exploiting the telescoping nature of certain function space subset decompositions arising from multilevel mesh hierarchies.  When a reduced-space (active set) Newton method is applied as a smoother, with work proportional to the number of unknowns on a given mesh level, FASCD V-cycles exhibit nearly mesh-independent convergence rates, and full multigrid cycles are optimal solvers.  The example problems include differential operators which are symmetric linear, nonsymmetric linear, and nonlinear, in unilateral and bilateral VI problems.
 \end{abstract}
+
+% REQUIRED NOVELTY STATEMENT FOR SIAM SUBMISSION:
+% Our new multilevel algorithm for general variational inequality problems requires neither an objective function nor linearity of the residual.  It is carefully constructed to reduce to general, nonlinear FAS for PDEs when the inequality constraints are removed (this is new) and the method is smoother-agnostic (this is also new relative to any prior work with demonstrated implementations).  Box constraints, i.e.~both upper and lower obstacles, are allowed.  The method is strictly admissible, and so can be applied even if the residual operator is defined only on those functions which satisfy the constraints; this is new relative to a variety of semi-smooth and/or penalized solvers.  Besides the V-cycle, a full multigrid cycle is proposed.  In a new theoretical aspect, we identify a telescoping subset property which can be exploited on the up-smoothing side of a V-cycle for greater performance.  High resolution and performance computational results, using a reduced-space Newton method as a smoother, are given, with evidence of numerical accuracy, convergence, (serial scaling) optimality, and weak parallel scaling.
 
 % REQUIRED
 \begin{keywords}
