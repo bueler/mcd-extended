@@ -90,6 +90,8 @@ ct-right=),%
   (\email{patrick.farrell@maths.ox.ac.uk}).}}
 
 
+\graphicspath{{figs/}{fixfigs/}{fixfigs/vcycle/}{genfigs/}}
+
 \begin{document}
 
 \maketitle
@@ -247,7 +249,7 @@ Clearly \eqref{eq:constraintrestrictionsum} implies sense \emph{(i)} for \eqref{
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.45\textwidth]{genfigs/cartoon.pdf}
+\includegraphics[width=0.45\textwidth]{cartoon.pdf}
 \caption{A constraint decomposition (CD) for a unilateral obstacle problem on a two-point space $\Omega=\{x_1,x_2\}$, with $\mathcal{V}=\left\{v \,:\, \Omega \to \RR\right\}$ and $\mathcal{K}=\{v\ge \psi\}$.}
 \label{fig:cartoon}
 \end{figure}
@@ -649,7 +651,7 @@ For FMG we instead used the defaults \texttt{rtol} $=$ \texttt{stol} $= 10^{-8}$
 %use preset "xray" and invert colors; for spiral.pvd, show lgap = u - lb as black if above 0.02; for ball i used 0.001
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.35\textwidth]{fixfigs/ball-set.png} \qquad \includegraphics[width=0.35\textwidth]{fixfigs/spiral-set.png}
+\includegraphics[width=0.35\textwidth]{ball-set.png} \qquad \includegraphics[width=0.35\textwidth]{spiral-set.png}
 \caption{Coincidence sets for the ball and spiral solutions in Example \ref{ex:results:classical}.}
 \label{fig:results:classical}
 \end{figure}
@@ -684,7 +686,7 @@ For FMG we instead used the defaults \texttt{rtol} $=$ \texttt{stol} $= 10^{-8}$
 %REGENERATE using results/asymprates.py
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.65\textwidth]{genfigs/asymprates.pdf}
+\includegraphics[width=0.65\textwidth]{asymprates.pdf}
 \caption{V-cycle asymptotic convergence rates in Example \ref{ex:results:classical}.}
 \label{fig:results:asymp}
 \end{figure}
@@ -747,7 +749,7 @@ Consider the advection-diffusion VI problem in Example \ref{ex:advectiondiffusio
 % preset "xray" and invert colors (for u=0) or keep colors (u=1)
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.35\textwidth]{fixfigs/poll2d-zero-set.png} \qquad \includegraphics[width=0.35\textwidth]{fixfigs/poll2d-one-set.png}
+\includegraphics[width=0.35\textwidth]{poll2d-zero-set.png} \qquad \includegraphics[width=0.35\textwidth]{poll2d-one-set.png}
 \caption{Coincidence sets for the 2D results in Example \ref{ex:results:advdiff}: $u=0$ (left) and $u=1$ (right).}
 \label{fig:results:advdiff}
 \end{figure}
@@ -788,7 +790,7 @@ Consider the steady shallow ice approximation (SIA) obstacle problem (Example \r
 %       -fascd_atol 1.0e-8 -o sialev8.pvd
 \begin{figure}[ht]
 \centering
-\includegraphics[width=1.0\textwidth]{fixfigs/sialev8scene.png}
+\includegraphics[width=1.0\textwidth]{sialev8scene.png}
 \caption{Example \ref{ex:results:sia} solution over a bumpy bedrock topography (grey), with 100-times vertical exaggeration and surface coloring by flow speed.}
 \label{fig:results:siascene}
 \end{figure}
