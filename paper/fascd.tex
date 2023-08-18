@@ -696,9 +696,7 @@ For FMG we instead used the defaults \texttt{rtol} $=$ \texttt{stol} $= 10^{-8}$
 \end{figure}
 
 \begin{example}  \label{ex:results:plap}
-We again consider Example \ref{ex:plaplacian}, with a unilateral constraint, but now for a nonlinear $p$-Laplacian \cite{ChoeLewis1991} in one dimension.  Setting $p=1.5$ yields a fast diffusion ($D=|\grad u|^{p-2}\to \infty$ as $|\grad u|\to 0$).  Note that Example \ref{ex:results:sia} below, by constrast, has a doubly-nonlinear operator with $p=4$ degenerate diffusion.
-
-This example reveals the strong contrast between $V(1,0)$ and $V(0,1)$ results (\pr{up}, \pr{down} $=0$ in Algorithm \ref{alg:fascd}, respectively).  Set $\Omega=(-3,3)$, $\psi(x) = -0.2|x|$, $\mathcal{K} = \{v \ge \psi\} \subset W^{1,p}(\Omega)$, and $\ip\ell v = \int_\Omega g v$, where $g(x)=1$ for $|x|<1$ and $g(x)=-1$ for $|x|>1$, in VI \eqref{eq:vi}.  The exact solution is easily computed for any $p$; see the codes accompanying this paper.  For this experiment the coarsest mesh has $m_0=7$ nodes and the finest $m_9=3073$.  The default smoother uses three iterations of RS Newton, with LU soluton of the linear systems.  We set \texttt{rtol} $= 10^{-6}$ and \texttt{atol} $=$ \texttt{stol} $= 10^{-12}$.  Figure \ref{fig:imagesvcycle} illustrates the major steps of a V-cycle, showing each of the coarse-correction VI subproblems and solutions; the result $\tilde w^2$ is visually close to the exact solution.
+We again consider Example \ref{ex:plaplacian}, with a unilateral constraint, but now for a nonlinear $p$-Laplacian \cite{ChoeLewis1991} in one dimension.  Setting $p=1.5$ yields a fast diffusion with $D=|\grad u|^{p-2}\to \infty$ as $|\grad u|\to 0$.  (By contrast, Example \ref{ex:results:sia} below has a doubly-nonlinear operator with $p=4$ degenerate diffusion.)  The diffusivity is regularized, with $|\grad v|^p$ in \eqref{eq:plaplacianobjective} replaced by $\left(\eps + |\grad v|^2\right)^{p/2}$, and $\eps=10^{-8}$.  We set $\Omega=(-3,3)$, $\psi(x) = -0.2|x|$, $\mathcal{K} = \{v \ge \psi\} \subset W^{1,p}(\Omega)$, and $\ip\ell v = \int_\Omega g v$, where $g(x)=1$ for $|x|<1$ and $g(x)=-1$ for $|x|>1$, in VI \eqref{eq:vi}.  The exact solution is easily computed for any $p$; see the codes accompanying this paper.  For this experiment the coarsest mesh has $m_0=7$ nodes and the finest $m_9=3073$.  The default smoother uses three iterations of RS Newton, with LU solution of the linear systems.  We set \texttt{rtol} $= 10^{-6}$, \texttt{atol} $= 10^{-12}$, and \texttt{stol} $=0$.  Figure \ref{fig:imagesvcycle} illustrates the major steps of a V-cycle, showing each of the coarse-correction VI subproblems and solutions; the result $\tilde w^2$ is visually close to the exact solution.
 
 % figures in the following visualization were generated using branch elbueler/simplefigs
 % of git@bitbucket.org:pefarrell/fascd.git, and the following commands (including imagemagick):
@@ -713,7 +711,7 @@ This example reveals the strong contrast between $V(1,0)$ and $V(0,1)$ results (
 \label{fig:imagesvcycle}
 \end{figure}
 
-Iteration results are shown in Table \ref{tab:results:fastplap1d}.  We see that $V(1,0)$ cycles, Algorithm 4.2 in \cite{GraeserKornhuber2009} but with a stronger smoother, often do not converge.  By contrast, $V(0,1)$ cycles, up-smoothing in the larger sets $\mathcal{U}^j$ (Section \ref{sec:cdmultilevel}), are as good as the default $V(1,1)$ cycles (Algorithm \ref{alg:fascd}).  FMG is even more efficient; a single iteration suffices at all higher resolutions.   Note that convergence is at rate $O(h^{2.0})$; compare \cite{ChoeLewis1991}.
+Iteration results in Table \ref{tab:results:fastplap1d} show a strong contrast between $V(1,0)$ and $V(0,1)$ results (\pr{up} $=0$ and \pr{down} $=0$ in Algorithm \ref{alg:fascd}, respectively).  The $V(1,0)$ cycles, Algorithm 4.2 in \cite{GraeserKornhuber2009} but with a stronger smoother, often do not converge.  By contrast, $V(0,1)$ cycles, up-smoothing in the larger sets $\mathcal{U}^j$ (Section \ref{sec:cdmultilevel}), are as good as the default $V(1,1)$ cycles.  FMG is even more efficient; a single iteration suffices at all resolutions.   Note that convergence is at rate $O(h^{2.0})$; compare \cite{ChoeLewis1991}.
 \end{example}
 
 % see git@bitbucket.org:pefarrell/fascd.git: examples/plap1d.py
@@ -724,16 +722,16 @@ Iteration results are shown in Table \ref{tab:results:fastplap1d}.  We see that 
 \toprule
 \emph{levels} & $m_J$ & V(1,0) & V(0,1) & V(1,1) & FMG & $\|$error$\|_\infty$ \\
 \midrule
- 1 &    $7$ &  1 &  1 &  1 &  1 & $2.3\times 10^{-1}$ \\
- 2 &   $13$ &  3 &  3 &  2 &  2 & $3.3 \times 10^{-2}$ \\
+ 1 &    $7$ &  1 &  1 &  1 &  1 & $2.3 \times 10^{-1}$ \\
+ 2 &   $13$ &  3 &  2 &  2 &  1 & $3.3 \times 10^{-2}$ \\
  3 &   $25$ & 12 &  4 &  2 &  1 & $9.1 \times 10^{-3}$ \\
  4 &   $49$ & NC &  4 &  2 &  1 & $3.2 \times 10^{-3}$ \\
  5 &   $97$ & NC &  3 &  3 &  1 & $5.5 \times 10^{-4}$ \\
  6 &  $193$ & NC &  3 &  3 &  1 & $1.7 \times 10^{-4}$ \\
  7 &  $385$ & NC &  3 &  3 &  1 & $4.7 \times 10^{-5}$ \\
- 8 &  $769$ & NC &  4 &  7 &  1 & $9.5 \times 10^{-6}$ \\
- 9 & $1537$ & NC &  5 &  6 &  1 & $3.6 \times 10^{-6}$ \\
-10 & $3073$ & NC & 11 & 19 &  1 & $4.9 \times 10^{-7}$ \\
+ 8 &  $769$ & NC &  3 &  6 &  1 & $9.2 \times 10^{-6}$ \\
+ 9 & $1537$ & NC &  3 &  3 &  1 & $3.4 \times 10^{-6}$ \\
+10 & $3073$ & NC &  2 &  4 &  1 & $4.1 \times 10^{-7}$ \\
 \bottomrule
 \end{tabular}
 \bigskip

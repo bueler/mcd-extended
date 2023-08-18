@@ -1,601 +1,601 @@
 ******** p = 1.5 V-cycle VOPT=-fascd_skip_upsmooth *******
 solving with p=1.5, mcoarse=6, 1 levels, on 7 node fine mesh ...
-   0 FASCD ncp function norm 6.120574811633e-01
-   1 FASCD ncp function norm 1.785516804827e-11
+   0 FASCD ncp function norm 6.120574791204e-01
+   1 FASCD ncp function norm 1.785538547869e-11
 FASCD solve converged due to CONVERGED_SINGLE_LEVEL iterations 1
 done on 7 node mesh:  |u-uexact|_inf = 2.263e-01
 solving with p=1.5, mcoarse=6, 2 levels, on 13 node fine mesh ...
-   0 FASCD ncp function norm 1.063144214639e+00
-   1 FASCD ncp function norm 1.695401008375e+00 [ratio 1.594705e+00], |du|/|u|=1.769925059427e+00
-   2 FASCD ncp function norm 6.552042622472e-04 [ratio 3.864598e-04], |du|/|u|=1.868441649191e-01
-   3 FASCD ncp function norm 2.937374022976e-16 [ratio 4.483142e-13], |du|/|u|=3.706323064898e-04
+   0 FASCD ncp function norm 1.063144198816e+00
+   1 FASCD ncp function norm 1.695399060564e+00 [ratio 1.594703e+00], |du|/|u|=1.769925053415e+00
+   2 FASCD ncp function norm 6.551606645667e-04 [ratio 3.864345e-04], |du|/|u|=1.868441703204e-01
+   3 FASCD ncp function norm 6.473657049139e-16 [ratio 9.881022e-13], |du|/|u|=3.706078006992e-04
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 3
 done on 13 node mesh:  |u-uexact|_inf = 3.255e-02
 solving with p=1.5, mcoarse=6, 3 levels, on 25 node fine mesh ...
-   0 FASCD ncp function norm 1.017030574075e+00
-   1 FASCD ncp function norm 2.301226574961e+00 [ratio 2.262692e+00], |du|/|u|=1.570896877415e+00
-   2 FASCD ncp function norm 2.361176660566e-01 [ratio 1.026051e-01], |du|/|u|=6.969111036826e-02
-   3 FASCD ncp function norm 2.730297212836e-01 [ratio 1.156329e+00], |du|/|u|=3.685463144939e-02
-   4 FASCD ncp function norm 1.389662702561e-01 [ratio 5.089785e-01], |du|/|u|=2.422105344306e-02
-   5 FASCD ncp function norm 3.820547421905e-01 [ratio 2.749262e+00], |du|/|u|=5.062492815532e-02
-   6 FASCD ncp function norm 2.331227641925e-04 [ratio 6.101816e-04], |du|/|u|=1.188397348051e-02
-   7 FASCD ncp function norm 5.408935082017e-05 [ratio 2.320209e-01], |du|/|u|=1.929190332317e-05
-   8 FASCD ncp function norm 2.194867971711e-05 [ratio 4.057856e-01], |du|/|u|=1.168931702321e-05
-   9 FASCD ncp function norm 8.906617576178e-06 [ratio 4.057929e-01], |du|/|u|=4.743517032365e-06
-  10 FASCD ncp function norm 3.614268084417e-06 [ratio 4.057958e-01], |du|/|u|=1.924911784245e-06
-  11 FASCD ncp function norm 1.466659163014e-06 [ratio 4.057970e-01], |du|/|u|=7.811254860391e-07
-  12 FASCD ncp function norm 5.951666065094e-07 [ratio 4.057975e-01], |du|/|u|=3.169790990168e-07
+   0 FASCD ncp function norm 1.017030559745e+00
+   1 FASCD ncp function norm 2.301226337158e+00 [ratio 2.262691e+00], |du|/|u|=1.570896854020e+00
+   2 FASCD ncp function norm 2.361160255455e-01 [ratio 1.026044e-01], |du|/|u|=6.969087728167e-02
+   3 FASCD ncp function norm 2.730278598936e-01 [ratio 1.156329e+00], |du|/|u|=3.685427489286e-02
+   4 FASCD ncp function norm 1.389753226403e-01 [ratio 5.090152e-01], |du|/|u|=2.422082130460e-02
+   5 FASCD ncp function norm 3.820512588667e-01 [ratio 2.749058e+00], |du|/|u|=5.062448536530e-02
+   6 FASCD ncp function norm 2.333287633998e-04 [ratio 6.107263e-04], |du|/|u|=1.188393684098e-02
+   7 FASCD ncp function norm 5.413972636928e-05 [ratio 2.320319e-01], |du|/|u|=1.930919875905e-05
+   8 FASCD ncp function norm 2.196909692268e-05 [ratio 4.057851e-01], |du|/|u|=1.169987800689e-05
+   9 FASCD ncp function norm 8.914892967899e-06 [ratio 4.057924e-01], |du|/|u|=4.747797549118e-06
+  10 FASCD ncp function norm 3.617622267217e-06 [ratio 4.057954e-01], |du|/|u|=1.926646727748e-06
+  11 FASCD ncp function norm 1.468018687489e-06 [ratio 4.057966e-01], |du|/|u|=7.818286768109e-07
+  12 FASCD ncp function norm 5.957176533254e-07 [ratio 4.057971e-01], |du|/|u|=3.172641088060e-07
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 12
-done on 25 node mesh:  |u-uexact|_inf = 9.108e-03
+done on 25 node mesh:  |u-uexact|_inf = 9.107e-03
 solving with p=1.5, mcoarse=6, 4 levels, on 49 node fine mesh ...
-   0 FASCD ncp function norm 8.914241954961e-01
-   1 FASCD ncp function norm 2.109761597119e+00 [ratio 2.366731e+00], |du|/|u|=1.471648539883e+00
-   2 FASCD ncp function norm 1.289679079279e+00 [ratio 6.112914e-01], |du|/|u|=5.149462865488e-02
-   3 FASCD ncp function norm 1.169908749028e+00 [ratio 9.071317e-01], |du|/|u|=1.681668155215e-02
-   4 FASCD ncp function norm 8.902159625891e-01 [ratio 7.609277e-01], |du|/|u|=2.254080795208e-02
-   5 FASCD ncp function norm 3.954311043732e-01 [ratio 4.441968e-01], |du|/|u|=1.594555592755e-02
-   6 FASCD ncp function norm 1.331873212430e-01 [ratio 3.368155e-01], |du|/|u|=3.444798702023e-03
-   7 FASCD ncp function norm 1.307042037503e-01 [ratio 9.813562e-01], |du|/|u|=1.142917619319e-03
-   8 FASCD ncp function norm 1.309848737168e-01 [ratio 1.002147e+00], |du|/|u|=2.572715595742e-04
-   9 FASCD ncp function norm 1.303822443313e-01 [ratio 9.953992e-01], |du|/|u|=3.426717384208e-05
-  10 FASCD ncp function norm 1.304939415985e-01 [ratio 1.000857e+00], |du|/|u|=1.819825401789e-05
-  11 FASCD ncp function norm 1.304221222182e-01 [ratio 9.994496e-01], |du|/|u|=4.052849376974e-06
-  12 FASCD ncp function norm 1.304378978245e-01 [ratio 1.000121e+00], |du|/|u|=2.133264755933e-06
-  13 FASCD ncp function norm 1.304273965213e-01 [ratio 9.999195e-01], |du|/|u|=5.570544164909e-07
-  14 FASCD ncp function norm 1.304312372142e-01 [ratio 1.000029e+00], |du|/|u|=2.917370356340e-07
-  15 FASCD ncp function norm 1.304280334327e-01 [ratio 9.999754e-01], |du|/|u|=1.521574509357e-07
-  16 FASCD ncp function norm 1.304304422305e-01 [ratio 1.000018e+00], |du|/|u|=1.147261498951e-07
-  17 FASCD ncp function norm 1.304284908243e-01 [ratio 9.999850e-01], |du|/|u|=9.211858673226e-08
-  18 FASCD ncp function norm 1.304300628734e-01 [ratio 1.000012e+00], |du|/|u|=7.421203552581e-08
-  19 FASCD ncp function norm 1.304287963775e-01 [ratio 9.999903e-01], |du|/|u|=5.978734984299e-08
-  20 FASCD ncp function norm 1.304298166977e-01 [ratio 1.000008e+00], |du|/|u|=4.816640225495e-08
-  21 FASCD ncp function norm 1.304289946951e-01 [ratio 9.999937e-01], |du|/|u|=3.880423897048e-08
-  22 FASCD ncp function norm 1.304296569218e-01 [ratio 1.000005e+00], |du|/|u|=3.126180750389e-08
-  23 FASCD ncp function norm 1.304291234115e-01 [ratio 9.999959e-01], |du|/|u|=2.518541050931e-08
-  24 FASCD ncp function norm 1.304295532218e-01 [ratio 1.000003e+00], |du|/|u|=2.029008922170e-08
-  25 FASCD ncp function norm 1.304292069537e-01 [ratio 9.999973e-01], |du|/|u|=1.634627882707e-08
-  26 FASCD ncp function norm 1.304294859168e-01 [ratio 1.000002e+00], |du|/|u|=1.316903106233e-08
-  27 FASCD ncp function norm 1.304292611758e-01 [ratio 9.999983e-01], |du|/|u|=1.060934951127e-08
-  28 FASCD ncp function norm 1.304294422334e-01 [ratio 1.000001e+00], |du|/|u|=8.547196517293e-09
-  29 FASCD ncp function norm 1.304292963681e-01 [ratio 9.999989e-01], |du|/|u|=6.885867173582e-09
-  30 FASCD ncp function norm 1.304294138813e-01 [ratio 1.000001e+00], |du|/|u|=5.547452320138e-09
-  31 FASCD ncp function norm 1.304293192093e-01 [ratio 9.999993e-01], |du|/|u|=4.469186921304e-09
-  32 FASCD ncp function norm 1.304293954798e-01 [ratio 1.000001e+00], |du|/|u|=3.600505499486e-09
-  33 FASCD ncp function norm 1.304293340340e-01 [ratio 9.999995e-01], |du|/|u|=2.900670904153e-09
-  34 FASCD ncp function norm 1.304293835365e-01 [ratio 1.000000e+00], |du|/|u|=2.336863949767e-09
-  35 FASCD ncp function norm 1.304293436559e-01 [ratio 9.999997e-01], |du|/|u|=1.882644632650e-09
-  36 FASCD ncp function norm 1.304293757848e-01 [ratio 1.000000e+00], |du|/|u|=1.516712297059e-09
-  37 FASCD ncp function norm 1.304293499008e-01 [ratio 9.999998e-01], |du|/|u|=1.221906845732e-09
-  38 FASCD ncp function norm 1.304293707537e-01 [ratio 1.000000e+00], |du|/|u|=9.844032622524e-10
-  39 FASCD ncp function norm 1.304293539540e-01 [ratio 9.999999e-01], |du|/|u|=7.930635658917e-10
-  40 FASCD ncp function norm 1.304293674884e-01 [ratio 1.000000e+00], |du|/|u|=6.389149293898e-10
-  41 FASCD ncp function norm 1.304293565847e-01 [ratio 9.999999e-01], |du|/|u|=5.147283914516e-10
-  42 FASCD ncp function norm 1.304293653690e-01 [ratio 1.000000e+00], |du|/|u|=4.146800259463e-10
-  43 FASCD ncp function norm 1.304293582921e-01 [ratio 9.999999e-01], |du|/|u|=3.340782545730e-10
-  44 FASCD ncp function norm 1.304293639935e-01 [ratio 1.000000e+00], |du|/|u|=2.691434002771e-10
-  45 FASCD ncp function norm 1.304293594003e-01 [ratio 1.000000e+00], |du|/|u|=2.168300286052e-10
-  46 FASCD ncp function norm 1.304293631007e-01 [ratio 1.000000e+00], |du|/|u|=1.746846066786e-10
-  47 FASCD ncp function norm 1.304293601195e-01 [ratio 1.000000e+00], |du|/|u|=1.407309229124e-10
-  48 FASCD ncp function norm 1.304293625212e-01 [ratio 1.000000e+00], |du|/|u|=1.133768730591e-10
-  49 FASCD ncp function norm 1.304293605864e-01 [ratio 1.000000e+00], |du|/|u|=9.133962965668e-11
-  50 FASCD ncp function norm 1.304293621451e-01 [ratio 1.000000e+00], |du|/|u|=7.358577441216e-11
+   0 FASCD ncp function norm 8.914241815717e-01
+   1 FASCD ncp function norm 2.109760104509e+00 [ratio 2.366730e+00], |du|/|u|=1.471648530174e+00
+   2 FASCD ncp function norm 1.289375318706e+00 [ratio 6.111478e-01], |du|/|u|=5.149192102134e-02
+   3 FASCD ncp function norm 1.169554382759e+00 [ratio 9.070706e-01], |du|/|u|=1.681079203290e-02
+   4 FASCD ncp function norm 8.898436623574e-01 [ratio 7.608399e-01], |du|/|u|=2.252812344162e-02
+   5 FASCD ncp function norm 3.950043631560e-01 [ratio 4.439031e-01], |du|/|u|=1.593416288898e-02
+   6 FASCD ncp function norm 1.331692320151e-01 [ratio 3.371336e-01], |du|/|u|=3.442925819586e-03
+   7 FASCD ncp function norm 1.307042698855e-01 [ratio 9.814900e-01], |du|/|u|=1.144422710836e-03
+   8 FASCD ncp function norm 1.309798566529e-01 [ratio 1.002108e+00], |du|/|u|=2.587893469654e-04
+   9 FASCD ncp function norm 1.303764408365e-01 [ratio 9.953931e-01], |du|/|u|=3.431075568442e-05
+  10 FASCD ncp function norm 1.304882900085e-01 [ratio 1.000858e+00], |du|/|u|=1.822181250601e-05
+  11 FASCD ncp function norm 1.304163704114e-01 [ratio 9.994488e-01], |du|/|u|=4.058514813955e-06
+  12 FASCD ncp function norm 1.304321682583e-01 [ratio 1.000121e+00], |du|/|u|=2.136347086212e-06
+  13 FASCD ncp function norm 1.304216534232e-01 [ratio 9.999194e-01], |du|/|u|=5.578191607674e-07
+  14 FASCD ncp function norm 1.304254970494e-01 [ratio 1.000029e+00], |du|/|u|=2.921322559009e-07
+  15 FASCD ncp function norm 1.304222915293e-01 [ratio 9.999754e-01], |du|/|u|=1.522485835819e-07
+  16 FASCD ncp function norm 1.304247006363e-01 [ratio 1.000018e+00], |du|/|u|=1.147505909514e-07
+  17 FASCD ncp function norm 1.304227487749e-01 [ratio 9.999850e-01], |du|/|u|=9.214081226976e-08
+  18 FASCD ncp function norm 1.304243212939e-01 [ratio 1.000012e+00], |du|/|u|=7.423482002004e-08
+  19 FASCD ncp function norm 1.304230543360e-01 [ratio 9.999903e-01], |du|/|u|=5.980964410012e-08
+  20 FASCD ncp function norm 1.304240750956e-01 [ratio 1.000008e+00], |du|/|u|=4.818753568051e-08
+  21 FASCD ncp function norm 1.304232526848e-01 [ratio 9.999937e-01], |du|/|u|=3.882382051254e-08
+  22 FASCD ncp function norm 1.304239152840e-01 [ratio 1.000005e+00], |du|/|u|=3.127964250778e-08
+  23 FASCD ncp function norm 1.304233814384e-01 [ratio 9.999959e-01], |du|/|u|=2.520143851723e-08
+  24 FASCD ncp function norm 1.304238115471e-01 [ratio 1.000003e+00], |du|/|u|=2.030433875667e-08
+  25 FASCD ncp function norm 1.304234650158e-01 [ratio 9.999973e-01], |du|/|u|=1.635883575702e-08
+  26 FASCD ncp function norm 1.304237442094e-01 [ratio 1.000002e+00], |du|/|u|=1.318001523611e-08
+  27 FASCD ncp function norm 1.304235192679e-01 [ratio 9.999983e-01], |du|/|u|=1.061889783853e-08
+  28 FASCD ncp function norm 1.304237004990e-01 [ratio 1.000001e+00], |du|/|u|=8.555452068378e-09
+  29 FASCD ncp function norm 1.304235544843e-01 [ratio 9.999989e-01], |du|/|u|=6.892971678435e-09
+  30 FASCD ncp function norm 1.304236721256e-01 [ratio 1.000001e+00], |du|/|u|=5.553541498539e-09
+  31 FASCD ncp function norm 1.304235773441e-01 [ratio 9.999993e-01], |du|/|u|=4.474387399613e-09
+  32 FASCD ncp function norm 1.304236537078e-01 [ratio 1.000001e+00], |du|/|u|=3.604932574598e-09
+  33 FASCD ncp function norm 1.304235921830e-01 [ratio 9.999995e-01], |du|/|u|=2.904428474631e-09
+  34 FASCD ncp function norm 1.304236417524e-01 [ratio 1.000000e+00], |du|/|u|=2.340044949183e-09
+  35 FASCD ncp function norm 1.304236018152e-01 [ratio 9.999997e-01], |du|/|u|=1.885331326697e-09
+  36 FASCD ncp function norm 1.304236339919e-01 [ratio 1.000000e+00], |du|/|u|=1.518976795732e-09
+  37 FASCD ncp function norm 1.304236080677e-01 [ratio 9.999998e-01], |du|/|u|=1.223811825883e-09
+  38 FASCD ncp function norm 1.304236289543e-01 [ratio 1.000000e+00], |du|/|u|=9.860028575678e-10
+  39 FASCD ncp function norm 1.304236121264e-01 [ratio 9.999999e-01], |du|/|u|=7.944045016988e-10
+  40 FASCD ncp function norm 1.304236256843e-01 [ratio 1.000000e+00], |du|/|u|=6.400373019678e-10
+  41 FASCD ncp function norm 1.304236147609e-01 [ratio 9.999999e-01], |du|/|u|=5.156664995762e-10
+  42 FASCD ncp function norm 1.304236235617e-01 [ratio 1.000000e+00], |du|/|u|=4.154632452101e-10
+  43 FASCD ncp function norm 1.304236164711e-01 [ratio 9.999999e-01], |du|/|u|=3.347312051513e-10
+  44 FASCD ncp function norm 1.304236221839e-01 [ratio 1.000000e+00], |du|/|u|=2.696865732138e-10
+  45 FASCD ncp function norm 1.304236175812e-01 [ratio 1.000000e+00], |du|/|u|=2.172811276383e-10
+  46 FASCD ncp function norm 1.304236212895e-01 [ratio 1.000000e+00], |du|/|u|=1.750591351242e-10
+  47 FASCD ncp function norm 1.304236183018e-01 [ratio 1.000000e+00], |du|/|u|=1.410418918000e-10
+  48 FASCD ncp function norm 1.304236207089e-01 [ratio 1.000000e+00], |du|/|u|=1.136349577716e-10
+  49 FASCD ncp function norm 1.304236187695e-01 [ratio 1.000000e+00], |du|/|u|=9.155360685111e-11
+  50 FASCD ncp function norm 1.304236203321e-01 [ratio 1.000000e+00], |du|/|u|=7.376291498410e-11
 FASCD solve converged due to DIVERGED_MAX_IT iterations 50
 done on 49 node mesh:  |u-uexact|_inf = 2.603e-03
 solving with p=1.5, mcoarse=6, 5 levels, on 97 node fine mesh ...
-   0 FASCD ncp function norm 7.702147336931e-01
-   1 FASCD ncp function norm 1.393902616595e+00 [ratio 1.809758e+00], |du|/|u|=1.384690091714e+00
-   2 FASCD ncp function norm 2.184653393615e+00 [ratio 1.567293e+00], |du|/|u|=9.826723719291e-02
-   3 FASCD ncp function norm 1.384055774999e+00 [ratio 6.335356e-01], |du|/|u|=2.420306576952e-02
-   4 FASCD ncp function norm 1.619855918221e+00 [ratio 1.170369e+00], |du|/|u|=6.807483949490e-03
-   5 FASCD ncp function norm 1.355333155535e+00 [ratio 8.366998e-01], |du|/|u|=6.238388941213e-03
-   6 FASCD ncp function norm 5.290431621285e-01 [ratio 3.903418e-01], |du|/|u|=2.692078653805e-03
-   7 FASCD ncp function norm 6.782755147730e-01 [ratio 1.282080e+00], |du|/|u|=7.028062041376e-04
-   8 FASCD ncp function norm 9.170703305349e-01 [ratio 1.352062e+00], |du|/|u|=3.423727817925e-03
-   9 FASCD ncp function norm 5.145312131335e-01 [ratio 5.610597e-01], |du|/|u|=3.097221736178e-03
-  10 FASCD ncp function norm 4.987831391217e-01 [ratio 9.693934e-01], |du|/|u|=1.441495970328e-03
-  11 FASCD ncp function norm 4.222075338253e-01 [ratio 8.464752e-01], |du|/|u|=1.163850321119e-03
-  12 FASCD ncp function norm 2.943370362840e-01 [ratio 6.971383e-01], |du|/|u|=2.434616011565e-04
-  13 FASCD ncp function norm 6.719284975047e-02 [ratio 2.282854e-01], |du|/|u|=4.493949635369e-04
-  14 FASCD ncp function norm 6.235351656914e-02 [ratio 9.279785e-01], |du|/|u|=1.901384419121e-04
-  15 FASCD ncp function norm 6.047651617580e-02 [ratio 9.698974e-01], |du|/|u|=8.859408211150e-05
-  16 FASCD ncp function norm 5.958131160839e-02 [ratio 9.851975e-01], |du|/|u|=1.356780343149e-05
-  17 FASCD ncp function norm 5.978773930350e-02 [ratio 1.003465e+00], |du|/|u|=4.496940371662e-06
-  18 FASCD ncp function norm 5.971472150426e-02 [ratio 9.987787e-01], |du|/|u|=1.399113921886e-06
-  19 FASCD ncp function norm 5.973711857766e-02 [ratio 1.000375e+00], |du|/|u|=4.462529100612e-07
-  20 FASCD ncp function norm 5.972993936047e-02 [ratio 9.998798e-01], |du|/|u|=1.412606557422e-07
-  21 FASCD ncp function norm 5.973220845548e-02 [ratio 1.000038e+00], |du|/|u|=4.482467114383e-08
-  22 FASCD ncp function norm 5.973148807617e-02 [ratio 9.999879e-01], |du|/|u|=1.421279191121e-08
-  23 FASCD ncp function norm 5.973171645526e-02 [ratio 1.000004e+00], |du|/|u|=4.507623796349e-09
-  24 FASCD ncp function norm 5.973164402069e-02 [ratio 9.999988e-01], |du|/|u|=1.429494015202e-09
-  25 FASCD ncp function norm 5.973166699137e-02 [ratio 1.000000e+00], |du|/|u|=4.533395264919e-10
-  26 FASCD ncp function norm 5.973165970642e-02 [ratio 9.999999e-01], |du|/|u|=1.437678771649e-10
-  27 FASCD ncp function norm 5.973166201681e-02 [ratio 1.000000e+00], |du|/|u|=4.559280689030e-11
-  28 FASCD ncp function norm 5.973166128400e-02 [ratio 1.000000e+00], |du|/|u|=1.446212241204e-11
-  29 FASCD ncp function norm 5.973166151640e-02 [ratio 1.000000e+00], |du|/|u|=4.590536145344e-12
-  30 FASCD ncp function norm 5.973166144279e-02 [ratio 1.000000e+00], |du|/|u|=1.456967380902e-12
-  31 FASCD ncp function norm 5.973166146604e-02 [ratio 1.000000e+00], |du|/|u|=4.629622763388e-13
-FASCD solve converged due to CONVERGED_SNORM_RELATIVE iterations 31
-done on 97 node mesh:  |u-uexact|_inf = 2.662e-04
+   0 FASCD ncp function norm 7.702147190091e-01
+   1 FASCD ncp function norm 1.393899224762e+00 [ratio 1.809754e+00], |du|/|u|=1.384690210701e+00
+   2 FASCD ncp function norm 2.184638492120e+00 [ratio 1.567286e+00], |du|/|u|=9.826725945025e-02
+   3 FASCD ncp function norm 1.384044680266e+00 [ratio 6.335349e-01], |du|/|u|=2.420311959086e-02
+   4 FASCD ncp function norm 1.619931041643e+00 [ratio 1.170433e+00], |du|/|u|=6.806515568859e-03
+   5 FASCD ncp function norm 1.355508713204e+00 [ratio 8.367694e-01], |du|/|u|=6.237369143374e-03
+   6 FASCD ncp function norm 5.285420231471e-01 [ratio 3.899215e-01], |du|/|u|=2.697245775629e-03
+   7 FASCD ncp function norm 6.809449158688e-01 [ratio 1.288346e+00], |du|/|u|=7.055286976717e-04
+   8 FASCD ncp function norm 9.198483913976e-01 [ratio 1.350841e+00], |du|/|u|=3.433607764574e-03
+   9 FASCD ncp function norm 5.115399156526e-01 [ratio 5.561133e-01], |du|/|u|=3.124577412659e-03
+  10 FASCD ncp function norm 5.126994719884e-01 [ratio 1.002267e+00], |du|/|u|=1.540810762430e-03
+  11 FASCD ncp function norm 4.380924937866e-01 [ratio 8.544820e-01], |du|/|u|=1.250714520025e-03
+  12 FASCD ncp function norm 3.490862892592e-01 [ratio 7.968324e-01], |du|/|u|=4.076608173520e-04
+  13 FASCD ncp function norm 2.900635152177e-02 [ratio 8.309221e-02], |du|/|u|=6.195317414357e-04
+  14 FASCD ncp function norm 2.380274099456e-10 [ratio 8.206044e-09], |du|/|u|=7.759979059301e-05
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 14
+done on 97 node mesh:  |u-uexact|_inf = 5.501e-04
 solving with p=1.5, mcoarse=6, 6 levels, on 193 node fine mesh ...
-   0 FASCD ncp function norm 6.804814335551e-01
-   1 FASCD ncp function norm 1.603592724594e+00 [ratio 2.356556e+00], |du|/|u|=1.350721762452e+00
-   2 FASCD ncp function norm 1.756961258207e+00 [ratio 1.095641e+00], |du|/|u|=8.645317003182e-02
-   3 FASCD ncp function norm 1.930887200637e+00 [ratio 1.098992e+00], |du|/|u|=4.738492614894e-02
-   4 FASCD ncp function norm 2.783954622095e+00 [ratio 1.441801e+00], |du|/|u|=1.456416179969e-02
-   5 FASCD ncp function norm 1.567373012760e+00 [ratio 5.630024e-01], |du|/|u|=1.298410811776e-02
-   6 FASCD ncp function norm 1.086453143502e+00 [ratio 6.931682e-01], |du|/|u|=5.362421262177e-03
-   7 FASCD ncp function norm 1.451804270069e+00 [ratio 1.336279e+00], |du|/|u|=5.787519926000e-03
-   8 FASCD ncp function norm 1.102528657293e+00 [ratio 7.594196e-01], |du|/|u|=4.403961865185e-03
-   9 FASCD ncp function norm 8.388593063636e-01 [ratio 7.608503e-01], |du|/|u|=2.534129470567e-03
-  10 FASCD ncp function norm 1.598354660577e+00 [ratio 1.905391e+00], |du|/|u|=4.577997787302e-03
-  11 FASCD ncp function norm 1.380776649195e+00 [ratio 8.638738e-01], |du|/|u|=1.230400474602e-03
-  12 FASCD ncp function norm 1.737761323951e+00 [ratio 1.258539e+00], |du|/|u|=1.290244779631e-03
-  13 FASCD ncp function norm 1.753856152148e+00 [ratio 1.009262e+00], |du|/|u|=5.063977585938e-04
-  14 FASCD ncp function norm 1.889870215470e+00 [ratio 1.077551e+00], |du|/|u|=1.271496271766e-03
-  15 FASCD ncp function norm 1.903424348631e+00 [ratio 1.007172e+00], |du|/|u|=1.001369685164e-02
-  16 FASCD ncp function norm 9.179460677009e-01 [ratio 4.822603e-01], |du|/|u|=8.021042816316e-03
-  17 FASCD ncp function norm 1.744575453911e+00 [ratio 1.900521e+00], |du|/|u|=2.443550582410e-03
-  18 FASCD ncp function norm 1.238182831858e+00 [ratio 7.097330e-01], |du|/|u|=1.962113934712e-03
-  19 FASCD ncp function norm 1.980917549016e+00 [ratio 1.599859e+00], |du|/|u|=1.820051160658e-03
-  20 FASCD ncp function norm 1.507915046647e+00 [ratio 7.612205e-01], |du|/|u|=5.666608564518e-03
-  21 FASCD ncp function norm 1.516679111371e+00 [ratio 1.005812e+00], |du|/|u|=1.373475191383e-02
-  22 FASCD ncp function norm 1.431876590280e+00 [ratio 9.440867e-01], |du|/|u|=1.180799213511e-02
-  23 FASCD ncp function norm 1.324180178473e+00 [ratio 9.247865e-01], |du|/|u|=3.514284436617e-03
-  24 FASCD ncp function norm 9.608971850422e-01 [ratio 7.256544e-01], |du|/|u|=3.539734712825e-03
-  25 FASCD ncp function norm 8.276633230651e-01 [ratio 8.613443e-01], |du|/|u|=1.684911102777e-03
-  26 FASCD ncp function norm 1.053862127023e+00 [ratio 1.273298e+00], |du|/|u|=6.988790012853e-04
-  27 FASCD ncp function norm 6.320399255784e-01 [ratio 5.997368e-01], |du|/|u|=5.927022670954e-04
-  28 FASCD ncp function norm 9.106660006577e-01 [ratio 1.440836e+00], |du|/|u|=5.101564875645e-04
-  29 FASCD ncp function norm 4.645148690019e-01 [ratio 5.100826e-01], |du|/|u|=3.996292326146e-04
-  30 FASCD ncp function norm 6.990630756797e-01 [ratio 1.504932e+00], |du|/|u|=3.196349904563e-04
-  31 FASCD ncp function norm 2.417382547359e-01 [ratio 3.458032e-01], |du|/|u|=4.298025941275e-04
-  32 FASCD ncp function norm 5.868033041310e-01 [ratio 2.427433e+00], |du|/|u|=2.098689676793e-04
-  33 FASCD ncp function norm 7.090755446243e-01 [ratio 1.208370e+00], |du|/|u|=5.272749259090e-04
-  34 FASCD ncp function norm 5.400642772368e-01 [ratio 7.616456e-01], |du|/|u|=9.255913041504e-04
-  35 FASCD ncp function norm 5.998540885739e-02 [ratio 1.110709e-01], |du|/|u|=2.899127155458e-04
-  36 FASCD ncp function norm 4.001226771270e-01 [ratio 6.670333e+00], |du|/|u|=4.456675399625e-04
-  37 FASCD ncp function norm 2.131415775370e-01 [ratio 5.326906e-01], |du|/|u|=4.471878763442e-04
-  38 FASCD ncp function norm 3.260889612553e-01 [ratio 1.529917e+00], |du|/|u|=3.722037863634e-04
-  39 FASCD ncp function norm 3.170689513959e-02 [ratio 9.723388e-02], |du|/|u|=4.535667292041e-04
-  40 FASCD ncp function norm 3.045422464748e-02 [ratio 9.604922e-01], |du|/|u|=2.222686530849e-05
-  41 FASCD ncp function norm 2.995423458146e-02 [ratio 9.835822e-01], |du|/|u|=8.072292066171e-06
-  42 FASCD ncp function norm 2.948089666322e-02 [ratio 9.841980e-01], |du|/|u|=1.976027962705e-06
-  43 FASCD ncp function norm 2.958464687922e-02 [ratio 1.003519e+00], |du|/|u|=7.292886434526e-07
-  44 FASCD ncp function norm 2.954064498330e-02 [ratio 9.985127e-01], |du|/|u|=2.504168155620e-07
-  45 FASCD ncp function norm 2.955515587828e-02 [ratio 1.000491e+00], |du|/|u|=8.852338980488e-08
-  46 FASCD ncp function norm 2.954994790504e-02 [ratio 9.998238e-01], |du|/|u|=3.099011432574e-08
-  47 FASCD ncp function norm 2.955176165069e-02 [ratio 1.000061e+00], |du|/|u|=1.088670687586e-08
-  48 FASCD ncp function norm 2.955112331587e-02 [ratio 9.999784e-01], |du|/|u|=3.819825458666e-09
-  49 FASCD ncp function norm 2.955134714470e-02 [ratio 1.000008e+00], |du|/|u|=1.340835921155e-09
-  50 FASCD ncp function norm 2.955126855852e-02 [ratio 9.999973e-01], |du|/|u|=4.705898944728e-10
+   0 FASCD ncp function norm 6.804814177015e-01
+   1 FASCD ncp function norm 1.603577393217e+00 [ratio 2.356534e+00], |du|/|u|=1.350723090143e+00
+   2 FASCD ncp function norm 1.756941714092e+00 [ratio 1.095639e+00], |du|/|u|=8.645445569020e-02
+   3 FASCD ncp function norm 1.930902122254e+00 [ratio 1.099013e+00], |du|/|u|=4.738348362485e-02
+   4 FASCD ncp function norm 2.783468660793e+00 [ratio 1.441538e+00], |du|/|u|=1.456491761979e-02
+   5 FASCD ncp function norm 1.570612488445e+00 [ratio 5.642645e-01], |du|/|u|=1.297869980740e-02
+   6 FASCD ncp function norm 1.084723057644e+00 [ratio 6.906370e-01], |du|/|u|=5.351877316084e-03
+   7 FASCD ncp function norm 1.450522011935e+00 [ratio 1.337228e+00], |du|/|u|=5.787936038171e-03
+   8 FASCD ncp function norm 1.099281076042e+00 [ratio 7.578520e-01], |du|/|u|=4.404640411143e-03
+   9 FASCD ncp function norm 8.368958737794e-01 [ratio 7.613120e-01], |du|/|u|=2.553277003243e-03
+  10 FASCD ncp function norm 1.599144828463e+00 [ratio 1.910805e+00], |du|/|u|=4.578737923419e-03
+  11 FASCD ncp function norm 1.377584272653e+00 [ratio 8.614506e-01], |du|/|u|=1.247652966137e-03
+  12 FASCD ncp function norm 1.735799363428e+00 [ratio 1.260031e+00], |du|/|u|=1.297660097091e-03
+  13 FASCD ncp function norm 1.749514089518e+00 [ratio 1.007901e+00], |du|/|u|=4.962475792662e-04
+  14 FASCD ncp function norm 1.889380626895e+00 [ratio 1.079946e+00], |du|/|u|=1.272579639757e-03
+  15 FASCD ncp function norm 1.903617380023e+00 [ratio 1.007535e+00], |du|/|u|=9.992836746190e-03
+  16 FASCD ncp function norm 9.087353125605e-01 [ratio 4.773729e-01], |du|/|u|=8.128869454549e-03
+  17 FASCD ncp function norm 1.754663153199e+00 [ratio 1.930885e+00], |du|/|u|=2.629514076068e-03
+  18 FASCD ncp function norm 1.235314134155e+00 [ratio 7.040178e-01], |du|/|u|=1.639337962460e-03
+  19 FASCD ncp function norm 1.973617493780e+00 [ratio 1.597664e+00], |du|/|u|=1.767525939591e-03
+  20 FASCD ncp function norm 1.529525248782e+00 [ratio 7.749857e-01], |du|/|u|=1.616694348532e-03
+  21 FASCD ncp function norm 1.330918313773e+00 [ratio 8.701513e-01], |du|/|u|=4.401656963742e-03
+  22 FASCD ncp function norm 1.781553209749e+00 [ratio 1.338589e+00], |du|/|u|=3.686641049565e-03
+  23 FASCD ncp function norm 1.951030223188e+00 [ratio 1.095129e+00], |du|/|u|=4.089520932399e-03
+  24 FASCD ncp function norm 1.157950302771e+00 [ratio 5.935071e-01], |du|/|u|=1.292470071908e-03
+  25 FASCD ncp function norm 1.982531110642e+00 [ratio 1.712104e+00], |du|/|u|=1.387911293635e-03
+  26 FASCD ncp function norm 1.528930239275e+00 [ratio 7.712011e-01], |du|/|u|=1.534682314506e-03
+  27 FASCD ncp function norm 2.030471988134e+00 [ratio 1.328034e+00], |du|/|u|=4.129139688850e-03
+  28 FASCD ncp function norm 1.070349000410e+00 [ratio 5.271430e-01], |du|/|u|=1.206092314542e-02
+  29 FASCD ncp function norm 1.556075232111e+00 [ratio 1.453802e+00], |du|/|u|=1.637666099074e-02
+  30 FASCD ncp function norm 1.270462442173e+00 [ratio 8.164531e-01], |du|/|u|=6.947821984025e-03
+  31 FASCD ncp function norm 9.504199659270e-01 [ratio 7.480898e-01], |du|/|u|=1.300308574459e-02
+  32 FASCD ncp function norm 1.201536081778e+00 [ratio 1.264216e+00], |du|/|u|=1.148072645812e-02
+  33 FASCD ncp function norm 1.046375273450e+00 [ratio 8.708646e-01], |du|/|u|=1.235941768225e-02
+  34 FASCD ncp function norm 1.538946872320e+00 [ratio 1.470741e+00], |du|/|u|=2.827805652354e-03
+  35 FASCD ncp function norm 1.714571972593e+00 [ratio 1.114120e+00], |du|/|u|=1.083055670636e-03
+  36 FASCD ncp function norm 1.629390959916e+00 [ratio 9.503194e-01], |du|/|u|=8.278443638248e-04
+  37 FASCD ncp function norm 2.040815222390e+00 [ratio 1.252502e+00], |du|/|u|=1.725528310208e-03
+  38 FASCD ncp function norm 1.179554524967e+00 [ratio 5.779820e-01], |du|/|u|=2.112363754486e-03
+  39 FASCD ncp function norm 1.154704712109e+00 [ratio 9.789329e-01], |du|/|u|=5.237819692671e-03
+  40 FASCD ncp function norm 1.272547911808e+00 [ratio 1.102055e+00], |du|/|u|=2.374539402260e-03
+  41 FASCD ncp function norm 1.194760035672e+00 [ratio 9.388723e-01], |du|/|u|=2.275534934706e-03
+  42 FASCD ncp function norm 8.002189890047e-01 [ratio 6.697738e-01], |du|/|u|=8.119750635025e-04
+  43 FASCD ncp function norm 1.095347175316e+00 [ratio 1.368809e+00], |du|/|u|=7.269909581485e-04
+  44 FASCD ncp function norm 6.422873450598e-01 [ratio 5.863779e-01], |du|/|u|=6.217663095273e-04
+  45 FASCD ncp function norm 9.404454180144e-01 [ratio 1.464213e+00], |du|/|u|=5.390245116708e-04
+  46 FASCD ncp function norm 4.861932414795e-01 [ratio 5.169819e-01], |du|/|u|=4.249072904689e-04
+  47 FASCD ncp function norm 7.323748445503e-01 [ratio 1.506345e+00], |du|/|u|=3.460828923283e-04
+  48 FASCD ncp function norm 2.774527468659e-01 [ratio 3.788398e-01], |du|/|u|=4.323824479387e-04
+  49 FASCD ncp function norm 6.020211176410e-01 [ratio 2.169815e+00], |du|/|u|=3.000196835889e-04
+  50 FASCD ncp function norm 5.238173398584e-01 [ratio 8.700979e-01], |du|/|u|=1.644294219197e-04
 FASCD solve converged due to DIVERGED_MAX_IT iterations 50
-done on 193 node mesh:  |u-uexact|_inf = 1.347e-04
+done on 193 node mesh:  |u-uexact|_inf = 3.194e-04
 solving with p=1.5, mcoarse=6, 7 levels, on 385 node fine mesh ...
-   0 FASCD ncp function norm 6.232305662141e-01
-   1 FASCD ncp function norm 2.035996149992e+00 [ratio 3.266843e+00], |du|/|u|=1.342549433903e+00
-   2 FASCD ncp function norm 8.874856666822e-01 [ratio 4.358975e-01], |du|/|u|=9.590742809750e-02
-   3 FASCD ncp function norm 2.181210375084e+00 [ratio 2.457742e+00], |du|/|u|=4.164886813945e-02
-   4 FASCD ncp function norm 2.042814331389e+00 [ratio 9.365508e-01], |du|/|u|=8.054057405404e-03
-   5 FASCD ncp function norm 2.201692928837e+00 [ratio 1.077774e+00], |du|/|u|=4.764762931771e-03
-   6 FASCD ncp function norm 1.375021792671e+00 [ratio 6.245293e-01], |du|/|u|=1.766035110146e-03
-   7 FASCD ncp function norm 1.474250667244e+00 [ratio 1.072165e+00], |du|/|u|=6.157984914637e-03
-   8 FASCD ncp function norm 1.537525394066e+00 [ratio 1.042920e+00], |du|/|u|=6.637409275916e-03
-   9 FASCD ncp function norm 1.729136712387e+00 [ratio 1.124623e+00], |du|/|u|=5.818957670287e-03
-  10 FASCD ncp function norm 1.497521780480e+00 [ratio 8.660517e-01], |du|/|u|=3.102616164424e-03
-  11 FASCD ncp function norm 1.792541756811e+00 [ratio 1.197005e+00], |du|/|u|=1.081734679527e-03
-  12 FASCD ncp function norm 1.510892730615e+00 [ratio 8.428773e-01], |du|/|u|=7.305222549173e-04
-  13 FASCD ncp function norm 1.861618901326e+00 [ratio 1.232132e+00], |du|/|u|=1.018181354485e-03
-  14 FASCD ncp function norm 1.556022798946e+00 [ratio 8.358439e-01], |du|/|u|=7.264266539297e-04
-  15 FASCD ncp function norm 1.864995068368e+00 [ratio 1.198565e+00], |du|/|u|=7.421346263459e-04
-  16 FASCD ncp function norm 1.507115930491e+00 [ratio 8.081072e-01], |du|/|u|=7.308946170510e-04
-  17 FASCD ncp function norm 1.859441699486e+00 [ratio 1.233775e+00], |du|/|u|=7.210635132821e-04
-  18 FASCD ncp function norm 1.471596336957e+00 [ratio 7.914184e-01], |du|/|u|=7.143645747972e-04
-  19 FASCD ncp function norm 1.847516850712e+00 [ratio 1.255451e+00], |du|/|u|=7.057977940985e-04
-  20 FASCD ncp function norm 1.443580149697e+00 [ratio 7.813624e-01], |du|/|u|=6.984491075360e-04
-  21 FASCD ncp function norm 1.830861719200e+00 [ratio 1.268279e+00], |du|/|u|=6.905833947463e-04
-  22 FASCD ncp function norm 1.420131420764e+00 [ratio 7.756629e-01], |du|/|u|=6.829186835723e-04
-  23 FASCD ncp function norm 1.811376864875e+00 [ratio 1.275499e+00], |du|/|u|=6.753083368323e-04
-  24 FASCD ncp function norm 1.398923139982e+00 [ratio 7.722982e-01], |du|/|u|=6.675593725668e-04
-  25 FASCD ncp function norm 1.790406329035e+00 [ratio 1.279846e+00], |du|/|u|=6.600849872173e-04
-  26 FASCD ncp function norm 1.378656462299e+00 [ratio 7.700243e-01], |du|/|u|=6.521845897621e-04
-  27 FASCD ncp function norm 1.768495707075e+00 [ratio 1.282768e+00], |du|/|u|=6.448180349469e-04
-  28 FASCD ncp function norm 1.358810804735e+00 [ratio 7.683427e-01], |du|/|u|=6.368130407048e-04
-  29 FASCD ncp function norm 1.745921977665e+00 [ratio 1.284890e+00], |du|/|u|=6.295096070435e-04
-  30 FASCD ncp function norm 1.339092065037e+00 [ratio 7.669828e-01], |du|/|u|=6.214376055599e-04
-  31 FASCD ncp function norm 1.722832409289e+00 [ratio 1.286568e+00], |du|/|u|=6.141615492484e-04
-  32 FASCD ncp function norm 1.319326863307e+00 [ratio 7.657894e-01], |du|/|u|=6.060423875438e-04
-  33 FASCD ncp function norm 1.699307056227e+00 [ratio 1.288011e+00], |du|/|u|=5.987759212245e-04
-  34 FASCD ncp function norm 1.299414306943e+00 [ratio 7.646730e-01], |du|/|u|=5.906206163904e-04
-  35 FASCD ncp function norm 1.675384779107e+00 [ratio 1.289338e+00], |du|/|u|=5.833540366172e-04
-  36 FASCD ncp function norm 1.279294074736e+00 [ratio 7.635822e-01], |du|/|u|=5.751685085749e-04
-  37 FASCD ncp function norm 1.651080842018e+00 [ratio 1.290619e+00], |du|/|u|=5.678966196195e-04
-  38 FASCD ncp function norm 1.258928129737e+00 [ratio 7.624873e-01], |du|/|u|=5.596839078029e-04
-  39 FASCD ncp function norm 1.626396925999e+00 [ratio 1.291890e+00], |du|/|u|=5.524040001040e-04
-  40 FASCD ncp function norm 1.238290246887e+00 [ratio 7.613703e-01], |du|/|u|=5.441653131751e-04
-  41 FASCD ncp function norm 1.601326583953e+00 [ratio 1.293175e+00], |du|/|u|=5.368760709732e-04
-  42 FASCD ncp function norm 1.217360657094e+00 [ratio 7.602201e-01], |du|/|u|=5.286118725596e-04
-  43 FASCD ncp function norm 1.575858467144e+00 [ratio 1.294488e+00], |du|/|u|=5.213127212452e-04
-  44 FASCD ncp function norm 1.196122696051e+00 [ratio 7.590293e-01], |du|/|u|=5.130232611422e-04
-  45 FASCD ncp function norm 1.549978129739e+00 [ratio 1.295835e+00], |du|/|u|=5.057139954510e-04
-  46 FASCD ncp function norm 1.174560416223e+00 [ratio 7.577916e-01], |du|/|u|=4.973990029415e-04
-  47 FASCD ncp function norm 1.523668608011e+00 [ratio 1.297225e+00], |du|/|u|=4.900796586792e-04
-  48 FASCD ncp function norm 1.152657973784e+00 [ratio 7.565018e-01], |du|/|u|=4.817386777937e-04
-  49 FASCD ncp function norm 1.496910819404e+00 [ratio 1.298660e+00], |du|/|u|=4.744094314843e-04
-  50 FASCD ncp function norm 1.130398963091e+00 [ratio 7.551545e-01], |du|/|u|=4.660418824359e-04
+   0 FASCD ncp function norm 6.232305493033e-01
+   1 FASCD ncp function norm 2.035992726262e+00 [ratio 3.266837e+00], |du|/|u|=1.342550405923e+00
+   2 FASCD ncp function norm 8.879166652000e-01 [ratio 4.361099e-01], |du|/|u|=9.590954260189e-02
+   3 FASCD ncp function norm 2.181131738348e+00 [ratio 2.456460e+00], |du|/|u|=4.163535198394e-02
+   4 FASCD ncp function norm 2.045065724035e+00 [ratio 9.376168e-01], |du|/|u|=8.048056091633e-03
+   5 FASCD ncp function norm 2.219385515245e+00 [ratio 1.085239e+00], |du|/|u|=4.622429545274e-03
+   6 FASCD ncp function norm 9.596312500920e-01 [ratio 4.323860e-01], |du|/|u|=1.965804304065e-03
+   7 FASCD ncp function norm 9.834448562607e-01 [ratio 1.024815e+00], |du|/|u|=6.420418829400e-03
+   8 FASCD ncp function norm 1.151676298115e+00 [ratio 1.171063e+00], |du|/|u|=2.761592973893e-03
+   9 FASCD ncp function norm 1.507722105208e+00 [ratio 1.309154e+00], |du|/|u|=2.078404183734e-03
+  10 FASCD ncp function norm 1.251056123345e+00 [ratio 8.297657e-01], |du|/|u|=3.396851928366e-03
+  11 FASCD ncp function norm 1.513232549131e+00 [ratio 1.209564e+00], |du|/|u|=2.123250982953e-03
+  12 FASCD ncp function norm 1.682643809843e+00 [ratio 1.111953e+00], |du|/|u|=1.111193465738e-03
+  13 FASCD ncp function norm 8.512674638755e-01 [ratio 5.059107e-01], |du|/|u|=8.669901184508e-04
+  14 FASCD ncp function norm 9.198488484841e-01 [ratio 1.080564e+00], |du|/|u|=8.439066973686e-05
+  15 FASCD ncp function norm 6.637051626690e-01 [ratio 7.215372e-01], |du|/|u|=2.085511637411e-04
+  16 FASCD ncp function norm 6.447782753787e-01 [ratio 9.714830e-01], |du|/|u|=1.037419752170e-04
+  17 FASCD ncp function norm 7.953403679318e-01 [ratio 1.233510e+00], |du|/|u|=2.363409754329e-04
+  18 FASCD ncp function norm 8.435155695609e-01 [ratio 1.060572e+00], |du|/|u|=1.718606042917e-04
+  19 FASCD ncp function norm 1.160063969631e+00 [ratio 1.375273e+00], |du|/|u|=3.158630914732e-04
+  20 FASCD ncp function norm 1.071526955336e+00 [ratio 9.236792e-01], |du|/|u|=5.043601755430e-04
+  21 FASCD ncp function norm 1.150164014230e+00 [ratio 1.073388e+00], |du|/|u|=5.845412921464e-04
+  22 FASCD ncp function norm 9.135675558162e-01 [ratio 7.942933e-01], |du|/|u|=3.036812008925e-04
+  23 FASCD ncp function norm 1.139435489054e+00 [ratio 1.247237e+00], |du|/|u|=2.958759960704e-04
+  24 FASCD ncp function norm 8.661080372220e-01 [ratio 7.601203e-01], |du|/|u|=2.880942762618e-04
+  25 FASCD ncp function norm 1.115242418443e+00 [ratio 1.287648e+00], |du|/|u|=2.799925549372e-04
+  26 FASCD ncp function norm 8.286807552545e-01 [ratio 7.430499e-01], |du|/|u|=2.717361252829e-04
+  27 FASCD ncp function norm 1.084120813573e+00 [ratio 1.308249e+00], |du|/|u|=2.638508599862e-04
+  28 FASCD ncp function norm 7.953238435656e-01 [ratio 7.336118e-01], |du|/|u|=2.554186764361e-04
+  29 FASCD ncp function norm 1.049440523825e+00 [ratio 1.319513e+00], |du|/|u|=2.477567741040e-04
+  30 FASCD ncp function norm 7.631511587745e-01 [ratio 7.271981e-01], |du|/|u|=2.390680229688e-04
+  31 FASCD ncp function norm 1.012373671075e+00 [ratio 1.326570e+00], |du|/|u|=2.315439469069e-04
+  32 FASCD ncp function norm 7.309817059253e-01 [ratio 7.220473e-01], |du|/|u|=2.226998640933e-04
+  33 FASCD ncp function norm 9.734215211387e-01 [ratio 1.331663e+00], |du|/|u|=2.152414466612e-04
+  34 FASCD ncp function norm 6.981678361992e-01 [ratio 7.172307e-01], |du|/|u|=2.062922090205e-04
+  35 FASCD ncp function norm 9.327385541541e-01 [ratio 1.335980e+00], |du|/|u|=1.988670760708e-04
+  36 FASCD ncp function norm 6.643234460765e-01 [ratio 7.122290e-01], |du|/|u|=1.898334982749e-04
+  37 FASCD ncp function norm 8.902834614324e-01 [ratio 1.340136e+00], |du|/|u|=1.824287655401e-04
+  38 FASCD ncp function norm 6.291663070232e-01 [ratio 7.067034e-01], |du|/|u|=1.733159898338e-04
+  39 FASCD ncp function norm 8.458931174434e-01 [ratio 1.344467e+00], |du|/|u|=1.659281994717e-04
+  40 FASCD ncp function norm 5.924312455852e-01 [ratio 7.003618e-01], |du|/|u|=1.567327582297e-04
+  41 FASCD ncp function norm 7.993073723168e-01 [ratio 1.349199e+00], |du|/|u|=1.493631974006e-04
+  42 FASCD ncp function norm 5.538150647884e-01 [ratio 6.928687e-01], |du|/|u|=1.400759298955e-04
+  43 FASCD ncp function norm 7.501618199298e-01 [ratio 1.354535e+00], |du|/|u|=1.327287040338e-04
+  44 FASCD ncp function norm 5.129274924922e-01 [ratio 6.837558e-01], |du|/|u|=1.233352306131e-04
+  45 FASCD ncp function norm 6.979519948533e-01 [ratio 1.360723e+00], |du|/|u|=1.160167396628e-04
+  46 FASCD ncp function norm 4.692265826768e-01 [ratio 6.722906e-01], |du|/|u|=1.064961802982e-04
+  47 FASCD ncp function norm 6.419574388385e-01 [ratio 1.368118e+00], |du|/|u|=9.921542381212e-05
+  48 FASCD ncp function norm 4.219080691004e-01 [ratio 6.572212e-01], |du|/|u|=8.953721889294e-05
+  49 FASCD ncp function norm 5.810868192282e-01 [ratio 1.377283e+00], |du|/|u|=8.230681165085e-05
+  50 FASCD ncp function norm 3.696823926900e-01 [ratio 6.361913e-01], |du|/|u|=7.242491450643e-05
 FASCD solve converged due to DIVERGED_MAX_IT iterations 50
-done on 385 node mesh:  |u-uexact|_inf = 1.495e-03
+done on 385 node mesh:  |u-uexact|_inf = 2.021e-04
 solving with p=1.5, mcoarse=6, 8 levels, on 769 node fine mesh ...
-   0 FASCD ncp function norm 5.900744175394e-01
-   1 FASCD ncp function norm 2.264075990968e+00 [ratio 3.836933e+00], |du|/|u|=1.339438992012e+00
-   2 FASCD ncp function norm 2.979824918599e+00 [ratio 1.316133e+00], |du|/|u|=1.366321971482e-01
-   3 FASCD ncp function norm 2.604349641479e+00 [ratio 8.739942e-01], |du|/|u|=1.864077403648e-02
-   4 FASCD ncp function norm 1.612921374432e+00 [ratio 6.193183e-01], |du|/|u|=5.668865399310e-03
-   5 FASCD ncp function norm 1.961590192139e+00 [ratio 1.216172e+00], |du|/|u|=1.442488183348e-03
-   6 FASCD ncp function norm 2.127433881440e+00 [ratio 1.084546e+00], |du|/|u|=1.868366224391e-03
-   7 FASCD ncp function norm 1.538820074905e+00 [ratio 7.233222e-01], |du|/|u|=1.619413607742e-04
-   8 FASCD ncp function norm 1.644202946729e+00 [ratio 1.068483e+00], |du|/|u|=1.290923343922e-03
-   9 FASCD ncp function norm 1.746930306592e+00 [ratio 1.062479e+00], |du|/|u|=1.186090613347e-03
-  10 FASCD ncp function norm 1.571475891252e+00 [ratio 8.995642e-01], |du|/|u|=1.048505716936e-04
-  11 FASCD ncp function norm 1.431908477320e+00 [ratio 9.111870e-01], |du|/|u|=4.213726846678e-05
-  12 FASCD ncp function norm 1.541625097323e+00 [ratio 1.076623e+00], |du|/|u|=3.270913580652e-05
-  13 FASCD ncp function norm 1.346523933509e+00 [ratio 8.734445e-01], |du|/|u|=4.050715756676e-05
-  14 FASCD ncp function norm 1.492791356089e+00 [ratio 1.108626e+00], |du|/|u|=3.437052107964e-05
-  15 FASCD ncp function norm 1.289722026385e+00 [ratio 8.639667e-01], |du|/|u|=4.274005469419e-05
-  16 FASCD ncp function norm 1.450115720047e+00 [ratio 1.124363e+00], |du|/|u|=3.579531279981e-05
-  17 FASCD ncp function norm 1.236407237319e+00 [ratio 8.526266e-01], |du|/|u|=4.474696257113e-05
-  18 FASCD ncp function norm 1.409335654715e+00 [ratio 1.139864e+00], |du|/|u|=3.701226750693e-05
-  19 FASCD ncp function norm 1.183877471513e+00 [ratio 8.400252e-01], |du|/|u|=4.659211227026e-05
-  20 FASCD ncp function norm 1.369134170927e+00 [ratio 1.156483e+00], |du|/|u|=3.832710171779e-05
-  21 FASCD ncp function norm 1.130995687396e+00 [ratio 8.260664e-01], |du|/|u|=4.836069212850e-05
-  22 FASCD ncp function norm 1.328724707218e+00 [ratio 1.174827e+00], |du|/|u|=3.973177233780e-05
-  23 FASCD ncp function norm 1.077156183189e+00 [ratio 8.106692e-01], |du|/|u|=5.010322412506e-05
-  24 FASCD ncp function norm 1.287618820881e+00 [ratio 1.195387e+00], |du|/|u|=4.121205574920e-05
-  25 FASCD ncp function norm 1.022092753927e+00 [ratio 7.937852e-01], |du|/|u|=5.185237121432e-05
-  26 FASCD ncp function norm 1.245490192635e+00 [ratio 1.218569e+00], |du|/|u|=4.275880385651e-05
-  27 FASCD ncp function norm 9.658425194145e-01 [ratio 7.754718e-01], |du|/|u|=5.362471461046e-05
-  28 FASCD ncp function norm 1.202082258077e+00 [ratio 1.244594e+00], |du|/|u|=4.436333016515e-05
-  29 FASCD ncp function norm 9.088308888197e-01 [ratio 7.560472e-01], |du|/|u|=5.542487962194e-05
-  30 FASCD ncp function norm 1.157146365630e+00 [ratio 1.273225e+00], |du|/|u|=4.601523571756e-05
-  31 FASCD ncp function norm 8.521723416464e-01 [ratio 7.364430e-01], |du|/|u|=5.724756030955e-05
-  32 FASCD ncp function norm 1.110391626395e+00 [ratio 1.303013e+00], |du|/|u|=4.770025967726e-05
-  33 FASCD ncp function norm 7.984873436054e-01 [ratio 7.191043e-01], |du|/|u|=5.907750355324e-05
-  34 FASCD ncp function norm 1.061429497043e+00 [ratio 1.329300e+00], |du|/|u|=4.939826114879e-05
-  35 FASCD ncp function norm 7.544769593471e-01 [ratio 7.108121e-01], |du|/|u|=6.089074951174e-05
-  36 FASCD ncp function norm 1.009695710213e+00 [ratio 1.338272e+00], |du|/|u|=5.108447503893e-05
-  37 FASCD ncp function norm 7.459335381581e-01 [ratio 7.387706e-01], |du|/|u|=6.263830699216e-05
-  38 FASCD ncp function norm 9.542900912945e-01 [ratio 1.279323e+00], |du|/|u|=5.272445985720e-05
-  39 FASCD ncp function norm 7.218278100642e-01 [ratio 7.564029e-01], |du|/|u|=1.089138379108e-04
-  40 FASCD ncp function norm 1.082557077560e+00 [ratio 1.499744e+00], |du|/|u|=1.327600120094e-04
-  41 FASCD ncp function norm 1.319295982800e+00 [ratio 1.218685e+00], |du|/|u|=8.630202369359e-05
-  42 FASCD ncp function norm 1.164922313920e+00 [ratio 8.829878e-01], |du|/|u|=6.710655957293e-04
-  43 FASCD ncp function norm 1.285451516135e+00 [ratio 1.103465e+00], |du|/|u|=5.359421235450e-04
-  44 FASCD ncp function norm 1.421795056943e+00 [ratio 1.106067e+00], |du|/|u|=9.069668834474e-04
-  45 FASCD ncp function norm 1.481300348439e+00 [ratio 1.041852e+00], |du|/|u|=1.374798868698e-04
-  46 FASCD ncp function norm 1.256886979811e+00 [ratio 8.485025e-01], |du|/|u|=4.272200014184e-04
-  47 FASCD ncp function norm 1.519444299267e+00 [ratio 1.208895e+00], |du|/|u|=4.181992432593e-04
-  48 FASCD ncp function norm 1.256005772874e+00 [ratio 8.266218e-01], |du|/|u|=2.840609155827e-04
-  49 FASCD ncp function norm 1.504135273667e+00 [ratio 1.197554e+00], |du|/|u|=1.786941827029e-04
-  50 FASCD ncp function norm 1.237909933492e+00 [ratio 8.230044e-01], |du|/|u|=1.785156988449e-04
+   0 FASCD ncp function norm 5.900743998829e-01
+   1 FASCD ncp function norm 2.264082048552e+00 [ratio 3.836943e+00], |du|/|u|=1.339439594597e+00
+   2 FASCD ncp function norm 2.979793483058e+00 [ratio 1.316116e+00], |du|/|u|=1.366321919568e-01
+   3 FASCD ncp function norm 2.529145825632e+00 [ratio 8.487655e-01], |du|/|u|=1.793090563702e-02
+   4 FASCD ncp function norm 1.506692290410e+00 [ratio 5.957317e-01], |du|/|u|=5.909492601873e-03
+   5 FASCD ncp function norm 2.195248365064e+00 [ratio 1.456998e+00], |du|/|u|=3.275883237434e-03
+   6 FASCD ncp function norm 2.580895213753e+00 [ratio 1.175673e+00], |du|/|u|=1.383396916494e-02
+   7 FASCD ncp function norm 2.130099808665e+00 [ratio 8.253337e-01], |du|/|u|=6.972667939234e-03
+   8 FASCD ncp function norm 2.383195888274e+00 [ratio 1.118819e+00], |du|/|u|=8.765914733392e-03
+   9 FASCD ncp function norm 2.690268651123e+00 [ratio 1.128849e+00], |du|/|u|=9.535043801511e-03
+  10 FASCD ncp function norm 3.005551431809e+00 [ratio 1.117194e+00], |du|/|u|=4.084171919943e-03
+  11 FASCD ncp function norm 3.346732066017e+00 [ratio 1.113517e+00], |du|/|u|=1.043744038630e-03
+  12 FASCD ncp function norm 3.262284853299e+00 [ratio 9.747673e-01], |du|/|u|=4.136335298647e-03
+  13 FASCD ncp function norm 3.095470105869e+00 [ratio 9.488657e-01], |du|/|u|=1.785594380661e-02
+  14 FASCD ncp function norm 1.880672313158e+00 [ratio 6.075563e-01], |du|/|u|=7.781028005577e-03
+  15 FASCD ncp function norm 1.698146940132e+00 [ratio 9.029467e-01], |du|/|u|=1.421952316954e-02
+  16 FASCD ncp function norm 2.998121467699e+00 [ratio 1.765525e+00], |du|/|u|=9.338049032790e-03
+  17 FASCD ncp function norm 2.518304545261e+00 [ratio 8.399608e-01], |du|/|u|=2.713374871478e-03
+  18 FASCD ncp function norm 1.763687807797e+00 [ratio 7.003473e-01], |du|/|u|=3.809527943522e-03
+  19 FASCD ncp function norm 2.358138658364e+00 [ratio 1.337050e+00], |du|/|u|=3.624064678882e-03
+  20 FASCD ncp function norm 2.210180703294e+00 [ratio 9.372565e-01], |du|/|u|=4.353225990060e-03
+  21 FASCD ncp function norm 1.999623059031e+00 [ratio 9.047328e-01], |du|/|u|=7.409548864323e-03
+  22 FASCD ncp function norm 2.751654051458e+00 [ratio 1.376086e+00], |du|/|u|=4.466474885970e-03
+  23 FASCD ncp function norm 2.357033079091e+00 [ratio 8.565877e-01], |du|/|u|=3.710738200448e-03
+  24 FASCD ncp function norm 2.800912050087e+00 [ratio 1.188321e+00], |du|/|u|=7.194309766912e-03
+  25 FASCD ncp function norm 2.278402612682e+00 [ratio 8.134503e-01], |du|/|u|=2.305629943852e-03
+  26 FASCD ncp function norm 1.724912499469e+00 [ratio 7.570710e-01], |du|/|u|=2.024873398657e-03
+  27 FASCD ncp function norm 8.979507909185e-01 [ratio 5.205776e-01], |du|/|u|=4.384996250413e-04
+  28 FASCD ncp function norm 1.196686894473e+00 [ratio 1.332686e+00], |du|/|u|=9.802031823215e-04
+  29 FASCD ncp function norm 1.091597104315e+00 [ratio 9.121827e-01], |du|/|u|=1.070108384187e-03
+  30 FASCD ncp function norm 2.090394861228e+00 [ratio 1.914988e+00], |du|/|u|=9.687580222582e-04
+  31 FASCD ncp function norm 1.806421674121e+00 [ratio 8.641533e-01], |du|/|u|=2.142705845089e-03
+  32 FASCD ncp function norm 8.185924436511e-01 [ratio 4.531569e-01], |du|/|u|=7.410360478419e-04
+  33 FASCD ncp function norm 1.550226588078e+00 [ratio 1.893771e+00], |du|/|u|=1.862430064760e-03
+  34 FASCD ncp function norm 1.630245287265e+00 [ratio 1.051617e+00], |du|/|u|=1.121383018941e-03
+  35 FASCD ncp function norm 1.845128032288e+00 [ratio 1.131810e+00], |du|/|u|=9.036665543051e-04
+  36 FASCD ncp function norm 1.940777398059e+00 [ratio 1.051839e+00], |du|/|u|=6.995238791530e-03
+  37 FASCD ncp function norm 1.470576269410e+00 [ratio 7.577254e-01], |du|/|u|=3.430935946273e-03
+  38 FASCD ncp function norm 1.331063444384e+00 [ratio 9.051305e-01], |du|/|u|=2.688365672278e-03
+  39 FASCD ncp function norm 2.305446221020e+00 [ratio 1.732033e+00], |du|/|u|=5.923201332439e-03
+  40 FASCD ncp function norm 2.003022087149e+00 [ratio 8.688219e-01], |du|/|u|=2.753144047142e-03
+  41 FASCD ncp function norm 8.685423322007e-01 [ratio 4.336160e-01], |du|/|u|=4.505556875212e-03
+  42 FASCD ncp function norm 1.741649227792e+00 [ratio 2.005255e+00], |du|/|u|=1.822108980640e-03
+  43 FASCD ncp function norm 1.885628227413e+00 [ratio 1.082668e+00], |du|/|u|=2.158338983201e-03
+  44 FASCD ncp function norm 2.447039417259e+00 [ratio 1.297732e+00], |du|/|u|=1.501119625792e-03
+  45 FASCD ncp function norm 2.252782079720e+00 [ratio 9.206154e-01], |du|/|u|=1.195207295897e-03
+  46 FASCD ncp function norm 2.246250419375e+00 [ratio 9.971006e-01], |du|/|u|=2.039231103824e-03
+  47 FASCD ncp function norm 2.071265845173e+00 [ratio 9.220993e-01], |du|/|u|=2.103475235997e-03
+  48 FASCD ncp function norm 2.438056365419e+00 [ratio 1.177085e+00], |du|/|u|=2.110850108559e-03
+  49 FASCD ncp function norm 1.857450592152e+00 [ratio 7.618571e-01], |du|/|u|=1.323793926402e-03
+  50 FASCD ncp function norm 1.774286784987e+00 [ratio 9.552269e-01], |du|/|u|=1.010090603010e-03
 FASCD solve converged due to DIVERGED_MAX_IT iterations 50
-done on 769 node mesh:  |u-uexact|_inf = 8.031e-04
+done on 769 node mesh:  |u-uexact|_inf = 1.952e-03
 solving with p=1.5, mcoarse=6, 9 levels, on 1537 node fine mesh ...
-   0 FASCD ncp function norm 5.720313428315e-01
-   1 FASCD ncp function norm 2.287998873747e+00 [ratio 3.999779e+00], |du|/|u|=1.334539652952e+00
-   2 FASCD ncp function norm 3.201077692396e+00 [ratio 1.399073e+00], |du|/|u|=1.287551822726e-01
-   3 FASCD ncp function norm 3.521000809075e+00 [ratio 1.099942e+00], |du|/|u|=2.660319735663e-02
-   4 FASCD ncp function norm 2.947187564855e+00 [ratio 8.370312e-01], |du|/|u|=1.672324242784e-02
-   5 FASCD ncp function norm 2.775933054719e+00 [ratio 9.418922e-01], |du|/|u|=3.300429495875e-03
-   6 FASCD ncp function norm 1.883220896782e+00 [ratio 6.784101e-01], |du|/|u|=1.961227842026e-03
-   7 FASCD ncp function norm 2.087143213628e+00 [ratio 1.108284e+00], |du|/|u|=1.376792494067e-03
-   8 FASCD ncp function norm 1.770761876625e+00 [ratio 8.484142e-01], |du|/|u|=8.087254252538e-04
-   9 FASCD ncp function norm 1.695917194537e+00 [ratio 9.577331e-01], |du|/|u|=1.220829073767e-03
-  10 FASCD ncp function norm 1.458919913421e+00 [ratio 8.602542e-01], |du|/|u|=8.431765440618e-04
-  11 FASCD ncp function norm 1.876541347372e+00 [ratio 1.286254e+00], |du|/|u|=7.914862010309e-04
-  12 FASCD ncp function norm 1.865616701950e+00 [ratio 9.941783e-01], |du|/|u|=5.903427577937e-04
-  13 FASCD ncp function norm 2.049503669308e+00 [ratio 1.098566e+00], |du|/|u|=3.118383636015e-04
-  14 FASCD ncp function norm 1.560137839778e+00 [ratio 7.612272e-01], |du|/|u|=2.553501621073e-04
-  15 FASCD ncp function norm 1.861409538026e+00 [ratio 1.193106e+00], |du|/|u|=3.036110949605e-05
-  16 FASCD ncp function norm 1.312995937660e+00 [ratio 7.053772e-01], |du|/|u|=9.509567349170e-05
-  17 FASCD ncp function norm 1.650536941440e+00 [ratio 1.257077e+00], |du|/|u|=8.785754340270e-05
-  18 FASCD ncp function norm 1.034207533687e+00 [ratio 6.265885e-01], |du|/|u|=7.717112017529e-05
-  19 FASCD ncp function norm 1.357364498022e+00 [ratio 1.312468e+00], |du|/|u|=1.133203588737e-04
-  20 FASCD ncp function norm 8.686443554998e-01 [ratio 6.399492e-01], |du|/|u|=6.100769060346e-05
-  21 FASCD ncp function norm 1.298946724576e+00 [ratio 1.495372e+00], |du|/|u|=8.984174064919e-05
-  22 FASCD ncp function norm 7.389044052289e-01 [ratio 5.688489e-01], |du|/|u|=3.741346922969e-05
-  23 FASCD ncp function norm 1.194330057847e+00 [ratio 1.616353e+00], |du|/|u|=2.227836500722e-05
-  24 FASCD ncp function norm 6.709232234261e-01 [ratio 5.617570e-01], |du|/|u|=2.379020703840e-05
-  25 FASCD ncp function norm 1.112359383144e+00 [ratio 1.657953e+00], |du|/|u|=1.970605481121e-05
-  26 FASCD ncp function norm 6.187839987756e-01 [ratio 5.562806e-01], |du|/|u|=2.157721680448e-05
-  27 FASCD ncp function norm 1.027965943578e+00 [ratio 1.661268e+00], |du|/|u|=1.775921621382e-05
-  28 FASCD ncp function norm 5.886552195176e-01 [ratio 5.726408e-01], |du|/|u|=1.991403647818e-05
-  29 FASCD ncp function norm 9.461890017720e-01 [ratio 1.607374e+00], |du|/|u|=1.621547955885e-05
-  30 FASCD ncp function norm 5.687115362663e-01 [ratio 6.010549e-01], |du|/|u|=2.155962449661e-05
-  31 FASCD ncp function norm 9.075227413785e-01 [ratio 1.595752e+00], |du|/|u|=2.469425977352e-05
-  32 FASCD ncp function norm 8.369873565193e-01 [ratio 9.222770e-01], |du|/|u|=1.984900680440e-05
-  33 FASCD ncp function norm 9.112879088741e-01 [ratio 1.088771e+00], |du|/|u|=3.087589181965e-05
-  34 FASCD ncp function norm 1.393146402294e+00 [ratio 1.528766e+00], |du|/|u|=4.812785178035e-05
-  35 FASCD ncp function norm 1.327632062470e+00 [ratio 9.529738e-01], |du|/|u|=6.624961854162e-05
-  36 FASCD ncp function norm 1.364576273934e+00 [ratio 1.027827e+00], |du|/|u|=9.236749778770e-05
-  37 FASCD ncp function norm 1.247463055143e+00 [ratio 9.141761e-01], |du|/|u|=7.395568435588e-05
-  38 FASCD ncp function norm 1.328951635397e+00 [ratio 1.065323e+00], |du|/|u|=7.791867335123e-05
-  39 FASCD ncp function norm 1.175443463654e+00 [ratio 8.844893e-01], |du|/|u|=4.780055537125e-05
-  40 FASCD ncp function norm 1.319437719584e+00 [ratio 1.122502e+00], |du|/|u|=4.747708041530e-05
-  41 FASCD ncp function norm 1.168177169526e+00 [ratio 8.853598e-01], |du|/|u|=4.722508107972e-05
-  42 FASCD ncp function norm 1.313496181286e+00 [ratio 1.124398e+00], |du|/|u|=4.683496455576e-05
-  43 FASCD ncp function norm 1.153735333959e+00 [ratio 8.783698e-01], |du|/|u|=4.650252257618e-05
-  44 FASCD ncp function norm 1.307811410705e+00 [ratio 1.133545e+00], |du|/|u|=4.615082361672e-05
-  45 FASCD ncp function norm 1.137517341865e+00 [ratio 8.697870e-01], |du|/|u|=4.579587606385e-05
-  46 FASCD ncp function norm 1.300330888250e+00 [ratio 1.143131e+00], |du|/|u|=4.554246647910e-05
-  47 FASCD ncp function norm 1.121492318766e+00 [ratio 8.624669e-01], |du|/|u|=4.517747104936e-05
-  48 FASCD ncp function norm 1.290514721396e+00 [ratio 1.150712e+00], |du|/|u|=4.498465930785e-05
-  49 FASCD ncp function norm 1.105906394064e+00 [ratio 8.569498e-01], |du|/|u|=4.459756726800e-05
-  50 FASCD ncp function norm 1.278539632978e+00 [ratio 1.156101e+00], |du|/|u|=4.444423189354e-05
+   0 FASCD ncp function norm 5.720313247219e-01
+   1 FASCD ncp function norm 2.288066772386e+00 [ratio 3.999898e+00], |du|/|u|=1.334540357280e+00
+   2 FASCD ncp function norm 3.200660506648e+00 [ratio 1.398849e+00], |du|/|u|=1.287460520027e-01
+   3 FASCD ncp function norm 3.509928601100e+00 [ratio 1.096626e+00], |du|/|u|=2.664387844285e-02
+   4 FASCD ncp function norm 3.046520705153e+00 [ratio 8.679723e-01], |du|/|u|=1.653473031748e-02
+   5 FASCD ncp function norm 1.955472605751e+00 [ratio 6.418708e-01], |du|/|u|=3.265690425820e-03
+   6 FASCD ncp function norm 3.280555754521e+00 [ratio 1.677628e+00], |du|/|u|=1.956470171782e-03
+   7 FASCD ncp function norm 2.429451721501e+00 [ratio 7.405610e-01], |du|/|u|=2.676033780748e-03
+   8 FASCD ncp function norm 2.392039498977e+00 [ratio 9.846005e-01], |du|/|u|=3.435007060989e-03
+   9 FASCD ncp function norm 1.896171922805e+00 [ratio 7.927009e-01], |du|/|u|=1.423711699617e-03
+  10 FASCD ncp function norm 1.768085346005e+00 [ratio 9.324499e-01], |du|/|u|=1.511101529116e-03
+  11 FASCD ncp function norm 2.280812070034e+00 [ratio 1.289990e+00], |du|/|u|=1.748626863115e-03
+  12 FASCD ncp function norm 3.365207349883e+00 [ratio 1.475443e+00], |du|/|u|=4.081994193867e-03
+  13 FASCD ncp function norm 2.097582119951e+00 [ratio 6.233144e-01], |du|/|u|=4.231971900959e-03
+  14 FASCD ncp function norm 3.437649896231e+00 [ratio 1.638863e+00], |du|/|u|=4.522682964313e-03
+  15 FASCD ncp function norm 2.639495616818e+00 [ratio 7.678198e-01], |du|/|u|=7.590813469081e-03
+  16 FASCD ncp function norm 1.986662005171e+00 [ratio 7.526673e-01], |du|/|u|=1.331720497588e-03
+  17 FASCD ncp function norm 1.593251276359e+00 [ratio 8.019740e-01], |du|/|u|=1.451756392245e-03
+  18 FASCD ncp function norm 2.338580850657e+00 [ratio 1.467804e+00], |du|/|u|=1.776143324386e-03
+  19 FASCD ncp function norm 1.519412828214e+00 [ratio 6.497158e-01], |du|/|u|=9.285262648770e-04
+  20 FASCD ncp function norm 1.510545650136e+00 [ratio 9.941641e-01], |du|/|u|=1.620988654858e-03
+  21 FASCD ncp function norm 2.142540507154e+00 [ratio 1.418388e+00], |du|/|u|=5.711576717610e-03
+  22 FASCD ncp function norm 2.304514474879e+00 [ratio 1.075599e+00], |du|/|u|=9.942417337706e-03
+  23 FASCD ncp function norm 3.856768593199e+00 [ratio 1.673571e+00], |du|/|u|=6.242847671520e-03
+  24 FASCD ncp function norm 4.534914642499e+00 [ratio 1.175833e+00], |du|/|u|=1.045848383962e-02
+  25 FASCD ncp function norm 2.104074927496e+00 [ratio 4.639723e-01], |du|/|u|=8.930856031252e-03
+  26 FASCD ncp function norm 3.240247084113e+00 [ratio 1.539987e+00], |du|/|u|=7.260607264363e-03
+  27 FASCD ncp function norm 3.681344387034e+00 [ratio 1.136131e+00], |du|/|u|=1.914538590805e-02
+  28 FASCD ncp function norm 5.087126004387e+00 [ratio 1.381866e+00], |du|/|u|=2.446317975038e-02
+  29 FASCD ncp function norm 4.314293943088e+00 [ratio 8.480808e-01], |du|/|u|=1.567231193361e-02
+  30 FASCD ncp function norm 2.969148617917e+00 [ratio 6.882119e-01], |du|/|u|=1.107547267629e-02
+  31 FASCD ncp function norm 2.625874068673e+00 [ratio 8.843862e-01], |du|/|u|=4.462047530989e-03
+  32 FASCD ncp function norm 3.728251802994e+00 [ratio 1.419814e+00], |du|/|u|=2.744356206617e-03
+  33 FASCD ncp function norm 3.358370304738e+00 [ratio 9.007896e-01], |du|/|u|=1.517476497841e-03
+  34 FASCD ncp function norm 2.861486338627e+00 [ratio 8.520461e-01], |du|/|u|=2.101849745954e-03
+  35 FASCD ncp function norm 2.907147084699e+00 [ratio 1.015957e+00], |du|/|u|=4.937450483612e-03
+  36 FASCD ncp function norm 3.338976239704e+00 [ratio 1.148541e+00], |du|/|u|=3.608732062177e-03
+  37 FASCD ncp function norm 2.907000033265e+00 [ratio 8.706262e-01], |du|/|u|=6.429719517409e-03
+  38 FASCD ncp function norm 2.665530251645e+00 [ratio 9.169351e-01], |du|/|u|=4.646232379973e-03
+  39 FASCD ncp function norm 2.424580434873e+00 [ratio 9.096053e-01], |du|/|u|=2.464397482438e-03
+  40 FASCD ncp function norm 2.361322254268e+00 [ratio 9.739096e-01], |du|/|u|=3.802913446420e-03
+  41 FASCD ncp function norm 2.189742489234e+00 [ratio 9.273374e-01], |du|/|u|=2.960884242679e-03
+  42 FASCD ncp function norm 3.341908678155e+00 [ratio 1.526165e+00], |du|/|u|=8.676178252092e-04
+  43 FASCD ncp function norm 3.069228571787e+00 [ratio 9.184059e-01], |du|/|u|=3.522104387477e-03
+  44 FASCD ncp function norm 2.658843784518e+00 [ratio 8.662906e-01], |du|/|u|=3.711290053301e-03
+  45 FASCD ncp function norm 2.747113762126e+00 [ratio 1.033199e+00], |du|/|u|=9.416487992767e-04
+  46 FASCD ncp function norm 1.909721628687e+00 [ratio 6.951738e-01], |du|/|u|=1.098637516873e-03
+  47 FASCD ncp function norm 2.313378228888e+00 [ratio 1.211369e+00], |du|/|u|=1.546340768672e-03
+  48 FASCD ncp function norm 2.802918505058e+00 [ratio 1.211613e+00], |du|/|u|=1.988112564154e-03
+  49 FASCD ncp function norm 2.522502991796e+00 [ratio 8.999559e-01], |du|/|u|=3.218607628897e-03
+  50 FASCD ncp function norm 2.514398299109e+00 [ratio 9.967870e-01], |du|/|u|=2.286220098619e-03
 FASCD solve converged due to DIVERGED_MAX_IT iterations 50
-done on 1537 node mesh:  |u-uexact|_inf = 2.689e-04
+done on 1537 node mesh:  |u-uexact|_inf = 2.373e-03
 solving with p=1.5, mcoarse=6, 10 levels, on 3073 node fine mesh ...
-   0 FASCD ncp function norm 5.625757126741e-01
-   1 FASCD ncp function norm 2.458570566590e+00 [ratio 4.370204e+00], |du|/|u|=1.340534910676e+00
-   2 FASCD ncp function norm 3.532243479346e+00 [ratio 1.436706e+00], |du|/|u|=9.534929558143e-02
-   3 FASCD ncp function norm 3.167983332846e+00 [ratio 8.968757e-01], |du|/|u|=4.283462502203e-02
-   4 FASCD ncp function norm 2.721830568370e+00 [ratio 8.591682e-01], |du|/|u|=1.385059786637e-02
-   5 FASCD ncp function norm 2.973848391632e+00 [ratio 1.092591e+00], |du|/|u|=5.774124667633e-03
-   6 FASCD ncp function norm 3.029294063529e+00 [ratio 1.018644e+00], |du|/|u|=2.236653250107e-03
-   7 FASCD ncp function norm 3.368284586903e+00 [ratio 1.111904e+00], |du|/|u|=3.046836933029e-03
-   8 FASCD ncp function norm 4.768072682902e+00 [ratio 1.415579e+00], |du|/|u|=1.973510524051e-03
-   9 FASCD ncp function norm 3.978877002481e+00 [ratio 8.344833e-01], |du|/|u|=1.724488192547e-03
-  10 FASCD ncp function norm 3.369456933014e+00 [ratio 8.468362e-01], |du|/|u|=2.065731493223e-04
-  11 FASCD ncp function norm 3.017838350952e+00 [ratio 8.956453e-01], |du|/|u|=1.107479388245e-03
-  12 FASCD ncp function norm 2.488373383338e+00 [ratio 8.245549e-01], |du|/|u|=7.645213415785e-04
-  13 FASCD ncp function norm 2.910586186355e+00 [ratio 1.169674e+00], |du|/|u|=1.149618181893e-03
-  14 FASCD ncp function norm 2.333487977342e+00 [ratio 8.017244e-01], |du|/|u|=5.303013186011e-04
-  15 FASCD ncp function norm 2.528242074425e+00 [ratio 1.083461e+00], |du|/|u|=2.043060758664e-04
-  16 FASCD ncp function norm 1.630287085085e+00 [ratio 6.448303e-01], |du|/|u|=1.894901017942e-04
-  17 FASCD ncp function norm 1.712256265959e+00 [ratio 1.050279e+00], |du|/|u|=3.983040901170e-04
-  18 FASCD ncp function norm 2.045148033098e+00 [ratio 1.194417e+00], |du|/|u|=3.795229191635e-04
-  19 FASCD ncp function norm 2.421272792130e+00 [ratio 1.183911e+00], |du|/|u|=3.425834636293e-04
-  20 FASCD ncp function norm 2.813835726277e+00 [ratio 1.162131e+00], |du|/|u|=4.033619967679e-04
-  21 FASCD ncp function norm 2.730689408494e+00 [ratio 9.704509e-01], |du|/|u|=6.205102672037e-04
-  22 FASCD ncp function norm 2.928446775523e+00 [ratio 1.072420e+00], |du|/|u|=4.749258058645e-04
-  23 FASCD ncp function norm 2.059319117380e+00 [ratio 7.032121e-01], |du|/|u|=1.763298487566e-03
-  24 FASCD ncp function norm 2.335285136200e+00 [ratio 1.134008e+00], |du|/|u|=2.440184020850e-03
-  25 FASCD ncp function norm 2.751841670662e+00 [ratio 1.178375e+00], |du|/|u|=1.723530536313e-03
-  26 FASCD ncp function norm 3.363514998602e+00 [ratio 1.222278e+00], |du|/|u|=2.363368068934e-03
-  27 FASCD ncp function norm 2.924536747344e+00 [ratio 8.694882e-01], |du|/|u|=1.004337017527e-03
-  28 FASCD ncp function norm 3.078901033556e+00 [ratio 1.052782e+00], |du|/|u|=9.339675712413e-04
-  29 FASCD ncp function norm 2.272057950429e+00 [ratio 7.379445e-01], |du|/|u|=3.639995390546e-03
-  30 FASCD ncp function norm 1.858828547979e+00 [ratio 8.181255e-01], |du|/|u|=3.706082009456e-03
-  31 FASCD ncp function norm 2.940396631228e+00 [ratio 1.581855e+00], |du|/|u|=5.892468014382e-03
-  32 FASCD ncp function norm 2.583736690774e+00 [ratio 8.787035e-01], |du|/|u|=9.088372770034e-03
-  33 FASCD ncp function norm 3.345152290218e+00 [ratio 1.294696e+00], |du|/|u|=7.444214564884e-03
-  34 FASCD ncp function norm 4.504012298817e+00 [ratio 1.346430e+00], |du|/|u|=4.820462903873e-03
-  35 FASCD ncp function norm 5.051769099299e+00 [ratio 1.121615e+00], |du|/|u|=7.365767454875e-03
-  36 FASCD ncp function norm 4.062917422603e+00 [ratio 8.042564e-01], |du|/|u|=6.134587876703e-03
-  37 FASCD ncp function norm 3.167996034902e+00 [ratio 7.797343e-01], |du|/|u|=4.691014450565e-03
-  38 FASCD ncp function norm 2.803940935428e+00 [ratio 8.850835e-01], |du|/|u|=4.863506169186e-03
-  39 FASCD ncp function norm 3.207676459119e+00 [ratio 1.143989e+00], |du|/|u|=3.721157812522e-03
-  40 FASCD ncp function norm 3.208241937448e+00 [ratio 1.000176e+00], |du|/|u|=3.213608991969e-03
-  41 FASCD ncp function norm 3.054311523213e+00 [ratio 9.520203e-01], |du|/|u|=2.990779302381e-03
-  42 FASCD ncp function norm 2.979015515322e+00 [ratio 9.753476e-01], |du|/|u|=1.773355692134e-03
-  43 FASCD ncp function norm 2.258543611468e+00 [ratio 7.581510e-01], |du|/|u|=1.002881040446e-03
-  44 FASCD ncp function norm 2.873943340172e+00 [ratio 1.272476e+00], |du|/|u|=1.699828853212e-03
-  45 FASCD ncp function norm 3.209345308941e+00 [ratio 1.116704e+00], |du|/|u|=3.831441049875e-03
-  46 FASCD ncp function norm 3.468958426295e+00 [ratio 1.080893e+00], |du|/|u|=3.648348356885e-03
-  47 FASCD ncp function norm 2.372289395383e+00 [ratio 6.838622e-01], |du|/|u|=1.459928308879e-03
-  48 FASCD ncp function norm 2.943316177740e+00 [ratio 1.240707e+00], |du|/|u|=2.789806209640e-03
-  49 FASCD ncp function norm 2.611271263904e+00 [ratio 8.871868e-01], |du|/|u|=2.226124294433e-03
-  50 FASCD ncp function norm 3.332172904013e+00 [ratio 1.276073e+00], |du|/|u|=1.368063607675e-03
+   0 FASCD ncp function norm 5.625756943125e-01
+   1 FASCD ncp function norm 2.461961542171e+00 [ratio 4.376232e+00], |du|/|u|=1.340518885372e+00
+   2 FASCD ncp function norm 3.531887716955e+00 [ratio 1.434583e+00], |du|/|u|=9.531282287840e-02
+   3 FASCD ncp function norm 3.185004019784e+00 [ratio 9.017852e-01], |du|/|u|=4.288191515749e-02
+   4 FASCD ncp function norm 2.740813433055e+00 [ratio 8.605369e-01], |du|/|u|=1.386563276611e-02
+   5 FASCD ncp function norm 3.073110130906e+00 [ratio 1.121240e+00], |du|/|u|=5.840420767536e-03
+   6 FASCD ncp function norm 3.278144411977e+00 [ratio 1.066719e+00], |du|/|u|=5.793479735488e-03
+   7 FASCD ncp function norm 4.685518253213e+00 [ratio 1.429320e+00], |du|/|u|=4.475739998639e-03
+   8 FASCD ncp function norm 5.488333287376e+00 [ratio 1.171340e+00], |du|/|u|=5.897389063441e-03
+   9 FASCD ncp function norm 4.417420157707e+00 [ratio 8.048746e-01], |du|/|u|=2.556728389303e-03
+  10 FASCD ncp function norm 4.272769212041e+00 [ratio 9.672544e-01], |du|/|u|=1.222608350528e-03
+  11 FASCD ncp function norm 2.477877208436e+00 [ratio 5.799230e-01], |du|/|u|=1.070081253643e-03
+  12 FASCD ncp function norm 2.543048384922e+00 [ratio 1.026301e+00], |du|/|u|=1.741806994743e-03
+  13 FASCD ncp function norm 3.448940430339e+00 [ratio 1.356223e+00], |du|/|u|=2.372613781428e-04
+  14 FASCD ncp function norm 1.677437528157e+00 [ratio 4.863631e-01], |du|/|u|=1.087456622235e-03
+  15 FASCD ncp function norm 3.092848002206e+00 [ratio 1.843793e+00], |du|/|u|=8.255167922475e-04
+  16 FASCD ncp function norm 2.815148013453e+00 [ratio 9.102122e-01], |du|/|u|=9.136912582133e-04
+  17 FASCD ncp function norm 3.451803800727e+00 [ratio 1.226154e+00], |du|/|u|=1.451263883670e-03
+  18 FASCD ncp function norm 2.799620964198e+00 [ratio 8.110603e-01], |du|/|u|=9.801445372270e-04
+  19 FASCD ncp function norm 3.321785780329e+00 [ratio 1.186513e+00], |du|/|u|=7.245531870327e-04
+  20 FASCD ncp function norm 3.433638513897e+00 [ratio 1.033672e+00], |du|/|u|=8.234053812083e-04
+  21 FASCD ncp function norm 2.665374858113e+00 [ratio 7.762538e-01], |du|/|u|=8.261213971072e-04
+  22 FASCD ncp function norm 2.603817957180e+00 [ratio 9.769050e-01], |du|/|u|=9.414965057688e-04
+  23 FASCD ncp function norm 3.455864344423e+00 [ratio 1.327230e+00], |du|/|u|=9.686336483533e-04
+  24 FASCD ncp function norm 3.463031314998e+00 [ratio 1.002074e+00], |du|/|u|=1.020308229468e-03
+  25 FASCD ncp function norm 4.213907174617e+00 [ratio 1.216826e+00], |du|/|u|=7.732465436830e-03
+  26 FASCD ncp function norm 4.379132721581e+00 [ratio 1.039210e+00], |du|/|u|=8.498229048411e-03
+  27 FASCD ncp function norm 3.453958763528e+00 [ratio 7.887312e-01], |du|/|u|=3.587698482170e-03
+  28 FASCD ncp function norm 3.316111068153e+00 [ratio 9.600899e-01], |du|/|u|=3.854294168981e-03
+  29 FASCD ncp function norm 2.864161218340e+00 [ratio 8.637109e-01], |du|/|u|=2.317516018397e-03
+  30 FASCD ncp function norm 3.158321146937e+00 [ratio 1.102704e+00], |du|/|u|=4.423270675664e-04
+  31 FASCD ncp function norm 3.264761967742e+00 [ratio 1.033702e+00], |du|/|u|=8.618363981290e-04
+  32 FASCD ncp function norm 2.736991560744e+00 [ratio 8.383434e-01], |du|/|u|=1.111169905682e-03
+  33 FASCD ncp function norm 3.202212508928e+00 [ratio 1.169975e+00], |du|/|u|=8.474778196904e-04
+  34 FASCD ncp function norm 3.519178408632e+00 [ratio 1.098983e+00], |du|/|u|=7.033617980742e-04
+  35 FASCD ncp function norm 3.260667423280e+00 [ratio 9.265422e-01], |du|/|u|=3.170683189348e-04
+  36 FASCD ncp function norm 3.243178317606e+00 [ratio 9.946363e-01], |du|/|u|=4.537265016772e-04
+  37 FASCD ncp function norm 2.888391567492e+00 [ratio 8.906052e-01], |du|/|u|=7.895265148967e-04
+  38 FASCD ncp function norm 1.868858415579e+00 [ratio 6.470239e-01], |du|/|u|=1.287112267011e-03
+  39 FASCD ncp function norm 2.672203423191e+00 [ratio 1.429859e+00], |du|/|u|=9.429026003168e-04
+  40 FASCD ncp function norm 1.710297898725e+00 [ratio 6.400328e-01], |du|/|u|=5.295927082192e-04
+  41 FASCD ncp function norm 2.567260833300e+00 [ratio 1.501061e+00], |du|/|u|=6.470479573548e-04
+  42 FASCD ncp function norm 2.496268897457e+00 [ratio 9.723472e-01], |du|/|u|=7.681367002347e-04
+  43 FASCD ncp function norm 3.006835578797e+00 [ratio 1.204532e+00], |du|/|u|=1.895383424251e-03
+  44 FASCD ncp function norm 2.640411684096e+00 [ratio 8.781364e-01], |du|/|u|=1.549486761770e-03
+  45 FASCD ncp function norm 2.956361448160e+00 [ratio 1.119659e+00], |du|/|u|=8.701647340495e-04
+  46 FASCD ncp function norm 3.150460224999e+00 [ratio 1.065655e+00], |du|/|u|=4.003064272913e-04
+  47 FASCD ncp function norm 2.821808357710e+00 [ratio 8.956813e-01], |du|/|u|=6.559187713845e-04
+  48 FASCD ncp function norm 2.916443358824e+00 [ratio 1.033537e+00], |du|/|u|=7.873733500368e-04
+  49 FASCD ncp function norm 2.709755295456e+00 [ratio 9.291301e-01], |du|/|u|=1.995810718267e-03
+  50 FASCD ncp function norm 3.145906394055e+00 [ratio 1.160956e+00], |du|/|u|=2.581780381339e-03
 FASCD solve converged due to DIVERGED_MAX_IT iterations 50
-done on 3073 node mesh:  |u-uexact|_inf = 1.489e-03
+done on 3073 node mesh:  |u-uexact|_inf = 4.136e-03
 
 ******** p = 1.5 V-cycle VOPT=-fascd_skip_downsmooth *******
 solving with p=1.5, mcoarse=6, 1 levels, on 7 node fine mesh ...
-   0 FASCD ncp function norm 6.120574811633e-01
-   1 FASCD ncp function norm 1.785516804827e-11
+   0 FASCD ncp function norm 6.120574791204e-01
+   1 FASCD ncp function norm 1.785538547869e-11
 FASCD solve converged due to CONVERGED_SINGLE_LEVEL iterations 1
 done on 7 node mesh:  |u-uexact|_inf = 2.263e-01
 solving with p=1.5, mcoarse=6, 2 levels, on 13 node fine mesh ...
-   0 FASCD ncp function norm 1.063144214639e+00
-   1 FASCD ncp function norm 4.428220494476e-01 [ratio 4.165211e-01], |du|/|u|=1.612692956587e+00
-   2 FASCD ncp function norm 1.365706165523e-05 [ratio 3.084097e-05], |du|/|u|=5.904193647751e-02
-   3 FASCD ncp function norm 3.421937179709e-16 [ratio 2.505617e-11], |du|/|u|=1.352663458512e-06
-FASCD solve converged due to CONVERGED_FNORM_ABS iterations 3
+   0 FASCD ncp function norm 1.063144198816e+00
+   1 FASCD ncp function norm 1.823891837079e-01 [ratio 1.715564e-01], |du|/|u|=1.657092045583e+00
+   2 FASCD ncp function norm 2.294497876914e-11 [ratio 1.258023e-10], |du|/|u|=7.916566013899e-02
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 done on 13 node mesh:  |u-uexact|_inf = 3.255e-02
 solving with p=1.5, mcoarse=6, 3 levels, on 25 node fine mesh ...
-   0 FASCD ncp function norm 1.017030574075e+00
-   1 FASCD ncp function norm 8.451567132560e-01 [ratio 8.310042e-01], |du|/|u|=1.702563514162e+00
-   2 FASCD ncp function norm 5.693339633250e-01 [ratio 6.736431e-01], |du|/|u|=1.597779013211e-01
-   3 FASCD ncp function norm 1.906101038957e-03 [ratio 3.347949e-03], |du|/|u|=2.168733929394e-03
-   4 FASCD ncp function norm 5.926969055565e-16 [ratio 3.109473e-13], |du|/|u|=2.217959270169e-05
+   0 FASCD ncp function norm 1.017030559745e+00
+   1 FASCD ncp function norm 8.451560579876e-01 [ratio 8.310036e-01], |du|/|u|=1.702563552321e+00
+   2 FASCD ncp function norm 5.692585289016e-01 [ratio 6.735543e-01], |du|/|u|=1.597779680897e-01
+   3 FASCD ncp function norm 1.905583233570e-03 [ratio 3.347483e-03], |du|/|u|=2.168670438592e-03
+   4 FASCD ncp function norm 7.237768612448e-16 [ratio 3.798191e-13], |du|/|u|=2.217313348863e-05
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 4
 done on 25 node mesh:  |u-uexact|_inf = 9.108e-03
 solving with p=1.5, mcoarse=6, 4 levels, on 49 node fine mesh ...
-   0 FASCD ncp function norm 8.914241954961e-01
-   1 FASCD ncp function norm 9.970198962933e-01 [ratio 1.118457e+00], |du|/|u|=1.772397108937e+00
-   2 FASCD ncp function norm 3.166579295304e-01 [ratio 3.176044e-01], |du|/|u|=2.324893042080e-01
-   3 FASCD ncp function norm 2.054865324208e-02 [ratio 6.489227e-02], |du|/|u|=3.542961007271e-04
-   4 FASCD ncp function norm 9.222205069512e-16 [ratio 4.487985e-14], |du|/|u|=3.890886880658e-05
+   0 FASCD ncp function norm 8.914241815717e-01
+   1 FASCD ncp function norm 9.970199768584e-01 [ratio 1.118457e+00], |du|/|u|=1.772397160743e+00
+   2 FASCD ncp function norm 3.165027943052e-01 [ratio 3.174488e-01], |du|/|u|=2.324893845157e-01
+   3 FASCD ncp function norm 2.468726383659e-02 [ratio 7.800014e-02], |du|/|u|=3.475501939896e-04
+   4 FASCD ncp function norm 5.928528579090e-15 [ratio 2.401452e-13], |du|/|u|=4.594598253808e-05
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 4
 done on 49 node mesh:  |u-uexact|_inf = 3.248e-03
 solving with p=1.5, mcoarse=6, 5 levels, on 97 node fine mesh ...
-   0 FASCD ncp function norm 7.702147336931e-01
-   1 FASCD ncp function norm 1.160168913112e+00 [ratio 1.506293e+00], |du|/|u|=1.814638400031e+00
-   2 FASCD ncp function norm 4.845764479629e-03 [ratio 4.176775e-03], |du|/|u|=2.769665801989e-01
-   3 FASCD ncp function norm 1.253137046278e-12 [ratio 2.586046e-10], |du|/|u|=1.727383314821e-05
+   0 FASCD ncp function norm 7.702147190091e-01
+   1 FASCD ncp function norm 1.160205802122e+00 [ratio 1.506341e+00], |du|/|u|=1.814638800103e+00
+   2 FASCD ncp function norm 4.835670476183e-03 [ratio 4.167942e-03], |du|/|u|=2.769668896134e-01
+   3 FASCD ncp function norm 1.464189681306e-12 [ratio 3.027894e-10], |du|/|u|=1.725659790651e-05
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-done on 97 node mesh:  |u-uexact|_inf = 5.505e-04
+done on 97 node mesh:  |u-uexact|_inf = 5.501e-04
 solving with p=1.5, mcoarse=6, 6 levels, on 193 node fine mesh ...
-   0 FASCD ncp function norm 6.804814335551e-01
-   1 FASCD ncp function norm 1.124095095453e+00 [ratio 1.651911e+00], |du|/|u|=1.835551875147e+00
-   2 FASCD ncp function norm 4.524457710209e-03 [ratio 4.024978e-03], |du|/|u|=2.984384614742e-01
-   3 FASCD ncp function norm 2.258287513302e-15 [ratio 4.991289e-13], |du|/|u|=2.862120149447e-07
+   0 FASCD ncp function norm 6.804814177015e-01
+   1 FASCD ncp function norm 1.124100861382e+00 [ratio 1.651920e+00], |du|/|u|=1.835552033747e+00
+   2 FASCD ncp function norm 1.098876232390e-03 [ratio 9.775602e-04], |du|/|u|=2.984386266498e-01
+   3 FASCD ncp function norm 3.922321471996e-14 [ratio 3.569393e-11], |du|/|u|=8.256917913449e-08
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 3
-done on 193 node mesh:  |u-uexact|_inf = 1.690e-04
+done on 193 node mesh:  |u-uexact|_inf = 1.684e-04
 solving with p=1.5, mcoarse=6, 7 levels, on 385 node fine mesh ...
-   0 FASCD ncp function norm 6.232305662141e-01
-   1 FASCD ncp function norm 1.166330763652e+00 [ratio 1.871427e+00], |du|/|u|=1.846833921618e+00
-   2 FASCD ncp function norm 1.145929239988e-02 [ratio 9.825079e-03], |du|/|u|=3.099109373480e-01
-   3 FASCD ncp function norm 1.028080257623e-12 [ratio 8.971586e-11], |du|/|u|=1.700656473061e-07
-FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-done on 385 node mesh:  |u-uexact|_inf = 4.717e-05
+   0 FASCD ncp function norm 6.232305493033e-01
+   1 FASCD ncp function norm 1.166383618038e+00 [ratio 1.871512e+00], |du|/|u|=1.846834326475e+00
+   2 FASCD ncp function norm 1.771609390514e-05 [ratio 1.518891e-05], |du|/|u|=3.099112465823e-01
+   3 FASCD ncp function norm 2.007592921854e-13 [ratio 1.133203e-08], |du|/|u|=3.386410947393e-10
+FASCD solve converged due to CONVERGED_FNORM_ABS iterations 3
+done on 385 node mesh:  |u-uexact|_inf = 4.656e-05
 solving with p=1.5, mcoarse=6, 8 levels, on 769 node fine mesh ...
-   0 FASCD ncp function norm 5.900744175394e-01
-   1 FASCD ncp function norm 1.182145377424e+00 [ratio 2.003384e+00], |du|/|u|=1.852457928670e+00
-   2 FASCD ncp function norm 2.234452582142e-02 [ratio 1.890167e-02], |du|/|u|=3.156729861629e-01
-   3 FASCD ncp function norm 1.283523454654e-03 [ratio 5.744241e-02], |du|/|u|=1.005906527613e-07
-   4 FASCD ncp function norm 4.163706400240e-15 [ratio 3.243966e-12], |du|/|u|=2.399081475074e-09
-FASCD solve converged due to CONVERGED_FNORM_ABS iterations 4
-done on 769 node mesh:  |u-uexact|_inf = 9.522e-06
+   0 FASCD ncp function norm 5.900743998829e-01
+   1 FASCD ncp function norm 1.182366372181e+00 [ratio 2.003758e+00], |du|/|u|=1.852458665576e+00
+   2 FASCD ncp function norm 2.044854918095e-03 [ratio 1.729460e-03], |du|/|u|=3.156735420190e-01
+   3 FASCD ncp function norm 7.660261610831e-13 [ratio 3.746115e-10], |du|/|u|=5.896515338110e-09
+FASCD solve converged due to CONVERGED_FNORM_ABS iterations 3
+done on 769 node mesh:  |u-uexact|_inf = 9.203e-06
 solving with p=1.5, mcoarse=6, 9 levels, on 1537 node fine mesh ...
-   0 FASCD ncp function norm 5.720313428315e-01
-   1 FASCD ncp function norm 1.179964084872e+00 [ratio 2.062761e+00], |du|/|u|=1.855253436402e+00
-   2 FASCD ncp function norm 2.833848152049e-02 [ratio 2.401639e-02], |du|/|u|=3.185402017286e-01
-   3 FASCD ncp function norm 3.410245967338e-03 [ratio 1.203398e-01], |du|/|u|=3.734042409583e-08
-   4 FASCD ncp function norm 3.714330237841e-06 [ratio 1.089168e-03], |du|/|u|=8.533154227989e-09
-   5 FASCD ncp function norm 8.098161873062e-15 [ratio 2.180248e-09], |du|/|u|=1.313998038055e-12
-FASCD solve converged due to CONVERGED_FNORM_ABS iterations 5
-done on 1537 node mesh:  |u-uexact|_inf = 3.591e-06
+   0 FASCD ncp function norm 5.720313247219e-01
+   1 FASCD ncp function norm 1.180115610003e+00 [ratio 2.063026e+00], |du|/|u|=1.855253999559e+00
+   2 FASCD ncp function norm 2.864911530928e-05 [ratio 2.427653e-05], |du|/|u|=3.185406413496e-01
+   3 FASCD ncp function norm 2.830036319732e-12 [ratio 9.878268e-08], |du|/|u|=6.412723932722e-11
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+done on 1537 node mesh:  |u-uexact|_inf = 3.430e-06
 solving with p=1.5, mcoarse=6, 10 levels, on 3073 node fine mesh ...
-   0 FASCD ncp function norm 5.625757126741e-01
-   1 FASCD ncp function norm 1.197995459852e+00 [ratio 2.129483e+00], |du|/|u|=1.856673772151e+00
-   2 FASCD ncp function norm 4.076914443154e-02 [ratio 3.403113e-02], |du|/|u|=3.199951529530e-01
-   3 FASCD ncp function norm 2.744886563052e-02 [ratio 6.732755e-01], |du|/|u|=3.897229002339e-08
-   4 FASCD ncp function norm 2.076618088378e-02 [ratio 7.565406e-01], |du|/|u|=8.079194208846e-09
-   5 FASCD ncp function norm 1.893695217863e-02 [ratio 9.119131e-01], |du|/|u|=5.698686866064e-09
-   6 FASCD ncp function norm 1.354517063433e-02 [ratio 7.152772e-01], |du|/|u|=4.143515432576e-09
-   7 FASCD ncp function norm 1.028063179179e-02 [ratio 7.589887e-01], |du|/|u|=4.704043019194e-09
-   8 FASCD ncp function norm 7.362643597834e-03 [ratio 7.161665e-01], |du|/|u|=2.608648157626e-09
-   9 FASCD ncp function norm 4.507580501196e-03 [ratio 6.122231e-01], |du|/|u|=1.320582716170e-09
-  10 FASCD ncp function norm 2.573346972411e-04 [ratio 5.708932e-02], |du|/|u|=1.273989926413e-10
-  11 FASCD ncp function norm 4.152360271889e-14 [ratio 1.613603e-10], |du|/|u|=1.523089314751e-11
-FASCD solve converged due to CONVERGED_FNORM_ABS iterations 11
-done on 3073 node mesh:  |u-uexact|_inf = 4.948e-07
+   0 FASCD ncp function norm 5.625756943125e-01
+   1 FASCD ncp function norm 1.197216814232e+00 [ratio 2.128099e+00], |du|/|u|=1.856673860520e+00
+   2 FASCD ncp function norm 1.293912632485e-07 [ratio 1.080767e-07], |du|/|u|=3.199952484599e-01
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+done on 3073 node mesh:  |u-uexact|_inf = 4.139e-07
 
 ******** p = 1.5 V-cycle VOPT= *******
 solving with p=1.5, mcoarse=6, 1 levels, on 7 node fine mesh ...
-   0 FASCD ncp function norm 6.120574811633e-01
-   1 FASCD ncp function norm 1.785516804827e-11
+   0 FASCD ncp function norm 6.120574791204e-01
+   1 FASCD ncp function norm 1.785538547869e-11
 FASCD solve converged due to CONVERGED_SINGLE_LEVEL iterations 1
 done on 7 node mesh:  |u-uexact|_inf = 2.263e-01
 solving with p=1.5, mcoarse=6, 2 levels, on 13 node fine mesh ...
-   0 FASCD ncp function norm 1.063144214639e+00
-   1 FASCD ncp function norm 2.361740447011e-03 [ratio 2.221468e-03], |du|/|u|=1.567201478860e+00
-   2 FASCD ncp function norm 3.040470972244e-16 [ratio 1.287386e-13], |du|/|u|=1.590020495343e-04
+   0 FASCD ncp function norm 1.063144198816e+00
+   1 FASCD ncp function norm 2.361583188996e-03 [ratio 2.221320e-03], |du|/|u|=1.567201430392e+00
+   2 FASCD ncp function norm 5.926969055565e-16 [ratio 2.509744e-13], |du|/|u|=1.589912972309e-04
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 2
 done on 13 node mesh:  |u-uexact|_inf = 3.255e-02
 solving with p=1.5, mcoarse=6, 3 levels, on 25 node fine mesh ...
-   0 FASCD ncp function norm 1.017030574075e+00
-   1 FASCD ncp function norm 1.177566523161e+00 [ratio 1.157848e+00], |du|/|u|=1.525217691148e+00
-   2 FASCD ncp function norm 1.193628804010e-07 [ratio 1.013640e-07], |du|/|u|=7.328146959091e-03
+   0 FASCD ncp function norm 1.017030559745e+00
+   1 FASCD ncp function norm 1.177562379325e+00 [ratio 1.157844e+00], |du|/|u|=1.525217639172e+00
+   2 FASCD ncp function norm 1.193140788173e-07 [ratio 1.013229e-07], |du|/|u|=7.328140871583e-03
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 done on 25 node mesh:  |u-uexact|_inf = 9.108e-03
 solving with p=1.5, mcoarse=6, 4 levels, on 49 node fine mesh ...
-   0 FASCD ncp function norm 8.914241954961e-01
-   1 FASCD ncp function norm 1.314954855758e+00 [ratio 1.475117e+00], |du|/|u|=1.506643285632e+00
-   2 FASCD ncp function norm 7.909779310586e-07 [ratio 6.015248e-07], |du|/|u|=4.507934697284e-03
+   0 FASCD ncp function norm 8.914241815717e-01
+   1 FASCD ncp function norm 1.314952401032e+00 [ratio 1.475114e+00], |du|/|u|=1.506643392666e+00
+   2 FASCD ncp function norm 7.967525725415e-07 [ratio 6.059174e-07], |du|/|u|=4.507754244511e-03
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 done on 49 node mesh:  |u-uexact|_inf = 3.248e-03
 solving with p=1.5, mcoarse=6, 5 levels, on 97 node fine mesh ...
-   0 FASCD ncp function norm 7.702147336931e-01
-   1 FASCD ncp function norm 3.790386729173e-01 [ratio 4.921208e-01], |du|/|u|=1.503910581784e+00
-   2 FASCD ncp function norm 1.012711219365e-01 [ratio 2.671789e-01], |du|/|u|=2.700285771822e-04
-   3 FASCD ncp function norm 1.090621077026e-15 [ratio 1.076932e-14], |du|/|u|=1.479914226432e-05
+   0 FASCD ncp function norm 7.702147190091e-01
+   1 FASCD ncp function norm 3.788910887559e-01 [ratio 4.919292e-01], |du|/|u|=1.503911511478e+00
+   2 FASCD ncp function norm 9.105529277296e-02 [ratio 2.403205e-01], |du|/|u|=2.721705468015e-04
+   3 FASCD ncp function norm 1.089264019997e-14 [ratio 1.196267e-13], |du|/|u|=1.461926442659e-05
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 3
-done on 97 node mesh:  |u-uexact|_inf = 5.505e-04
+done on 97 node mesh:  |u-uexact|_inf = 5.501e-04
 solving with p=1.5, mcoarse=6, 6 levels, on 193 node fine mesh ...
-   0 FASCD ncp function norm 6.804814335551e-01
-   1 FASCD ncp function norm 1.851446786202e-01 [ratio 2.720790e-01], |du|/|u|=1.503062821757e+00
-   2 FASCD ncp function norm 7.026488628932e-02 [ratio 3.795134e-01], |du|/|u|=1.869199680352e-05
-   3 FASCD ncp function norm 3.151938613794e-15 [ratio 4.485795e-14], |du|/|u|=1.988767637510e-06
+   0 FASCD ncp function norm 6.804814177015e-01
+   1 FASCD ncp function norm 1.836255499892e-01 [ratio 2.698465e-01], |du|/|u|=1.503063556926e+00
+   2 FASCD ncp function norm 5.821378492712e-02 [ratio 3.170244e-01], |du|/|u|=2.096179682714e-05
+   3 FASCD ncp function norm 4.759099556705e-14 [ratio 8.175211e-13], |du|/|u|=1.802341102099e-06
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 3
-done on 193 node mesh:  |u-uexact|_inf = 1.690e-04
+done on 193 node mesh:  |u-uexact|_inf = 1.684e-04
 solving with p=1.5, mcoarse=6, 7 levels, on 385 node fine mesh ...
-   0 FASCD ncp function norm 6.232305662141e-01
-   1 FASCD ncp function norm 2.285277389346e-01 [ratio 3.666825e-01], |du|/|u|=1.502819733804e+00
-   2 FASCD ncp function norm 5.050671183367e-02 [ratio 2.210091e-01], |du|/|u|=1.682649151509e-05
-   3 FASCD ncp function norm 3.655298078893e-12 [ratio 7.237252e-11], |du|/|u|=3.716360885799e-07
-FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-done on 385 node mesh:  |u-uexact|_inf = 4.717e-05
+   0 FASCD ncp function norm 6.232305493033e-01
+   1 FASCD ncp function norm 2.231289312944e-01 [ratio 3.580199e-01], |du|/|u|=1.502819825646e+00
+   2 FASCD ncp function norm 2.350644238870e-02 [ratio 1.053491e-01], |du|/|u|=1.748482398047e-05
+   3 FASCD ncp function norm 2.005265560049e-13 [ratio 8.530706e-12], |du|/|u|=1.935873423914e-07
+FASCD solve converged due to CONVERGED_FNORM_ABS iterations 3
+done on 385 node mesh:  |u-uexact|_inf = 4.656e-05
 solving with p=1.5, mcoarse=6, 8 levels, on 769 node fine mesh ...
-   0 FASCD ncp function norm 5.900744175394e-01
-   1 FASCD ncp function norm 1.765200714522e-01 [ratio 2.991488e-01], |du|/|u|=1.502739536599e+00
-   2 FASCD ncp function norm 1.418833638236e-01 [ratio 8.037803e-01], |du|/|u|=3.033515635545e-06
-   3 FASCD ncp function norm 1.367485256473e-01 [ratio 9.638094e-01], |du|/|u|=3.161560531958e-06
-   4 FASCD ncp function norm 1.058925733000e-01 [ratio 7.743599e-01], |du|/|u|=1.277539339804e-06
-   5 FASCD ncp function norm 5.151713960667e-02 [ratio 4.865038e-01], |du|/|u|=3.933591962671e-07
-   6 FASCD ncp function norm 2.279066875027e-02 [ratio 4.423900e-01], |du|/|u|=9.816812295248e-08
-   7 FASCD ncp function norm 8.717548672739e-15 [ratio 3.825052e-13], |du|/|u|=2.699405649009e-08
-FASCD solve converged due to CONVERGED_FNORM_ABS iterations 7
-done on 769 node mesh:  |u-uexact|_inf = 9.522e-06
-solving with p=1.5, mcoarse=6, 9 levels, on 1537 node fine mesh ...
-   0 FASCD ncp function norm 5.720313428315e-01
-   1 FASCD ncp function norm 1.644340628725e-01 [ratio 2.874564e-01], |du|/|u|=1.502727128579e+00
-   2 FASCD ncp function norm 5.466762310280e-02 [ratio 3.324592e-01], |du|/|u|=1.133083703195e-06
-   3 FASCD ncp function norm 3.241924526802e-02 [ratio 5.930246e-01], |du|/|u|=9.109069984566e-08
-   4 FASCD ncp function norm 2.002706947592e-02 [ratio 6.177525e-01], |du|/|u|=1.710873509892e-08
-   5 FASCD ncp function norm 6.449114381272e-03 [ratio 3.220199e-01], |du|/|u|=1.160519012216e-08
-   6 FASCD ncp function norm 3.305594671534e-15 [ratio 5.125657e-13], |du|/|u|=9.526201023261e-10
+   0 FASCD ncp function norm 5.900743998829e-01
+   1 FASCD ncp function norm 1.781808084339e-01 [ratio 3.019633e-01], |du|/|u|=1.502739467553e+00
+   2 FASCD ncp function norm 1.406873158302e-01 [ratio 7.895761e-01], |du|/|u|=3.403371241590e-06
+   3 FASCD ncp function norm 1.271956050568e-01 [ratio 9.041014e-01], |du|/|u|=2.602796211050e-06
+   4 FASCD ncp function norm 7.691075578461e-02 [ratio 6.046652e-01], |du|/|u|=1.570922484091e-06
+   5 FASCD ncp function norm 3.129578750820e-02 [ratio 4.069104e-01], |du|/|u|=3.984535600463e-07
+   6 FASCD ncp function norm 7.659710160255e-13 [ratio 2.447521e-11], |du|/|u|=1.070776421831e-07
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 6
-done on 1537 node mesh:  |u-uexact|_inf = 3.591e-06
+done on 769 node mesh:  |u-uexact|_inf = 9.203e-06
+solving with p=1.5, mcoarse=6, 9 levels, on 1537 node fine mesh ...
+   0 FASCD ncp function norm 5.720313247219e-01
+   1 FASCD ncp function norm 1.559109742441e-01 [ratio 2.725567e-01], |du|/|u|=1.502727160655e+00
+   2 FASCD ncp function norm 3.771317110465e-02 [ratio 2.418891e-01], |du|/|u|=8.082458322960e-07
+   3 FASCD ncp function norm 6.438738651566e-09 [ratio 1.707292e-07], |du|/|u|=2.632884227766e-07
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+done on 1537 node mesh:  |u-uexact|_inf = 3.430e-06
 solving with p=1.5, mcoarse=6, 10 levels, on 3073 node fine mesh ...
-   0 FASCD ncp function norm 5.625757126741e-01
-   1 FASCD ncp function norm 1.744038183699e-01 [ratio 3.100095e-01], |du|/|u|=1.502721027385e+00
-   2 FASCD ncp function norm 1.781813734193e-01 [ratio 1.021660e+00], |du|/|u|=4.886373412109e-07
-   3 FASCD ncp function norm 1.367351793343e-01 [ratio 7.673932e-01], |du|/|u|=2.658531277579e-07
-   4 FASCD ncp function norm 9.833404767972e-02 [ratio 7.191569e-01], |du|/|u|=8.300835118158e-08
-   5 FASCD ncp function norm 2.365819954140e-02 [ratio 2.405901e-01], |du|/|u|=1.500508353167e-07
-   6 FASCD ncp function norm 4.136632395504e-02 [ratio 1.748498e+00], |du|/|u|=3.304548935418e-08
-   7 FASCD ncp function norm 7.214862601245e-02 [ratio 1.744139e+00], |du|/|u|=4.063501982917e-08
-   8 FASCD ncp function norm 6.841677735729e-02 [ratio 9.482755e-01], |du|/|u|=2.918009763069e-09
-   9 FASCD ncp function norm 6.460123061894e-02 [ratio 9.442308e-01], |du|/|u|=3.083511142380e-09
-  10 FASCD ncp function norm 6.058780702885e-02 [ratio 9.378739e-01], |du|/|u|=3.641703415597e-09
-  11 FASCD ncp function norm 5.629792624904e-02 [ratio 9.291956e-01], |du|/|u|=3.877402368258e-09
-  12 FASCD ncp function norm 5.164686700623e-02 [ratio 9.173849e-01], |du|/|u|=3.962040252524e-09
-  13 FASCD ncp function norm 4.651733210962e-02 [ratio 9.006806e-01], |du|/|u|=3.982800629003e-09
-  14 FASCD ncp function norm 4.071981005692e-02 [ratio 8.753686e-01], |du|/|u|=3.971046267734e-09
-  15 FASCD ncp function norm 3.389670867937e-02 [ratio 8.324378e-01], |du|/|u|=3.918692575429e-09
-  16 FASCD ncp function norm 2.519827812605e-02 [ratio 7.433842e-01], |du|/|u|=3.642041452728e-09
-  17 FASCD ncp function norm 1.020678789231e-02 [ratio 4.050589e-01], |du|/|u|=3.759846459732e-09
-  18 FASCD ncp function norm 5.057393160470e-03 [ratio 4.954931e-01], |du|/|u|=1.980838797544e-09
-  19 FASCD ncp function norm 2.858075059162e-14 [ratio 5.651281e-12], |du|/|u|=1.711365317351e-10
-FASCD solve converged due to CONVERGED_FNORM_ABS iterations 19
-done on 3073 node mesh:  |u-uexact|_inf = 4.948e-07
+   0 FASCD ncp function norm 5.625756943125e-01
+   1 FASCD ncp function norm 1.749722396676e-01 [ratio 3.110199e-01], |du|/|u|=1.502720953638e+00
+   2 FASCD ncp function norm 1.102593816930e-01 [ratio 6.301536e-01], |du|/|u|=5.711344114774e-07
+   3 FASCD ncp function norm 5.843248558741e-05 [ratio 5.299548e-04], |du|/|u|=9.112542080146e-08
+   4 FASCD ncp function norm 6.076386643732e-12 [ratio 1.039899e-07], |du|/|u|=1.388671098134e-10
+FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
+done on 3073 node mesh:  |u-uexact|_inf = 4.139e-07
 
 ******** p = 1.5 F-cycle EPSREG=0.0 *******
 solving with p=1.5, mcoarse=6, 1 levels, on 7 node fine mesh ...
    0 FASCD ncp function norm 6.120574811633e-01
-   1 FASCD ncp function norm 1.785516804827e-11
+   1 FASCD ncp function norm 1.785515679011e-11
 FASCD solve converged due to CONVERGED_SINGLE_LEVEL iterations 1
 done on 7 node mesh:  |u-uexact|_inf = 2.263e-01
 solving with p=1.5, mcoarse=6, 2 levels, on 13 node fine mesh ...
    0 FASCD ncp function norm 1.063144214639e+00
    0 FASCD ncp function norm 1.319589059283e+00
-   1 FASCD ncp function norm 1.502992582140e-05 [ratio 1.138985e-05], |du|/|u|=3.794809471558e-01
-   2 FASCD ncp function norm 2.603703785810e-16 [ratio 1.732346e-11], |du|/|u|=1.015441951123e-06
+   1 FASCD ncp function norm 1.503000886577e-05 [ratio 1.138992e-05], |du|/|u|=3.794809471531e-01
+   2 FASCD ncp function norm 3.925231146709e-16 [ratio 2.611596e-11], |du|/|u|=1.015447563508e-06
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 2
 done on 13 node mesh:  |u-uexact|_inf = 3.255e-02
 solving with p=1.5, mcoarse=6, 3 levels, on 25 node fine mesh ...
    0 FASCD ncp function norm 1.017030574075e+00
-   0 FASCD ncp function norm 7.634112106844e-01
-   1 FASCD ncp function norm 5.117875266521e-16 [ratio 6.703956e-16], |du|/|u|=5.901711222560e-02
+   0 FASCD ncp function norm 7.634112106864e-01
+   1 FASCD ncp function norm 2.149937642475e-16 [ratio 2.816225e-16], |du|/|u|=5.901711222819e-02
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 1
 done on 25 node mesh:  |u-uexact|_inf = 9.108e-03
 solving with p=1.5, mcoarse=6, 4 levels, on 49 node fine mesh ...
    0 FASCD ncp function norm 8.914241954961e-01
    0 FASCD ncp function norm 6.107381263921e-01
-   1 FASCD ncp function norm 5.978733960282e-16 [ratio 9.789358e-16], |du|/|u|=1.471391069978e-02
+   1 FASCD ncp function norm 6.568167990717e-16 [ratio 1.075448e-15], |du|/|u|=1.471391069978e-02
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 1
 done on 49 node mesh:  |u-uexact|_inf = 3.248e-03
 solving with p=1.5, mcoarse=6, 5 levels, on 97 node fine mesh ...
    0 FASCD ncp function norm 7.702147336931e-01
    0 FASCD ncp function norm 4.584700859812e-01
-   1 FASCD ncp function norm 8.196123257994e-16 [ratio 1.787712e-15], |du|/|u|=5.239466802485e-03
+   1 FASCD ncp function norm 6.977643512971e-16 [ratio 1.521941e-15], |du|/|u|=5.239466802486e-03
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 1
 done on 97 node mesh:  |u-uexact|_inf = 5.505e-04
 solving with p=1.5, mcoarse=6, 6 levels, on 193 node fine mesh ...
    0 FASCD ncp function norm 6.804814335551e-01
    0 FASCD ncp function norm 3.208126381995e-01
-   1 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=4.607850486215e-17
-FASCD solve converged due to CONVERGED_SNORM_RELATIVE iterations 1
+   1 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=4.168976591542e-17
+   2 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=8.468496051771e-17
+   3 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=4.161903621781e-17
+   4 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=8.685869018196e-17
+   5 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=8.401718179646e-17
+   6 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=5.071048899698e-17
+   7 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=3.925640380567e-17
+   8 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=4.571758036160e-17
+   9 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=8.191880575106e-17
+  10 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=7.982758811041e-17
+  11 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=8.090488468058e-17
+  12 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=1.027036378333e-16
+  13 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=9.859713043676e-17
+  14 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=5.050889584897e-17
+  15 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=1.063966102639e-16
+  16 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=8.678990578864e-17
+  17 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=9.568641920920e-17
+  18 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=8.497616978416e-17
+  19 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=8.632692134278e-17
+  20 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=6.007229825696e-17
+  21 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=8.435312852862e-17
+  22 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=8.258800168199e-17
+  23 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=6.411421069319e-17
+  24 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=7.889996098989e-17
+  25 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=1.380390290037e-16
+  26 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=8.646332206560e-17
+  27 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=9.451413544539e-17
+  28 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=8.000027944806e-17
+  29 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=1.103386493919e-16
+  30 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=8.053220376170e-17
+  31 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=4.474717721881e-17
+  32 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=1.134979582262e-16
+  33 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=6.014358827665e-17
+  34 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=4.823948112839e-17
+  35 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=5.691816793164e-17
+  36 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=9.854897593107e-17
+  37 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=1.918110053571e-16
+  38 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=9.887607563080e-17
+  39 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=4.604914202070e-17
+  40 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=9.070093550615e-17
+  41 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=4.346649374515e-17
+  42 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=1.014114921732e-16
+  43 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=9.109525582125e-17
+  44 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=3.616401844716e-17
+  45 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=4.346805587820e-17
+  46 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=8.350869229997e-17
+  47 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=9.832148194264e-17
+  48 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=4.681510814195e-17
+  49 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=1.498789562083e-16
+  50 FASCD ncp function norm 3.208126381995e-01 [ratio 1.000000e+00], |du|/|u|=8.157397945207e-17
+FASCD solve converged due to DIVERGED_MAX_IT iterations 50
 done on 193 node mesh:  |u-uexact|_inf = 1.181e-03
 solving with p=1.5, mcoarse=6, 7 levels, on 385 node fine mesh ...
    0 FASCD ncp function norm 6.232305662141e-01
@@ -605,20 +605,69 @@ FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 done on 385 node mesh:  |u-uexact|_inf = 4.717e-05
 solving with p=1.5, mcoarse=6, 8 levels, on 769 node fine mesh ...
    0 FASCD ncp function norm 5.900744175394e-01
-   0 FASCD ncp function norm 1.591878446582e-01
-   1 FASCD ncp function norm 1.096004387525e-14 [ratio 6.884975e-14], |du|/|u|=7.515791461736e-05
+   0 FASCD ncp function norm 1.591878446583e-01
+   1 FASCD ncp function norm 8.651907554666e-15 [ratio 5.435030e-14], |du|/|u|=7.515791461720e-05
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 1
 done on 769 node mesh:  |u-uexact|_inf = 9.522e-06
 solving with p=1.5, mcoarse=6, 9 levels, on 1537 node fine mesh ...
    0 FASCD ncp function norm 5.720313428315e-01
    0 FASCD ncp function norm 1.120262166525e-01
-   1 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=9.345769169838e-17
-FASCD solve converged due to CONVERGED_SNORM_RELATIVE iterations 1
+   1 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=1.143480002022e-16
+   2 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=2.582930904550e-16
+   3 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=2.568551207496e-16
+   4 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=2.621806625506e-16
+   5 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=1.854181398889e-16
+   6 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=1.143078221942e-16
+   7 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=4.804357953440e-17
+   8 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=1.791505623596e-16
+   9 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=2.577702538342e-16
+  10 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=2.583500971034e-16
+  11 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=1.745620488290e-16
+  12 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=1.135332857877e-16
+  13 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=1.091866666348e-16
+  14 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=1.739960869851e-16
+  15 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=1.797826961852e-16
+  16 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=1.815790061006e-16
+  17 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=9.599694316444e-17
+  18 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=9.521896484624e-17
+  19 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=9.346072804281e-17
+  20 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=3.106749694571e-18
+  21 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=2.588941876514e-18
+  22 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=9.307642221682e-17
+  23 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=2.578090870734e-16
+  24 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=2.585649930801e-16
+  25 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=2.656794127640e-16
+  26 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=3.484900404103e-16
+  27 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=2.589660179120e-16
+  28 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=1.798388242963e-16
+  29 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=9.484529588484e-17
+  30 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=1.758776917117e-16
+  31 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=2.584314860721e-16
+  32 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=9.186043276072e-17
+  33 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=3.660465011021e-18
+  34 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=9.404379763489e-17
+  35 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=9.477387542354e-17
+  36 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=1.748806485281e-16
+  37 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=9.353942799576e-17
+  38 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=9.097328835976e-17
+  39 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=4.773257992143e-17
+  40 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=1.795693511378e-16
+  41 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=1.841854280732e-16
+  42 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=9.265971929844e-17
+  43 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=9.602414733221e-17
+  44 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=9.175217663779e-17
+  45 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=6.836166219078e-18
+  46 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=9.366661163365e-17
+  47 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=1.756318857416e-16
+  48 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=8.905537811668e-17
+  49 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=2.523655740873e-16
+  50 FASCD ncp function norm 1.120262166525e-01 [ratio 1.000000e+00], |du|/|u|=1.745299294206e-16
+FASCD solve converged due to DIVERGED_MAX_IT iterations 50
 done on 1537 node mesh:  |u-uexact|_inf = 1.965e-05
 solving with p=1.5, mcoarse=6, 10 levels, on 3073 node fine mesh ...
    0 FASCD ncp function norm 5.625757126741e-01
    0 FASCD ncp function norm 1.429214087722e-01
-   1 FASCD ncp function norm 9.313233184704e-09 [ratio 6.516332e-08], |du|/|u|=1.955327079776e-05
+   1 FASCD ncp function norm 9.313233184696e-09 [ratio 6.516332e-08], |du|/|u|=1.955327079783e-05
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 done on 3073 node mesh:  |u-uexact|_inf = 4.948e-07
 
@@ -631,55 +680,55 @@ done on 7 node mesh:  |u-uexact|_inf = 2.263e-01
 solving with p=1.5, mcoarse=6, 2 levels, on 13 node fine mesh ...
    0 FASCD ncp function norm 1.063144198816e+00
    0 FASCD ncp function norm 1.319589025793e+00
-   1 FASCD ncp function norm 2.899083899459e-10 [ratio 2.196960e-10], |du|/|u|=3.794814104129e-01
+   1 FASCD ncp function norm 2.899081180744e-10 [ratio 2.196958e-10], |du|/|u|=3.794814104129e-01
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 done on 13 node mesh:  |u-uexact|_inf = 3.255e-02
 solving with p=1.5, mcoarse=6, 3 levels, on 25 node fine mesh ...
    0 FASCD ncp function norm 1.017030559745e+00
    0 FASCD ncp function norm 7.634108586630e-01
-   1 FASCD ncp function norm 4.370952418904e-16 [ratio 5.725557e-16], |du|/|u|=5.901664639603e-02
+   1 FASCD ncp function norm 3.284083995358e-16 [ratio 4.301857e-16], |du|/|u|=5.901664639603e-02
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 1
 done on 25 node mesh:  |u-uexact|_inf = 9.108e-03
 solving with p=1.5, mcoarse=6, 4 levels, on 49 node fine mesh ...
    0 FASCD ncp function norm 8.914241815717e-01
    0 FASCD ncp function norm 6.107381438831e-01
-   1 FASCD ncp function norm 4.474074817209e-15 [ratio 7.325684e-15], |du|/|u|=1.471391397946e-02
+   1 FASCD ncp function norm 4.407459562046e-15 [ratio 7.216611e-15], |du|/|u|=1.471391397946e-02
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 1
 done on 49 node mesh:  |u-uexact|_inf = 3.248e-03
 solving with p=1.5, mcoarse=6, 5 levels, on 97 node fine mesh ...
    0 FASCD ncp function norm 7.702147190091e-01
    0 FASCD ncp function norm 4.584701104963e-01
-   1 FASCD ncp function norm 1.027406289605e-14 [ratio 2.240945e-14], |du|/|u|=5.239473188555e-03
+   1 FASCD ncp function norm 1.094851038903e-14 [ratio 2.388053e-14], |du|/|u|=5.239473188555e-03
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 1
 done on 97 node mesh:  |u-uexact|_inf = 5.501e-04
 solving with p=1.5, mcoarse=6, 6 levels, on 193 node fine mesh ...
    0 FASCD ncp function norm 6.804814177015e-01
    0 FASCD ncp function norm 3.208126362310e-01
-   1 FASCD ncp function norm 4.060032624521e-14 [ratio 1.265546e-13], |du|/|u|=9.381120640808e-04
+   1 FASCD ncp function norm 3.956827695019e-14 [ratio 1.233377e-13], |du|/|u|=9.381120640809e-04
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 1
 done on 193 node mesh:  |u-uexact|_inf = 1.684e-04
 solving with p=1.5, mcoarse=6, 7 levels, on 385 node fine mesh ...
    0 FASCD ncp function norm 6.232305493033e-01
-   0 FASCD ncp function norm 2.268100973614e-01
-   1 FASCD ncp function norm 2.022340950895e-13 [ratio 8.916450e-13], |du|/|u|=2.628046670954e-04
+   0 FASCD ncp function norm 2.268100973613e-01
+   1 FASCD ncp function norm 2.072585903826e-13 [ratio 9.137979e-13], |du|/|u|=2.628046670953e-04
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 1
 done on 385 node mesh:  |u-uexact|_inf = 4.656e-05
 solving with p=1.5, mcoarse=6, 8 levels, on 769 node fine mesh ...
    0 FASCD ncp function norm 5.900743998829e-01
    0 FASCD ncp function norm 1.591878520335e-01
-   1 FASCD ncp function norm 9.610741721860e-13 [ratio 6.037359e-12], |du|/|u|=7.515747720238e-05
+   1 FASCD ncp function norm 7.473216974529e-13 [ratio 4.694590e-12], |du|/|u|=7.515747720246e-05
 FASCD solve converged due to CONVERGED_FNORM_ABS iterations 1
 done on 769 node mesh:  |u-uexact|_inf = 9.203e-06
 solving with p=1.5, mcoarse=6, 9 levels, on 1537 node fine mesh ...
    0 FASCD ncp function norm 5.720313247219e-01
-   0 FASCD ncp function norm 1.120262157953e-01
-   1 FASCD ncp function norm 2.824305573456e-12 [ratio 2.521111e-11], |du|/|u|=1.461969858061e-05
+   0 FASCD ncp function norm 1.120262157955e-01
+   1 FASCD ncp function norm 2.007099710184e-12 [ratio 1.791634e-11], |du|/|u|=1.461969858057e-05
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 done on 1537 node mesh:  |u-uexact|_inf = 3.430e-06
 solving with p=1.5, mcoarse=6, 10 levels, on 3073 node fine mesh ...
    0 FASCD ncp function norm 5.625756943125e-01
-   0 FASCD ncp function norm 7.892362354381e-02
-   1 FASCD ncp function norm 6.076901729357e-12 [ratio 7.699725e-11], |du|/|u|=5.840898891347e-06
+   0 FASCD ncp function norm 7.892362354371e-02
+   1 FASCD ncp function norm 6.079933022387e-12 [ratio 7.703565e-11], |du|/|u|=5.840898891289e-06
 FASCD solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 done on 3073 node mesh:  |u-uexact|_inf = 4.139e-07
 
