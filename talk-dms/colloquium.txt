@@ -1,10 +1,13 @@
+date and time: 1pm,  Tuesday November 14
+
 title:  Fast solvers for partial differential equations subject to inequalities
 
 speaker:  Ed Bueler, DMS UAF
 
 abstract:
 
-This talk, about recent joint work with Patrick Farrell of Oxford University, may be suitable for a general mathematical audience.  It is at the intersection of scientific computing, optimization, and partial differential equations (PDEs).  FIXME
+This talk, about recent joint work with Patrick Farrell of Oxford University, is at the intersection of scientific computing, optimization, and partial differential equations (PDEs).  It may be suitable for a general mathematical audience.
 
-Free boundary problems for PDEs are described by variational inequalities, which generalize the problem of optimizing in infinite-dimensional convex sets.  For this class of problems I'll describe the first full approximation storage (FAS) nonlinear multigrid methods for solving the finite element (FE) discretizations of th.  Geometrically, these methods decompose the convex admissible set over a hierarchy of finite element meshes.
-Motivation for applying FAS to VIs is demonstrated in the standard mathematical model for glacier surface evolution, a very general VI problem relevant to climate modeling.  (Residuals for this nonlinear and non-local VI problem are computed by solving a Stokes model.)  Some existing nonlinear multilevel VI schemes, based on global (Newton) linearization would seem to be less suited to such general VI problems.  From this context I will sketch some work-in-progress toward the scalable solutions of nonlinear and nonlocal VIs by an FAS-type multilevel method.
+Free boundary problems for elliptic PDEs are precisely described by variational inequalities.  These continuum problems generalize the problem of optimizing well-behaved functions over infinite-dimensional convex sets.  For the finite element discretizations of such free boundary problems I'll describe the first fully-nonlinear multigrid (multilevel) methods.  Geometrically, these new "full approximation storage constraint decomposition" methods construct a decomposition of the convex admissible set, on the finest mesh, over a hierarchy of sub-meshes.  The run time of these algorithms is observed to be proportional to the number of degrees of freedom, which will exceed 100 million in some of my examples.
+
+One motivation for considering such free boundary problems arises from the standard mathematical model for glacier surface evolution, a problem central to climate modeling.  Classical examples will also be demonstrated, include the obstacle problem for an elastic membrane and a (linearized) problem of flow through a porous medium.
