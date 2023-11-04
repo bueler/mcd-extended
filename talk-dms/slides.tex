@@ -17,7 +17,7 @@
 %\usepackage[svgnames]{xcolor}
 \usepackage{hyperref}
 \hypersetup{
-    pdftitle = {Toward nonlinear multigrid for nonlinear and nonlocal variational inequalities},
+    pdftitle = {Fast solvers for PDEs subject to inequalities},
     pdfauthor = {Ed Bueler and Patrick Farrell},
     pdfsubject = {},
     pdfkeywords = {}
@@ -116,10 +116,6 @@
 \begin{document}
 \beamertemplatenavigationsymbolsempty
 
-%\begin{frame}
-%  \maketitle
-%\end{frame}
-
 {
   %\usebackgroundtemplate{\includegraphics[width=\paperwidth]{../talk-oxford/images/gray-british-clark2022.png}}
   \begin{frame}
@@ -128,12 +124,38 @@
 }
 
 \begin{frame}{Outline}
-  %\tableofcontents[hideallsubsections]
-  \tableofcontents
+  \tableofcontents[hideallsubsections]
+  %\tableofcontents
 \end{frame}
 
 
 \section{variational inequalities (VIs)}
+
+\begin{frame}{example: a classical obstacle problem}
+
+\begin{center}
+\includegraphics[width=0.65\textwidth]{../talk-oxford/images/obstacle65.pdf}
+\end{center}
+
+\only<1>{
+\begin{itemize}
+\item \emph{problem.} on a domain $\Omega \subset \RR^2$, find the displacement $u(x)$ of a membrane, with fixed value $u = g$ on $\partial \Omega$, above an \emph{obstacle} $\psi(x)$, which minimizes the elastic energy
+    $$J(v) = \int_\Omega \frac{1}{2} |\grad v|^2 - f\, v$$
+\item shown above: \quad $\Omega$ a square, $\psi(x)$ a hemisphere
+\end{itemize}
+
+\phantom{x}
+}
+\only<2>{
+\begin{itemize}
+\item i.e.~constrained optimization over an \emph{admissible set}
+	$$\mathcal{K} = \left\{v \in H^1(\Omega) \,:\, v\big|_{\partial \Omega} = g \text{ and } v \ge \psi\right\}$$
+\item $\mathcal{K}$ is a closed and convex subset of a Sobolev space:
+	$$H^1(\Omega) = \left\{v \,:\, \int_\Omega |v|^2 + |\grad v|^2 < \infty\right\}$$
+\end{itemize}
+}
+\end{frame}
+
 
 \begin{frame}{example: a classical obstacle problem}
 
@@ -142,23 +164,6 @@
 \bigskip
 \only<1>{
 \begin{itemize}
-\item \emph{problem.} on a domain $\Omega \subset \RR^2$, find the displacement $u(x)$ of a membrane, with fixed value $u = g$ on $\partial \Omega$, above an \emph{obstacle} $\psi(x)$, which minimizes the elastic energy
-    $$J(v) = \int_\Omega \frac{1}{2} |\grad v|^2 - f\, v$$
-\item shown above: \quad $\Omega=(-2,2)^2$, $\psi(x)$ a hemisphere, $f(x)=0$
-\end{itemize}
-
-\phantom{x}
-}
-\only<2>{
-\begin{itemize}
-\item i.e.~constrained optimization over a convex \emph{admissible set}
-	$$\mathcal{K} = \left\{v \in H^1(\Omega) \,:\, v\big|_{\partial \Omega} = g \text{ and } v \ge \psi\right\}$$
-\item $J'(u)$ points directly into $\mathcal{K}$, the {\color{FireBrick} \emph{variational inequality} (VI)}:
-    $$\ip{J'(u)}{v-u} = \int_\Omega \grad u\cdot \grad (v-u) - f (v-u) \ge 0 \quad \text{for all } v \in \mathcal{K}$$
-\end{itemize}
-}
-\only<3>{
-\begin{itemize}
 \item the solution defines \emph{active} $A_u = \{u = \psi\}$ and \emph{inactive} $R_u = \{u> \psi\}$ subsets of $\Omega$, and a \emph{free boundary} $\Gamma_u=\partial R_u \cap \Omega$
 \item naive strong form would pose the problem in terms of its solution:
 \begin{align*}
@@ -166,12 +171,12 @@
 u &= \psi \quad \text{ on $A_u$}
 \end{align*}
 
-\phantom{x}
-
-\phantom{x}
+   \begin{itemize}
+   \item[$\circ$] this is not acceptable \dots
+   \end{itemize}
 \end{itemize}
 }
-\only<4>{
+\only<2>{
 \begin{itemize}
 \item the \emph{complementarity problem} (CP) is meaningful as a strong form:
 \begin{align*}
@@ -179,8 +184,9 @@ u - \psi &\ge 0 \\
 -\grad^2 u - f &\ge 0 \\
 (u - \psi)(-\grad^2 u - f) &= 0
 \end{align*}
+
    \begin{itemize}
-   \item[$\circ$] for optimization problems: \quad CP $=$ KKT conditions
+   \item[$\circ$] CP $=$ (KKT conditions in $\infty$-dimensions)
    \end{itemize}
 
 \phantom{x}
@@ -188,7 +194,16 @@ u - \psi &\ge 0 \\
 \phantom{x}
 \end{itemize}
 }
+\only<3>{
+\begin{itemize}
+\item FIXME i.e.~constrained optimization over a convex \emph{admissible set}
+	$$\mathcal{K} = \left\{v \in H^1(\Omega) \,:\, v\big|_{\partial \Omega} = g \text{ and } v \ge \psi\right\}$$
+\item $J'(u)$ points directly into $\mathcal{K}$, the {\color{FireBrick} \emph{variational inequality} (VI)}:
+    $$\ip{J'(u)}{v-u} = \int_\Omega \grad u\cdot \grad (v-u) - f (v-u) \ge 0 \quad \text{for all } v \in \mathcal{K}$$
+\end{itemize}
+}
 \end{frame}
+
 
 
 \begin{frame}{general variational inequalities}
