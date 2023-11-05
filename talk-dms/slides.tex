@@ -90,7 +90,7 @@
 \newcommand{\iR}{R^{\bullet}}
 
 
-\title[Fast solvers for PDEs subject to inequalities]{Fast solvers for partial differential equations \\ subject to inequalities}
+\title[Fast solvers for PDE+inequalities]{Fast solvers for partial differential equations \\ subject to inequalities}
 
 %\subtitle{\emph{}}
 
@@ -105,7 +105,7 @@
 %  \end{picture}
 %}
 
-\titlegraphic{\vspace{-8mm} \includegraphics[width=0.25\textwidth]{../talk-oxford/images/uafbw.png} \hfill \begin{minipage}{0.16\textwidth}
+\titlegraphic{\vspace{-8mm} \includegraphics[width=0.26\textwidth]{../talk-oxford/images/uafbw.png} \hfill \begin{minipage}{0.14\textwidth}
 \includegraphics[width=\textwidth]{../talk-oxford/images/oxford.png}
 
 \vspace{18mm}
@@ -129,8 +129,8 @@
   \tableofcontents[hideallsubsections]
   %\tableofcontents
 
-\vfill
-{\footnotesize \emph{PDEs = partial differential equations}}
+%\vfill
+%{\footnotesize \emph{PDEs = partial differential equations}}
 \end{frame}
 
 
@@ -339,7 +339,7 @@ $${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \forall v \in \mathcal{K}}$$
 \subsection{\emph{only} nonlinear multigrid!}
 \subsection{full approximation scheme (FAS)}
 
-\begin{frame}{nonlinear 2-grid scheme}
+\begin{frame}{nonlinear 2-mesh scheme}
 
 \begin{center}
 $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine-grid.png} \hspace{25mm} \includegraphics[height=0.16\textheight]{../talk-oxford/images/coarse-grid.png} \,$\Omega^H$
@@ -351,80 +351,112 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 	$$F(u) = \ell$$
 
 	\begin{itemize}
-	\item for example, $F : \mathcal{V} \to \mathcal{V}'$ for $\mathcal{V}=H^1(\Omega)$, with $\ell\in \mathcal{V}'$
+	\item[$\circ$] $\mathcal{V}=H^1(\Omega)$, $\ell\in \mathcal{V}'$
+	\item[$\circ$] $F : \mathcal{V} \to \mathcal{V}'$ continuous and injective
+	\item[$\circ$] for example, the Liouville-Bratu problem: $-\grad^2 u - e^u = f(x)$
 	\end{itemize}
-\item discretization gives algebraic system on fine grid $\Omega^h$:
+\item discretization gives algebraic system on fine mesh $\Omega^h$:
     $$F^h(u^h) = \ell^h$$
-\item suppose $w^h$ yields residual norm $\|\ell^h - F^h(w^h)\| > \text{TOL}$
+
+	\begin{itemize}
+	\item[$\circ$] $u^h$ denotes exact (algebraic) solution
+	\end{itemize}
 \end{itemize}
 
-\phantom{x}
+\vspace{7mm}
 }
 \only<2-3>{
 \begin{itemize}
+\item \emph{goal}: to solve $F^h(u^h) = \ell^h$ on $\Omega^h$
+\item suppose $w^h$ is a not-yet-converged iterate:
+    $$r^h=\ell^h - F^h(w^h), \qquad \|r^h\| > \text{TOL}$$
 \item how can we improve $w^h$ \emph{without} globally linearizing $F^h$?
 
-(are there alternatives to Newton's method?)
-\item note the \emph{residual} $r^h(w^h) = \ell^h - F^h(w^h)$ is computable,
-
-while the \emph{error} $e^h = w^h-u^h$ is unknown
-\item the residual definition can be rewritten
-    $$F^h(u^h) - F^h(w^h) \stackrel{*}{=} r^h(w^h)$$
-\only<2>{\item for $F^h$ linear, try to solve this \emph{error equation} $F^h(e^h) = -r^h(w^h)$ for $\tilde e^h$, and correct $w^h \leftarrow w^h-\tilde e^h$ to improve $w^h$?}
-\only<3>{\item \st{for $F^h$ linear, try to solve this \emph{error equation} $F^h(e^h) = -r^h(w^h)$ for $\tilde e^h$, and correct $w^h \leftarrow w^h-\tilde e^h$ to improve $w^h$?}}
+	\begin{itemize}
+	\item are there alternatives to Newton's method?
+	\end{itemize}
+\item<3> notes:
+    \setbeamertemplate{enumerate item}{\emph{\roman{enumi})}}
+    \begin{enumerate}
+    \item the \emph{residual} \quad $r^h = \ell^h - F^h(w^h)$ \quad is computable
+    \item the \emph{error} \quad $e^h = u^h-w^h$ \quad is unknown
+    \item our equation can be rewritten
+    $$F^h(u^h) - F^h(w^h) = r^h$$
+    \end{enumerate}
 \end{itemize}
 }
-\only<4>{
+\only<4-5>{
 \begin{itemize}
-\item \emph{goal}: use a coarser mesh to estimate the error in $\ast$
-\item \emph{nodewise problem}: for $\psi_i^h$ a hat function or dof, solve for $c\in\RR$:
+\item \emph{goal}: from iterate $w^h$, to solve
+    $$F^h(u^h) - F^h(w^h) = r^h$$
+\item \alert{for $F^h$ linear}, convert this to the \emph{error equation}
+    $$F^h(e^h) = r^h$$
+\item an approximation solution $\tilde e^h$ would improve our iterate:
+    $$w^h \leftarrow w^h+\tilde e^h$$
+\item<5> but $F^h$ is not linear!
+\end{itemize}
+
+\vspace{5mm}
+}
+\only<6>{
+\begin{itemize}
+\item \emph{goal}: use a coarser mesh $\Omega^H$ to somehow estimate the solution $u^h$ in the \emph{correction equation}
+    $${\color{FireBrick} F^h(u^h) - F^h(w^h) = r^h}$$
+\item basic multigrid idea: there are algorithms (\alert{smoothers}) which inefficiently improve $w^h$ \dots use them a little first \dots then correct from the coarser mesh
+\end{itemize}
+
+\vspace{24mm}
+}
+\only<7-8>{
+\begin{itemize}
+\item \emph{nodewise problem}: for $\psi_i^h$ a hat function or dof, solve for $c\in\RR$ to make the residual at that location zero:
 	$${\color{FireBrick} \phi_i(c) = r^h(w^h + c \psi_i^h)[\psi_i^h] = 0}$$
-\item sweeping through and solving nodewise problems is a \emph{smoother}
+\item sweeping through and solving nodewise problems is a smoother
     \begin{itemize}
     \item[$\circ$] Fourier analysis on linear PDEs shows smoothing property
-    \item[$\circ$] post-smoothing, $e^h$ and $r^h(w^h)$ have smaller high-frequencies
+    \item[$\circ$] post-smoothing, $e^h$ and $r^h$ have smaller high-frequencies
     \end{itemize}
-\item Brandt (1977): after smoothing, $F^h(u^h) - F^h(w^h) = r^h(w^h)$ should be accurately approximate-able on a coarser grid
+\item<8> after smoothing, the correction equation should be accurately approximate-able on the coarser mesh $\Omega^H$
 \end{itemize}
+
+\vspace{14mm}
 }
-\only<5>{
+\only<9-11>{
 \begin{itemize}
-\item \emph{goal}: use a coarser mesh to estimate the error in $\ast$
-\item \emph{full approximation storage} (FAS) equation:
-	$${\color{FireBrick} F^H(w^H) - F^H(\iR w^h) = R \, r^h(w^h)}$$
+\item \emph{goal}: use a coarser mesh $\Omega^H$ to somehow estimate the solution $u^h$ in $F^h(u^h) - F^h(w^h) = r^h(w^h)$
+\item Brandt's (1977) \emph{full approximation scheme} (FAS) equation:
+	$${\color{FireBrick} F^H(u^H) - F^H(\iR w^h) = R \, r^h(w^h)}$$
 
     \begin{itemize}
     \item[$\circ$] $\iR:\mathcal{V}^h \to \mathcal{V}^H$ is \emph{injection}
     \item[$\circ$] $R:(\mathcal{V}^h)' \to (\mathcal{V}^H)'$ is \emph{canonical restriction}
-    \item[$\circ$] if $w^h=u^h$ exactly then $w^H = \iR w^h$ by well-posedness
+    \item<10-11>[$\circ$] note: if $w^h=u^h$ exactly then $u^H = \iR w^h$ since $F^H$ injective
     \end{itemize}
 
-\item rewritten: \quad ${\color{FireBrick} F^H(w^H) = \ell^H}$ where ${\color{FireBrick} \ell^H = F^H(\iR w^h) + R\, r^h(w^h)}$
-
-\phantom{x}
-
-\phantom{x}
+\item<11> rewritten FAS equation: let ${\color{FireBrick} \ell^H = F^H(\iR w^h) + R\, r^h(w^h)}$ then
+    $${\color{FireBrick} F^H(u^H) = \ell^H}$$
 \end{itemize}
+
+\vspace{-3mm}
 }
 \end{frame}
 
 
-\begin{frame}{FAS 2-grid solver}
+\begin{frame}{full approximation scheme (FAS) 2-mesh solver}
 
 \begin{align*}
-&\text{smooth by sweeps over grid:} & &w^h \leftarrow \left[\phi_i(c) = 0 \,\forall i\right] \\
+&\text{pre-smooth over fine:} & & [\text{smoother updates } w^h] \\
 &\text{restrict:}                   & &\ell^H = F^H(\iR w^h) + R\, r^h(w^h) \\
 &\text{solve coarse:}                      & &F^H(w^H) = \ell^H \\
 &\text{correct}:                    & &w^h \leftarrow w^h + P(w^H - \iR w^h) \\
-&\text{smooth by sweeps over grid:} & &w^h \leftarrow \left[\phi_i(c) = 0 \,\forall i\right]
+&\text{post-smooth over fine:} & & [\text{smoother updates } w^h]
 \end{align*}
 
 \bigskip
 {\small
 \begin{itemize}
 \item $P: \mathcal{V}^H \to \mathcal{V}^h$ is \emph{prolongation}
-\item recall: \quad $\phi_i(c) = r^h(w^h + c \psi_i^h)[\psi_i^h]$
-\item restrict$+$(solve coarse)$+$correct \, $=$ \, \emph{coarse grid correction}
+\item restrict$+$(solve coarse)$+$correct \, $=$ \, \emph{FAS coarse grid correction}
 \end{itemize}
 }
 \end{frame}
@@ -557,13 +589,6 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 
 \vspace{-2mm}
 \hfill {\tiny Sequinot et al.~(2018)}
-
-%\vspace{-5mm}
-{\footnotesize
-\begin{itemize}
-\item<2> more ice sheet modeling at my Math.~Geosci.~Seminar tomorrow 2pm L5
-\end{itemize}
-}
 \end{frame}
 
 
@@ -725,7 +750,7 @@ RS = reduced space, SS = semi-smooth, NM = Newton-multigrid, NI = nested iterati
 \item for the non-local fluid layer VI problem we need all 4 checked
 \item we are trying-out a new algorithm,
 
-{\color{FireBrick} FASCD = full approximation storage constraint decomposition}
+{\color{FireBrick} FASCD = full approximation scheme constraint decomposition}
 
     \begin{itemize}
     \item[$\circ$] Firedrake implementation \only<2>{\dots as of yesterday}
@@ -779,7 +804,7 @@ where $\mathcal{K}^i \subset \mathcal{V}^i$, with projections $\Pi_i : \mathcal{
 \end{frame}
 
 
-\begin{frame}{full approximation storage constraint decomposition}
+\begin{frame}{full approximation scheme constraint decomposition}
 
 % case of lower obstacle only
 \begin{pseudo}
