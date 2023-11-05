@@ -79,6 +79,8 @@
 \newcommand{\qq}{{\text{q}}}
 \newcommand{\rr}{{\text{r}}}
 
+\newcommand{\ds}{\displaystyle}
+
 \newcommand{\bus}{\bu|_s}
 \newcommand{\oo}[1]{\displaystyle O\left(#1\right)}
 \newcommand{\sold}{s_{\text{o}}}
@@ -90,7 +92,7 @@
 
 \title[Fast solvers for PDEs subject to inequalities]{Fast solvers for partial differential equations \\ subject to inequalities}
 
-%\subtitle{\emph{x}}
+%\subtitle{\emph{}}
 
 \author[Bueler and Farrell]{Ed Bueler \inst{1} \and Patrick Farrell \inst{2}}
 \institute[]{\inst{1} University of Alaska Fairbanks \and %
@@ -126,12 +128,15 @@
 \begin{frame}{Outline}
   \tableofcontents[hideallsubsections]
   %\tableofcontents
+
+\vfill
+{\footnotesize \emph{PDEs = partial differential equations}}
 \end{frame}
 
 
 \section{variational inequalities (VIs)}
 
-\begin{frame}{example: a classical obstacle problem}
+\begin{frame}{example: classical obstacle problem}
 
 \begin{center}
 \includegraphics[width=0.65\textwidth]{../talk-oxford/images/obstacle65.pdf}
@@ -139,7 +144,7 @@
 
 \only<1>{
 \begin{itemize}
-\item \emph{problem.} on a domain $\Omega \subset \RR^2$, find the displacement $u(x)$ of a membrane, with fixed value $u = g$ on $\partial \Omega$, above an \emph{obstacle} $\psi(x)$, which minimizes the elastic energy
+\item \emph{problem.} on a domain $\Omega \subset \RR^2$, find the displacement $u(x)$ of a membrane, with fixed value $u = g$ on $\partial \Omega$, above an \emph{obstacle} $\psi(x)$, which minimizes elastic (plus some potential) energy
     $$J(v) = \int_\Omega \frac{1}{2} |\grad v|^2 - f\, v$$
 \item shown above: \quad $\Omega$ a square, $\psi(x)$ a hemisphere
 \end{itemize}
@@ -148,37 +153,53 @@
 }
 \only<2>{
 \begin{itemize}
-\item i.e.~constrained optimization over an \emph{admissible set}
-	$$\mathcal{K} = \left\{v \in H^1(\Omega) \,:\, v\big|_{\partial \Omega} = g \text{ and } v \ge \psi\right\}$$
-\item $\mathcal{K}$ is a closed and convex subset of a Sobolev space:
-	$$H^1(\Omega) = \left\{v \,:\, \int_\Omega |v|^2 + |\grad v|^2 < \infty\right\}$$
+\item this is constrained optimization over an \emph{admissible set}
+	$$\mathcal{K} = \left\{v \in H^1(\Omega) \,:\, v\big|_{\partial \Omega} = g \,\text{ and }\, v \ge \psi\right\}$$
+
+    \begin{itemize}
+    \item[$\circ$] $\mathcal{K}$ is a closed and convex subset of the Sobolev space $H^1(\Omega) = \left\{v \,:\, \int_\Omega |v|^2 + |\grad v|^2 < \infty\right\}$
+    \end{itemize}
 \end{itemize}
+
+\vspace{10.5mm}
 }
 \end{frame}
 
 
-\begin{frame}{example: a classical obstacle problem}
+\begin{frame}{example: classical obstacle problem}
 
 \includegraphics[width=0.55\textwidth]{../talk-oxford/images/obstacle65.pdf} \qquad \includegraphics[width=0.35\textwidth]{../talk-oxford/images/obstacle-sets.png}
 
 \bigskip
 \only<1>{
 \begin{itemize}
-\item the solution defines \emph{active} $A_u = \{u = \psi\}$ and \emph{inactive} $R_u = \{u> \psi\}$ subsets of $\Omega$, and a \emph{free boundary} $\Gamma_u=\partial R_u \cap \Omega$
-\item naive strong form would pose the problem in terms of its solution:
+\item the solution defines subsets of $\Omega$:
+   \begin{itemize}
+   \item[$\circ$] \emph{active set} $A_u = \{u = \psi\}$
+   \item[$\circ$] \emph{inactive set} $R_u = \{u> \psi\}$
+   \item[$\circ$] \emph{free boundary} $\Gamma_u=\partial R_u \cap \Omega$
+   \end{itemize}
+\end{itemize}
+
+\vspace{25mm}
+}
+\only<2-3>{
+\begin{itemize}
+\item a naive strong form would pose the problem in terms of its solution:
 \begin{align*}
 -\grad^2 u &= f \quad \text{ on $R_u$} \\
 u &= \psi \quad \text{ on $A_u$}
 \end{align*}
 
    \begin{itemize}
-   \item[$\circ$] this is not acceptable \dots
+   \item[$\circ$] Poisson equation $-\grad^2 u = f$ is ``$J'(u)=0$'' on $R_u$
+   \item<3>[$\circ$] using the solution $u$ to define the set $R_u$ on which to solve the PDE $-\grad^2 u = f$ \alert{is not acceptable}
    \end{itemize}
 \end{itemize}
 }
-\only<2>{
+\only<4>{
 \begin{itemize}
-\item the \emph{complementarity problem} (CP) is meaningful as a strong form:
+\item the \emph{complementarity problem} (CP) is a meaningful strong form:
 \begin{align*}
 u - \psi &\ge 0 \\
 -\grad^2 u - f &\ge 0 \\
@@ -194,14 +215,31 @@ u - \psi &\ge 0 \\
 \phantom{x}
 \end{itemize}
 }
-\only<3>{
+\only<5>{
 \begin{itemize}
-\item FIXME i.e.~constrained optimization over a convex \emph{admissible set}
-	$$\mathcal{K} = \left\{v \in H^1(\Omega) \,:\, v\big|_{\partial \Omega} = g \text{ and } v \ge \psi\right\}$$
-\item $J'(u)$ points directly into $\mathcal{K}$, the {\color{FireBrick} \emph{variational inequality} (VI)}:
-    $$\ip{J'(u)}{v-u} = \int_\Omega \grad u\cdot \grad (v-u) - f (v-u) \ge 0 \quad \text{for all } v \in \mathcal{K}$$
+\item the correct weak form is a {\color{FireBrick} \emph{variational inequality} (VI)}
+\item namely, $J'(u)$ points directly into $\mathcal{K}$:
+    $$\ip{J'(u)}{v-u} = \int_\Omega \grad u\cdot \grad (v-u) - f (v-u) \ge 0$$
+for all $v \in \mathcal{K}$
+
+\phantom{x}
+
+\phantom{x}
 \end{itemize}
 }
+\end{frame}
+
+
+\begin{frame}{VI $=$ weak form with $v-u$ as the test function}
+
+{\small
+   $$J(u) \le J(v) \quad \forall v \in \mathcal{K} \qquad \iff \qquad \ip{J'(u)}{v-u} \ge 0 \quad \forall v \in \mathcal{K}$$
+}
+
+\bigskip
+\begin{center}
+\includegraphics[width=0.5\textwidth]{figs/convexuv.png}
+\end{center}
 \end{frame}
 
 
@@ -210,42 +248,47 @@ u - \psi &\ge 0 \\
 
 \begin{itemize}
 \item let $\mathcal{K}$ be a closed and convex subset of a Banach space $\mathcal{V}$
-\item suppose $F:\mathcal{K} \to \mathcal{V}'$ is a continuous, generally nonlinear operator
+\item suppose $F:\mathcal{K} \to \mathcal{V}'$ is a continuous operator
     \begin{itemize}
-    \item[$\circ$] $F$ may be defined only on $\mathcal{K}$
+    \item[$\circ$] $F$ is generally nonlinear
+    \item[$\circ$] $F$ may be defined \emph{only} on $\mathcal{K}$
     \item[$\circ$] $F$ may \emph{not}\, be the derivative of an objective function $J$
+    \item[$\circ$] $F=J'$, a linear operator, in classical obstacle problem
     \end{itemize}
 \item the general problem {\color{FireBrick} VI($F$,$\mathcal{K}$)} is
 	$${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \text{ for all } v \in \mathcal{K}}$$
-\item when $\mathcal{K}$ is nontrivial the problem {\color{FireBrick} VI($F$,$\mathcal{K}$)} is nonlinear \emph{even when $F$ is a linear operator}
+\item<2> when $\mathcal{K}$ is nontrivial the problem {\color{FireBrick} VI($F$,$\mathcal{K}$)} is nonlinear \emph{even when $F$ is a linear operator}
 \end{itemize}
 \end{frame}
 
 
-\begin{frame}{VI $=$ ``constrained equation''}
+\begin{frame}{VI $=$ constrained ``system of equations''}
 
 \begin{center}
-\begin{tabular}{l|l}
-\begin{minipage}[t][16mm][t]{0.4\textwidth}
-unconstrained optimization:
+\begin{tabular}{r|l|l}
+& \qquad unconstrained & \qquad constrained \\ \hline
+optimization &
+\begin{minipage}[t][16mm][t]{0.32\textwidth}
 $$\min_{u\in\mathcal{V}} J(u)$$
 \end{minipage}
 &
-\begin{minipage}[t][16mm][t]{0.4\textwidth}
-constrained optimization:
-$$\min_{u\in\mathcal{K}} J(u)$$
+\begin{minipage}[t][16mm][t]{0.35\textwidth}
+$$\min_{u\in\mathcal{K} \subset \mathcal{V}} J(u)$$
 \end{minipage}
 \\ \hline
-\begin{minipage}[t][16mm][t]{0.4\textwidth}
-equation for $u \in \mathcal{V}$: {\LARGE \strut}
-
-$$F(u)=0$$
-\end{minipage}
-&
-\begin{minipage}[t][16mm][t]{0.4\textwidth}
+\only<1>{equations}\only<2>{\begin{minipage}[t][16mm][t]{0.15\textwidth} weak form \par equations \end{minipage}} &
+\begin{minipage}[t][16mm][t]{0.32\textwidth}
 
 \vspace{-2mm}
-{\color{FireBrick} VI} for $u \in \mathcal{K}$:
+find $u \in \mathcal{V}$:
+\only<1>{$$F(u)=0$$}
+\only<2>{$$\ip{F(u)}{v} = 0 \quad \forall v \in \mathcal{V}$$}
+\end{minipage}
+&
+\begin{minipage}[t][16mm][t]{0.35\textwidth}
+
+\vspace{-2mm}
+find $u \in \mathcal{K} \subset \mathcal{V}$:
 $${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \forall v \in \mathcal{K}}$$
 \end{minipage}
 \end{tabular}
@@ -256,15 +299,28 @@ $${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \forall v \in \mathcal{K}}$$
 \begin{frame}{applications of VIs}
 
 \begin{itemize}
-\item elastic contact, Signorini problems (e.g.~Kikuchi \& Oden 1988)
-\item viscous contact problems (Gonzalez de Diego et al.~2022)
-\item pricing of American options in the Black-Scholes model
-\item the geometry of glaciers \hfill $\longleftarrow$ \emph{more soon}
+\item elastic contact
+    \begin{itemize}
+    \item[$\circ$] car tires, for example
+    \end{itemize}
 
-\bigskip
-\item first-semester calculus
+\vspace{-10mm}
+\hfill \includegraphics[width=0.2\textwidth]{figs/tirecontact.png}
+
+\vspace{-20mm}
+\item pricing of American options
+    \begin{itemize}
+    \item[$\circ$] inequality-constrained Black-Scholes model
+    \end{itemize}
+
+\vspace{1.5mm}
+\item the geometry of glaciers %\hfill $\longleftarrow$ \emph{more soon}
+
+\vspace{3mm}
+\item first-semester calculus: \quad minimize $f(x)$ over $\mathcal{K} = [a,b]$
 \end{itemize}
 
+%\vspace{20mm}
 \begin{center}
 \includegraphics[width=0.9\textwidth]{../talk-oxford/images/calcone.png}
 \end{center}
@@ -280,7 +336,8 @@ $${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \forall v \in \mathcal{K}}$$
 
 \section{multigrid for PDEs}
 
-\subsection{nonlinear multigrid = full approximation scheme (FAS)}
+\subsection{\emph{only} nonlinear multigrid!}
+\subsection{full approximation scheme (FAS)}
 
 \begin{frame}{nonlinear 2-grid scheme}
 
