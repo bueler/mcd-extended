@@ -462,28 +462,22 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 \end{frame}
 
 
-\begin{frame}{nonlinear multigrid by FAS V-cycle or F-cycle}
+\begin{frame}{nonlinear multigrid by FAS: \only<1>{V-cycle}\only<2>{F-cycle}}
+
+\includegraphics[height=0.2\textheight]{../talk-oxford/images/mg-grids.png}
+
+\hspace{4mm} $j=3$ \hspace{13mm} $j=2$ \hspace{13mm} $j=1$ \hspace{12mm} $j=0$
 
 \bigskip
-
-\includegraphics[height=0.15\textheight]{../talk-oxford/images/mg-grids.png}
-
-\bigskip
-
 \only<1>{
-\hfill \includegraphics[height=0.15\textheight]{../talk-oxford/images/mg-vcycle.png}
-}
-\only<2>{\hfill \includegraphics[height=0.15\textheight]{../talk-oxford/images/mg-fcycle.png} \quad \begin{tabular}{l} F-cycle = \\ nested iteration \end{tabular}
-}
-
-\only<2>{\vspace{-3mm}}
-
+\begin{columns}
+\begin{column}{0.75\textwidth}
 {\small
 \begin{pseudo}
 \pr{fas-vcycle}$(\ell^J;w^J)$: \\+
     for $j=J$ downto $j=1$ \\+
       $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j; w^j)$ \\
-      $w^{j-1} \gets \iR w^j$ \\
+      $w^{j-1} = \iR w^j$ \\
       $\ell^{j-1} = F^{j-1}(w^{j-1}) + R \left(\ell^j - F^j(w^j)\right)$ \\-
     $\text{\pr{solve}}(\ell^0;w^0)$ \\
     for $j=1$ to $j=J$ \\+
@@ -491,30 +485,63 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
       $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j;w^j)$ \\-
 \end{pseudo}
 }
+\end{column}
+\begin{column}{0.25\textwidth}
+\includegraphics[width=0.7\textwidth]{../talk-oxford/images/mg-vcycle.png}
+\end{column}
+\end{columns}
+}
+\only<2>{
+\vspace{12mm}
+
+\hfill \input{tikz/fcycle.tex}
+
+\vspace{6mm}
+}
 \end{frame}
 
 
 \begin{frame}{does it work?}
 
 \begin{itemize}
-\item FAS multigrid works well on the right nonlinear PDE problem
-\item example: Liouville-Bratu equation\footnote{exact solution by Liouville (1853) makes a nice test case}
+\item FAS multigrid works \alert{very well} on the right nonlinear PDE problem
+\item example: Liouville-Bratu equation
     $$-\nabla^2 u - e^u = 0$$
 with Dirichlet boundary conditions on $\Omega=(0,1)^2$
-\item implement with minimal problem-specific code:
+\item discretize by straightforward finite differences
+\item minimal problem-specific code:
     \begin{enumerate}
     \item[1.] residual evaluation on grid level: $F^j(\cdot)$
     \item[2.] pointwise smoother: $\phi_i(c) = 0 \,\forall i$
         \begin{itemize}
-        \item[$\circ$] e.g.~nonlinear Jacobi or Gauss-Seidel iteration
+        \item[$\circ$] nonlinear Gauss-Seidel iteration
         \end{itemize}
-    \item[3.] coarse solve can be same as smoother, or use Newton etc.
+    \item[3.] coarse solve can be same as smoother, or more sophisticated-but-not-optimal (e.g.~Newton iteration)
     \end{enumerate}
 \end{itemize}
 \end{frame}
 
 
-\begin{frame}{Bratu model problem: optimality}
+\begin{frame}{the meaning of ``fast solver''}
+
+\begin{itemize}
+\item what does ``very well'' on the previous slide mean?
+\end{itemize}
+
+\begin{block}{definition} a solver is \emph{optimal} if work in flops, and/or run-time, is $O(N)$ for $N$ unknowns
+\end{block}
+
+\begin{itemize}
+\item multigrid: optimality is a frequently-achieved goal for PDE problems with reasonably-smooth solutions
+\item<2> in fact, multigrid people get greedy
+\end{itemize}
+
+\begin{block}<2>{definition} a solver exhibits \emph{textbook multigrid efficiency} if it is optimal and it does work less than 10 times that of a single smoother sweep
+\end{block}
+\end{frame}
+
+
+\begin{frame}{Bratu model problem: optimality and TME}
 
 \begin{columns}
 \begin{column}{0.45\textwidth}
@@ -525,18 +552,12 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \text{exp evaluations} &= O(N^1) \\
 \text{processor time} &= O(N^1)
 \end{align*}
-\item<1-> up to $N\approx 10^8$ dofs
-    \begin{itemize}
-    \item[$\circ$] $J=11$ refinements
-    \item[$\circ$] laptop is memory-limited
-    \end{itemize}
-\item<2> compare $\approx 20\,\mu\,\text{s}/\text{N}$ for Poisson equation using Firedrake $P_1$ elements and geometric multigrid
+\item $N\approx 10^8$ unknowns at $J=11$ levels V-cycle
+\item compare $\approx 20\,\mu\,\text{s}/\text{N}$ for Poisson using Firedrake ($P_1$, geometric multigrid)
 \end{itemize}
 \end{column}
 \begin{column}{0.55\textwidth}
-\includegraphics<1>[width=\textwidth]{../talk-oxford/images/bratu-exps.png}
-
-\includegraphics<2>[width=\textwidth]{../talk-oxford/images/bratu-time.png}
+\includegraphics[width=\textwidth]{../talk-oxford/images/bratu-time.png}
 \end{column}
 \end{columns}
 \end{frame}
@@ -561,93 +582,6 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
     \item[2.] small literature of convergence or descriptive performance for FAS (Trottenberg et al.~(2001), Reusken (1987))
     \item[3.] not enough tutorial literature?
     \end{enumerate}
-\end{itemize}
-\end{frame}
-
-
-
-\begin{frame}{problem: fluid layer in a climate}
-
-\begin{itemize}
-\item let's not get stuck on textbook example problems!
-\item multigrid for a real-world VI problem?
-\item consider an incompressible, viscous layer with surface elevation $s(x,y)$, flowing with velocity $\bu(x,y,z)$, driven by gravity, over fixed bed topography with elevation $b(x,y)$, in a \emph{climate} which adds or removes fluid at a signed rate $a(x,y)$ [$\text{m}\,\text{s}^{-1}$]
-    \begin{itemize}
-    \item[$\circ$] data $a,b$ defined on domain $\Omega \subset \RR^2$
-    \end{itemize}
-\item geophysical examples: \alert{glaciers and ice sheets}, sea ice, lakes
-\end{itemize}
-
-\bigskip
-\hfill \mbox{\includegraphics[height=0.25\textheight]{../talk-oxford/images/domain-data.png} \hspace{7mm} \includegraphics[height=0.25\textheight]{../talk-oxford/images/domain-velocity.png}}
-\end{frame}
-
-
-\begin{frame}{example: glacier ice coverage of the Alps in prior climates}
-
-\includegraphics[width=1.02\textwidth]{../talk-oxford/images/alps-seguinot2018.png}
-
-\vspace{-2mm}
-\hfill {\tiny Sequinot et al.~(2018)}
-\end{frame}
-
-
-\begin{frame}{naive strong form}
-
-\begin{itemize}
-\item naive strong form of the steady model: % ($\bn_s = \left<-s_x,-s_y,1\right>$ is surface normal):
-\begin{align*}
-s &\ge b                    & &\text{everywhere in } \Omega \\
--\bu|_s \cdot \bn_s &= a    & &\text{where } s(x,y) > b(x,y)
-\end{align*}
-
-    \begin{itemize}
-    \item[$\circ$] surface velocity $\bu|_s$ is determined by fluid domain geometry $s$
-    \item[$\circ$] $\bn_s=\left<-\grad s,1\right>$ is upward surface normal
-    \item[$\circ$] generally: $-\bu|_s \cdot \bn_s$ is a \emph{non-local} function of $s$
-    \end{itemize}
-\item the inequality constraint $s \ge b$ \alert{generates a free boundary}
-
-if an ablative climate $a < 0$ forces surface down to bed
-\end{itemize}
-
-\bigskip
-\hfill \mbox{\includegraphics[height=0.2\textheight]{../talk-oxford/images/domain-data.png} \hspace{7mm} \includegraphics[height=0.2\textheight]{../talk-oxford/images/domain-velocity.png}}
-\end{frame}
-
-
-\begin{frame}{how to evaluate $\Phi(s) = - \bu|_s \cdot \bn_s$ for glacier ice?}
-
-\begin{itemize}
-\item \alert{lubrication approximation}\footnote{also known as the \emph{shallow ice approximation}} \alert{model}
-
-apply a nonlinear elliptic differential operator to $s$:
-    $$\Phi(s) = - \frac{\gamma}{\qq} (s-b)^{\qq} |\grad s|^{\qq} - \grad \cdot\left(\frac{\gamma}{\qq+1} (s-b)^{\qq+1} |\grad s|^{\qq-2} \grad s\right)$$
-    \begin{itemize}
-    \item $\qq = 4$
-    \item $\grad$ is in $x,y$ only
-    \item $\Phi(s)$ is a nonlinear \alert{differential operator} in this model because membrane stresses are \emph{not} balanced
-    \item $\Phi(s)$ is doubly-degenerate
-    \end{itemize}
-\end{itemize}
-\end{frame}
-
-
-\begin{frame}{VI for fluid layer in a climate}
-
-\begin{itemize}
-\item admissible surface elevations:
-    $$\mathcal{K} = \left\{r \in \mathcal{V} \,:\, r \ge b\right\}$$
-
-    \begin{itemize}
-    \item[$\circ$] $\mathcal{V}$ to be determined by viscous fluid model\footnote{in shallow ice approximation, $(s-b)^{8/3} \in W^{1,4}(\Omega)$ (Jouvet \& Bueler, 2012)}
-    \end{itemize}
-\item VI problem for surface elevation $s\in\mathcal{K}$:
-	$$\ip{\Phi(s)}{r-s} \ge \ip{a}{r-s} \quad \text{ for all } r \in \mathcal{K}$$
-where
-    $$\Phi(s)=- \bu|_s \cdot \bn_s,$$
-with extension by 0 to all of $\Omega$, and $\bu$ is the velocity solution on
-    $$\Lambda(s) = \{(x,y,z) : b(x,y) < z < s(x,y)\}$$
 \end{itemize}
 \end{frame}
 
@@ -835,7 +769,98 @@ where $\mathcal{K}^i \subset \mathcal{V}^i$, with projections $\Pi_i : \mathcal{
 
 \subsection{glacier surface elevations}
 
-\begin{frame}{2D shallow ice approximation results (\emph{very fresh})}
+
+\begin{frame}{mesh independence}
+
+\begin{itemize}
+\item FIXME
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{problem: fluid layer in a climate}
+
+\begin{itemize}
+\item consider an incompressible, viscous layer with surface elevation $s(x,y)$, flowing with velocity $\bu(x,y,z)$, driven by gravity, over fixed bed topography with elevation $b(x,y)$, in a \emph{climate} which adds or removes fluid at a signed rate $a(x,y)$ [$\text{m}\,\text{s}^{-1}$]
+    \begin{itemize}
+    \item[$\circ$] data $a,b$ defined on domain $\Omega \subset \RR^2$
+    \end{itemize}
+\item geophysical examples: \alert{glaciers and ice sheets}, sea ice, lakes
+\end{itemize}
+
+\bigskip
+\hfill \mbox{\includegraphics[height=0.25\textheight]{../talk-oxford/images/domain-data.png} \hspace{7mm} \includegraphics[height=0.25\textheight]{../talk-oxford/images/domain-velocity.png}}
+\end{frame}
+
+
+\begin{frame}{example: glacier ice coverage of the Alps in prior climates}
+
+\includegraphics[width=1.02\textwidth]{../talk-oxford/images/alps-seguinot2018.png}
+
+\vspace{-2mm}
+\hfill {\tiny Sequinot et al.~(2018)}
+\end{frame}
+
+
+\begin{frame}{naive strong form}
+
+\begin{itemize}
+\item naive strong form of the steady model: % ($\bn_s = \left<-s_x,-s_y,1\right>$ is surface normal):
+\begin{align*}
+s &\ge b                    & &\text{everywhere in } \Omega \\
+-\bu|_s \cdot \bn_s &= a    & &\text{where } s(x,y) > b(x,y)
+\end{align*}
+
+    \begin{itemize}
+    \item[$\circ$] surface velocity $\bu|_s$ is determined by fluid domain geometry $s$
+    \item[$\circ$] $\bn_s=\left<-\grad s,1\right>$ is upward surface normal
+    \item[$\circ$] generally: $-\bu|_s \cdot \bn_s$ is a \emph{non-local} function of $s$
+    \end{itemize}
+\item the inequality constraint $s \ge b$ \alert{generates a free boundary}
+
+if an ablative climate $a < 0$ forces surface down to bed
+\end{itemize}
+
+\bigskip
+\hfill \mbox{\includegraphics[height=0.2\textheight]{../talk-oxford/images/domain-data.png} \hspace{7mm} \includegraphics[height=0.2\textheight]{../talk-oxford/images/domain-velocity.png}}
+\end{frame}
+
+
+\begin{frame}{shallow ice approximation}
+
+\begin{itemize}
+\item with enough simplifications we may compute the surface motion term by applying a nonlinear elliptic differential operator to $s$:
+    $$\Phi(s) = - \frac{\gamma}{\qq} (s-b)^{\qq} |\grad s|^{\qq} - \grad \cdot\left(\frac{\gamma}{\qq+1} (s-b)^{\qq+1} |\grad s|^{\qq-2} \grad s\right)$$
+    \begin{itemize}
+    \item $\qq = 4$
+    \item $\grad$ is in $x,y$ only
+    \item $\Phi(s)$ is a nonlinear \alert{differential operator} in this model because membrane stresses are \emph{not} balanced
+    \item $\Phi(s)$ is doubly-degenerate
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{VI for fluid layer in a climate}
+
+\begin{itemize}
+\item admissible surface elevations:
+    $$\mathcal{K} = \left\{r \in \mathcal{V} \,:\, r \ge b\right\}$$
+
+    \begin{itemize}
+    \item[$\circ$] $\mathcal{V}$ to be determined by viscous fluid model\footnote{in shallow ice approximation, $(s-b)^{8/3} \in W^{1,4}(\Omega)$ (Jouvet \& Bueler, 2012)}
+    \end{itemize}
+\item VI problem for surface elevation $s\in\mathcal{K}$:
+	$$\ip{\Phi(s)}{r-s} \ge \ip{a}{r-s} \quad \text{ for all } r \in \mathcal{K}$$
+where
+    $$\Phi(s)=- \bu|_s \cdot \bn_s,$$
+with extension by 0 to all of $\Omega$, and $\bu$ is the velocity solution on
+    $$\Lambda(s) = \{(x,y,z) : b(x,y) < z < s(x,y)\}$$
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{2D shallow ice approximation}
 
 \begin{itemize}
 \item preliminary results
@@ -849,19 +874,6 @@ where $\mathcal{K}^i \subset \mathcal{V}^i$, with projections $\Pi_i : \mathcal{
     \item[$\circ$] Firedrake $P_1$ elements
     \item[$\circ$] strong smoother (\texttt{vinewtonrsls})
     \end{itemize}
-\end{itemize}
-
-\medskip
-\begin{center}
-\includegraphics[width=0.8\textwidth]{../talk-oxford/images/fascd-firedrake-dome.png}
-\end{center}
-\end{frame}
-
-
-\begin{frame}{mesh independence}
-
-\begin{itemize}
-\item FIXME
 \end{itemize}
 \end{frame}
 
