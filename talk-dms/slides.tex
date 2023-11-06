@@ -462,7 +462,7 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 \end{frame}
 
 
-\begin{frame}{nonlinear multigrid by FAS: \only<1>{V-cycle}\only<2>{F-cycle}}
+\begin{frame}{nonlinear multigrid by FAS: \only<1>{V-cycle}\only<2>{``FMG'' cycle}}
 
 \includegraphics[height=0.2\textheight]{../talk-oxford/images/mg-grids.png}
 
@@ -552,7 +552,7 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \text{exp evaluations} &= O(N^1) \\
 \text{processor time} &= O(N^1)
 \end{align*}
-\item $N\approx 10^8$ unknowns at $J=11$ levels V-cycle
+\item $N\approx 10^8$ unknowns for $12$-level V-cycle
 \item compare $\approx 20\,\mu\,\text{s}/\text{N}$ for Poisson using Firedrake ($P_1$, geometric multigrid)
 \end{itemize}
 \end{column}
@@ -595,22 +595,17 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 
 \begin{itemize}
 \item VIs are nonlinear problems, even for linear operators like $-\nabla^2$
-\item Newton-multigrid is straightforward in PETSc:
-\begin{Verbatim}[xleftmargin=13mm,fontsize=\scriptsize]
-./obstacle -da_grid_x 3 -da_grid_y 3 \
-    -snes_type vinewtonrsls -ksp_type cg -pc_type mg \
-    -da_refine J
-\end{Verbatim}
+\item most obvious method (?): Newton-multigrid
     \begin{itemize}
     \item[$\circ$] linear solver applies to inactive variables
         \begin{itemize}
-        \item[] \texttt{rsls} = reduced space line search
+        \item[] reduced space line search
         \end{itemize}
-    \item[$\circ$] Newton step equations solved by CG with GMG V-cycles
+    \item[$\circ$] Newton step equations solved by CG with linear multigrid V-cycles
     \end{itemize}
 \item issue: the outer Newton iteration must converge on the active set \alert{before} multigrid can provide effective preconditioning
     \begin{itemize}
-    \item[$\circ$] grid-dependent (growing) Newton iterations
+    \item[$\circ$] consequence: grid-dependent (growing) Newton iterations
     \end{itemize}
 \end{itemize}
 
@@ -626,33 +621,19 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \frametitle{nested iteration}
 
 \begin{itemize}
-\item applying nested iteration (nonlinear F-cycle) resolves this:
-
-\vspace{2mm}
-\begin{Verbatim}[xleftmargin=13mm,fontsize=\scriptsize]
-./obstacle -da_grid_x 3 -da_grid_y 3 \
-    -snes_type vinewtonrsls -ksp_type cg -pc_type mg \
-\end{Verbatim}
-
-\vspace{-1.5mm}
-\hspace{18.7mm} {\scriptsize \color{FireBrick} \texttt{-snes\_grid\_sequence J}}
-
-\vspace{2mm}
+\item applying nested iteration helps this:
     \begin{itemize}
+    \item[$\circ$] this is effectively an FMG-cycle, an alternative to FASCD
     \item[$\circ$] grid-independent Newton iterations
-    \item[$\circ$] optimal $O(N^1)$ flops and time
-    \item<2>[$\circ$] Chapter 12 example in my new book
+    \item[$\circ$] optimal $O(N)$ flops and time; Chapter 12 example in my new book
     \end{itemize}
-
-\vspace{-12mm}
-\hfill \includegraphics[width=0.25\textwidth]{../talk-oxford/images/mg-fcycle.png}
 \end{itemize}
 
 \bigskip
 \includegraphics[height=0.25\textheight]{../talk-oxford/images/vi-newton-gmg-good.png} 
 
 \vspace{-22mm}
-\hspace{40mm} \includegraphics[height=0.45\textheight]{../talk-oxford/images/obstacle-flops-per-n.png} \qquad \includegraphics<2>[width=20mm]{../talk-oxford/images/frontcover.jpg}
+\hspace{40mm} \includegraphics[width=20mm]{../talk-oxford/images/frontcover.jpg}
 \end{frame}
 
 
@@ -661,34 +642,27 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \begin{frame}{multigrid strategies for VIs: feature table}
 
 {\small
-\begin{tabular}{l|ccccc}
+\begin{tabular}{r|cccc}
    & \stacktwo{admissible}{iterates} & \stacktwo{mesh-indep.}{rates}
-       & \stacktwo{no global}{linearization}
-         & \stacktwo{PETSc or}{Firedrake}  \\ \hline
-RS NM                      & $\checkmark$ &  & & $\checkmark$ \\
-\quad $+$ NI & $\checkmark$ & $\checkmark$ & & $\checkmark$ \\
-SS NM             &              & $\checkmark$ & & $\checkmark$ \\
-{\color{FireBrick} FASCD}  & $\checkmark$ & {\color{FireBrick} \textbf{?}} & $\checkmark$ & \only<2>{{\Large {\color{FireBrick} $\checkmark$}}} {\Large \strut}
+       & \stacktwo{no need for}{global linearization}  \\ \hline
+NM                         & $\checkmark$ &              & \\
+\quad $+$ NI               & $\checkmark$ & $\checkmark$ & \\
+{\color{FireBrick} FASCD}  & $\checkmark$ & $\checkmark$ & $\checkmark$ {\Large \strut}
 \end{tabular}
 }
 
 \bigskip
 {\scriptsize
 \begin{center}
-RS = reduced space, SS = semi-smooth, NM = Newton-multigrid, NI = nested iteration
+NM = Newton-multigrid, NI = nested iteration
 \end{center}
 }
 
 \vspace{5mm}
 \begin{itemize}
-\item for the non-local fluid layer VI problem we need all 4 checked
-\item we are trying-out a new algorithm,
+\item new algorithm,
 
 {\color{FireBrick} FASCD = full approximation scheme constraint decomposition}
-
-    \begin{itemize}
-    \item[$\circ$] Firedrake implementation \only<2>{\dots as of yesterday}
-    \end{itemize}
 \end{itemize}
 \end{frame}
 
@@ -705,15 +679,10 @@ RS = reduced space, SS = semi-smooth, NM = Newton-multigrid, NI = nested iterati
 \item for a subspace decomposition $\mathcal{V} = \sum_i \mathcal{V}_i$, write the admissible subset as a sum
     $$\mathcal{K} = \sum_i \mathcal{K}_i$$
 where $\mathcal{K}^i \subset \mathcal{V}^i$, with projections $\Pi_i : \mathcal{K} \to \mathcal{K}_i$
-\item CD additive and multiplicative iterations exist for $VI(F,\ell,\mathcal{K})$
+\item CD multiplicative iterations for $VI(F,\ell,\mathcal{K})$
 
 \begin{pseudo}
-\pr{cd-add}(u)\text{:} \\+
-    for $i \in \{0,\dots,m-1\}$: \\+
-        \rm{find} $\hat w_i\in \cK_i$ \rm{so that for all} $v_i\in \cK_i$, \\+
-            $\boxed{\ip{F(u - \Pi_i u + \hat w_i)}{v_i-\hat w_i} \ge \ip{\ell}{v_i-\hat w_i}}$ \\--
-    $\hat w = \sum_i \hat w_i\in\cK$ \\
-    return $w=(1-\alpha) u + \alpha \hat w$
+\pr{cd-mult}
 \end{pseudo}
 \end{itemize}
 \end{frame}
@@ -742,21 +711,7 @@ where $\mathcal{K}^i \subset \mathcal{V}^i$, with projections $\Pi_i : \mathcal{
 
 % case of lower obstacle only
 \begin{pseudo}
-\pr{fascd-vcycle}(\ell^J,\psi^J; w^J)\text{:} \\+
-    $\chi^J = \psi^J - w^J {\large \strut}$ \\
-    for $j=J$ downto $j=1$ \\+
-      $\chi^{j-1} = \maxR \chi^j {\large \strut}$ \\
-      $\phi^j = \chi^j - P\chi^{j-1} {\large \strut}$ \\
-      $y^j = 0$ \\
-      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j,\phi^j,w^j;y^j)$ \hspace{8mm} \ct{smoothing in $\mathcal{D}^j$}\\
-      $w^{j-1} = \iR(w^j + y^j)$ \\
-      $\ell^{j-1} = f^{j-1}(w^{j-1}) + R \left(\ell^j - f^j(w^j+y^j)\right)$ \\-
-    $z^0 = 0$ \\
-    $\text{\pr{solve}}(\ell^0,\chi^0,w^0;z^0)$ \hspace{10mm} \ct{coarse solve in $\mathcal{U}^0$} \\
-    for $j=1$ to $j=J$ \\+
-      $z^j = y^{j} + P z^{j-1}$ \\
-      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j,\chi^j,w^j;z^j)$ \hspace{8mm} \ct{smoothing in $\mathcal{U}^j$} \\-
-    $w^J \gets w^J+z^J$
+FIXME
 \end{pseudo}
 \end{frame}
 
@@ -770,10 +725,31 @@ where $\mathcal{K}^i \subset \mathcal{V}^i$, with projections $\Pi_i : \mathcal{
 \subsection{glacier surface elevations}
 
 
-\begin{frame}{mesh independence}
+\begin{frame}{classical obstacle problem}
+
+\only<1-2>{\includegraphics[width=0.4\textwidth]{../talk-oxford/images/obstacle65.pdf}}
+\hfill
+\only<1-2>{\includegraphics[width=0.25\textwidth]{../paper/fixfigs/ball-set.png} \hspace{1mm}}
+\only<3>{\includegraphics[width=0.25\textwidth]{../paper/fixfigs/spiral-set.png} \hspace{2mm}}
 
 \begin{itemize}
-\item FIXME
+\item<1> plot $m_J$ versus V-cycle iterations for ball from Table 2 and fit $\log(m_J)$
+\item<2> add $m_J$ versus F-cycle iterations for ball from Table 2
+\item<3> plot $m_J$ versus V-cycle, F-cycle iterations for spiral from Table 2 and fit $\log(m_J)$
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{advection-diffusion of a concentration}
+
+\mbox{
+\includegraphics[width=0.3\textwidth]{../paper/fixfigs/poll2d-zero-set.png}
+\includegraphics[width=0.3\textwidth]{../paper/fixfigs/poll2d-one-set.png}
+}
+
+\begin{itemize}
+\item 2D problem: $-\eps \grad^2 u + \bm{X}\cdot \grad u = \phi$ with $0\le u\le 1$
+\item plot $m_J$ versus FMG-cycle iterations from Table 3
 \end{itemize}
 \end{frame}
 
@@ -860,20 +836,12 @@ with extension by 0 to all of $\Omega$, and $\bu$ is the velocity solution on
 \end{frame}
 
 
-\begin{frame}{2D shallow ice approximation}
+\begin{frame}{weak-scaling results: shallow ice approximation}
+
+\hfill \includegraphics[width=0.8\textwidth]{../paper/fixfigs/sialev8scene.png}
 
 \begin{itemize}
-\item preliminary results
-\item dome test case in lubrication approximation
-    \begin{itemize}
-    \item[$\circ$] here $\Phi(s)$ \emph{is} a differential operator
-    \item[$\circ$] note $s^{8/3} \in W^{1,4}(\Omega)$ but not in $C^2$
-    \end{itemize}
-\item FASCD algorithm result
-    \begin{itemize}
-    \item[$\circ$] Firedrake $P_1$ elements
-    \item[$\circ$] strong smoother (\texttt{vinewtonrsls})
-    \end{itemize}
+\item bar plot $P$ on $x$-axis and time on $y$-axis; label bars with $m_J$ and FMG iterations
 \end{itemize}
 \end{frame}
 
