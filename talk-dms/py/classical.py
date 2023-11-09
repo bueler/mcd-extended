@@ -1,13 +1,8 @@
+#!/usr/bin/env python3
+
 import numpy as np
 import matplotlib.pyplot as plt
-
-_SHOW = False
-def writeout(outname):
-    if _SHOW:
-        plt.show()
-    else:
-        print('writing file ' + outname)
-        plt.savefig(outname, bbox_inches='tight')
+from writeout import writeout
 
 # data from Table 2 in paper
 mJ = [41, 145, 545, 2.1e3, 8.3e3, 3.3e4, 1.3e5, 5.3e5, 2.1e6, 8.4e6, 3.4e7]
