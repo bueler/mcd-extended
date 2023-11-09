@@ -574,7 +574,7 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 
 \section{multigrid for VIs}
 
-\subsection{earlier approaches}
+\subsection{an earlier approach}
 
 \begin{frame}[fragile]
 \frametitle{Newton-multigrid for the classical obstacle problem}
@@ -604,7 +604,7 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \item on simpler VI problems, \alert{nested iteration} helps
     \begin{itemize}
     \item[$\circ$] nested-iteration = grid-sequencing
-    \item[$\circ$] on classical obstacle problem: grid-independent Newton iterations, optimal $O(N)$ flops and time; Chapter 12 in my book
+    \item[$\circ$] on classical obstacle problem: mesh-independent Newton iterations, optimal $O(N)$ flops and time; Chapter 12 in my book
     \end{itemize}
 \item not as effective on harder (\emph{lower-regularity, complicated free boundary}) problems
 \end{itemize}
@@ -658,7 +658,7 @@ NM = Newton-multigrid, NI = nested iteration
 }
 
 \begin{itemize}
-\item to explain ``constraint decomposition'' in FAS\underline{CD}, start with subspace decomposition in the multilevel case
+\item to explain the ``CD'' (constraint decomposition) in FAS\underline{CD}, start with subspace decomposition in the multilevel case
 \item assume mesh levels are nested: $\Omega^j \subset \Omega^{j+1}$ nodewise
 \item let $\mathcal{V}^j$ be the space of FE functions on $\Omega^j$
     \begin{itemize}
@@ -677,15 +677,30 @@ $\ds \mathcal{V}^J = \sum_{i=0}^J \mathcal{V}^i$ \quad is called a \emph{subspac
 \begin{frame}{constraint decomposition}
 
 \begin{itemize}
-\item Tai's (2003) \emph{constraint decomposition} (CD) for VIs extends subspace decomposition to convex subsets
+\item Tai's (2003) constraint decomposition for VIs extends subspace decomposition to convex subsets
     \begin{itemize}
-    \item[$\circ$] non-trivial
+    \item[$\circ$] extends non-trivially
     \end{itemize}
-\item suppose $\mathcal{K} \subset \mathcal{V}$ is a closed and convex admissible subset
-\item for a subspace decomposition $\mathcal{V} = \sum_i \mathcal{V}_i$, write the admissible subset as a sum
-    $$\mathcal{K} = \sum_i \mathcal{K}_i$$
-where $\mathcal{K}^i \subset \mathcal{V}^i$, with projections $\Pi_i : \mathcal{K} \to \mathcal{K}_i$
+\item suppose $\mathcal{K}^J \subset \mathcal{V}^J$ is a closed and convex subset
+\item assume $\mathcal{V}^J = \sum_i\mathcal{V}^i$ is a subspace decomposition
+\begin{block}{definition}
+$\ds \mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$ \quad is a \emph{constraint decomposition} (CD) if there are closed and convex subsets $\mathcal{K}^i\subset \mathcal{V}^i$, and (nonlinear) projections $\Pi_i : \mathcal{K}^J \to \mathcal{K}^i$, so that $\ds v = \sum_{i=0}^J \Pi_i v$ and a stability condition applies (not shown)
+\end{block}
 \end{itemize}
+\end{frame}
+
+
+\begin{frame}{constraint decomposition}
+
+\begin{itemize}
+\item observation: generally $\mathcal{K}^i \not\subset \mathcal{K}^J$
+\item picture below: obstacle problem on a two-point mesh ($\mathcal{V} \cong \RR^2$)
+\end{itemize}
+
+\bigskip
+\begin{center}
+\includegraphics[width=0.6\textwidth]{../paper/genfigs/cartoon.pdf}
+\end{center}
 \end{frame}
 
 
@@ -707,32 +722,42 @@ where $\mathcal{K}^i \subset \mathcal{V}^i$, with projections $\Pi_i : \mathcal{
 \end{frame}
 
 
-\begin{frame}{multilevel constraint decomposition}
+\begin{frame}{defect obstacles}
 
 \begin{itemize}
 \item recall $\mathcal{K} = \{v \ge \psi\}$ in classical obstacle problem
-\item define \alert{defect obstacle} for a fine-level iterate $w^J$:
+\begin{block}{definition}
+the \emph{defect obstacle} for a fine-level iterate $w^J \in \mathcal{K}^J = \{v\,:\,v\ge \psi^J\}$ is an FE function in $\mathcal{V}^J$:
     $$\chi^J = \psi^J - w^J$$
-\item \alert{monotone restriction} generates obstacles on each level:
-	$$\chi^j = R^{\oplus} \chi^{j+1}$$
-\item let $\mathcal{U}^j = \{z \ge \chi^j\}$, $\mathcal{D}^j = \{y \ge \chi^j - \chi^{j-1}\}$
-\item get CD of fine-level constraint set:
-	$$\mathcal{U}^J = \sum_{i=0}^J \mathcal{D}^i \phantom{KLDFJSKJDS SDF}$$
-\item multiplicative CD iteration $\to$ V-cycle
+\end{block}
+\item we generate the CD through defect obstacles $\chi^j$ on each level
+\item via \emph{monotone restriction}: \quad $\ds \chi^j = R^{\oplus} \chi^{j+1}$
 \end{itemize}
 
-\vspace{-25mm}
-\hfill \includegraphics[width=0.4\textwidth]{../talk-oxford/images/fascd-vcycle.png}
+\begin{center}
+\input{tikz/Rplusminus.tex}
+\end{center}
+\end{frame}
+
+
+\begin{frame}{down and up sets}
+
+\begin{itemize}
+\item let $\mathcal{U}^j = \{z \ge \chi^j\}$, $\mathcal{D}^j = \{y \ge \phi^j=\chi^j - \chi^{j-1}\}$
+\item get CD of fine-level constraint set:
+	$$\mathcal{U}^J = \sum_{i=0}^J \mathcal{D}^i \phantom{KLDFJSKJDS SDF}$$
+\end{itemize}
+
+\begin{center}
+\includegraphics[width=0.4\textwidth]{../talk-oxford/images/fascd-vcycle.png}
+\end{center}
 \end{frame}
 
 
 \begin{frame}{multilevel constraint decomposition}
 
-\begin{itemize}
-\item FIXME
-\end{itemize}
-
-\hfill \includegraphics[width=0.5\textwidth]{figs/innerconeapprox.png}
+\centering
+\includegraphics[width=0.7\textwidth]{figs/innerconeapprox.png}
 \end{frame}
 
 
@@ -740,7 +765,21 @@ where $\mathcal{K}^i \subset \mathcal{V}^i$, with projections $\Pi_i : \mathcal{
 
 % case of lower obstacle only
 \begin{pseudo}
-FIXME
+\pr{fascd-vcycle}(J,\ell^J,\psi^J;w^J)\text{:} \\+
+    $\chi^J = \psi^J - w^J$ \\
+    for $j=J$ downto $j=1$ \\+
+      $\chi^{j-1} = \maxR \chi^j$ \\
+      $\phi^j = \chi^j - P\chi^{j-1}$ \\
+      $y^j = 0$ \\
+      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j,\phi^j,w^j;y^j)$  \hspace{1.0cm} \ct{in $\mathcal{D}^j$}\\
+      $w^{j-1} = \iR(w^j + y^j)$ \\
+      $\ell^{j-1} = f^{j-1}(w^{j-1}) + R \left(\ell^j - f^j(w^j+y^j)\right)$ \\-
+    $z^0 = 0$ \\
+    $\text{\pr{solve}}(\ell^0,\chi^0,w^0;z^0)$ \hspace{1.0cm} \ct{in $\mathcal{U}^0$} \\
+    for $j=1$ to $j=J$ \\+
+      $z^j = y^{j} + P z^{j-1}$ \\
+      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j,\chi^j,w^j;z^j)$  \hspace{1.0cm} \ct{in $\mathcal{U}^j$} \\-
+    return $w^J+z^J$
 \end{pseudo}
 \end{frame}
 
