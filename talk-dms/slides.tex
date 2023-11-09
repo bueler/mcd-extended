@@ -142,26 +142,26 @@
 \includegraphics[width=0.65\textwidth]{../talk-oxford/images/obstacle65.pdf}
 \end{center}
 
-\only<1>{
+\only<1-2>{
 \begin{itemize}
 \item \emph{problem.} on a domain $\Omega \subset \RR^2$, find the displacement $u(x)$ of a membrane, with fixed value $u = g$ on $\partial \Omega$, above an \emph{obstacle} $\psi(x)$, which minimizes elastic (plus some potential) energy
     $$J(v) = \int_\Omega \frac{1}{2} |\grad v|^2 - f\, v$$
 \item shown above: \quad $\Omega$ a square, $\psi(x)$ a hemisphere
+\item<2>[\alert{Q.}] how to solve this as a PDE with boundary conditions?
 \end{itemize}
 
-\phantom{x}
+\vspace{2mm}
 }
-\only<2>{
+\only<3>{
 \begin{itemize}
-\item this is constrained optimization over an \emph{admissible set}
+\item this is constrained optimization over an infinite-dimensional \emph{admissible set}
 	$$\mathcal{K} = \left\{v \in H^1(\Omega) \,:\, v\big|_{\partial \Omega} = g \,\text{ and }\, v \ge \psi\right\}$$
 
     \begin{itemize}
-    \item[$\circ$] $\mathcal{K}$ is a closed and convex subset of the Sobolev space $H^1(\Omega) = \left\{v \,:\, \int_\Omega |v|^2 + |\grad v|^2 < \infty\right\}$
+    \item[$\circ$] $\mathcal{K}$ is a closed and convex subset of the Sobolev space
+   $$H^1(\Omega) = \left\{v \,:\, \int_\Omega |v|^2 + |\grad v|^2 < \infty\right\}$$
     \end{itemize}
 \end{itemize}
-
-\vspace{10.5mm}
 }
 \end{frame}
 
@@ -193,7 +193,7 @@ u &= \psi \quad \text{ on $A_u$}
 
    \begin{itemize}
    \item[$\circ$] Poisson equation $-\grad^2 u = f$ is ``$J'(u)=0$'' on $R_u$
-   \item<3>[$\circ$] using the solution $u$ to define the set $R_u$ on which to solve the PDE $-\grad^2 u = f$ \alert{is not acceptable}
+   \item<3>[$\circ$] using the solution $u$ to define the set $R_u$ on which to solve the PDE $-\grad^2 u = f$ \alert{does not lead to solution algorithms}
    \end{itemize}
 \end{itemize}
 }
@@ -217,14 +217,11 @@ u - \psi &\ge 0 \\
 }
 \only<5>{
 \begin{itemize}
-\item the correct weak form is a {\color{FireBrick} \emph{variational inequality} (VI)}
-\item namely, $J'(u)$ points directly into $\mathcal{K}$:
+\item the weak form is a {\color{FireBrick} \emph{variational inequality} (VI)}, which says that $J'(u)$ points directly into $\mathcal{K}$:
     $$\ip{J'(u)}{v-u} = \int_\Omega \grad u\cdot \grad (v-u) - f (v-u) \ge 0$$
 for all $v \in \mathcal{K}$
 
-\phantom{x}
-
-\phantom{x}
+\vspace{11mm}
 \end{itemize}
 }
 \end{frame}
@@ -255,9 +252,9 @@ for all $v \in \mathcal{K}$
     \item[$\circ$] $F$ may \emph{not}\, be the derivative of an objective function $J$
     \item[$\circ$] $F=J'$, a linear operator, in classical obstacle problem
     \end{itemize}
-\item the general problem {\color{FireBrick} VI($F$,$\mathcal{K}$)} is
+\item the general variational inequality {\color{FireBrick} VI($F$,$\mathcal{K}$)} is
 	$${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \text{ for all } v \in \mathcal{K}}$$
-\item<2> when $\mathcal{K}$ is nontrivial the problem {\color{FireBrick} VI($F$,$\mathcal{K}$)} is nonlinear \emph{even when $F$ is a linear operator}
+\item when $\mathcal{K}$ is nontrivial the problem {\color{FireBrick} VI($F$,$\mathcal{K}$)} is nonlinear \emph{even when $F$ is a linear operator}
 \end{itemize}
 \end{frame}
 
@@ -317,7 +314,8 @@ $${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \forall v \in \mathcal{K}}$$
 \item the geometry of glaciers %\hfill $\longleftarrow$ \emph{more soon}
 
 \vspace{3mm}
-\item first-semester calculus: \quad minimize $f(x)$ over $\mathcal{K} = [a,b]$
+\item first-semester calculus:
+    $$u \gets \min_{x\in[a,b]} f(x) \quad \iff \quad f'(u)(v-u) \ge 0 \quad \forall v \in[a,b]$$
 \end{itemize}
 
 %\vspace{20mm}
@@ -334,9 +332,8 @@ $${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \forall v \in \mathcal{K}}$$
   \end{frame}
 }
 
-\section{multigrid for PDEs}
+\section{nonlinear multigrid for PDEs}
 
-\subsection{\emph{only} nonlinear multigrid!}
 \subsection{full approximation scheme (FAS)}
 
 \begin{frame}{nonlinear 2-mesh scheme}
@@ -351,9 +348,10 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 	$$F(u) = \ell$$
 
 	\begin{itemize}
-	\item[$\circ$] $\mathcal{V}=H^1(\Omega)$, $\ell\in \mathcal{V}'$
+	\item[$\circ$] $u\in \mathcal{V}=H^1(\Omega)$
+	\item[$\circ$] $\ell\in \mathcal{V}'$
 	\item[$\circ$] $F : \mathcal{V} \to \mathcal{V}'$ continuous and injective
-	\item[$\circ$] for example, the Liouville-Bratu problem: $-\grad^2 u - e^u = f(x)$
+	\item[$\circ$] for example, the Liouville-Bratu problem: $-\grad^2 u - e^u = f$
 	\end{itemize}
 \item discretization gives algebraic system on fine mesh $\Omega^h$:
     $$F^h(u^h) = \ell^h$$
@@ -363,7 +361,7 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 	\end{itemize}
 \end{itemize}
 
-\vspace{7mm}
+\vspace{4mm}
 }
 \only<2-3>{
 \begin{itemize}
@@ -387,7 +385,7 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 }
 \only<4-5>{
 \begin{itemize}
-\item \emph{goal}: from iterate $w^h$, to solve
+\item \emph{updated goal}: from iterate $w^h$, to solve
     $$F^h(u^h) - F^h(w^h) = r^h$$
 \item \alert{for $F^h$ linear}, convert this to the \emph{error equation}
     $$F^h(e^h) = r^h$$
@@ -400,40 +398,43 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 }
 \only<6>{
 \begin{itemize}
-\item \emph{goal}: use a coarser mesh $\Omega^H$ to somehow estimate the solution $u^h$ in the \emph{correction equation}
+\item \emph{updated goal}: use a coarser mesh $\Omega^H$ to somehow estimate the solution $u^h$ in the nonlinear \emph{correction equation}
     $${\color{FireBrick} F^h(u^h) - F^h(w^h) = r^h}$$
-\item basic multigrid idea: there are algorithms (\alert{smoothers}) which inefficiently improve $w^h$ \dots use them a little first \dots then correct from the coarser mesh
+\item basic multigrid idea: there are algorithms (\alert{smoothers}) which ``improve'' $w^h$ \dots use them a little first \dots then correct from the coarser mesh
+    \begin{itemize}
+    \item[$\circ$] ``improve'' means they remove high-frequency error components efficiently
+    \end{itemize}
 \end{itemize}
 
-\vspace{24mm}
+\vspace{15mm}
 }
-\only<7-8>{
+\only<7>{
 \begin{itemize}
 \item \emph{nodewise problem}: for $\psi_i^h$ a hat function or dof, solve for $c\in\RR$ to make the residual at that location zero:
 	$${\color{FireBrick} \phi_i(c) = r^h(w^h + c \psi_i^h)[\psi_i^h] = 0}$$
-\item sweeping through and solving nodewise problems is a smoother
+\item sweeping through and solving nodewise problems is a \alert{smoother}
     \begin{itemize}
-    \item[$\circ$] Fourier analysis on linear PDEs shows smoothing property
-    \item[$\circ$] post-smoothing, $e^h$ and $r^h$ have smaller high-frequencies
+    \item[$\circ$] Fourier analysis shows smoothing property
+    \item[$\circ$] after smoothing, $e^h$ and $r^h$ have smaller high-frequencies
     \end{itemize}
-\item<8> after smoothing, the correction equation should be accurately approximate-able on the coarser mesh $\Omega^H$
+\item after smoothing, the correction equation on $\Omega^h$ should be accurately approximate-able on the coarser mesh $\Omega^H$
 \end{itemize}
 
 \vspace{14mm}
 }
-\only<9-11>{
+\only<8-9>{
 \begin{itemize}
-\item \emph{goal}: use a coarser mesh $\Omega^H$ to somehow estimate the solution $u^h$ in $F^h(u^h) - F^h(w^h) = r^h(w^h)$
+\item \emph{updated goal}: use a coarser mesh $\Omega^H$ to somehow estimate the solution $u^h$ in $F^h(u^h) - F^h(w^h) = r^h(w^h)$
 \item Brandt's (1977) \emph{full approximation scheme} (FAS) equation:
 	$${\color{FireBrick} F^H(u^H) - F^H(\iR w^h) = R \, r^h(w^h)}$$
 
     \begin{itemize}
-    \item[$\circ$] $\iR:\mathcal{V}^h \to \mathcal{V}^H$ is \emph{injection}
+    \item[$\circ$] $\iR:\mathcal{V}^h \to \mathcal{V}^H$ is node-wise \emph{injection}
     \item[$\circ$] $R:(\mathcal{V}^h)' \to (\mathcal{V}^H)'$ is \emph{canonical restriction}
-    \item<10-11>[$\circ$] note: if $w^h=u^h$ exactly then $u^H = \iR w^h$ since $F^H$ injective
+    \item[$\circ$] note: if $w^h=u^h$ exactly then $u^H = \iR w^h$ since $F^H$ injective
     \end{itemize}
 
-\item<11> rewritten FAS equation: let ${\color{FireBrick} \ell^H = F^H(\iR w^h) + R\, r^h(w^h)}$ then
+\item<9> rewritten FAS equation: let ${\color{FireBrick} \ell^H = F^H(\iR w^h) + R\, r^h(w^h)}$ then
     $${\color{FireBrick} F^H(u^H) = \ell^H}$$
 \end{itemize}
 
@@ -444,29 +445,33 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 
 \begin{frame}{full approximation scheme (FAS) 2-mesh solver}
 
+\begin{center}
+fine mesh $=\Omega^h$\, \includegraphics[height=0.14\textheight]{../talk-oxford/images/fine-grid.png} \hspace{15mm} \includegraphics[height=0.14\textheight]{../talk-oxford/images/coarse-grid.png} \,$\Omega^H=$ coarse mesh
+\end{center}
+
 \begin{align*}
 &\text{pre-smooth over fine:} & & [\text{smoother updates } w^h] \\
-&\text{restrict:}                   & &\ell^H = F^H(\iR w^h) + R\, r^h(w^h) \\
-&\text{solve coarse:}                      & &F^H(w^H) = \ell^H \\
-&\text{correct}:                    & &w^h \leftarrow w^h + P(w^H - \iR w^h) \\
+&\text{\textbf{restrict}:}                   & &\ell^H = F^H(\iR w^h) + R\, r^h(w^h) \\
+&\text{\textbf{solve coarse}:}                      & &F^H(w^H) = \ell^H \\
+&\text{\textbf{correct}:}                    & &w^h \leftarrow w^h + P(w^H - \iR w^h) \\
 &\text{post-smooth over fine:} & & [\text{smoother updates } w^h]
 \end{align*}
 
 \bigskip
 {\small
 \begin{itemize}
-\item $P: \mathcal{V}^H \to \mathcal{V}^h$ is \emph{prolongation}
-\item restrict$+$(solve coarse)$+$correct \, $=$ \, \emph{FAS coarse grid correction}
+\item $P: \mathcal{V}^H \to \mathcal{V}^h$ is \emph{canonical prolongation}
+\item \textbf{restrict}$+$(\textbf{solve coarse})$+$\textbf{correct} \, $=$ \, \emph{FAS coarse grid correction}
 \end{itemize}
 }
 \end{frame}
 
 
-\begin{frame}{nonlinear multigrid by FAS: \only<1>{V-cycle}\only<2>{``FMG'' cycle}}
+\begin{frame}{nonlinear multigrid by FAS: \only<1>{V-cycle}\only<2>{FMG cycle}}
 
 \includegraphics[height=0.2\textheight]{../talk-oxford/images/mg-grids.png}
 
-\hspace{4mm} $j=3$ \hspace{13mm} $j=2$ \hspace{13mm} $j=1$ \hspace{12mm} $j=0$
+\hspace{4mm} $J=3$ \hspace{13mm} $j=2$ \hspace{13mm} $j=1$ \hspace{12mm} $j=0$
 
 \bigskip
 \only<1>{
@@ -492,9 +497,12 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 \end{columns}
 }
 \only<2>{
-\vspace{12mm}
+\vspace{6mm}
 
-\hfill \input{tikz/fcycle.tex}
+\centering
+\input{tikz/fcycle.tex}
+
+FMG $=$ full multigrid
 
 \vspace{6mm}
 }
@@ -504,11 +512,11 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 \begin{frame}{does it work?}
 
 \begin{itemize}
-\item FAS multigrid works \alert{very well} on the right nonlinear PDE problem
+\item FAS multigrid works \alert{very well} on nice nonlinear PDE problems
 \item example: Liouville-Bratu equation
     $$-\nabla^2 u - e^u = 0$$
 with Dirichlet boundary conditions on $\Omega=(0,1)^2$
-\item discretize by straightforward finite differences
+\item discretize by (straightforward) finite differences
 \item minimal problem-specific code:
     \begin{enumerate}
     \item[1.] residual evaluation on grid level: $F^j(\cdot)$
@@ -516,7 +524,7 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
         \begin{itemize}
         \item[$\circ$] nonlinear Gauss-Seidel iteration
         \end{itemize}
-    \item[3.] coarse solve can be same as smoother, or more sophisticated-but-not-optimal (e.g.~Newton iteration)
+    \item[3.] coarsest-level solve can be same as smoother, or more sophisticated (e.g.~Newton iteration)
     \end{enumerate}
 \end{itemize}
 \end{frame}
@@ -532,11 +540,11 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \end{block}
 
 \begin{itemize}
-\item multigrid: optimality is a frequently-achieved goal for PDE problems with reasonably-smooth solutions
+\item since $\sim$1980: optimality can be achieved by multigrid for PDE problems with reasonably-smooth solutions
 \item<2> in fact, multigrid people get greedy
 \end{itemize}
 
-\begin{block}<2>{definition} a solver exhibits \emph{textbook multigrid efficiency} if it is optimal and it does work less than 10 times that of a single smoother sweep
+\begin{block}<2>{definition} a solver exhibits \emph{textbook multigrid efficiency} if it is optimal and it does total work less than 10 times that of a single smoother sweep
 \end{block}
 \end{frame}
 
@@ -546,43 +554,21 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \begin{columns}
 \begin{column}{0.45\textwidth}
 \begin{itemize}
+\item \texttt{bratu.c}
 \item observed optimality:
 \begin{align*}
 \text{flops} &= O(N^1) \\
 \text{exp evaluations} &= O(N^1) \\
 \text{processor time} &= O(N^1)
 \end{align*}
-\item $N\approx 10^8$ unknowns for $12$-level V-cycle
+\item {\color{FireBrick} $12$-level V-cycle} has $N\approx 10^8$ unknowns
 \item compare $\approx 20\,\mu\,\text{s}/\text{N}$ for Poisson using Firedrake ($P_1$, geometric multigrid)
 \end{itemize}
 \end{column}
 \begin{column}{0.55\textwidth}
-\includegraphics[width=\textwidth]{../talk-oxford/images/bratu-time.png}
+\includegraphics[width=\textwidth]{figs/bratu-time.png}
 \end{column}
 \end{columns}
-\end{frame}
-
-
-\begin{frame}{benefits of FAS multigrid for nonlinear PDEs?}
-
-\begin{itemize}
-\item \alert{benefits} of FAS multigrid?
-    \begin{enumerate}
-    \item[1.] minimal code, esp.~in from-scratch implementations
-        \begin{itemize}
-        \item[$\circ$] just write residual plus pointwise smoother!
-        \end{itemize}
-    \item[2.] composition with nonlinear preconditioners (Brune et al.~2015)
-    \end{enumerate}
-
-\bigskip
-\item \alert{disadvantages?}
-    \begin{enumerate}
-    \item[1.] Firedrake/FENiCs \emph{do} automatically provide linearizations from UFL statements of weak forms
-    \item[2.] small literature of convergence or descriptive performance for FAS (Trottenberg et al.~(2001), Reusken (1987))
-    \item[3.] not enough tutorial literature?
-    \end{enumerate}
-\end{itemize}
 \end{frame}
 
 
@@ -594,26 +580,20 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \frametitle{Newton-multigrid for the classical obstacle problem}
 
 \begin{itemize}
-\item VIs are nonlinear problems, even for linear operators like $-\nabla^2$
-\item most obvious method (?): Newton-multigrid
+\item best-known multigrid method for VIs: Newton-multigrid
     \begin{itemize}
-    \item[$\circ$] linear solver applies to inactive variables
+    \item[$\circ$] linear solver applies to currently-inactive variables
         \begin{itemize}
-        \item[] reduced space line search
+        \item ``reduced space line search''
         \end{itemize}
     \item[$\circ$] Newton step equations solved by CG with linear multigrid V-cycles
     \end{itemize}
-\item issue: the outer Newton iteration must converge on the active set \alert{before} multigrid can provide effective preconditioning
-    \begin{itemize}
-    \item[$\circ$] consequence: grid-dependent (growing) Newton iterations
-    \end{itemize}
+\item observed in actual use: grid-dependent Newton iterations
+\item the (outer) Newton iteration must converge on the active set \alert{before} linear multigrid can provide effective preconditioning
 \end{itemize}
 
 \medskip
-\hspace{10mm} \includegraphics[height=0.2\textheight]{../talk-oxford/images/obstacle65.pdf}
-
-\vspace{-20mm}
-\hfill \includegraphics[height=0.25\textheight]{../talk-oxford/images/vi-newton-gmg-bad.png}
+\includegraphics[height=0.15\textheight]{../talk-oxford/images/obstacle65.pdf} \qquad \includegraphics[height=0.25\textheight]{../talk-oxford/images/vi-newton-gmg-bad.png}
 \end{frame}
 
 
@@ -621,19 +601,16 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \frametitle{nested iteration}
 
 \begin{itemize}
-\item applying nested iteration helps this:
+\item on simpler VI problems, \alert{nested iteration} helps
     \begin{itemize}
-    \item[$\circ$] this is effectively an FMG-cycle, an alternative to FASCD
-    \item[$\circ$] grid-independent Newton iterations
-    \item[$\circ$] optimal $O(N)$ flops and time; Chapter 12 example in my new book
+    \item[$\circ$] nested-iteration = grid-sequencing
+    \item[$\circ$] on classical obstacle problem: grid-independent Newton iterations, optimal $O(N)$ flops and time; Chapter 12 in my book
     \end{itemize}
+\item not as effective on harder (\emph{lower-regularity, complicated free boundary}) problems
 \end{itemize}
 
-\bigskip
-\includegraphics[height=0.25\textheight]{../talk-oxford/images/vi-newton-gmg-good.png} 
-
-\vspace{-22mm}
-\hspace{40mm} \includegraphics[width=20mm]{../talk-oxford/images/frontcover.jpg}
+\medskip
+\includegraphics[height=0.15\textheight]{../talk-oxford/images/obstacle65.pdf} \qquad \includegraphics[height=0.25\textheight]{../talk-oxford/images/vi-newton-gmg-good.png} \qquad \includegraphics[width=15mm]{../talk-oxford/images/frontcover.jpg}
 \end{frame}
 
 
@@ -641,18 +618,19 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 
 \begin{frame}{multigrid strategies for VIs: feature table}
 
-{\small
-\begin{tabular}{r|cccc}
-   & \stacktwo{admissible}{iterates} & \stacktwo{mesh-indep.}{rates}
+\begin{center}
+\begin{tabular}{r|ccc}
+   & \stacktwo{mesh-indep.}{rates}
        & \stacktwo{no need for}{global linearization}  \\ \hline
-NM                         & $\checkmark$ &              & \\
-\quad $+$ NI               & $\checkmark$ & $\checkmark$ & \\
-{\color{FireBrick} FASCD}  & $\checkmark$ & $\checkmark$ & $\checkmark$ {\Large \strut}
+NM                         &              & \\
+NM $+$ NI                  & $\checkmark$?& \\
+{\color{FireBrick} FASCD}  & $\checkmark$ & $\checkmark$ {\Large \strut}
 \end{tabular}
-}
+\end{center}
 
-\bigskip
-{\scriptsize
+
+\medskip
+{\small
 \begin{center}
 NM = Newton-multigrid, NI = nested iteration
 \end{center}
@@ -660,7 +638,7 @@ NM = Newton-multigrid, NI = nested iteration
 
 \vspace{5mm}
 \begin{itemize}
-\item new algorithm,
+\item new algorithm (2023):
 
 {\color{FireBrick} FASCD = full approximation scheme constraint decomposition}
 \end{itemize}
@@ -671,19 +649,60 @@ NM = Newton-multigrid, NI = nested iteration
 
 \newcommand{\cK}{\mathcal{K}}
 
+\begin{frame}{subspace decomposition}
+
+\hfill \includegraphics[height=0.12\textheight]{../talk-oxford/images/mg-grids.png}
+
+{\footnotesize
+\hfill $\Omega^3$ \hspace{8.5mm} $\Omega^2$ \hspace{8.5mm} $\Omega^1$ \hspace{8.5mm} $\Omega^0$ \hspace{1mm}
+}
+
+\begin{itemize}
+\item to explain ``constraint decomposition'' in FAS\underline{CD}, start with subspace decomposition in the multilevel case
+\item assume mesh levels are nested: $\Omega^j \subset \Omega^{j+1}$ nodewise
+\item let $\mathcal{V}^j$ be the space of FE functions on $\Omega^j$
+    \begin{itemize}
+    \item[$\circ$] standard FE spaces: \, $\mathcal{V}^j \subset \mathcal{V}^{j+1}$
+    \end{itemize}
+\begin{block}{definition}
+$\ds \mathcal{V}^J = \sum_{i=0}^J \mathcal{V}^i$ \quad is called a \emph{subspace decomposition} (Xu 1992)
+\end{block}
+    \begin{itemize}
+    \item[$\circ$] \emph{non}-unique vector space sum
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+
 \begin{frame}{constraint decomposition}
 
 \begin{itemize}
-\item Tai's (2003) \emph{constraint decomposition} (CD) for VIs follows the subspace decomposition idea (Xu 1992)
+\item Tai's (2003) \emph{constraint decomposition} (CD) for VIs extends subspace decomposition to convex subsets
+    \begin{itemize}
+    \item[$\circ$] non-trivial
+    \end{itemize}
 \item suppose $\mathcal{K} \subset \mathcal{V}$ is a closed and convex admissible subset
 \item for a subspace decomposition $\mathcal{V} = \sum_i \mathcal{V}_i$, write the admissible subset as a sum
     $$\mathcal{K} = \sum_i \mathcal{K}_i$$
 where $\mathcal{K}^i \subset \mathcal{V}^i$, with projections $\Pi_i : \mathcal{K} \to \mathcal{K}_i$
-\item CD multiplicative iterations for $VI(F,\ell,\mathcal{K})$
+\end{itemize}
+\end{frame}
 
-\begin{pseudo}
-\pr{cd-mult}
+
+\begin{frame}{constraint decomposition: multiplicative iterations}
+
+\begin{itemize}
+\item multiplicative iterations for $VI(F,\ell,\mathcal{K})$ over the CD
+
+{\small
+\begin{pseudo}[left-margin=-5mm]
+\pr{cd-mult}(u)\text{:} \\+
+    for $i = 0,\dots,m-1$: \\+
+        find $w_i\in \cK_i$ s.t. \\+
+            $\displaystyle \Big<f\Big(\sum_{j<i} w_j + w_i + \sum_{j>i} \Pi_j u\Big),\, v_i - w_i\Big> \ge \ip{\ell}{v_i - w_i} \,\forall v_i \in \cK_i$ \\--
+    return $w=\sum_i w_i\in\cK$
 \end{pseudo}
+}
 \end{itemize}
 \end{frame}
 
