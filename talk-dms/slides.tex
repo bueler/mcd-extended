@@ -727,23 +727,7 @@ FIXME
 
 \begin{frame}{classical obstacle problem}
 
-\only<1-2>{\includegraphics[width=0.4\textwidth]{../talk-oxford/images/obstacle65.pdf}}
-\hfill
-\only<1-2>{\includegraphics[width=0.2\textwidth]{../paper/fixfigs/ball-set.png} \hspace{1mm}}
-\only<3>{\includegraphics[width=0.2\textwidth]{../paper/fixfigs/spiral-set.png} \hspace{2mm}}
-
-\bigskip
-
-\begin{center}
-%\only<1>{\includegraphics[width=0.25\textwidth]{figs/balliterslog.png}}
-\only<1>{\includegraphics[width=0.5\textwidth]{figs/balliters.png}}
-\only<2>{\includegraphics[width=0.5\textwidth]{figs/balliters.png}}
-\only<3>{\includegraphics[width=0.5\textwidth]{figs/bothiters.png}}
-\end{center}
-
-%\item<1> plot $m_J$ versus V-cycle iterations for ball from Table 2 and fit $\log(m_J)$
-%\item<2> add $m_J$ versus F-cycle iterations for ball from Table 2
-%\item<3> plot $m_J$ versus V-cycle, F-cycle iterations for spiral from Table 2 and fit $\log(m_J)$
+\only<1>{\includegraphics[width=0.75\textwidth]{figs/ballitersV.png}}\only<2>{\includegraphics[width=0.75\textwidth]{figs/ballitersVlog.png}}\only<3>{\includegraphics[width=0.75\textwidth]{figs/ballitersVF.png}}\only<4>{\includegraphics[width=0.75\textwidth]{figs/bothitersVF.png}} \hfill \only<1-3>{\includegraphics[width=0.2\textwidth]{../paper/fixfigs/ball-set.png}}\only<4>{\includegraphics[width=0.2\textwidth]{../paper/fixfigs/spiral-set.png}}
 \end{frame}
 
 
@@ -756,8 +740,19 @@ FIXME
 
 \begin{itemize}
 \item 2D problem: $-\eps \grad^2 u + \bm{X}\cdot \grad u = \phi$ with $0\le u\le 1$
-\item plot $m_J$ versus FMG-cycle iterations from Table 3
 \end{itemize}
+\end{frame}
+
+
+\begin{frame}{advection-diffusion of a concentration}
+
+\includegraphics[width=0.75\textwidth]{figs/advdiff.png} \hfill \begin{minipage}[t]{0.2\textwidth}
+\vspace{-50mm}
+
+\includegraphics[width=\textwidth]{../paper/fixfigs/poll2d-zero-set.png}
+
+\includegraphics[width=\textwidth]{../paper/fixfigs/poll2d-one-set.png}
+\end{minipage}
 \end{frame}
 
 
@@ -843,13 +838,21 @@ with extension by 0 to all of $\Omega$, and $\bu$ is the velocity solution on
 \end{frame}
 
 
-\begin{frame}{weak-scaling results: shallow ice approximation}
+\begin{frame}{computed ice sheet}
 
-\hfill \includegraphics[width=0.8\textwidth]{../paper/fixfigs/sialev8scene.png}
+\centering
+\includegraphics[width=\textwidth]{../paper/fixfigs/sialev8scene.png}
 
-\begin{itemize}
-\item bar plot $P$ on $x$-axis and time on $y$-axis; label bars with $m_J$ and FMG iterations
-\end{itemize}
+FIXME ice sheet the size of Greenland
+\end{frame}
+
+
+\begin{frame}{weak-scaling}
+
+\centering
+\includegraphics[width=0.7\textwidth]{figs/siaweaktime.png}
+
+FIXME final run had $m_J=20481^2=4.1\times 10^8$ unknowns and a 88 meter grid resolution
 \end{frame}
 
 
