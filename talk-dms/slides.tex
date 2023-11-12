@@ -742,16 +742,25 @@ $$\chi^j = R^{\oplus} \chi^{j+1} \phantom{smdlfkaj asdfklj asdf sdfaa asddfas ds
 \end{frame}
 
 
+\begin{frame}{FASCD V-cycle: visualization on a 1D problem}
+
+\centering
+\includegraphics[width=0.85\textwidth]{figs/vcycle-visualized.png}
+\end{frame}
+
+
 \begin{frame}{FASCD specifics}
 
+see paper (Bueler \& Farrell 2023) for:
 \begin{itemize}
-\item see paper (Bueler \& Farrell 2023) for generalization to upper and lower obstacles:
+\item generalization to upper and lower obstacles:
     $$\mathcal{K}^J = \{\underline{\psi}^J \le v^J \le \overline{\psi}^J\}$$
-\item see paper for stopping criteria
+\item stopping criteria
     \begin{itemize}
-    \item[$\circ$] need to evaluate whether CP/KKT conditions are satisfied
+    \item[$\circ$] evaluate whether CP/KKT conditions are satisfied
     \end{itemize}
-\item see paper for FASCD FMG cycle
+\item FMG cycle
+\item details of $O(m_J)$ smoother
 \end{itemize}
 \end{frame}
 
@@ -763,7 +772,6 @@ $$\chi^j = R^{\oplus} \chi^{j+1} \phantom{smdlfkaj asdfklj asdf sdfaa asddfas ds
 \subsection{advection-diffusion of a concentration}
 
 \subsection{glacier surface elevations}
-
 
 \begin{frame}{classical obstacle problem by FASCD}
 
@@ -777,9 +785,9 @@ $$\chi^j = R^{\oplus} \chi^{j+1} \phantom{smdlfkaj asdfklj asdf sdfaa asddfas ds
 
 \begin{itemize}
 \item suppose $u(x)$ is a concentration in $\Omega \subset \RR^d$: \qquad $0\le u\le 1$
-\item suppose it moves by combination of diffusion, advection (wind $\bm{X}(x)$), and source ($\phi(x)$):
+\item suppose it moves by combination of diffusion, advection by wind $\bm{X}(x)$, and source function $\phi(x)$:
     $$-\eps \grad^2 u + \bm{X}\cdot \grad u = \phi$$
-\item two active sets (\emph{pictured in $d=2$ case}):
+\item two active sets (\emph{$d=2$ case}):
     $$\underline{A}_u = \{u(x) = 0\} \hspace{22mm} \overline{A}_u = \{u(x) = 1\} \hspace{8mm}$$
 \end{itemize}
 
@@ -797,27 +805,16 @@ $$\chi^j = R^{\oplus} \chi^{j+1} \phantom{smdlfkaj asdfklj asdf sdfaa asddfas ds
 
 \scriptsize
 \begin{itemize}
-\item<2> compare Klee-Minty cube?
+\item[] \emph{compare: linear programming (Klee-Minty cube?), spatial correlations}
 \end{itemize}
 \end{frame}
 
 
-\begin{frame}{problem: fluid layer in a climate}
+\begin{frame}{problem: geometry of flowing glacier ice in a climate}
 
 \begin{itemize}
-\item consider an incompressible, viscous layer with surface elevation $s(x,y)$, flowing with velocity $\bu(x,y,z)$, driven by gravity, over fixed bed topography with elevation $b(x,y)$, in a \emph{climate} which adds or removes fluid at a signed rate $a(x,y)$ [$\text{m}\,\text{s}^{-1}$]
-    \begin{itemize}
-    \item[$\circ$] data $a,b$ defined on domain $\Omega \subset \RR^2$
-    \end{itemize}
-\item geophysical examples: \alert{glaciers and ice sheets}, sea ice, lakes
+\item ``where are there glaciers?'' is a free-boundary problem
 \end{itemize}
-
-\bigskip
-\hfill \mbox{\includegraphics[height=0.25\textheight]{../talk-oxford/images/domain-data.png} \hspace{7mm} \includegraphics[height=0.25\textheight]{../talk-oxford/images/domain-velocity.png}}
-\end{frame}
-
-
-\begin{frame}{example: glacier ice coverage of the Alps in prior climates}
 
 \includegraphics[width=1.02\textwidth]{../talk-oxford/images/alps-seguinot2018.png}
 
@@ -826,86 +823,130 @@ $$\chi^j = R^{\oplus} \chi^{j+1} \phantom{smdlfkaj asdfklj asdf sdfaa asddfas ds
 \end{frame}
 
 
-\begin{frame}{naive strong form}
+\begin{frame}{free-boundary problem: flowing glacier ice in a climate}
 
 \begin{itemize}
-\item naive strong form of the steady model: % ($\bn_s = \left<-s_x,-s_y,1\right>$ is surface normal):
-\begin{align*}
-s &\ge b                    & &\text{everywhere in } \Omega \\
--\bu|_s \cdot \bn_s &= a    & &\text{where } s(x,y) > b(x,y)
-\end{align*}
-
+\item glacier = incompressible, viscous fluid driven by gravity
+\item to find: ice surface elevation $s(t,x,y)$ and velocity $\bu(t,x,y,z)$
+\item over fixed bed topography with elevation $b(x,y)$
     \begin{itemize}
-    \item[$\circ$] surface velocity $\bu|_s$ is determined by fluid domain geometry $s$
-    \item[$\circ$] $\bn_s=\left<-\grad s,1\right>$ is upward surface normal
-    \item[$\circ$] generally: $-\bu|_s \cdot \bn_s$ is a \emph{non-local} function of $s$
+    \item[$\circ$] $s(t,x,y) \ge b(x,y)$
     \end{itemize}
-\item the inequality constraint $s \ge b$ \alert{generates a free boundary}
-
-if an ablative climate $a < 0$ forces surface down to bed
+\item in a \emph{climate} which adds or removes ice at a signed rate $a(t,x,y)$
+    \begin{itemize}
+    \item[$\circ$] data $a,b$ is defined on domain $\Omega \subset \RR^2$
+    \end{itemize}
 \end{itemize}
 
 \bigskip
-\hfill \mbox{\includegraphics[height=0.2\textheight]{../talk-oxford/images/domain-data.png} \hspace{7mm} \includegraphics[height=0.2\textheight]{../talk-oxford/images/domain-velocity.png}}
+\hfill \mbox{\includegraphics[height=0.24\textheight]{../talk-oxford/images/domain-data.png} \quad $\stackrel{?}{\to}$ \quad \includegraphics[height=0.24\textheight]{../talk-oxford/images/domain-velocity.png}}
+\end{frame}
+
+
+\begin{frame}{glacier free-boundary problem: naive strong form}
+
+\begin{itemize}
+\item is this an adequate description?:
+\begin{align*}
+s &\ge b                    & &\text{everywhere in } \Omega \\
+\frac{\partial s}{\partial t} &= a + \bu|_s \cdot \bn_s & &\text{where } s(t,x,y) > b(x,y)
+\end{align*}
+\item notes:
+    \begin{itemize}
+    \item[$\circ$] surface velocity $\bu|_s$ is, \alert{in some manner}, determined by $s$
+        \begin{itemize}
+        \item $\bu|_s$ is generally a \emph{non-local} function of $s$
+        \end{itemize}
+    \item[$\circ$] $\bn_s=\left<-\grad s,1\right>$ is upward surface normal
+    \end{itemize}
+\end{itemize}
+
+\bigskip
+\hfill \mbox{\includegraphics[height=0.2\textheight]{../talk-oxford/images/domain-data.png} \quad $\stackrel{?}{\to}$ \quad \includegraphics[height=0.2\textheight]{../talk-oxford/images/domain-velocity.png}}
+\end{frame}
+
+
+\begin{frame}{glacier free-boundary problem: steady VI form}
+
+\begin{itemize}
+\item admissible surface elevations:\footnote{$(s-b)^{8/3} \stackrel{?}{\in} W^{1,4}(\Omega)$ so $\mathcal{V} \stackrel{?}{=} (W^{1,4})^{3/8}$ \dots  see (Jouvet \& Bueler, 2012)}
+    $$\mathcal{K} = \left\{r \in \mathcal{V} \,:\, r \ge b\right\}$$
+\item steady ($\frac{\partial s}{\partial t}=0$) VI problem for surface elevation $s\in\mathcal{K}$:
+	$$\ip{\Phi(s) - a}{r-s} \ge 0 \quad \text{ for all } r \in \mathcal{K}$$
+where
+    $$\Phi(s)=- \bu|_s \cdot \bn_s$$
+with extension by 0 to all of $\Omega$
+%\item $\bu$ is the velocity solution on
+%    $$\Lambda(s) = \{(x,y,z) : b(x,y) < z < s(x,y)\} \subset \RR^3$$
+\end{itemize}
 \end{frame}
 
 
 \begin{frame}{shallow ice approximation}
 
 \begin{itemize}
-\item with enough simplifications we may compute the surface motion term by applying a nonlinear elliptic differential operator to $s$:
-    $$\Phi(s) = - \frac{\gamma}{\qq} (s-b)^{\qq} |\grad s|^{\qq} - \grad \cdot\left(\frac{\gamma}{\qq+1} (s-b)^{\qq+1} |\grad s|^{\qq-2} \grad s\right)$$
-    \begin{itemize}
-    \item $\qq = 4$
-    \item $\grad$ is in $x,y$ only
-    \item $\Phi(s)$ is a nonlinear \alert{differential operator} in this model because membrane stresses are \emph{not} balanced
-    \item $\Phi(s)$ is doubly-degenerate
-    \end{itemize}
+\item the \emph{shallow ice approximation} is a highly-simplified view of conservation of momentum
+\item isothermal, nonsliding case:
+\begin{align*}
+\Phi(s) &= - \bu|_s \cdot \bn_s \\
+        &= - \frac{\gamma}{4} (s-b)^{4} |\grad s|^{4} - \grad \cdot\left(\frac{\gamma}{5} (s-b)^{5} |\grad s|^{2} \grad s\right)
+\end{align*}
 \end{itemize}
 \end{frame}
 
 
-\begin{frame}{VI for fluid layer in a climate}
+\begin{frame}{FASCD test case: simplified ice sheet the size of Greenland}
 
 \begin{itemize}
-\item admissible surface elevations:
-    $$\mathcal{K} = \left\{r \in \mathcal{V} \,:\, r \ge b\right\}$$
-
-    \begin{itemize}
-    \item[$\circ$] $\mathcal{V}$ to be determined by viscous fluid model\footnote{in shallow ice approximation, $(s-b)^{8/3} \in W^{1,4}(\Omega)$ (Jouvet \& Bueler, 2012)}
-    \end{itemize}
-\item VI problem for surface elevation $s\in\mathcal{K}$:
-	$$\ip{\Phi(s)}{r-s} \ge \ip{a}{r-s} \quad \text{ for all } r \in \mathcal{K}$$
-where
-    $$\Phi(s)=- \bu|_s \cdot \bn_s,$$
-with extension by 0 to all of $\Omega$, and $\bu$ is the velocity solution on
-    $$\Lambda(s) = \{(x,y,z) : b(x,y) < z < s(x,y)\}$$
+\item \emph{ice sheet} = big glacier
 \end{itemize}
-\end{frame}
 
-
-\begin{frame}{computed ice sheet}
-
+\bigskip\bigskip
 \centering
 \includegraphics[width=\textwidth]{../paper/fixfigs/sialev8scene.png}
-
-FIXME ice sheet the size of Greenland
 \end{frame}
 
 
-\begin{frame}{weak-scaling}
+\begin{frame}{FASCD: parallel weak scaling}
 
+\begin{itemize}
+\item observed optimality of FMG solver
+\item good parallel \emph{weak scaling} as well
+    \begin{itemize}
+    \item[$\circ$] each processor owns $641\times 641$ (sub) mesh
+    \item[$\circ$] $P=1024$ run had $20481^2=4.1\times 10^8$ unknowns
+    \item[] \dots and 88 meter resolution
+    \end{itemize}
+\end{itemize}
+
+\bigskip
 \centering
-\includegraphics[width=0.7\textwidth]{figs/siaweaktime.png}
-
-FIXME final run had $m_J=20481^2=4.1\times 10^8$ unknowns and a 88 meter grid resolution
+\includegraphics[width=0.55\textwidth]{figs/siaweaktime.png}
 \end{frame}
 
 
 \begin{frame}{summary and outlook}
 
 \begin{itemize}
-\item FIXME
+\item FASCD = new multilevel solver for VI (free-boundary) problems
+    \begin{itemize}
+    \item[$\circ$] implemented in Python Firedrake (over PETSc)
+    \end{itemize}
+\item observed optimality, even TME, in many cases
+    \begin{itemize}
+    \item[$\circ$] actually fast
+    \end{itemize}
+
+\bigskip\bigskip
+\item[] \textbf{{\color{FireBrick} to do:}}
+    \begin{itemize}
+    \item add mesh adaptivity to free boundary (Stefano)
+    \item implement in C inside PETSc
+    \item apply to space-time (\emph{parabolic}) VI problems
+    \item prove convergence
+    \item identify smoothers for problems like elastic contact
+    \item include membrane stresses in glacier case
+    \end{itemize}
 \end{itemize}
 \end{frame}
 
@@ -913,7 +954,8 @@ FIXME final run had $m_J=20481^2=4.1\times 10^8$ unknowns and a 88 meter grid re
 \begin{frame}{references}
 
 %{\scriptsize
-{\notsotiny
+%{\notsotiny
+{\footnotesize
 \input{references.tex}
 }
 \end{frame}
@@ -921,7 +963,8 @@ FIXME final run had $m_J=20481^2=4.1\times 10^8$ unknowns and a 88 meter grid re
 \begin{frame}{background references}
 
 %{\scriptsize
-{\notsotiny
+%{\notsotiny
+{\footnotesize
 \input{background.tex}
 }
 \end{frame}
