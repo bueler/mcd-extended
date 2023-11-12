@@ -90,7 +90,7 @@
 \newcommand{\iR}{R^{\bullet}}
 
 
-\title[Fast solvers for PDE+inequalities]{Fast solvers for partial differential equations \\ subject to inequalities}
+\title[Fast solvers for PDE subject to inequalities]{Fast solvers for partial differential equations \\ subject to inequalities}
 
 %\subtitle{\emph{}}
 
@@ -125,12 +125,9 @@
   \end{frame}
 }
 
-\begin{frame}{Outline}
-  \tableofcontents[hideallsubsections]
-  %\tableofcontents
 
-%\vfill
-%{\footnotesize \emph{PDEs = partial differential equations}}
+\begin{frame}{Outline: \emph{Fast solvers for PDEs subject to inequalities}}
+  \tableofcontents[hideallsubsections]
 \end{frame}
 
 
@@ -183,7 +180,7 @@
 
 \vspace{25mm}
 }
-\only<2-3>{
+\only<2>{
 \begin{itemize}
 \item a naive strong form would pose the problem in terms of its solution:
 \begin{align*}
@@ -193,11 +190,11 @@ u &= \psi \quad \text{ on $A_u$}
 
    \begin{itemize}
    \item[$\circ$] Poisson equation $-\grad^2 u = f$ is ``$J'(u)=0$'' on $R_u$
-   \item<3>[$\circ$] using the solution $u$ to define the set $R_u$ on which to solve the PDE $-\grad^2 u = f$ \alert{does not lead to solution algorithms}
+   \item[$\circ$] using the solution $u$ to define the set $R_u$ on which to solve the PDE $-\grad^2 u = f$ \alert{does not lead to solution algorithms}
    \end{itemize}
 \end{itemize}
 }
-\only<4>{
+\only<3>{
 \begin{itemize}
 \item the \emph{complementarity problem} (CP) is a meaningful strong form:
 \begin{align*}
@@ -207,15 +204,16 @@ u - \psi &\ge 0 \\
 \end{align*}
 
    \begin{itemize}
-   \item[$\circ$] CP $=$ (KKT conditions in $\infty$-dimensions)
+   \item[$\circ$] CP $=$ KKT conditions
+       \begin{itemize}
+       \item but in $\infty$-dimensions
+       \end{itemize}        
    \end{itemize}
-
-\phantom{x}
 
 \phantom{x}
 \end{itemize}
 }
-\only<5>{
+\only<4>{
 \begin{itemize}
 \item the weak form is a {\color{FireBrick} \emph{variational inequality} (VI)}, which says that $J'(u)$ points directly into $\mathcal{K}$:
     $$\ip{J'(u)}{v-u} = \int_\Omega \grad u\cdot \grad (v-u) - f (v-u) \ge 0$$
@@ -227,11 +225,14 @@ for all $v \in \mathcal{K}$
 \end{frame}
 
 
-\begin{frame}{VI $=$ weak form with $v-u$ as the test function}
+\begin{frame}{VI $=$ weak form}
 
+\begin{itemize}
+\item for problems of optimization type, the VI is the weak form, with $v-u$ as the test function:
 {\small
    $$J(u) \le J(v) \quad \forall v \in \mathcal{K} \qquad \iff \qquad \ip{J'(u)}{v-u} \ge 0 \quad \forall v \in \mathcal{K}$$
 }
+\end{itemize}
 
 \bigskip
 \begin{center}
@@ -350,7 +351,7 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 	\begin{itemize}
 	\item[$\circ$] $u\in \mathcal{V}=H^1(\Omega)$
 	\item[$\circ$] $\ell\in \mathcal{V}'$
-	\item[$\circ$] $F : \mathcal{V} \to \mathcal{V}'$ continuous and injective
+	\item[$\circ$] $F : \mathcal{V} \to \mathcal{V}'$ continuous and one-to-one
 	\item[$\circ$] for example, the Liouville-Bratu problem: $-\grad^2 u - e^u = f$
 	\end{itemize}
 \item discretization gives algebraic system on fine mesh $\Omega^h$:
@@ -363,7 +364,7 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 
 \vspace{4mm}
 }
-\only<2-3>{
+\only<2>{
 \begin{itemize}
 \item \emph{goal}: to solve $F^h(u^h) = \ell^h$ on $\Omega^h$
 \item suppose $w^h$ is a not-yet-converged iterate:
@@ -373,7 +374,7 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 	\begin{itemize}
 	\item are there alternatives to Newton's method?
 	\end{itemize}
-\item<3> notes:
+\item notes:
     \setbeamertemplate{enumerate item}{\emph{\roman{enumi})}}
     \begin{enumerate}
     \item the \emph{residual} \quad $r^h = \ell^h - F^h(w^h)$ \quad is computable
@@ -383,7 +384,7 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
     \end{enumerate}
 \end{itemize}
 }
-\only<4-5>{
+\only<3-4>{
 \begin{itemize}
 \item \emph{updated goal}: from iterate $w^h$, to solve
     $$F^h(u^h) - F^h(w^h) = r^h$$
@@ -391,12 +392,12 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
     $$F^h(e^h) = r^h$$
 \item an approximation solution $\tilde e^h$ would improve our iterate:
     $$w^h \leftarrow w^h+\tilde e^h$$
-\item<5> but $F^h$ is not linear!
+\item<4> but $F^h$ is not linear!
 \end{itemize}
 
 \vspace{5mm}
 }
-\only<6>{
+\only<5>{
 \begin{itemize}
 \item \emph{updated goal}: use a coarser mesh $\Omega^H$ to somehow estimate the solution $u^h$ in the nonlinear \emph{correction equation}
     $${\color{FireBrick} F^h(u^h) - F^h(w^h) = r^h}$$
@@ -408,7 +409,7 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 
 \vspace{15mm}
 }
-\only<7>{
+\only<6>{
 \begin{itemize}
 \item \emph{nodewise problem}: for $\psi_i^h$ a hat function or dof, solve for $c\in\RR$ to make the residual at that location zero:
 	$${\color{FireBrick} \phi_i(c) = r^h(w^h + c \psi_i^h)[\psi_i^h] = 0}$$
@@ -422,7 +423,7 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 
 \vspace{14mm}
 }
-\only<8-9>{
+\only<7>{
 \begin{itemize}
 \item \emph{updated goal}: use a coarser mesh $\Omega^H$ to somehow estimate the solution $u^h$ in $F^h(u^h) - F^h(w^h) = r^h(w^h)$
 \item Brandt's (1977) \emph{full approximation scheme} (FAS) equation:
@@ -434,11 +435,9 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
     \item[$\circ$] note: if $w^h=u^h$ exactly then $u^H = \iR w^h$ since $F^H$ injective
     \end{itemize}
 
-\item<9> rewritten FAS equation: let ${\color{FireBrick} \ell^H = F^H(\iR w^h) + R\, r^h(w^h)}$ then
+\item rewritten FAS equation: let ${\color{FireBrick} \ell^H = F^H(\iR w^h) + R\, r^h(w^h)}$ then
     $${\color{FireBrick} F^H(u^H) = \ell^H}$$
 \end{itemize}
-
-\vspace{-3mm}
 }
 \end{frame}
 
@@ -451,9 +450,9 @@ fine mesh $=\Omega^h$\, \includegraphics[height=0.14\textheight]{../talk-oxford/
 
 \begin{align*}
 &\text{pre-smooth over fine:} & & [\text{smoother updates } w^h] \\
-&\text{\textbf{restrict}:}                   & &\ell^H = F^H(\iR w^h) + R\, r^h(w^h) \\
-&\text{\textbf{solve coarse}:}                      & &F^H(w^H) = \ell^H \\
-&\text{\textbf{correct}:}                    & &w^h \leftarrow w^h + P(w^H - \iR w^h) \\
+&\text{restrict:}                   & &\ell^H = F^H(\iR w^h) + R\, r^h(w^h) \\
+&\text{solve coarse:}                      & &F^H(w^H) = \ell^H \\
+&\text{correct:}                    & &w^h \leftarrow w^h + P(w^H - \iR w^h) \\
 &\text{post-smooth over fine:} & & [\text{smoother updates } w^h]
 \end{align*}
 
@@ -541,15 +540,17 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 
 \begin{itemize}
 \item since $\sim$1980: optimality can be achieved by multigrid for PDE problems with reasonably-smooth solutions
-\item<2> in fact, multigrid people get greedy
-\end{itemize}
-
-\begin{block}<2>{definition} a solver exhibits \emph{textbook multigrid efficiency} if it is optimal and it does total work less than 10 times that of a single smoother sweep
+\item in fact, multigrid people get greedy
+\begin{block}{definition} a solver shows \emph{textbook multigrid efficiency} if it does total work less than 10 times that of a single smoother sweep
 \end{block}
+    \begin{itemize}
+    \item[$\circ$] TME $\implies$ optimal
+    \end{itemize}
+\end{itemize}
 \end{frame}
 
 
-\begin{frame}{Bratu model problem: optimality and TME}
+\begin{frame}{Bratu model problem: TME}
 
 \begin{columns}
 \begin{column}{0.45\textwidth}
@@ -558,10 +559,9 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \item observed optimality:
 \begin{align*}
 \text{flops} &= O(N^1) \\
-\text{exp evaluations} &= O(N^1) \\
 \text{processor time} &= O(N^1)
 \end{align*}
-\item {\color{FireBrick} $12$-level V-cycle} has $N\approx 10^8$ unknowns
+\item highest-resolution {\color{FireBrick} $12$-level V-cycle} has $N\approx 10^8$ unknowns
 \item compare $\approx 20\,\mu\,\text{s}/\text{N}$ for Poisson using Firedrake ($P_1$, geometric multigrid)
 \end{itemize}
 \end{column}
@@ -574,78 +574,19 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 
 \section{multigrid for VIs}
 
-\subsection{an earlier approach}
+\subsection{full approximation scheme constraint decomposition (FASCD)}
 
-\begin{frame}[fragile]
-\frametitle{Newton-multigrid for the classical obstacle problem}
-
-\begin{itemize}
-\item best-known multigrid method for VIs: Newton-multigrid
-    \begin{itemize}
-    \item[$\circ$] linear solver applies to currently-inactive variables
-        \begin{itemize}
-        \item ``reduced space line search''
-        \end{itemize}
-    \item[$\circ$] Newton step equations solved by CG with linear multigrid V-cycles
-    \end{itemize}
-\item observed in actual use: grid-dependent Newton iterations
-\item the (outer) Newton iteration must converge on the active set \alert{before} linear multigrid can provide effective preconditioning
-\end{itemize}
-
-\medskip
-\includegraphics[height=0.15\textheight]{../talk-oxford/images/obstacle65.pdf} \qquad \includegraphics[height=0.25\textheight]{../talk-oxford/images/vi-newton-gmg-bad.png}
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{nested iteration}
+\begin{frame}{an FAS multigrid strategy for VIs}
 
 \begin{itemize}
-\item on simpler VI problems, \alert{nested iteration} helps
-    \begin{itemize}
-    \item[$\circ$] nested-iteration = grid-sequencing
-    \item[$\circ$] on classical obstacle problem: mesh-independent Newton iterations, optimal $O(N)$ flops and time; Chapter 12 in my book
-    \end{itemize}
-\item not as effective on harder (\emph{lower-regularity, complicated free boundary}) problems
-\end{itemize}
-
-\medskip
-\includegraphics[height=0.15\textheight]{../talk-oxford/images/obstacle65.pdf} \qquad \includegraphics[height=0.25\textheight]{../talk-oxford/images/vi-newton-gmg-good.png} \qquad \includegraphics[width=15mm]{../talk-oxford/images/frontcover.jpg}
-\end{frame}
-
-
-\newcommand{\stacktwo}[2]{\begin{tabular}{c} #1 \\ #2 \end{tabular}}
-
-\begin{frame}{multigrid strategies for VIs: feature table}
-
-\begin{center}
-\begin{tabular}{r|ccc}
-   & \stacktwo{mesh-indep.}{rates}
-       & \stacktwo{no need for}{global linearization}  \\ \hline
-NM                         &              & \\
-NM $+$ NI                  & $\checkmark$?& \\
-{\color{FireBrick} FASCD}  & $\checkmark$ & $\checkmark$ {\Large \strut}
-\end{tabular}
-\end{center}
-
-
-\medskip
-{\small
-\begin{center}
-NM = Newton-multigrid, NI = nested iteration
-\end{center}
-}
-
-\vspace{5mm}
-\begin{itemize}
-\item new algorithm (2023):
+\item new algorithm (Bueler \& Farrell 2023):
 
 {\color{FireBrick} FASCD = full approximation scheme constraint decomposition}
+
+\bigskip
+\item what is ``constraint decomposition'' in FAS\underline{CD}?
 \end{itemize}
 \end{frame}
-
-
-\subsection{full approximation scheme constraint decomposition (FASCD)}
 
 \newcommand{\cK}{\mathcal{K}}
 
@@ -658,17 +599,17 @@ NM = Newton-multigrid, NI = nested iteration
 }
 
 \begin{itemize}
-\item to explain the ``CD'' (constraint decomposition) in FAS\underline{CD}, start with subspace decomposition in the multilevel case
-\item assume mesh levels are nested: $\Omega^j \subset \Omega^{j+1}$ nodewise
-\item let $\mathcal{V}^j$ be the space of FE functions on $\Omega^j$
-    \begin{itemize}
-    \item[$\circ$] standard FE spaces: \, $\mathcal{V}^j \subset \mathcal{V}^{j+1}$
-    \end{itemize}
+\item start with subspace decomposition over nested meshes:
+    $$\Omega^j \subset \Omega^{j+1}$$
+\item the FE function spaces $\mathcal{V}^j$ over $\Omega^j$ are also nested:
+    $$\mathcal{V}^j \subset \mathcal{V}^{j+1}$$
+
 \begin{block}{definition}
 $\ds \mathcal{V}^J = \sum_{i=0}^J \mathcal{V}^i$ \quad is called a \emph{subspace decomposition} (Xu 1992)
 \end{block}
     \begin{itemize}
     \item[$\circ$] \emph{non}-unique vector space sum
+    \item[$\circ$] Xu's paper explains how to analyze linear multigrid for PDEs via subspace decomposition
     \end{itemize}
 \end{itemize}
 \end{frame}
@@ -677,12 +618,8 @@ $\ds \mathcal{V}^J = \sum_{i=0}^J \mathcal{V}^i$ \quad is called a \emph{subspac
 \begin{frame}{constraint decomposition}
 
 \begin{itemize}
-\item Tai's (2003) constraint decomposition for VIs extends subspace decomposition to convex subsets
-    \begin{itemize}
-    \item[$\circ$] extends non-trivially
-    \end{itemize}
+\item Tai's (2003) constraint decomposition \emph{non-trivially} extends a subspace decomposition $\mathcal{V}^J = \sum_i\mathcal{V}^i$ to convex subsets
 \item suppose $\mathcal{K}^J \subset \mathcal{V}^J$ is a closed and convex subset
-\item assume $\mathcal{V}^J = \sum_i\mathcal{V}^i$ is a subspace decomposition
 \begin{block}{definition}
 $\ds \mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$ \quad is a \emph{constraint decomposition} (CD) if there are closed and convex subsets $\mathcal{K}^i\subset \mathcal{V}^i$, and (nonlinear) projections $\Pi_i : \mathcal{K}^J \to \mathcal{K}^i$, so that $\ds v = \sum_{i=0}^J \Pi_i v$ and a stability condition applies (not shown)
 \end{block}
@@ -694,30 +631,36 @@ $\ds \mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$ \quad is a \emph{constraint dec
 
 \begin{itemize}
 \item observation: generally $\mathcal{K}^i \not\subset \mathcal{K}^J$
-\item picture below: obstacle problem on a two-point mesh ($\mathcal{V} \cong \RR^2$)
 \end{itemize}
 
 \bigskip
 \begin{center}
 \includegraphics[width=0.6\textwidth]{../paper/genfigs/cartoon.pdf}
+
+\medskip
+{\small obstacle problem on a two-point mesh with $\mathcal{V} \cong \RR^2$}
 \end{center}
 \end{frame}
 
 
-\begin{frame}{constraint decomposition: multiplicative iterations}
+\begin{frame}{iterations over constraint decomposition}
 
 \begin{itemize}
-\item multiplicative iterations for $VI(F,\ell,\mathcal{K})$ over the CD
+\item Tai proposed abstract iterations for solving $VI(F,\ell,\mathcal{K})$ over a CD $\mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$
 
 {\small
 \begin{pseudo}[left-margin=-5mm]
 \pr{cd-mult}(u)\text{:} \\+
     for $i = 0,\dots,m-1$: \\+
         find $w_i\in \cK_i$ s.t. \\+
-            $\displaystyle \Big<f\Big(\sum_{j<i} w_j + w_i + \sum_{j>i} \Pi_j u\Big),\, v_i - w_i\Big> \ge \ip{\ell}{v_i - w_i} \,\forall v_i \in \cK_i$ \\--
+            $\displaystyle \Big<F\Big(\sum_{j<i} w_j + w_i + \sum_{j>i} \Pi_j u\Big),\, v_i - w_i\Big> \ge \ip{\ell}{v_i - w_i} \,\forall v_i \in \cK_i$ \\--
     return $w=\sum_i w_i\in\cK$
 \end{pseudo}
 }
+
+\medskip
+\item Tai's iterations are not practical because you compute on the finest level in fact
+\item we added two techniques: \emph{defect obstacles} on each level, and \emph{FAS coarse corrections}
 \end{itemize}
 \end{frame}
 
@@ -725,27 +668,42 @@ $\ds \mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$ \quad is a \emph{constraint dec
 \begin{frame}{defect obstacles}
 
 \begin{itemize}
-\item recall $\mathcal{K} = \{v \ge \psi\}$ in classical obstacle problem
+\item recall $\mathcal{K} = \{v \ge \psi\}$ in an obstacle problem
 \begin{block}{definition}
-the \emph{defect obstacle} for a fine-level iterate $w^J \in \mathcal{K}^J = \{v\,:\,v\ge \psi^J\}$ is an FE function in $\mathcal{V}^J$:
-    $$\chi^J = \psi^J - w^J$$
+for finest-level admissible set $\mathcal{K}^J = \{v^J\ge \psi^J\} \subset \mathcal{V}^J$ and an iterate $w^J \in \mathcal{K}^J$, the \emph{defect obstacle} (Gr\"aser \& Kornhuber 2009) is
+    $$\chi^J = \psi^J - w^J \in \mathcal{V}^J$$
 \end{block}
-\item we generate the CD through defect obstacles $\chi^j$ on each level
-\item via \emph{monotone restriction}: \quad $\ds \chi^j = R^{\oplus} \chi^{j+1}$
+
+    \begin{itemize}
+    \item[$\circ$] note $\chi^J \le 0$
+    \end{itemize}
+\item we generate the CD through
+
+defect obstacles $\chi^j$ on each
+
+level via \emph{monotone restriction}:
+
+$$\chi^j = R^{\oplus} \chi^{j+1} \phantom{smdlfkaj asdfklj asdf sdfaa asddfas dsa}$$
+
+    \begin{itemize}
+    \item[$\circ$] a \emph{nonlinear} operator
+    \item[$\circ$] {\footnotesize also due to (Gr\"aser \& Kornhuber 2009)}
+    \end{itemize}
 \end{itemize}
 
-\begin{center}
-\input{tikz/Rplusminus.tex}
-\end{center}
+\vspace{-25mm}
+\hfill \mbox{\input{tikz/Rplusminus.tex}}
 \end{frame}
 
 
-\begin{frame}{down and up sets}
+\begin{frame}{up and down sets}
 
 \begin{itemize}
-\item let $\mathcal{U}^j = \{z \ge \chi^j\}$, $\mathcal{D}^j = \{y \ge \phi^j=\chi^j - \chi^{j-1}\}$
-\item get CD of fine-level constraint set:
-	$$\mathcal{U}^J = \sum_{i=0}^J \mathcal{D}^i \phantom{KLDFJSKJDS SDF}$$
+\item upward part in the FASCD V-cycle uses large admissible sets:
+    $$\mathcal{U}^j = \{z^j \ge \chi^j\}$$
+\item downward sets are smaller to guarantee admissibility of the upcoming coarse correction:
+    $$\mathcal{D}^j = \{y^j \ge \phi^j=\chi^j - \chi^{j-1}\}$$
+\item $\ds \mathcal{U}^j = \sum_{i=0}^j \mathcal{D}^i$ is a CD of the $j$th-level admissible set
 \end{itemize}
 
 \begin{center}
@@ -754,7 +712,7 @@ the \emph{defect obstacle} for a fine-level iterate $w^J \in \mathcal{K}^J = \{v
 \end{frame}
 
 
-\begin{frame}{multilevel constraint decomposition}
+\begin{frame}{multilevel constraint decomposition in FASCD}
 
 \centering
 \includegraphics[width=0.7\textwidth]{figs/innerconeapprox.png}
@@ -764,23 +722,37 @@ the \emph{defect obstacle} for a fine-level iterate $w^J \in \mathcal{K}^J = \{v
 \begin{frame}{full approximation scheme constraint decomposition}
 
 % case of lower obstacle only
-\begin{pseudo}
+\begin{pseudo}[font=\small]
 \pr{fascd-vcycle}(J,\ell^J,\psi^J;w^J)\text{:} \\+
     $\chi^J = \psi^J - w^J$ \\
     for $j=J$ downto $j=1$ \\+
       $\chi^{j-1} = \maxR \chi^j$ \\
       $\phi^j = \chi^j - P\chi^{j-1}$ \\
       $y^j = 0$ \\
-      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j,\phi^j,w^j;y^j)$  \hspace{1.0cm} \ct{in $\mathcal{D}^j$}\\
+      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j,\phi^j,w^j;y^j)$ \\
       $w^{j-1} = \iR(w^j + y^j)$ \\
       $\ell^{j-1} = f^{j-1}(w^{j-1}) + R \left(\ell^j - f^j(w^j+y^j)\right)$ \\-
     $z^0 = 0$ \\
-    $\text{\pr{solve}}(\ell^0,\chi^0,w^0;z^0)$ \hspace{1.0cm} \ct{in $\mathcal{U}^0$} \\
+    $\text{\pr{solve}}(\ell^0,\chi^0,w^0;z^0)$  \\
     for $j=1$ to $j=J$ \\+
       $z^j = y^{j} + P z^{j-1}$ \\
-      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j,\chi^j,w^j;z^j)$  \hspace{1.0cm} \ct{in $\mathcal{U}^j$} \\-
+      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j,\chi^j,w^j;z^j)$  \\-
     return $w^J+z^J$
 \end{pseudo}
+\end{frame}
+
+
+\begin{frame}{FASCD specifics}
+
+\begin{itemize}
+\item see paper (Bueler \& Farrell 2023) for generalization to upper and lower obstacles:
+    $$\mathcal{K}^J = \{\underline{\psi}^J \le v^J \le \overline{\psi}^J\}$$
+\item see paper for stopping criteria
+    \begin{itemize}
+    \item[$\circ$] need to evaluate whether CP/KKT conditions are satisfied
+    \end{itemize}
+\item see paper for FASCD FMG cycle
+\end{itemize}
 \end{frame}
 
 
@@ -793,34 +765,40 @@ the \emph{defect obstacle} for a fine-level iterate $w^J \in \mathcal{K}^J = \{v
 \subsection{glacier surface elevations}
 
 
-\begin{frame}{classical obstacle problem}
+\begin{frame}{classical obstacle problem by FASCD}
 
-\only<1>{\includegraphics[width=0.75\textwidth]{figs/ballitersV.png}}\only<2>{\includegraphics[width=0.75\textwidth]{figs/ballitersVlog.png}}\only<3>{\includegraphics[width=0.75\textwidth]{figs/ballitersVF.png}}\only<4>{\includegraphics[width=0.75\textwidth]{figs/bothitersVF.png}} \hfill \only<1-3>{\includegraphics[width=0.2\textwidth]{../paper/fixfigs/ball-set.png}}\only<4>{\includegraphics[width=0.2\textwidth]{../paper/fixfigs/spiral-set.png}}
+\only<1>{\includegraphics[width=0.75\textwidth]{figs/ballitersV.png}}\only<2>{\includegraphics[width=0.75\textwidth]{figs/ballitersVlog.png}}\only<3>{\includegraphics[width=0.75\textwidth]{figs/ballitersVF.png}}\only<4>{\includegraphics[width=0.75\textwidth]{figs/bothitersVF.png}} \hfill
+\only<1-3>{\includegraphics[width=0.2\textwidth]{../paper/fixfigs/ball-set.png}}%
+\only<4>{\includegraphics[width=0.2\textwidth]{../paper/fixfigs/spiral-set.png}}
 \end{frame}
 
 
 \begin{frame}{advection-diffusion of a concentration}
-
-\mbox{
-\includegraphics[width=0.3\textwidth]{../paper/fixfigs/poll2d-zero-set.png}
-\includegraphics[width=0.3\textwidth]{../paper/fixfigs/poll2d-one-set.png}
-}
 
 \begin{itemize}
-\item 2D problem: $-\eps \grad^2 u + \bm{X}\cdot \grad u = \phi$ with $0\le u\le 1$
+\item suppose $u(x)$ is a concentration in $\Omega \subset \RR^d$: \qquad $0\le u\le 1$
+\item suppose it moves by combination of diffusion, advection (wind $\bm{X}(x)$), and source ($\phi(x)$):
+    $$-\eps \grad^2 u + \bm{X}\cdot \grad u = \phi$$
+\item two active sets (\emph{pictured in $d=2$ case}):
+    $$\underline{A}_u = \{u(x) = 0\} \hspace{22mm} \overline{A}_u = \{u(x) = 1\} \hspace{8mm}$$
 \end{itemize}
+
+\centering
+\includegraphics[width=0.27\textwidth]{../paper/fixfigs/poll2d-zero-set.png} \hspace{18mm}
+\includegraphics[width=0.27\textwidth]{../paper/fixfigs/poll2d-one-set.png}
 \end{frame}
 
 
 \begin{frame}{advection-diffusion of a concentration}
 
-\includegraphics[width=0.75\textwidth]{figs/advdiff.png} \hfill \begin{minipage}[t]{0.2\textwidth}
-\vspace{-50mm}
+\begin{center}
+\includegraphics[width=0.75\textwidth]{figs/advdiff.png}
+\end{center}
 
-\includegraphics[width=\textwidth]{../paper/fixfigs/poll2d-zero-set.png}
-
-\includegraphics[width=\textwidth]{../paper/fixfigs/poll2d-one-set.png}
-\end{minipage}
+\scriptsize
+\begin{itemize}
+\item<2> compare Klee-Minty cube?
+\end{itemize}
 \end{frame}
 
 

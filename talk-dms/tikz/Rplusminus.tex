@@ -2,7 +2,7 @@
 \definecolor{seaborngreen}{rgb}{0.3333333333333333, 0.6588235294117647, 0.40784313725490196}
 \definecolor{seabornred}{rgb}{0.7686274509803922, 0.3058823529411765, 0.3215686274509804}
 
-\begin{tikzpicture}[scale=1.0]
+\begin{tikzpicture}[scale=0.85]
   \foreach \k in {0, 1, 2, 3, 4} {
     %\filldraw[seabornblue, fill=seabornblue] ({cos(deg(2*\k*pi/5))}, {sin(deg(2*\k*pi/5))}) circle (1.5pt);
     \node (A) at ({0.5*cos(deg(2*\k*pi/5)) + 0.5*cos(deg(2*(\k+1)*pi/5))}, {0.5*sin(deg(2*\k*pi/5)) + 0.5*sin(deg(2*(\k+1)*pi/5))}) {};
@@ -27,8 +27,8 @@
   }
   \filldraw[seabornblue] (0, 0) circle (2.5pt);
   
-  \filldraw[seabornblue] (2.5, 0.5) circle (2.5pt);
-  \node at (5.0, 0.5) {$= \text{coarse mesh node}$};
-  \filldraw[seaborngreen] (2.5, 0.0) circle (1.5pt);
-  \node (fine) at (4.5, 0.0) {$= \text{fine mesh node}$};
+  \filldraw[seabornblue] (2.0, 0.5) circle (2.5pt);
+  \node at (3.7, 0.5) {{\scriptsize coarse mesh node}};
+  \filldraw[seaborngreen] (2.0, 0.0) circle (1.5pt);
+  \node (fine) at (3.5, 0.0) {{\scriptsize fine mesh node}};
 \end{tikzpicture}
