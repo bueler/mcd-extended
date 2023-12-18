@@ -1,0 +1,18 @@
+Referee #1 (Remarks to the Author):
+
+This paper is about using multilevel algorithm to solve nonlinear problems with constraints. Many real-world applications need to solve problem of this kind. Thus, the fast algorithm proposed here is of great importance.
+
+This work proposed to improve the CD (constraint decomposition) method of [32] in several aspects. The new techniques are innovative (see detailed comments below) and show very good performances in numerical experiments report in this paper. I strongly suggest accepting this work for SISC after some minor revisions suggested below.
+
+The reasons that I suggest accepting this paper are based on the following observations:
+
+1. This paper proposed a new way to decompose the constraint set as shown in section 5. This is a good and innovative idea. In the original algorithm of [32], all the decompositions need to go to the finest level. With this new technique, only the nearest level of grid needs to be involved. This is a great advantage.
+2. Another advantage of the method proposed in this paper is to use FAS (full approximation Scheme) to solve the subproblems over the different levels, while the original scheme of [32] needs to solve a nonlinear problems over the different grid levels that is projected from the finest mesh and also exactly (even though, approximation solver can be considered as in Tai-Espedal (SINUM 1998). This is making the coarse grid solving much fast and cheaper.
+3. This paper proposed to use the algorithm for general monotone nonlinear problems with constraints, while the algorithm proposed in [32] is only for minimization problems. The operator from convex minimization problems is monotone, but there are many monotone operators that are not from minimization problems as shown in Example 2.5 and 2.6 of this work.
+
+
+The weak point of this work is that there is no convergence proof for the proposed algorithms. Intuitively, the constraint decomposition given in this paper is much tighter. It would give a better correction during the iterations, but this is not shown theoretically nor numerically.
+
+The proposed FMG solver is an optimal solver as claimed by the authors. It also improves CD method of [32] in several aspects. The authors need to supply comparisons between the two methods in the numerical section.
+
+Good if the authors can plot the error of the numerical solutions, i.e. uˆJ - uˆ* and its convergence order with respect to mesh size $h_J$ with different mesh size $h_J$. This observed convergence order could be beneficial for people working with numerical analysis.

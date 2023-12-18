@@ -1,0 +1,49 @@
+Referee #2 (Remarks to the Author):
+
+This paper merges the FAS multigrid method, which is a highly optimal
+solver, with a particular optimization method (CD). They are able to
+get close to optimal work complexity this class of optimization
+solvers, which is a significant accomplishment. The paper is clearly
+written and demonstrates good performance.
+
+Notes:
+
+* Abstract: "FASCD is a common extension of ..." this sounds like
+FASCD is, well, common, yet this seems to be the first paper that develops
+this method. I think you are saying others have done the same, but it
+reads like FASCD is common. Maybe something like 'while many
+multilevel VI solvers have been developed, FASCD has unique desirable properties'.
+
+* The prior work section starting at line 40, is hard to follow. There
+are three projects that you comparing to. There are many qualities
+discussed. A table or some graphic might be useful and some
+signposts like 'three MG VI methods have been developed in prior
+works [6,24,22].' and a paragraph for each.
+
+* You might move all discussion of desirable properties to the
+beginning at line 25. and refer to numbered properties in the prior
+work section as far as what other do well and don't do well.
+
+* The FAS treatment, while good, is a little confusing. Perhaps only
+to an expert. FMG is not an iterative method, yet you start with
+"FASCD ...by a small, mesh-independent number of FMG
+iterations...".
+
++ The FAS algorithm with V-cycles attached to make an iterative
+method to arbitrary solver tolerance is fine, but reporting multiple
+iteration is not really correct. Right? It is FMG + k V-cycle
+iterates. Maybe report "extra V-cycles in FASCD", which should be 0,
+but you "over solve" to compare with others. This is subtle and
+maybe could be put in the caption of Table 2 to reduce the text for
+the column heading from what is now "FMG" ("FMG V-cycles" maybe).
+
++ This issue becomes a real problem in Table 5 where you devide the
+solver time by what you call the FASCD iterations. This does not
+make sense. I would suggest, since you are just looking at time per
+"iteration", that you just do full MG and forget about iterating.
+
+* FASCD is different in that you have to do strange things with the
+constraints in the down smoothing, so it is not surprising that
+V(1,0) fails (table 3) and V(1,1) is WORSE that V(0,1) for on test,
+which indicates a certain fragility with the down smoothing
+process. It seems that should be discussed, but I don't see this.
