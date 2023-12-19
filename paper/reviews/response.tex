@@ -80,9 +80,15 @@ urlcolor=black    % ...
 {\bigskip \par \begin{quote} \selectfont \sl}%
 {\end{quote}}
 
+\newcommand\short[1]{\medskip\noindent #1}   % short form of response
+
+\newenvironment{response}% long form of response
+{\medskip\noindent}%
+{}
+
 
 \begin{document}
-\title{Response to reviews of \emph{A full approximation scheme multilevel method for nonlinear variational inequalities}}
+\title[Response to reviews]{Response to reviews of \\ \emph{A full approximation scheme multilevel method \\ for nonlinear variational inequalities}}
 
 \author{Ed Bueler}
 
@@ -118,25 +124,28 @@ The reasons that I suggest accepting this paper are based on the following obser
 3. This paper proposed to use the algorithm for general monotone nonlinear problems with constraints, while the algorithm proposed in [32] is only for minimization problems. The operator from convex minimization problems is monotone, but there are many monotone operators that are not from minimization problems as shown in Example 2.5 and 2.6 of this work.
 \end{review}
 
-\noindent This summary is accurate and appreciated.
+\short{FIXME This summary is accurate and appreciated.}
 
 \begin{review}
 The weak point of this work is that there is no convergence proof for the proposed algorithms. Intuitively, the constraint decomposition given in this paper is much tighter. It would give a better correction during the iterations, but this is not shown theoretically nor numerically.
 \end{review}
 
-\noindent xx
+\begin{response}
+FIXME good point
+\end{response}
+
 
 \begin{review}
 The proposed FMG solver is an optimal solver as claimed by the authors. It also improves CD method of [32] in several aspects. The authors need to supply comparisons between the two methods in the numerical section.
 \end{review}
 
-\noindent xx
+\short{xx}
 
 \begin{review}
 Good if the authors can plot the error of the numerical solutions, i.e. $u^J - u^*$ and its convergence order with respect to mesh size $h_J$ with different mesh size $h_J$. This observed convergence order could be beneficial for people working with numerical analysis.
 \end{review}
 
-\noindent xx
+\short{xx}
 
 
 \section{Responses to Referee 2}
@@ -145,49 +154,55 @@ Good if the authors can plot the error of the numerical solutions, i.e. $u^J - u
 This paper merges the FAS multigrid method, which is a highly optimal solver, with a particular optimization method (CD).  They are able to get close to optimal work complexity this class of optimization solvers, which is a significant accomplishment.  The paper is clearly written and demonstrates good performance.
 \end{review}
 
-\noindent This summary is accurate and appreciated.
+\short{FIXME This summary is accurate and appreciated.}
 
 \begin{review}
 Abstract: ``FASCD is a common extension of \dots'' this sounds like FASCD is, well, common, yet this seems to be the first paper that develops this method.  I think you are saying others have done the same, but it reads like FASCD is common.  Maybe something like ``while many multilevel VI solvers have been developed, FASCD has unique desirable properties''.
 \end{review}
 
-\noindent xx
+\short{FIXME ``common'' $\to$ ``joint''}
 
 \begin{review}
 The prior work section starting at line 40, is hard to follow.  There are three projects that you comparing to.  There are many qualities discussed.  A table or some graphic might be useful and some signposts like ``three MG VI methods have been developed in prior works [6,24,22]'' and a paragraph for each.
 \end{review}
 
-\noindent xx
+\short{FIXME yes, indeed four projects (which makes the reviewers point). cut into paragraphs}
 
 \begin{review}
 You might move all discussion of desirable properties to the beginning at line 25. and refer to numbered properties in the prior work section as far as what other do well and don't do well.
 \end{review}
 
-\noindent xx
+\short{FIXME appreciated.  mostly kept the same, but we think the greater organization of prior work paragraphs makes referring to numbered properties unneeded}
 
 \begin{review}
-The FAS treatment, while good, is a little confusing.  Perhaps only to an expert. FMG is not an iterative method, yet you start with ``FASCD \dots by a small, mesh-independent number of FMG iterations \dots''.
+The FAS treatment, while good, is a little confusing.  Perhaps only to an expert.
 \end{review}
 
-\noindent xx
+\short{xx}
+
+\begin{review}
+FMG is not an iterative method, yet you start with ``FASCD \dots by a small, mesh-independent number of FMG iterations \dots''.
+\end{review}
+
+\short{xx}
 
 \begin{review}
 The FAS algorithm with V-cycles attached to make an iterative method to arbitrary solver tolerance is fine, but reporting multiple iteration is not really correct.  Right?  It is FMG + k V-cycle iterates.  Maybe report ``extra V-cycles in FASCD'', which should be 0, but you ``over solve'' to compare with others.  This is subtle and maybe could be put in the caption of Table 2 to reduce the text for the column heading from what is now ``FMG'' (``FMG V-cycles'' maybe).
 \end{review}
 
-\noindent xx
+\short{xx}
 
 
 \begin{review}
 This issue becomes a real problem in Table 5 where you devide the solver time by what you call the FASCD iterations.  This does not make sense. I would suggest, since you are just looking at time per ``iteration'', that you just do full MG and forget about iterating.
 \end{review}
 
-\noindent xx
+\short{xx}
 
 \begin{review}
 FASCD is different in that you have to do strange things with the constraints in the down smoothing, so it is not surprising that V(1,0) fails (table 3) and V(1,1) is WORSE that V(0,1) for on test, which indicates a certain fragility with the down smoothing process. It seems that should be discussed, but I don't see this.
 \end{review}
 
-\noindent xx
+\short{xx}
 
 \end{document}
