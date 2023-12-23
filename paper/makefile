@@ -1,6 +1,6 @@
 all: fascd.pdf
 
-_figures := cartoon asymprates
+_figures := cartoon
 figures := $(addprefix genfigs/, $(addsuffix .pdf, $(_figures)))
 
 cropfigures: $(figures)
@@ -10,9 +10,6 @@ cropfigures: $(figures)
 
 genfigs/cartoon.pdf: genfigs/cartoon.py
 	(cd genfigs/ && python3 cartoon.py)
-
-genfigs/asymprates.pdf: genfigs/asymprates.py
-	(cd genfigs/ && python3 asymprates.py)
 
 fascd.pdf: fascd.tex fascd.aux fascd.bbl 
 	pdflatex fascd
