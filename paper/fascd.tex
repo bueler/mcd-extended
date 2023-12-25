@@ -229,18 +229,18 @@ References \cite{Bueler2021conservation,ChangNakshatrala2017} consider similar a
 
 The next VI example is a model for steady ice sheet geometry in a given climate.  It is fully nonlinear and not of optimization type.  Related VI problems arise for any fluid layer subject to local surface processes which can remove fluid mass \cite{Bueler2021conservation}.
 
-\begin{example}  \label{ex:sia}  Let $\Omega \subset \RR^2$ be a fixed region of land, and suppose $b \in C^1(\Omega)$ is a given bedrock elevation.  Let $a \in L^2(\Omega)$ denote a given ``surface mass balance'' function, the annually-averaged rate of ice accumulation (snow) minus melt and runoff.  Then the surface elevation $s\in C(\Omega)$ of a steady-state, isothermal, and non-sliding ice sheet (glacier) under the \emph{shallow ice approximation} (SIA) \cite{GreveBlatter2009} satisfies the following VI problem: find $s \in \mathcal{K} = \{s\ge b\}$ such that
+\begin{example}  \label{ex:sia}  Let $\Omega \subset \RR^2$ be a fixed region of land, and suppose $b \in C^1(\Omega)$ is the bedrock elevation on $\Omega$.  Let $a \in L^2(\Omega)$ denote a given ``surface mass balance'' function, the annually-averaged rate of ice accumulation (snow) minus melt and runoff.  Then the surface elevation $s\in C(\Omega)$ of a steady-state, isothermal, and non-sliding ice sheet (glacier) under the \emph{shallow ice approximation} (SIA) \cite{GreveBlatter2009} satisfies the following VI problem: find $s \in \mathcal{K} = \{s\ge b\}$ such that
 \begin{equation}
-\int_\Omega \Gamma (s-b)^{n+2} |\grad s|^{n-1} \grad s \cdot \grad (v-s) \dx \ge \int_\Omega a (v-s)\dx \quad \text{ for all } v \in \mathcal{K}, \label{eq:siavi}
+\int_\Omega \Gamma (s-b)^{n+2} |\grad s|^{n-1} \grad s \cdot \grad (v-s) \dx \ge \int_\Omega a (v-s)\dx \quad \text{ for all } v \in \mathcal{K}. \label{eq:siavi}
 \end{equation}
-where $n>1$ and $\Gamma>0$ are physical constants for ice; $n=3$ is a typical value \cite{GreveBlatter2009}.  The doubly-nonlinear and doubly-degenerate operator here is
+Here $n>1$ and $\Gamma>0$ are physical constants for ice; $n=3$ is a typical exponent \cite{GreveBlatter2009}.  The doubly-nonlinear and doubly-degenerate operator here is
 \begin{equation}
 \ip{f(s)}{v} = \int_\Omega \Gamma (s-b)^{n+2} |\grad s|^{n-1} \grad s \cdot \grad v\dx. \label{eq:siaoperator}
 \end{equation}
-If the bed is flat ($b=0$) then a power transformation converts \eqref{eq:siaoperator} into form \eqref{eq:plaplacian} with $p=n+1$.  Less is understood for general beds $b$, but existence holds for the VI \cite{JouvetBueler2012}, and a power of the solution lives in a Sobolev space: $(s-b)^{2p/(p-1)} \in W^{1,p}(\Omega)$.  This theory, and also observations of ice sheets, shows that $|\grad s|$ is usually unbounded as one approaches the free boundary from the icy ($s>b$) side.
+If the bed is flat ($b=0$) then a power transformation converts \eqref{eq:siaoperator} into form \eqref{eq:plaplacian} with $p=n+1$.  Less is understood for general smooth beds $b$, but existence holds for \eqref{eq:siavi} \cite{JouvetBueler2012}, and a power of a solution will live in a Sobolev space: $(s-b)^{2p/(p-1)} \in W^{1,p}(\Omega)$.  This theory, and also observations of ice sheets, shows that $|\grad s|$ is often unbounded as one approaches the free boundary from the icy ($s>b$) side.
 \end{example}
 
-The numerical results in Section \ref{sec:results} will apply FASCD Algorithms \ref{alg:fascd} and \ref{alg:fascd-fmg} to the above Examples.
+The numerical results in Section \ref{sec:results} come from applying FASCD Algorithms \ref{alg:fascd} and \ref{alg:fascd-fmg} to the above Examples.
 
 
 \section{Constraint decomposition (CD)} \label{sec:cd}
@@ -249,7 +249,7 @@ Suppose that there are $m<\infty$ closed linear subspaces $\cV_i \subset \cV$, s
 \begin{equation}
 \cV = \sum_{i=0}^{m-1} \cV_i \label{eq:subspacedecomp}
 \end{equation}
-holds in the sense that if $w \in \cV$ then there exist $w_i \in \cV_i$ so that $w = \sum_i w_i$.  We say \eqref{eq:subspacedecomp} is a \emph{space decomposition} of $\cV$ \cite{Xu1992}.  For a closed, convex subset $\cK \subset \cV$, suppose further that $\cK_i \subset \cV_i$ are nonempty, closed, and convex subsets such that
+holds in the sense that if $w \in \cV$ then there exist $w_i \in \cV_i$ so that $w = \sum_i w_i$.  We say \eqref{eq:subspacedecomp} is a \emph{space decomposition} of $\cV$ \cite{Xu1992}.  For a closed, convex subset $\cK \subset \cV$, suppose that $\cK_i \subset \cV_i$ are nonempty, closed, and convex subsets such that
 \begin{equation}
 \cK = \sum_{i=0}^{m-1} \cK_i. \label{eq:constraintdecomp}
 \end{equation}
@@ -261,7 +261,7 @@ with the decomposition operators satisfying the stability property
 \begin{equation} \label{eq:decompositionstability}
 \left(\sum_{i=0}^{m-1} \| \Pi_i u - \Pi_i v \|^2\right)^{1/2} \lesssim \|u - v\|.
 \end{equation}
-Clearly \eqref{eq:constraintrestrictionsum} implies sense \emph{(i)} for \eqref{eq:constraintdecomp}.  A \emph{constraint decomposition} (CD) of $\cK$ is a choice of $\cV_i,\cK_i,\Pi_i$ satisfying \eqref{eq:subspacedecomp}--\eqref{eq:decompositionstability} \cite{Tai2003}.  Figure \ref{fig:cartoon} suggests how a low-dimensional example might look; note $\cK_i \not\subset \cK$ in this and many other cases.
+Clearly \eqref{eq:constraintrestrictionsum} implies sense \emph{(i)} for \eqref{eq:constraintdecomp}.  A \emph{constraint decomposition} (CD) of $\cK$ is a choice of $\cV_i,\cK_i,\Pi_i$ satisfying \eqref{eq:subspacedecomp}--\eqref{eq:decompositionstability} \cite{Tai2003}.  Figure \ref{fig:cartoon} suggests how a low-dimensional example might look; note $\cK_i \not\subset \cK$ in this and most other cases.
 
 \begin{figure}[ht]
 \centering
@@ -270,9 +270,9 @@ Clearly \eqref{eq:constraintrestrictionsum} implies sense \emph{(i)} for \eqref{
 \label{fig:cartoon}
 \end{figure}
 
-We will construct a multilevel FE CD discretization in Sections \ref{sec:femultilevel}--\ref{sec:implementation}.  However, the CD concept can be applied at the level of the continuum problem.  For example, in a unilateral obstacle problem ($\cK = \{v \ge \psi\}$) one can construct an overlapping domain decomposition of $\cV$ by using a smooth, finite partition of unity $\{\varphi_i\}$, subspaces $\cV_i = \{w \in \cV : w = 0 \text{ if } \varphi_i = 0\}$, constraint sets $\cK_i = \{v \in \cV_i : v \ge \varphi_i \psi\}$, and decomposition operators $\Pi_i(v) = \varphi_i v$.  One may also construct a CD which is a disjoint frequency decomposition of a Hilbert space of periodic functions on a cube $\Omega=(0,1)^d$.  The multilevel CD, over a finite-dimensional FE discretization, will, in a vague sense, approximate such a frequency decomposition.
+We will construct a finite-dimensional multilevel CD in Sections \ref{sec:femultilevel}--\ref{sec:implementation}.  However, the CD concept can also be applied at the level of the continuum problem.  For example, in a unilateral obstacle problem ($\cK = \{v \ge \psi\}$) one can construct an overlapping domain decomposition of $\cV$ by using a smooth, finite partition of unity $\{\varphi_i\}$, subspaces $\cV_i = \{w \in \cV : w = 0 \text{ if } \varphi_i = 0\}$, constraint sets $\cK_i = \{v \in \cV_i : v \ge \varphi_i \psi\}$, and decomposition operators $\Pi_i(v) = \varphi_i v$.  More relevant to the current effort, one may also construct a CD via a disjoint frequency decomposition of a Hilbert space of periodic functions on a cube $\Omega=(0,1)^d$.  Reflecting the underlying multigrid idea \cite{Trottenbergetal2001}, the finite-dimensional FE CD in Section \ref{sec:cdmultilevel}, will, in a vague sense, approximate such a frequency decomposition.
 
-Associated to any CD are certain iterative methods \cite{Tai2003,Xu1992}.  The following multiplicative/successive \pr{cd-mult} algorithm, which generalizes the Gauss--Seidel iteration, replaces $u \in \cK$ with a new iterate $w\in\cK$ which should be closer to $u^\star \in \cK$ solving \eqref{eq:vi}.  The idea is to solve smaller VI problems over each subset $\cK_i$.  Each subset solution corrects the global iterate immediately, so the ordering of the $\cK_i$ is important.
+Associated to any CD are certain iterative methods \cite{Tai2003,Xu1992}.  The following multiplicative/successive \pr{cd-mult} algorithm, which generalizes the Gauss--Seidel iteration, replaces $u \in \cK$ with a new iterate $w\in\cK$ which should be closer to $u^\star \in \cK$ solving \eqref{eq:vi}.  Each solution of the ``smaller'' VI problem over $\cK_i$ corrects the global iterate immediately, and thus the ordering of $\{\cK_i\}$ affects the rate of convergence.
 
 \begin{pseudo*}
 \pr{cd-mult}(u)\text{:} \\+
