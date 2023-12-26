@@ -616,13 +616,13 @@ w^J(x_p) - g_D^J(x_p), & x_p \in \partial_D\Omega.
 \end{equation}
 Straightforward modifications apply for unilaterally-constrained or unconstrained degrees of freedom, where $\underline{\gamma}^J(x_p) = -\infty$, $\overline{\gamma}^J(x_p) = +\infty$, or both.  VI problem \eqref{eq:fe:vi} is exactly solved by $u^J\in\cK^J$ if and only if $\rSS(u^J)=0$ identically.
 
-Now suppose that Algorithm \ref{alg:fascd} is iterated from $w^{J,0} \in \mathcal{K}^J$, generating (fine-level) iterates $w^{J,k} \in \mathcal{K}^J$.  Let $\id{atol}$, $\id{rtol}$, $\id{stol} \ge 0$ be given absolute, relative, and step tolerances, respectively.  We employ the following stopping criterion:
+Now suppose that Algorithm \ref{alg:fascd} is iterated from $w^{J,0} \in \mathcal{K}^J$, generating fine-level iterates $w^{J,k} \in \mathcal{K}^J$.  Let $\id{atol}$, $\id{rtol}$, $\id{stol} \ge 0$ be given absolute, relative, and step tolerances, respectively.  We employ the following stopping criterion:
 \begin{equation}
 \|\rSS(w^{J,k})\|_2 < \id{atol} \quad \text{or} \quad \frac{\|\rSS(w^{J,k})\|_2}{\|\rSS(w^{J,0})\|_2} < \id{rtol} \quad \text{or} \quad \frac{\|\Delta w^{J,k}\|_{L^2}}{\|w^{J,k}\|_{L^2}} < \id{stol}. \label{eq:stoppingcriterion}
 \end{equation}
 Here $\Delta w^{J,k} = w^{J,k} -  w^{J,k-1}$, $\|\cdot\|_2$ is the euclidean norm on $\RR^{m_J}$, and $\|\cdot\|_{L^2}$ is the norm on $L^2(\Omega)$.  Defaults in our implementation (Section \ref{sec:results}) match those of PETSc SNES \cite{Balayetal2023}: $\id{atol}=10^{-50}$, $\id{rtol}=\id{stol}=10^{-8}$; see Examples below for specific settings.
 
-In Section \ref{sec:results} we will show that V-cycle iterations alone, starting with some finest-mesh initial iterate $w^{J,0}$ and repeated until \eqref{eq:stoppingcriterion} holds, serve as an effective solver.  However, an FMG cycle, Algorithm \ref{alg:fascd-fmg} below and Figure \ref{fig:fascdcycles} (right), is even better.  The well-known principle \cite[section 2.6]{Trottenbergetal2001} is to start on the coarsest mesh and solve the problem from any initial iterate $w^0\in\mathcal{K}^0$; one may generate it by injection and projection/truncation of $w^{J,0}$.  Then an admissible initial iterate on the next-finer mesh is generated via prolongation.  However, in the VI context one must also project (truncate) to the bounds after the prolongation; see lines \ref{line:fcycleprolongtruncone} and \ref{line:fcycleprolongtrunctwo} in Algorithm \ref{alg:fascd-fmg}.  During this ``ramp'' stage one approximately solves on each level using a fixed number (\id{rampv}) of V-cycles, each down to the coarsest mesh.  When the ramp is complete, one does full-depth V-cycles to convergence.
+In Section \ref{sec:results} we will show that V-cycle iterations, starting with some finest-mesh initial iterate $w^{J,0}$ and repeated until \eqref{eq:stoppingcriterion} holds, serve as an effective solver.  However, an FMG cycle, Algorithm \ref{alg:fascd-fmg} below and Figure \ref{fig:fascdcycles} (right), is even better.  The well-known principle \cite[section 2.6]{Trottenbergetal2001} is to start on the coarsest mesh and solve the problem from any initial iterate $w^{0,0}\in\mathcal{K}^0$.  (One may generate $w^{0,0}$ by nodal injection and projection/truncation of $w^{J,0}$.)  Each initial iterate on a next-finer level is generated via prolongation, but in our VI context one must also project (truncate) to the bounds to gain admissibility; see line \ref{line:fcycleprolongtruncone} in Algorithm \ref{alg:fascd-fmg} below.  During this ``ramp'' stage one approximately solves on each level using a fixed number (\id{rampv}) of V-cycles, each down to the coarsest mesh.  When the ramp is complete, one does full-depth V-cycles to convergence.  When reporting iterations for the FMG cycle, ``$+n$'' means $n$ V-cycles were required to satisfy \eqref{eq:stoppingcriterion} after the FMG ramp, and thus ``$+0$'' means that the FMG cycle alone sufficed.
 
 \begin{pseudofloat}[h]
 \begin{pseudo}
@@ -632,10 +632,9 @@ In Section \ref{sec:results} we will show that V-cycle iterations alone, startin
         $\underline{\gamma}^{j-1}, \, \overline{\gamma}^{j-1} = \iR \underline{\gamma}^{j}, \, \iR \overline{\gamma}^{j}$ {\large\strut} \\-
     choose $w^0 \in \mathcal{K}^0$ \label{line:fcyclecoarsestinitial} \\
     $\text{\pr{solve}}(\ell^0,\underline{\gamma}^0,\overline{\gamma}^0;w^0)$ \\
-    for $j=1$ to $j=J-1$ \\+
+    for $j=1$ to $j=J$ \\+
         $w^j = \max\left\{\underline{\gamma}^{j},\min\{\overline{\gamma}^{j}, Pw^{j-1}\}\right\} \in \mathcal{K}^j$ \label{line:fcycleprolongtruncone} \\
         $\pr{fascd-vcycle}^{\text{\id{rampv}}}(j,\ell^j,\underline{\gamma}^j,\overline{\gamma}^j;w^j)$ \\-
-    $w^J = \max\left\{\underline{\gamma}^{J},\min\{\overline{\gamma}^{J}, Pw^{J-1}\}\right\} \in \mathcal{K}^J$ \label{line:fcycleprolongtrunctwo} \\
     while not \eqref{eq:stoppingcriterion} \\+
         \pr{fascd-vcycle}(J,\ell^J,\underline{\gamma}^J,\overline{\gamma}^J;w^J) \\-
     return $w^J$
@@ -644,27 +643,29 @@ In Section \ref{sec:results} we will show that V-cycle iterations alone, startin
 \label{alg:fascd-fmg}
 \end{pseudofloat}
 
-In contrast to the construction of LDCs (Section \ref{sec:cdmultilevel}) for V-cycles, during the ramp standard injection is used to generate the constraints $\underline{\gamma}^j,\overline{\gamma}^j$ on each level because a full solution iterate is initially needed, not just a correction.  Essentially, our choice is between \eqref{eq:fe:badstandard}, where the coarse constraint set is nonempty but then the prolonged solution may not be admissible, or \eqref{eq:fe:badmonotone}, where the constraint set may be empty.  We choose \eqref{eq:fe:badstandard}, with nonempty sets, but we must project (truncate) pointwise to the bounds, potentially adding high-frequency noise to the initial iterate.
+In contrast to the construction of LDCs (Section \ref{sec:cdmultilevel}) for V-cycles, during the ramp standard injection is used to generate the constraints $\underline{\gamma}^j,\overline{\gamma}^j$ on each level.  This is because a full solution iterate is initially needed, not just a correction.  Essentially, our choice is between \eqref{eq:fe:badstandard}, where the coarse constraint set is nonempty but then the prolonged solution may not be admissible, or \eqref{eq:fe:badmonotone}, where the constraint set may be empty.  We choose \eqref{eq:fe:badstandard}, with nonempty sets, but we project (truncate) pointwise to the bounds, potentially adding high-frequency noise to the initial iterate.
 
-A large space of smoothers could be explored, but in the next Section we will only apply an reduced-space Newton method \cite{Balayetal2023,BensonMunson2006}, denoted as \emph{RS Newton}.  A fixed number of preconditioned Krylov iterations approximately solve the arising linear systems, thus $O(m_j)$ work is done per smoother application.  For the symmetric Laplacian (Example \ref{ex:results:classical}) we apply conjugate gradients (CG) with incomplete Cholesky (IC) preconditioning, but otherwise generalized minimum residual (GMRES) with incomplete LU (ILU) preconditioning is used.  The coarse solver is also RS Newton, iterated to convergence using the MUMPS sparse direct linear solver~\cite{Amestoy2001}.
+A large space of smoothers could be explored, but in the next Section we will only apply a fixed number of iterations of a reduced-space Newton method \cite{Balayetal2023,BensonMunson2006}, denoted as \emph{RS Newton}.  A fixed number of preconditioned Krylov iterations \cite{Bueler2021} approximately solve the arising linear systems, thus $O(m_j)$ work is done per smoother application on level $j$.  For the symmetric Laplacian (Example \ref{ex:results:classical}) we apply conjugate gradients (CG) with incomplete Cholesky (IC) preconditioning, but otherwise generalized minimum residual (GMRES) with incomplete LU (ILU) preconditioning is used.  The coarse solver is also RS Newton, iterated to convergence using the MUMPS sparse direct linear solver~\cite{Amestoy2001}.
 
 
 \section{Results} \label{sec:results}
 
-For $P_1$ and $Q_1$ elements, FASCD Algorithms \ref{alg:fascd} and \ref{alg:fascd-fmg} were implemented in Python using the Firedrake library \cite{Rathgeberetal2016}.  The numerical results in this Section, which follow the Section \ref{sec:vi} examples, focus on the scaling of iterations with mesh resolution.  We see that each V-cycle greatly reduces the residual norm, and that a few FMG iterations solve most of these problems to within discretization error.
+For $P_1$ and $Q_1$ elements, FASCD Algorithms \ref{alg:fascd} and \ref{alg:fascd-fmg} were implemented in Python using the Firedrake library \cite{Rathgeberetal2016}, which applies solvers from the PETSc \cite{Balayetal2023} library.  The numerical results in this Section, which follow the Section \ref{sec:vi} examples, focus on the scaling of iterations with mesh resolution.  We will see that each V-cycle greatly reduces the residual norm, and that the application of an FMG cycle solves most of these problems to within discretization error, or nearly so.
 
 \begin{example} \label{ex:results:classical}
-Consider the classical unilateral 2D Laplacian obstacle problem, namely Example \ref{ex:plaplacian} with $p=2$ and admissible set $\mathcal{K} = \{v \ge \psi\}$.  We consider two cases, over square domains $\Omega$, with different coincidence (active) sets $\{x\in\Omega \,:\, u(x)=\psi(x)\}$ (Figure \ref{fig:results:classical}).  The standard ``ball'' problem has an upper hemisphere obstacle \cite[Chapter 12]{Bueler2021}, but the ``spiral'' problem's obstacle is constructed to produce the coincidence set shown \cite[problem 7.1.1]{GraeserKornhuber2009}.  For both cases we used a regular coarsest mesh with $m_0=41$ nodes (64 triangles), and the finest mesh had $m_{10} \approx 3.4 \times 10^7$ nodes.  A single RS Newton iteration with three IC-preconditioned CG iterations was used as the smoother, and the initial iterate was $w=\max\{0,\psi\}$.
+Consider the classical unilateral 2D Laplacian obstacle problem, namely Example \ref{ex:plaplacian} with $p=2$ and admissible set $\mathcal{K} = \{v \ge \psi\}$.  We consider two cases, over square domains $\Omega$, with different coincidence (active) sets $\{x\in\Omega \,:\, u(x)=\psi(x)\}$ (Figure \ref{fig:results:classical}).  The standard ``ball'' problem has the unit upper hemisphere as the obstacle \cite[Chapter 12]{Bueler2021}.  The ``spiral'' problem's obstacle is constructed to produce the coincidence set shown \cite[problem 7.1.1]{GraeserKornhuber2009}.  For both cases we used a regular coarsest mesh with $m_0=41$ nodes (64 triangles), and then the finest mesh had $m_{10} \approx 3.4 \times 10^7$ nodes after 10 refinements.  A single RS Newton iteration with three IC-preconditioned CG iterations was used as the smoother, and the initial iterate was $w=\max\{0,\psi\}$.
 
-Table \ref{tab:results:classical} shows the resulting iteration counts.  For a first experiment we over-solve, with \texttt{atol} $=$ \texttt{rtol} $=$ \texttt{stol} $= 10^{-12}$ in stopping criterion \eqref{eq:stoppingcriterion}, to facilitate comparison to results in \cite[section 7]{GraeserKornhuber2009}.  As expected, RS Newton as a solver shows rapidly-increasing iterations, roughly proportional to resolution.  By contrast, V-cycle iterations increase slowly, perhaps logarithmically with the resolution.  For the spiral problem, \cite[Figure 7.11]{GraeserKornhuber2009} reports that a $m_J \approx 5.2 \times 10^5$ problem needs approximately 25 V-cycle iterations for the best (truncated;  ``TNMG'' and ``TMMG'') monotone multilevel algorithms.\footnote{The stopping criterion and asymptotic convergence rates in \cite{GraeserKornhuber2009} are based on norm differences from a last numerical iterate with unknown accuracy.  Our method directly measures satisfaction of the VI, via the residual norm $\|\rSS(w)\|_2$.}  The 12 V-cycle iterations needed here, at comparable resolution (8 levels), represent somewhat more arithmetic because our smoother is RS Newton using CG+IC, rather than the simpler projected Gauss-Seidel iteration.  Resolution-dependent asymptotic convergence rates for V-cycles, defined as $\rho_J=(\|\rSS(w^{J,k})\|_2/\|\rSS(w^{J,0})\|_2)^{1/k}$ where $w^{J,k}$ is the first iterate to satisfy \eqref{eq:stoppingcriterion}, are shown in Figure \ref{fig:results:asymp}.  Both iterations and rates are similar for the ball and spiral problems; the geometric complexity of the coincidence set and free boundary minimally influences FASCD V-cycle performance.  Contrast the rate of about $0.1$ for 8 levels here with about $0.4$ reported by \cite[Figure 7.11]{GraeserKornhuber2009} for TNMG/TMMG at comparable resolution.  These rates are all excellent; our better rate mostly reflects a stronger smoother.
+Table \ref{tab:results:classical} shows the resulting iteration counts.  For a first experiment we over-solve, with \texttt{atol} $=$ \texttt{rtol} $=$ \texttt{stol} $= 10^{-12}$ in \eqref{eq:stoppingcriterion}, to facilitate comparison to results in \cite[section 7]{GraeserKornhuber2009}.  As expected, RS Newton as a solver shows rapidly-increasing iterations, roughly proportional to resolution.  By contrast, $V(1,1)$-cycle iterations increase slowly, perhaps logarithmically with the resolution.  For the spiral problem, \cite[Figure 7.11]{GraeserKornhuber2009} reports that a $m_J \approx 5.2 \times 10^5$ problem needs approximately 25 V-cycle iterations for the best (truncated;  ``TNMG'' and ``TMMG'') monotone multilevel algorithms.\footnote{The stopping criterion and asymptotic convergence rates in \cite{GraeserKornhuber2009} are based on norm differences from a last numerical iterate with unknown accuracy.  Our method directly measures satisfaction of the VI, via the residual norm $\|\rSS(w)\|_2$ (Section \ref{sec:implementation}).}  The 12 V-cycle iterations needed here for comparable resolution (8 levels) represent somewhat more arithmetic because our smoother is RS Newton using CG+IC, rather than the simpler projected Gauss-Seidel iteration.
 
-For FMG we instead used the defaults \texttt{rtol} $=$ \texttt{stol} $= 10^{-8}$, sufficient to reach discretization error, and in Table \ref{tab:results:classical} we report the number of V-cycles after the ramp; a small, constant number solves the problem.  Since each V-cycle does the work of about eight finest-level Krylov iterations, the ball results show nearly textbook multigrid efficiency at the highest resolutions despite the low solution regularity.  More V-cycles are needed to clean-up error remaining after the ramp in the spiral problem.
+Resolution-dependent asymptotic convergence rates for V-cycles, defined as $\rho_J=(\|\rSS(w^{J,k})\|_2/\|\rSS(w^{J,0})\|_2)^{1/k}$ where $w^{J,k}$ is the first iterate to satisfy \eqref{eq:stoppingcriterion}, are shown in Figure \ref{fig:results:asymp}.  Both iterations and rates are similar for the ball and spiral problems; the geometric complexity of the coincidence set and free boundary minimally influences FASCD V-cycle performance.  Contrast the rate of about $0.1$ for 8 levels here with about $0.4$ reported by \cite[Figure 7.11]{GraeserKornhuber2009} for TNMG/TMMG at comparable resolution.  These rates are all excellent; our better rate mostly reflects a stronger smoother.
+
+For the FMG cycle we instead used the defaults \texttt{rtol} $=$ \texttt{stol} $= 10^{-8}$, sufficient to reach discretization error.  In Table \ref{tab:results:classical} we report the number of V-cycles after the ramp as ``$+n$''; a small, constant number solves the ball problem.  Since each V-cycle does the work of about eight finest-level Krylov iterations, the ball results show nearly textbook multigrid efficiency at the highest resolutions despite the low solution regularity.  In the spiral problem, more V-cycles are needed to clean-up the remaining (free boundary) error.
 \end{example}
 
-%REGENERATE using git@bitbucket.org:pefarrell/fascd.git, in examples/
-%$ python3 drape.py -prob ball -levs 9 -o ball -fascd_rtol 1.0e-6 -fascd_atol 1.0e-6 -fascd_cycle_type full
-%$ mpiexec -n 16 python3 drape.py -prob spiral -levs 10 -o spiral.pvd -fascd_levels_snes_converged_reason -fascd_rtol 1.0e-6 -fascd_atol 1.0e-6 -fascd_cycle_type full
-%$ paraview ball|spiral.pvd
+%REGENERATE using git@bitbucket.org:pefarrell/fascd.git in examples/:
+%  $ python3 drape.py -prob ball -levs 9 -o ball -fascd_rtol 1.0e-6 -fascd_atol 1.0e-6 -fascd_cycle_type full
+%  $ mpiexec -n 16 python3 drape.py -prob spiral -levs 10 -o spiral.pvd -fascd_levels_snes_converged_reason -fascd_rtol 1.0e-6 -fascd_atol 1.0e-6 -fascd_cycle_type full
+%  $ paraview ball|spiral.pvd
 %use preset "xray" and invert colors; for spiral.pvd, show lgap = u - lb as black if above 0.02; for ball i used 0.001
 \begin{figure}[ht]
 \centering
@@ -674,7 +675,7 @@ For FMG we instead used the defaults \texttt{rtol} $=$ \texttt{stol} $= 10^{-8}$
 \end{figure}
 
 % see git@bitbucket.org:pefarrell/fascd.git: examples/drape.py
-% and https://github.com/bueler/mcd-extended: paper/results/drape_{nofas,fascd}.sh|txt
+% see reproduce/table2.py
 \begin{table}[ht]
 \centering
 \begin{tabular}{lr@{\hskip 7mm}cccccc}
@@ -682,21 +683,21 @@ For FMG we instead used the defaults \texttt{rtol} $=$ \texttt{stol} $= 10^{-8}$
 \multirow{2}{*}{\emph{levels}} & \multirow{2}{*}{$m_J$} & \multicolumn{3}{c}{\,\emph{ball}} & \multicolumn{3}{c}{\,\emph{spiral}} \\ \cmidrule(lr){3-5} \cmidrule(lr){6-8}
    &                  & RS only & V-cycle & FMG & RS only & V-cycle & FMG \\
 \midrule
- 1 &             $41$ &   1 &  1 &  1 &   2 &  1 &  1 \\
- 2 &            $145$ &   1 &  3 &  2 &   4 &  4 &  2 \\
- 3 &            $545$ &   3 &  6 &  3 &   6 &  5 &  3 \\
- 4 & $2.1\times 10^3$ &   6 &  7 &  3 &   7 &  7 &  4 \\
- 5 & $8.3\times 10^3$ &  13 &  9 &  4 &  11 &  9 &  4 \\
- 6 & $3.3\times 10^4$ &  23 & 11 &  5 &  20 & 10 &  5 \\
- 7 & $1.3\times 10^5$ &  46 & 11 &  4 &  35 & 11 &  5 \\
- 8 & $5.3\times 10^5$ &  90 & 12 &  4 &  67 & 12 &  5 \\
- 9 & $2.1\times 10^6$ & \XX & 13 &  3 & \XX & 13 &  6 \\
-10 & $8.4\times 10^6$ & \XX & 13 &  2 & \XX & 14 &  6 \\
-11 & $3.4\times 10^7$ & \XX & 14 &  2 & \XX & 18 &  6 \\
+% FIXME GENERATE WHOLE TABLE ON THELIO
+ 2 &            $145$ &   1 &  3 &  +2 &   4 &  4 &  +2 \\
+ 3 &            $545$ &   3 &  6 &  +3 &   6 &  5 &  +3 \\
+ 4 & $2.1\times 10^3$ &   6 &  7 &  +3 &   7 &  7 &  +4 \\
+ 5 & $8.3\times 10^3$ &  13 &  9 &  +4 &  11 &  9 &  +4 \\
+ 6 & $3.3\times 10^4$ &  23 & 11 &  +5 &  20 & 10 &  +5 \\
+ 7 & $1.3\times 10^5$ &  46 & 11 &  +4 &  35 & 11 &  +5 \\
+ 8 & $5.3\times 10^5$ &  90 & 12 &  +4 &  67 & 12 &  +5 \\
+ 9 & $2.1\times 10^6$ & \XX & 13 &  +3 & \XX & 13 &  +6 \\
+10 & $8.4\times 10^6$ & \XX & 13 &  +2 & \XX & 14 &  +6 \\
+11 & $3.4\times 10^7$ & \XX & 14 &  +2 & \XX & 18 &  +6 \\
 \bottomrule
 \end{tabular}
 \bigskip
-\caption{Iterations for FASCD V-cycle and FMG algorithms in Example \ref{ex:results:classical}; see text regarding tolerances.  Runs marked \XX\xspace were not attempted.}
+\caption{Iterations for Example \ref{ex:results:classical}; see text regarding cycle types and tolerances.  Runs \XX\xspace were not attempted. ``$+n$'' for FMG denotes number of V-cycles, after the FMG cycle, to satisfy \eqref{eq:stoppingcriterion}.}
 \label{tab:results:classical}
 \end{table}
 
@@ -724,38 +725,38 @@ We again consider Example \ref{ex:plaplacian}, with a unilateral constraint, but
 \label{fig:imagesvcycle}
 \end{figure}
 
-Iteration results in Table \ref{tab:results:fastplap1d} show a strong contrast between $V(1,0)$ and $V(0,1)$ results (\pr{up} $=0$ and \pr{down} $=0$ in Algorithm \ref{alg:fascd}, respectively).  The $V(1,0)$ cycles, Algorithm 4.2 in \cite{GraeserKornhuber2009} but with a stronger smoother, often do not converge.  By contrast, $V(0,1)$ cycles, up-smoothing in the larger sets $\mathcal{U}^j$ (Section \ref{sec:cdmultilevel}), are as good as the default $V(1,1)$ cycles.  FMG is even more efficient; a single iteration suffices at all resolutions.   Note that convergence is at rate $O(h^{2.0})$; compare \cite{ChoeLewis1991}.
+Iteration results in Table \ref{tab:results:fastplap1d} show a strong contrast between $V(1,0)$ and $V(0,1)$ results, chosen by setting \pr{up} $=0$ and \pr{down} $=0$ in Algorithm \ref{alg:fascd}, respectively.  The $V(1,0)$ cycles, essentially Algorithm 4.2 in \cite{GraeserKornhuber2009} but with a stronger smoother, often do not converge.  By contrast, $V(0,1)$ cycles, which up-smooth in the larger sets $\mathcal{U}^j$ (Section \ref{sec:cdmultilevel}), are as good as the default $V(1,1)$ cycles.  FMG is even more efficient; a single iteration suffices at all resolutions.   Note that convergence is at rate $O(h^{2.0})$; compare \cite{ChoeLewis1991}.
 \end{example}
 
 % see git@bitbucket.org:pefarrell/fascd.git: examples/plap1d.py
-% and https://github.com/bueler/mcd-extended: paper/results/plap1d.sh|txt
+% and reproduce/table3.py
 \begin{table}[ht]
 \centering
 \begin{tabular}{lr@{\hskip 7mm}c@{\hskip 3mm}c@{\hskip 3mm}c@{\hskip 4mm}c@{\hskip 6mm}c}
 \toprule
 \emph{levels} & $m_J$ & V(1,0) & V(0,1) & V(1,1) & FMG & $\|$error$\|_\infty$ \\
 \midrule
- 1 &    $7$ &  1 &  1 &  1 &  1 & $2.3 \times 10^{-1}$ \\
- 2 &   $13$ &  3 &  2 &  2 &  1 & $3.3 \times 10^{-2}$ \\
- 3 &   $25$ & 12 &  4 &  2 &  1 & $9.1 \times 10^{-3}$ \\
- 4 &   $49$ & NC &  4 &  2 &  1 & $3.2 \times 10^{-3}$ \\
- 5 &   $97$ & NC &  3 &  3 &  1 & $5.5 \times 10^{-4}$ \\
- 6 &  $193$ & NC &  3 &  3 &  1 & $1.7 \times 10^{-4}$ \\
- 7 &  $385$ & NC &  3 &  3 &  1 & $4.7 \times 10^{-5}$ \\
- 8 &  $769$ & NC &  3 &  6 &  1 & $9.2 \times 10^{-6}$ \\
- 9 & $1537$ & NC &  3 &  3 &  1 & $3.4 \times 10^{-6}$ \\
-10 & $3073$ & NC &  2 &  4 &  1 & $4.1 \times 10^{-7}$ \\
+% FIXME GENERATE WHOLE TABLE ON THELIO
+ 2 &   $13$ &  3 &  2 &  2 &  +0 & $3.3 \times 10^{-2}$ \\
+ 3 &   $25$ & 12 &  4 &  2 &  +0 & $9.1 \times 10^{-3}$ \\
+ 4 &   $49$ & NC &  4 &  2 &  +0 & $3.2 \times 10^{-3}$ \\
+ 5 &   $97$ & NC &  3 &  3 &  +0 & $5.5 \times 10^{-4}$ \\
+ 6 &  $193$ & NC &  3 &  3 &  +0 & $1.7 \times 10^{-4}$ \\
+ 7 &  $385$ & NC &  3 &  3 &  +0 & $4.7 \times 10^{-5}$ \\
+ 8 &  $769$ & NC &  3 &  6 &  +0 & $9.2 \times 10^{-6}$ \\
+ 9 & $1537$ & NC &  3 &  3 &  +0 & $3.4 \times 10^{-6}$ \\
+10 & $3073$ & NC &  2 &  4 &  +0 & $4.1 \times 10^{-7}$ \\
 \bottomrule
 \end{tabular}
 \bigskip
-\caption{Iterations for V-cycles and FMG in Example \ref{ex:results:plap}.  NC $=$ did not converge after 50 iterations.}
+\caption{Iterations for Example \ref{ex:results:plap}.  Runs ``NC'' did not converge after 50 iterations.}
 \label{tab:results:fastplap1d}
 \end{table}
 
-Firedrake applications can exploit the PETSc \cite{Balayetal2023} library's parallel solvers.  The above Examples, which were run in serial to fix the smoother, also run efficiently in parallel.  The next Examples apply parallel solvers and investigate the weak scaling of FASCD FMG.
+Firedrake applications can exploit the PETSc \cite{Balayetal2023} library's parallel solvers.  The above Examples, which were run in serial, also run efficiently in parallel.  The next Examples apply parallel solvers and investigate the weak scaling of FMG.
 
 \begin{example}  \label{ex:results:advdiff}
-Consider the advection-diffusion VI problem in Example \ref{ex:advectiondiffusion} with $\Omega=(-1,1)^d$, $d=2,3$, diffusivity $\eps=0.1$ in \eqref{eq:advectiondiffusionstrong}, and zero Dirichlet boundary conditions.  The 2D problem satisfies the coercivity hypothesis, with a divergence-free velocity field $\bX = (7+5y,-5x)$, but in 3D we set $\bX = (7+5y,-5x,2z)$ so $\grad\cdot\bX \ne 0$.  The discontinuous source term $\phi \in L^\infty(\Omega)$ satisfies $\phi\ge 0$ in half of the domain, with positive circular patches, but values are negative in the other half; details are in the associated code.  While the other Examples in this Section are unilateral, here the solution is box-constrained: $0 \le u \le 1$.  Figure \ref{fig:results:advdiff} shows coincidence sets for the 2D problem; the 3D sets are comparable in regularity and general pattern.
+Consider the advection-diffusion VI problem in Example \ref{ex:advectiondiffusion} with $\Omega=(-1,1)^d$, $d=2,3$, diffusivity $\eps=0.1$ in \eqref{eq:advectiondiffusionstrong}, and zero Dirichlet boundary conditions.  The 2D problem satisfies the coercivity hypothesis, with a divergence-free velocity field $\bX = (7+5y,-5x)$.  In 3D we set $\bX = (7+5y,-5x,2z)$ so $\grad\cdot\bX \ne 0$.  The discontinuous source term $\phi \in L^\infty(\Omega)$ satisfies $\phi\ge 0$ in half of the domain, with positive circular patches, but values are negative in the other half; details are in the associated code.  While the other Examples in this Section are unilateral, here the solution is box-constrained: $0 \le u \le 1$.  Figure \ref{fig:results:advdiff} shows coincidence sets for the 2D problem.  The 3D sets are comparable in regularity and general pattern.
 
 % REGENERATE using git@bitbucket.org:pefarrell/fascd.git, in examples/
 %   mpiexec -n 16 --map-by core --bind-to hwthread python3 pollutant.py -dim 2 -levs 7 -o poll2d.pvd
@@ -769,30 +770,29 @@ Consider the advection-diffusion VI problem in Example \ref{ex:advectiondiffusio
 \label{fig:results:advdiff}
 \end{figure}
 
-The 2D solver applied $P_1$ elements on a single core, but in 3D the elements were chosen to be $Q_1$ (hexahedra) on $16$ cores.  A coarse mesh with $m_0=16^d$ vertices minimally-resolved the coincidence set.  The local Péclet number $\text{Pe}=\|\bX(x,y,z)\|_2 L \eps^{-1}$, with $L=2$ the width of $\Omega$, varied from 40 to 260, and the mesh Péclet number $m_J^{-1/d}\,\text{Pe}$ varied further with resolution, so the $m_J\le 121^d$ problems were advection-dominated, and those with $m_J\ge 481^d$ diffusion-dominated.  However, the smoother was the same in all cases: two (fixed) RS Newton iterations, with three preconditioned (additive Schwarz method (ASM) with ILU on each process) GMRES iterations.  Tolerances were set to \id{rtol} $=10^{-5}$ and \id{atol} $=$ \id{stol} $= 10^{-9}$.  FMG iteration results are shown in Table \ref{tab:results:advdiff}; a few iterations sufficed up to these memory-limited resolutions.
+The 2D solver applied $P_1$ elements on a single core, but in 3D the elements were chosen to be $Q_1$ (hexahedra) on $16$ cores.  A coarse mesh with $m_0=16^d$ vertices minimally-resolved the coincidence set.  The local Péclet number $\text{Pe}=\|\bX(x,y,z)\|_2 L \eps^{-1}$, with $L=2$ the width of $\Omega$, varied from 40 to 260, and the mesh Péclet number $m_J^{-1/d}\,\text{Pe}$ varied further with resolution.  The $m_J\le 121^d$ problems were numerically advection-dominated and those with $m_J\ge 481^d$ diffusion-dominated.  However, the smoother was the same in all cases: two (fixed) RS Newton iterations, with three preconditioned GMRES iterations.  The preconditioner was the additive Schwarz method (ASM) with ILU on each process.  Tolerances were set to \id{rtol} $=10^{-5}$ and \id{atol} $=$ \id{stol} $= 10^{-9}$.  FMG cycle results are shown in Table \ref{tab:results:advdiff}; up to memory-limited resolution a couple of V-cycle iterations sufficed to satisfy \eqref{eq:stoppingcriterion}.
 \end{example}
 
 % see git@bitbucket.org:pefarrell/fascd.git: examples/pollutant.py
-% and https://github.com/bueler/mcd-extended: paper/results/pollutant.sh|txt
+% and reproduce/table4.py
 \begin{table}[ht]
 \centering
 \begin{tabular}{lr@{\hskip 7mm}c@{\hskip 4mm}c}
 \toprule
 \emph{levels} & $m_J$ & $d=2$ & $d=3$ \\
 \midrule
- 1 &    $16^d$ & 1 & 1 \\
- 2 &    $31^d$ & 2 & 2 \\
- 3 &    $61^d$ & 2 & 2 \\
- 4 &   $121^d$ & 2 & 2 \\
- 5 &   $241^d$ & 2 & 3 \\
- 6 &   $481^d$ & 2 \\
- 7 &   $961^d$ & 3 \\
- 8 &  $1921^d$ & 3 \\
- 9 &  $3841^d$ & 3 \\
+ 2 &    $31^d$ & +1 & +1 \\
+ 3 &    $61^d$ & +1 & +1 \\
+ 4 &   $121^d$ & +1 & +1 \\
+ 5 &   $241^d$ & +1 & +2 \\
+ 6 &   $481^d$ & +1 \\
+ 7 &   $961^d$ & +2 \\
+ 8 &  $1921^d$ & +2 \\
+ 9 &  $3841^d$ & +2 \\
 \bottomrule
 \end{tabular}
 \bigskip
-\caption{FMG iterations for 2D ($P_1$, serial) and 3D ($Q_1$, 16 processes) solutions of the advection-diffusion bi-obstacle VI problem in Example \ref{ex:results:advdiff}.}
+\caption{FMG cycle results for 2D ($P_1$, serial) and 3D ($Q_1$, 16 processes) solutions of Example \ref{ex:results:advdiff}.}
 \label{tab:results:advdiff}
 \end{table}
 
