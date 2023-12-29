@@ -128,7 +128,11 @@ The reasons that I suggest accepting this paper are based on the following obser
 3. This paper proposed to use the algorithm for general monotone nonlinear problems with constraints, while the algorithm proposed in [32] is only for minimization problems. The operator from convex minimization problems is monotone, but there are many monotone operators that are not from minimization problems as shown in Example 2.5 and 2.6 of this work.
 \end{review}
 
-\short{The reviewer points out our new algorithm's avoidance of the ``need to go to the finest level.''  This idea is now a sentence in our revised Introduction.  We also appreciate the pointer to Tai \& Espedal (1998), which shows convergence of a space decomposition method even each subspace solver is only approximate.  If we could supply a convergence proof this would be relevant, but we do not see how to do this currently.}
+\begin{response}
+Appreciated.  The idea that our new algorithm avoids the ``need to go to the finest level''  is now a sentence in the Introduction.
+
+We also appreciate the pointer to Tai \& Espedal (1998), which shows convergence of a space decomposition method when each subspace solver is only approximate (and satisfying certain bounds).  If we could supply a convergence proof this would be relevant, but we do not see how to do it currently.
+\end{response}
 
 \begin{review}
 The weak point of this work is that there is no convergence proof for the proposed algorithms. Intuitively, the constraint decomposition given in this paper is much tighter. It would give a better correction during the iterations, but this is not shown theoretically nor numerically.
@@ -143,13 +147,13 @@ We agree that this is the weakest point of the work.  Sadly, a convergence proof
 The proposed FMG solver is an optimal solver as claimed by the authors. It also improves CD method of [32] in several aspects. The authors need to supply comparisons between the two methods in the numerical section.
 \end{review}
 
-\short{Our numerical demonstrations support the claim of optimality, and the reviewer seems to agree.  Regarding the need to supply comparisons, we think that our already-included comparison to results from [22] (Graeser \& Kornhuber, 2009), who implemented the [32] (Tai, 2003) method using a constraint decomposition like ours, are more relevant.  (This comparison is discussed near the end of Example 8.1.)  Our convergence rates are much better than those in [32], and comparable to those in [22], with our rates about $0.10$ compared to $>0.70$ for [32] on the same ``ball'' problem at comparable resolution; smaller numbers are better.  However, the improvement on this simplest Laplacian obstacle problem is largely our better smoother.}
+\short{Our numerical demonstrations support the claim of optimality, and the reviewer seems to agree.  Regarding the need to supply comparisons, we think that our already-included comparison is adequate.  In Example 8.1 we compare to results from [22] (Graeser \& Kornhuber, 2009), who have  implemented the [32] (Tai, 2003) method using a constraint decomposition like ours, whereas the [32] results use less efficient constraint decompositions.  Our convergence rates are much better than those in [32], and comparable to those in [22], with our rates about $0.10$ compared to $>0.70$ for [32] on the same ``ball'' problem at comparable resolution.  (Smaller numbers are better here.)  On the other hand, the improvement seen in this simplest Laplacian obstacle problem is largely from our better smoother.}
 
 \begin{review}
 Good if the authors can plot the error of the numerical solutions, i.e. $u^J - u^*$ and its convergence order with respect to mesh size $h_J$ with different mesh size $h_J$. This observed convergence order could be beneficial for people working with numerical analysis.
 \end{review}
 
-\short{xx}
+\short{In two cases the exact solution is known (``ball'' problem in Example 8.1; Example 8.2).  The $P_1$ convergence plots themselves are too boring to display, but convergence order of $\|u^\star - u^J\|$ is now reported for both cases.}
 
 
 \section{Responses to Referee 2}
@@ -158,55 +162,57 @@ Good if the authors can plot the error of the numerical solutions, i.e. $u^J - u
 This paper merges the FAS multigrid method, which is a highly optimal solver, with a particular optimization method (CD).  They are able to get close to optimal work complexity this class of optimization solvers, which is a significant accomplishment.  The paper is clearly written and demonstrates good performance.
 \end{review}
 
-\short{FIXME This summary is accurate and appreciated.}
+\short{This summary is accurate and appreciated.}
 
 \begin{review}
 Abstract: ``FASCD is a common extension of \dots'' this sounds like FASCD is, well, common, yet this seems to be the first paper that develops this method.  I think you are saying others have done the same, but it reads like FASCD is common.  Maybe something like ``while many multilevel VI solvers have been developed, FASCD has unique desirable properties''.
 \end{review}
 
-\short{FIXME ``common'' $\to$ ``joint''}
+\short{The word ``common'' has been replaced by ``joint'' for clarity.  All that is intended is that FASCD extends two previously-separate algorithmic ideas, namely FAS and CD.  Note that the desirable properties are listed clearly in the Introduction.}
 
 \begin{review}
 The prior work section starting at line 40, is hard to follow.  There are three projects that you comparing to.  There are many qualities discussed.  A table or some graphic might be useful and some signposts like ``three MG VI methods have been developed in prior works [6,24,22]'' and a paragraph for each.
 \end{review}
 
-\short{FIXME yes, indeed four projects (which makes the reviewers point). cut into paragraphs}
+\short{This is quite helpful.  Indeed we seek to contrast with four projects, i.e.~[6,32,22,24] (old numbering), which makes the reviewer's point!  This part of the text is now an itemized list, thus easier for the reader to follow.}
 
 \begin{review}
 You might move all discussion of desirable properties to the beginning at line 25. and refer to numbered properties in the prior work section as far as what other do well and don't do well.
 \end{review}
 
-\short{FIXME appreciated.  mostly kept the same, but we think the greater organization of prior work paragraphs makes referring to numbered properties unneeded}
+\short{While keeping the overall structure mostly the same, we have made an effort to clean and clarify the presentation of desirable properties (an enumerated list) and of prior work (an itemized list).}
 
 \begin{review}
 The FAS treatment, while good, is a little confusing.  Perhaps only to an expert.
 \end{review}
 
-\short{xx}
+\short{An effort has been made to clarify the presentation of the FAS idea.  Regarding existing literature, it remains a relatively awkward idea to explain; apparently our presentation is not exceptional.}
 
 \begin{review}
 FMG is not an iterative method, yet you start with ``FASCD \dots by a small, mesh-independent number of FMG iterations \dots''.
-\end{review}
 
-\short{xx}
-
-\begin{review}
 The FAS algorithm with V-cycles attached to make an iterative method to arbitrary solver tolerance is fine, but reporting multiple iteration is not really correct.  Right?  It is FMG + k V-cycle iterates.  Maybe report ``extra V-cycles in FASCD'', which should be 0, but you ``over solve'' to compare with others.  This is subtle and maybe could be put in the caption of Table 2 to reduce the text for the column heading from what is now ``FMG'' (``FMG V-cycles'' maybe).
 \end{review}
 
-\short{xx}
+\short{The reviewer is correct, and we have settled on a presentation close to that suggested.  As explained now in the text---see Section 7 before Algorithm 7.1, and at first use in Example 8.1---notation ``$+n$'' is used when $n$ additional V-cycles were required to satisfy the stopping criterion (7.3).  Thus ``$+0$'' appears when the FMG cycle itself sufficed, e.g.~(new) Table 3. }
 
 
 \begin{review}
 This issue becomes a real problem in Table 5 where you devide the solver time by what you call the FASCD iterations.  This does not make sense. I would suggest, since you are just looking at time per ``iteration'', that you just do full MG and forget about iterating.
 \end{review}
 
-\short{xx}
+\short{Indeed, in Table 5 the time-divided-by-iterations column is not helpful, and we have removed it.  The ``iterations'' column is now ``$+n$'' as described above.  We believe this addresses the reviewer's (totally reasonable!) critique.}
 
 \begin{review}
 FASCD is different in that you have to do strange things with the constraints in the down smoothing, so it is not surprising that V(1,0) fails (table 3) and V(1,1) is WORSE that V(0,1) for on test, which indicates a certain fragility with the down smoothing process. It seems that should be discussed, but I don't see this.
 \end{review}
 
-\short{xx}
+\begin{response}
+The description of ``strange things with the constraints in the down smoothing'' is understandable, but this is inherited from reference [22].  As we try (hard?) to explain in Section 5, in down-smoothing the constraint sets must be small; this holds already in [22].  We have improved upon [22] by recognizing that such small sets can be avoided in up-smoothing.
+
+One point of the Example in question (i.e.~Example 8.2) is, indeed, that small constraint sets are bad for the kind of highly nonlinear VI problems we are interested in solving.  (Note that [22] does not address $p$-Laplacian cases for other than the classical $p=2$ case.)  Exactly why convergence is damaged by too-small sets, in a case like this, might be revealed by a convergence proof, i.e.~the one we don't have.
+
+The subtle and very grid-dependent difference between the better V(0,1) and V(1,1) cycles is something we do not understand.  It maybe connected to the location of the free boundary relative to the nearest grid point, but this is both too useless and too speculative to include in the paper.
+\end{response}
 
 \end{document}
