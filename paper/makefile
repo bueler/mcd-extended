@@ -34,6 +34,10 @@ publish.zip: fascd.pdf fascd.bbl
 	cp -f siamart220329.cls siamplain.bst fascd.bib fascd.bbl fascd.tex publish/
 	zip -r publish publish
 
+diff:
+	latexdiff as-submitted-fascd.tex fascd.tex > diff.tex
+	latexmk --pdf diff
+
 .PHONY: clean
 
 clean:

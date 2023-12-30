@@ -125,7 +125,7 @@ Here we extend Tai's multilevel CD method by replacing the coarser-level correct
 \item The FAS coarse corrections are adapted for general VI problems. The method requires neither an objective function nor linearity of the residual.
 \item Box constraints, i.e.~both upper and lower obstacles, are allowed.  (However, other convex admissible sets are not supported.)
 \item The method is strictly admissible, and so can be applied even if the residual operator is defined only on those functions which satisfy the constraints.
-\item The work at each level is proportional to the number of nodes on that level.  Coarser-level evaluations do not require finest-level information.
+\item The work at each level is proportional to the number of degrees of freedom on that level. Coarser-level evaluations do not require finest-level information.
 \item V-cycles (Algorithm \ref{alg:fascd}) and full multigrid (FMG; \cite{Trottenbergetal2001}) cycles (Algorithm \ref{alg:fascd-fmg}) are implemented.
 \item We identify a ``telescoping'' subset property, which is exploited on the up-smoothing side of a V-cycle, yielding better performance.
 \item The method is smoother-agnostic.
