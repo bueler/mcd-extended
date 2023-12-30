@@ -1,0 +1,34 @@
+Patrick --
+
+Happy New Year 2024 to you and your family!  (Very soon anyway, and to good approximation.)  My people are in LA and San Francisco this winter break.  As usual, we miss the darkest few weeks in Fairbanks.
+
+I have drafted responses to the two reviewers, and made edits in the paper.  Things are in good shape but in the next day I plan to let Editor Garth Wells know that we will not make the end of the month because of item 1 below.  I will be back in Fairbanks on the week of 8 Jan, and I can finalize everything then.
+
+Here is the list of stuff, parts of which are a TODO list for me.  At a minimum, item 4 does need your attention:
+
+1. There are many small edits, and 3 new FIXMEs in the paper.  I am traveling with my laptop and I want to (a) check a reference book on one small thing and (b) regenerate Tables 2--4 on my big memory desktop machine (see item 3 below).  To see the changes I have made (git@github.com:bueler/mcd-extended.git):
+cd paper
+latexdiff as-submitted-fascd.tex fascd.tex > diff.tex
+pdflatex diff.tex
+bibtex diff.tex
+pdflatex diff.tex
+I propose to send the *final* version of this diff.pdf to the editor, just to let him know we have taken it all seriously.
+
+2. To see my draft responses to the reviewers (same repo):
+cd paper/reviews
+pdflatex responses.tex
+Feel free to look over my language and edit away.  (I don't have anything currently in mind to add.)
+
+3. I moved the codes for reproducing Tables 2--4, and Figure 6, from git@github.com:bueler/mcd-extended.git into reproduce/ in git@bitbucket.org:pefarrell/fascd.git, and I tried to organize it and document it.  The scripts reproduce/tableN.py generate the lines of the respective LaTeX table.  The one content-ful change to the code was that now an FMG cycle includes a full-depth V-cycle.  So the "iterations" reported for FMG results have gone down by one.  (This relates to a reviewer 2 critique.)  Feel free to improve the code or the scripts in reproduce/.
+
+4. The one thing that I am *not* sure about is whether to redo the archer2 runs for the SIA, or leave them as is.  The only "issue" here is that claiming reproducibility from the tagged version (next item) will have an asterisk if we do not redo these runs.  Note that reproduce/table5.sh is tidied up but it should generate the same results; it does for the lower res I have tested (except of course for wall clock time).  The current reproduce/archer2/sialogs/ files are completely unchanged.  Thoughts?
+
+5. My plan is to tag the version of git@bitbucket.org:pefarrell/fascd.git at v1.0, and zenodo it, at the point I am about to send in the revised version.  This should satisfy the reproducibility badge thing.  Thoughts?
+
+6. After publication info becomes available (which seems very probable) I will update the arxiv preprint version to v2.
+
+As your judgment is more solid than mine, so don't hesitate to intervene.
+
+Best,
+
+Ed
