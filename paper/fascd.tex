@@ -727,7 +727,7 @@ We again consider Example \ref{ex:plaplacian}, with a unilateral constraint, but
 \label{fig:imagesvcycle}
 \end{figure}
 
-Iteration results in Table \ref{tab:results:fastplap1d} show a strong contrast between $V(1,0)$ and $V(0,1)$ results, chosen by setting \pr{up} $=0$ and \pr{down} $=0$ in Algorithm \ref{alg:fascd}, respectively.  The $V(1,0)$ cycles, essentially Algorithm 4.2 in \cite{GraeserKornhuber2009} but with a stronger smoother, often do not converge.  By contrast, $V(0,1)$ cycles, which up-smooth in the larger sets $\mathcal{U}^j$ (Section \ref{sec:cdmultilevel}), are as good as the default $V(1,1)$ cycles.  FMG is even more efficient; a single iteration suffices at all resolutions.   Note that measured $L^\infty(\Omega)$ convergence is $O(h^{2.00})$; compare \cite{ChoeLewis1991}.
+Iteration results in Table \ref{tab:results:fastplap1d} show a strong contrast between $V(1,0)$ and $V(0,1)$ results, chosen by setting \pr{up} $=0$ and \pr{down} $=0$ in Algorithm \ref{alg:fascd}, respectively.  The $V(1,0)$ cycles, essentially Algorithm 4.2 in \cite{GraeserKornhuber2009} but with a stronger smoother, often do not converge.  By contrast, $V(0,1)$ cycles, which up-smooth in the larger sets $\mathcal{U}^j$ (Section \ref{sec:cdmultilevel}), are as good as the default $V(1,1)$ cycles.  FMG is even more efficient; a single iteration suffices at all resolutions.   Note that measured $L^\infty(\Omega)$ convergence is $O(h^{1.99})$; compare \cite{ChoeLewis1991}.
 \end{example}
 
 % see git@bitbucket.org:pefarrell/fascd.git: examples/plap1d.py
@@ -738,16 +738,15 @@ Iteration results in Table \ref{tab:results:fastplap1d} show a strong contrast b
 \toprule
 \emph{levels} & $m_J$ & V(1,0) & V(0,1) & V(1,1) & FMG & $\|$error$\|_\infty$ \\
 \midrule
-% FIXME GENERATE WHOLE TABLE ON THELIO
  2 &   $13$ &  3 &  2 &  2 &  +0 & $3.3 \times 10^{-2}$ \\
  3 &   $25$ & 12 &  4 &  2 &  +0 & $9.1 \times 10^{-3}$ \\
  4 &   $49$ & NC &  4 &  2 &  +0 & $3.2 \times 10^{-3}$ \\
- 5 &   $97$ & NC &  3 &  3 &  +0 & $5.5 \times 10^{-4}$ \\
+ 5 &   $97$ & 14 &  3 &  3 &  +0 & $5.5 \times 10^{-4}$ \\
  6 &  $193$ & NC &  3 &  3 &  +0 & $1.7 \times 10^{-4}$ \\
  7 &  $385$ & NC &  3 &  3 &  +0 & $4.7 \times 10^{-5}$ \\
  8 &  $769$ & NC &  3 &  6 &  +0 & $9.2 \times 10^{-6}$ \\
  9 & $1537$ & NC &  3 &  3 &  +0 & $3.4 \times 10^{-6}$ \\
-10 & $3073$ & NC &  2 &  4 &  +0 & $4.1 \times 10^{-7}$ \\
+10 & $3073$ & NC &  2 &  5 &  +0 & $4.1 \times 10^{-7}$ \\
 \bottomrule
 \end{tabular}
 \bigskip
