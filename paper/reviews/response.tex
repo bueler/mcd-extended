@@ -103,7 +103,7 @@ urlcolor=black    % ...
 \thispagestyle{empty}
 %\bigskip
 
-The thoughtful comments from the two reviewers are much appreciated.  We have revised the manuscript in response. For the convenience of the Referees we include a latexdiff to show the specific changes.
+The thoughtful comments from the two reviewers are much appreciated.  We have revised the manuscript in response. For the convenience of the Editor and Referees we include a latexdiff to show the specific changes.
 
 
 \section{Responses to Referee 1}
@@ -147,13 +147,13 @@ We agree that this is the weakest point of the work.  Sadly, a convergence proof
 The proposed FMG solver is an optimal solver as claimed by the authors. It also improves CD method of [32] in several aspects. The authors need to supply comparisons between the two methods in the numerical section.
 \end{review}
 
-\short{Our numerical demonstrations support the claim of optimality, and the reviewer seems to agree.  We already supply comparisons in Section 8; in Example 8.1 we compare to results from [22] (Graeser \& Kornhuber, 2009), who have implemented the [32] (Tai, 2003) method using a constraint decomposition like ours, whereas the results in [32] use less efficient [FIXME: less efficient in what sense?] constraint decompositions.  Our achieved convergence rate is about $0.10$, comparable to those in [22], whereas [32] achieves $>0.70$ on the same ``ball'' problem at comparable resolution.  (Smaller numbers are better here.)  On the other hand, the improvement seen in this simplest Laplacian obstacle problem is largely from our better smoother.}
+\short{Our numerical demonstrations support the claim of optimality, and the reviewer seems to agree.  We already supply comparisons in Section 8; in Example 8.1 we compare to results from [22] (Graeser \& Kornhuber, 2009), who have implemented the [32] (Tai, 2003) method using a constraint decomposition like ours, whereas the results in [32] use rather different constraint decompositions.  Our achieved convergence rate is about $0.10$, comparable to those in [22], whereas [32] achieves $>0.70$ on the same ``ball'' problem at comparable resolution.  (Smaller numbers are better here.)  On the other hand, the improvement seen in this simplest Laplacian obstacle problem is largely from our better smoother.}
 
 \begin{review}
 Good if the authors can plot the error of the numerical solutions, i.e. $u^J - u^*$ and its convergence order with respect to mesh size $h_J$ with different mesh size $h_J$. This observed convergence order could be beneficial for people working with numerical analysis.
 \end{review}
 
-\short{We now report the convergence order of $\|u^\star - u^J\|$ for the two cases where the exact solution is known (``ball'' problem in Example 8.1; Example 8.2).}
+\short{We now report the convergence order of $\|u^\star - u^J\|$ for the two cases where the exact solution is known, namely the ``ball'' problem in Example 8.1 and the $p$-Laplacian problem in Example 8.2.}
 
 
 \section{Responses to Referee 2}
@@ -194,25 +194,25 @@ FMG is not an iterative method, yet you start with ``FASCD \dots by a small, mes
 The FAS algorithm with V-cycles attached to make an iterative method to arbitrary solver tolerance is fine, but reporting multiple iteration is not really correct.  Right?  It is FMG + k V-cycle iterates.  Maybe report ``extra V-cycles in FASCD'', which should be 0, but you ``over solve'' to compare with others.  This is subtle and maybe could be put in the caption of Table 2 to reduce the text for the column heading from what is now ``FMG'' (``FMG V-cycles'' maybe).
 \end{review}
 
-\short{The reviewer is correct, and we have settled on a presentation close to that suggested.  As explained now in the text---see Section 7 before Algorithm 7.1, and at first use in Example 8.1---notation ``$+n$'' is used when $n$ additional V-cycles were required to satisfy the stopping criterion (7.3).  Thus ``$+0$'' appears when the FMG cycle itself sufficed, e.g.~(new) Table 3. }
+\short{The reviewer is correct, and we have settled on a presentation close to that suggested.  As explained now in the text, notation ``$+n$'' is now used when $n$ additional V-cycles were required to satisfy the stopping criterion (7.3).  (This is documented in Section 7 before Algorithm 7.1, and at first use in Example 8.1.)  Thus ``$+0$'' appears when the FMG cycle itself sufficed, e.g.~(new) Table 3. }
 
 
 \begin{review}
 This issue becomes a real problem in Table 5 where you devide the solver time by what you call the FASCD iterations.  This does not make sense. I would suggest, since you are just looking at time per ``iteration'', that you just do full MG and forget about iterating.
 \end{review}
 
-\short{Indeed, in Table 5 the time-divided-by-iterations column is not helpful, and we have removed it.  The ``iterations'' column is now ``$+n$'' as described above.  We believe this addresses the reviewer's very reasonable criticism.}
+\short{The reviewer is correct that in Table 5 the time-divided-by-iterations column was not helpful, and we have removed it.  The ``iterations'' column is now ``$+n$'' as described above.  We believe this addresses the reviewer's very reasonable criticism.}
 
 \begin{review}
 FASCD is different in that you have to do strange things with the constraints in the down smoothing, so it is not surprising that V(1,0) fails (table 3) and V(1,1) is WORSE that V(0,1) for on test, which indicates a certain fragility with the down smoothing process. It seems that should be discussed, but I don't see this.
 \end{review}
 
 \begin{response}
-The description of ``strange things with the constraints in the down smoothing'' is understandable, but this is inherited from reference [22].  As we try to explain in Section 5, in down-smoothing the constraint sets must be small; this holds already in [22].  We have improved upon [22] by recognizing that such small sets can be avoided in up-smoothing.
+The description of ``strange things with the constraints in the down smoothing'' is understandable, but this is inherited from reference [22].  As we try to explain in Section 5, in down-smoothing the constraint sets must be small; this characterizes the cycles in [22].  We have improved upon [22] by recognizing that such small sets can be avoided in up-smoothing.
 
-One point of the Example in question (i.e.~Example 8.2) is, indeed, that small constraint sets are bad for the kind of highly nonlinear VI problems we are interested in solving.  (Note that [22] does not address $p$-Laplacian cases for other than the classical $p=2$ case.)  Exactly why convergence is damaged by too-small sets, in a case like this, might be revealed by a convergence proof, i.e.~the one we don't have.
+One point of the Example in question (i.e.~Example 8.2) is, indeed, that small constraint sets are bad for the kind of highly nonlinear VI problems we are interested in solving.  (Note that [22] does not address $p$-Laplacian cases, for other than the classical $p=2$ case, while we address the $1.5$-Laplacian and a doubly-degenerate version of the $4$-Laplacian.)  Exactly why convergence is damaged by too-small sets, in a case like this, might be revealed by a convergence proof, i.e.~the proof we don't have.
 
-The subtle and very grid-dependent difference between the better V(0,1) and V(1,1) cycles is something we do not understand.  It may be connected to the location of the free boundary relative to the nearest grid point, but this is too speculative for us to feel comfortable including a remark the manuscript.
+The subtle and very grid-dependent difference between the better V(0,1) and V(1,1) cycles is also something we do not understand.  It may be connected to the location of the free boundary relative to the nearest grid point, but this is too speculative for us to feel comfortable including as a remark in the manuscript.
 \end{response}
 
 \end{document}

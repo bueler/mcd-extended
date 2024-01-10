@@ -45,3 +45,4 @@ clean:
 	@rm -rf genfigs/*.pdf
 	@rm -rf genfigs/__pycache__/
 	@rm -rf publish/ publish.zip
+	@rm -rf diff.*
