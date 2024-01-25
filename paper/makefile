@@ -31,7 +31,7 @@ publish.zip: fascd.pdf fascd.bbl
 	cp -f genfigs/*.pdf publish/figs/
 	mkdir publish/tikz/
 	cp -f tikz/*.tex publish/tikz/
-	cp -f siamart220329.cls siamplain.bst fascd.bib fascd.bbl fascd.tex publish/
+	cp -f siamart220329.cls siamplain.bst fascd.bib fascd.bbl fascd.tex fascd.pdf publish/
 	zip -r publish publish
 
 diff:
