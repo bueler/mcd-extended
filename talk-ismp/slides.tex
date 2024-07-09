@@ -1,0 +1,908 @@
+\documentclass[svgnames,
+               hyperref={colorlinks,citecolor=DeepPink4,linkcolor=FireBrick,urlcolor=Maroon},
+               usepdftitle=false]  % see \hypersetup{} below
+               {beamer}
+
+\mode<presentation>{
+  \usetheme{Madrid}
+  %\usecolortheme{seagull}
+  \usecolortheme{seagull}
+  \setbeamercovered{transparent}
+  \setbeamerfont{frametitle}{size=\large}
+}
+
+\setbeamercolor*{block title}{bg=red!10}
+\setbeamercolor*{block body}{bg=red!5}
+
+%\usepackage[svgnames]{xcolor}
+\usepackage{hyperref}
+\hypersetup{
+    pdftitle = {A full approximation scheme multilevel method for solving nonlinear variational inequalities},
+    pdfauthor = {Ed Bueler and Patrick Farrell},
+    pdfsubject = {},
+    pdfkeywords = {}
+}
+
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{times}
+\usepackage[T1]{fontenc}
+\usepackage{empheq,bm,xspace,fancyvrb,soul}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows.meta,decorations.markings,decorations.pathreplacing,fadings,positioning}
+\usepackage[kw]{pseudo}
+\pseudoset{left-margin=15mm,topsep=5mm,label=,idfont=\texttt,st-left=,st-right=}
+
+\makeatletter
+%\newcommand\notsotiny{\@setfontsize\notsotiny\@vipt\@viipt}
+\newcommand\notsotiny{\@setfontsize\notsotiny\@viipt\@viiipt}
+\makeatother
+
+\newcommand{\eps}{\epsilon}
+\newcommand{\RR}{\mathbb{R}}
+
+\newcommand{\grad}{\nabla}
+\newcommand{\Div}{\nabla\cdot}
+\newcommand{\trace}{\operatorname{tr}}
+
+\newcommand{\hbn}{\hat{\mathbf{n}}}
+
+\newcommand{\bb}{\mathbf{b}}
+\newcommand{\be}{\mathbf{e}}
+\newcommand{\bbf}{\mathbf{f}}
+\newcommand{\bg}{\mathbf{g}}
+\newcommand{\bn}{\mathbf{n}}
+\newcommand{\bq}{\mathbf{q}}
+\newcommand{\br}{\mathbf{r}}
+\newcommand{\bu}{\mathbf{u}}
+\newcommand{\bv}{\mathbf{v}}
+\newcommand{\bw}{\mathbf{w}}
+\newcommand{\bx}{\mathbf{x}}
+
+\newcommand{\bF}{\mathbf{F}}
+\newcommand{\bQ}{\mathbf{Q}}
+\newcommand{\bU}{\mathbf{U}}
+\newcommand{\bV}{\mathbf{V}}
+\newcommand{\bX}{\mathbf{X}}
+
+\newcommand{\btau}{\bm{\tau}}
+\newcommand{\bxi}{\bm{\xi}}
+
+\newcommand{\bzero}{\bm{0}}
+
+\newcommand{\rhoi}{\rho_{\text{i}}}
+
+\newcommand{\ip}[2]{\left<#1,#2\right>}
+
+\newcommand{\nn}{{\text{n}}}
+\newcommand{\pp}{{\text{p}}}
+\newcommand{\qq}{{\text{q}}}
+\newcommand{\rr}{{\text{r}}}
+
+\newcommand{\ds}{\displaystyle}
+
+\newcommand{\bus}{\bu|_s}
+\newcommand{\oo}[1]{\displaystyle O\left(#1\right)}
+\newcommand{\sold}{s_{\text{o}}}
+
+\newcommand{\maxR}{R^{\bm{\oplus}}}
+\newcommand{\minR}{R^{\bm{\ominus}}}
+\newcommand{\iR}{R^{\bullet}}
+
+
+\title[FAS multigrid for VIs]{A full approximation scheme multilevel method \\ for solving nonlinear variational inequalities}
+
+%\subtitle{\emph{}}
+
+\author[Bueler and Farrell]{Ed Bueler \inst{1} \and Patrick Farrell \inst{2}}
+\institute[]{\inst{1} University of Alaska Fairbanks \and %
+             \inst{2} Mathematical Institute, Oxford University}
+
+\date[]{ISMP 2024}
+
+%\titlegraphic{\begin{picture}(0,0)
+%    \put(0,180){\makebox(0,0)[rt]{\includegraphics[width=4cm]{figs/software.png}}}
+%  \end{picture}
+%}
+
+\titlegraphic{\vspace{-8mm} \includegraphics[width=0.26\textwidth]{../talk-oxford/images/uafbw.png} \hfill \begin{minipage}{0.14\textwidth}
+\includegraphics[width=\textwidth]{../talk-oxford/images/oxford.png}
+
+\vspace{18mm}
+\end{minipage} \vspace{-10mm}}
+
+%% to start section counter at 0 see
+%% https://tex.stackexchange.com/questions/170222/change-the-numbering-in-beamers-table-of-content
+
+
+\begin{document}
+\beamertemplatenavigationsymbolsempty
+
+{
+  %\usebackgroundtemplate{\includegraphics[width=\paperwidth]{../talk-oxford/images/gray-british-clark2022.png}}
+  \begin{frame}
+    \titlepage
+  \end{frame}
+}
+
+
+\begin{frame}{Outline}
+  \tableofcontents[hideallsubsections]
+\end{frame}
+
+
+\section{variational inequalities (VIs)}
+
+\begin{frame}{{\color{FireBrick} variational inequality} $=$ constrained weak form equations}
+
+\begin{center}
+\begin{tabular}{r|l|l}
+& \qquad unconstrained & \qquad constrained \\ \hline
+optimization &
+\begin{minipage}[t][16mm][t]{0.32\textwidth}
+$$\min_{u\in\mathcal{V}} J(u)$$
+\end{minipage}
+&
+\begin{minipage}[t][16mm][t]{0.35\textwidth}
+$$\min_{u\in\mathcal{K}} J(u)$$
+\end{minipage}
+\\ \hline
+\only<1>{equations}\only<2>{\begin{minipage}[t][16mm][t]{0.15\textwidth} weak form \par equations \end{minipage}} &
+\begin{minipage}[t][16mm][t]{0.32\textwidth}
+
+\vspace{-2mm}
+find $u \in \mathcal{V}$:
+\only<1>{$$F(u)=0$$}
+\only<2>{$$\ip{F(u)}{v} = 0 \quad \forall v \in \mathcal{V}$$}
+\end{minipage}
+&
+\begin{minipage}[t][16mm][t]{0.35\textwidth}
+
+\vspace{-2mm}
+\only<2>{
+{\color{FireBrick} find $u \in \mathcal{K}$:}
+$${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \forall v \in \mathcal{K}}$$
+}
+\end{minipage}
+\end{tabular}
+\end{center}
+
+\bigskip
+
+\begin{itemize}
+\item where $\mathcal{K} \subset \mathcal{V}$ is closed and convex
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{example: classical obstacle problem}
+
+\begin{center}
+\includegraphics[width=0.65\textwidth]{../talk-oxford/images/obstacle65.pdf}
+\end{center}
+
+\begin{itemize}
+\item \emph{problem.} on $\Omega \subset \RR^2$, find $u(x)$ which minimizes
+    $$J(v) = \int_\Omega \frac{1}{2} |\grad v|^2 - f\, v$$
+over $\mathcal{K} = \left\{v \in H^1(\Omega) \,:\, v\big|_{\partial \Omega} = g \,\text{ and }\, v \ge \psi\right\}$
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{example: classical obstacle problem}
+
+\includegraphics[width=0.55\textwidth]{../talk-oxford/images/obstacle65.pdf} \qquad \includegraphics[width=0.35\textwidth]{../talk-oxford/images/obstacle-sets.png}
+
+\bigskip
+\begin{itemize}
+\item the solution defines subsets of $\Omega$:
+   \begin{itemize}
+   \item[$\circ$] \emph{active set} $A_u = \{u = \psi\}$
+   \item[$\circ$] \emph{inactive set} $R_u = \{u> \psi\}$
+   \item[$\circ$] \emph{free boundary} $\Gamma_u=\partial R_u \cap \Omega$
+   \end{itemize}
+\item the \emph{complementarity problem} (CP) is a PDE-like strong form:
+\begin{equation*}
+u - \psi \ge 0, \qquad -\grad^2 u - f \ge 0, \qquad (u - \psi)(-\grad^2 u - f) = 0
+\end{equation*}
+
+   \begin{itemize}
+   \item[$\circ$] CP $=$ KKT conditions essentially, but $\infty$-dimensional
+   \end{itemize}
+\item the weak form is a {\color{FireBrick} \emph{variational inequality} (VI)}, which says that $J'(u)$ points directly into $\mathcal{K}$:
+    $$\ip{J'(u)}{v-u} = \int_\Omega \grad u\cdot \grad (v-u) - f (v-u) \ge 0$$
+for all $v \in \mathcal{K}$
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{VI $=$ weak form}
+
+\begin{itemize}
+\item for problems of optimization type, the VI is the weak form, with $v-u$ as the test function:
+{\small
+   $$J(u) \le J(v) \quad \forall v \in \mathcal{K} \qquad \iff \qquad \ip{J'(u)}{v-u} \ge 0 \quad \forall v \in \mathcal{K}$$
+}
+\end{itemize}
+
+\bigskip
+\begin{center}
+\includegraphics[width=0.5\textwidth]{../talk-dms/figs/convexuv.png}
+\end{center}
+\end{frame}
+
+
+
+\begin{frame}{general variational inequalities}
+
+\begin{itemize}
+\item let $\mathcal{K}$ be a closed and convex subset of a Banach space $\mathcal{V}$
+\item suppose $F:\mathcal{K} \to \mathcal{V}'$ is a continuous operator
+    \begin{itemize}
+    \item[$\circ$] $F$ is generally nonlinear
+    \item[$\circ$] $F$ may be defined \emph{only} on $\mathcal{K}$
+    \item[$\circ$] $F$ may \emph{not}\, be the derivative of an objective function $J$
+    \item[$\circ$] $F=J'$, a linear operator, in classical obstacle problem
+    \end{itemize}
+\item the general variational inequality {\color{FireBrick} VI($F$,$\mathcal{K}$)} is
+	$${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \text{ for all } v \in \mathcal{K}}$$
+\item when $\mathcal{K}$ is nontrivial the problem {\color{FireBrick} VI($F$,$\mathcal{K}$)} is nonlinear \emph{even when $F$ is a linear operator}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{applications of VIs}
+
+\begin{itemize}
+\item elastic contact
+    \begin{itemize}
+    \item[$\circ$] car tires, for example
+    \end{itemize}
+
+\vspace{-10mm}
+\hfill \includegraphics[width=0.2\textwidth]{../talk-dms/figs/tirecontact.png}
+
+\vspace{-20mm}
+\item pricing of American options
+    \begin{itemize}
+    \item[$\circ$] inequality-constrained Black-Scholes model
+    \end{itemize}
+
+\vspace{1.5mm}
+\item the geometry of glaciers %\hfill $\longleftarrow$ \emph{more soon}
+
+\vspace{3mm}
+\item first-semester calculus:
+    $$u \gets \min_{x\in[a,b]} f(x) \quad \iff \quad f'(u)(v-u) \ge 0 \quad \forall v \in[a,b]$$
+\end{itemize}
+
+%\vspace{20mm}
+\begin{center}
+\includegraphics[width=0.9\textwidth]{../talk-oxford/images/calcone.png}
+\end{center}
+\end{frame}
+
+
+\AtBeginSection[]
+{
+  \begin{frame}{Outline}
+    \tableofcontents[currentsection]
+  \end{frame}
+}
+
+\section{nonlinear (FAS) multigrid for PDEs}
+
+\begin{frame}{nonlinear 2-mesh scheme}
+
+\begin{center}
+$\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine-grid.png} \hspace{25mm} \includegraphics[height=0.16\textheight]{../talk-oxford/images/coarse-grid.png} \,$\Omega^H$
+\end{center}
+
+\only<1>{
+\begin{itemize}
+\item consider a nonlinear elliptic PDE problem:
+	$$F(u) = \ell$$
+
+	\begin{itemize}
+	\item[$\circ$] $u\in \mathcal{V}=H^1(\Omega)$
+	\item[$\circ$] $\ell\in \mathcal{V}'$
+	\item[$\circ$] $F : \mathcal{V} \to \mathcal{V}'$ continuous and one-to-one
+	\item[$\circ$] for example, the Liouville-Bratu problem: $-\grad^2 u - e^u = f$
+	\end{itemize}
+\item discretization gives algebraic system on fine mesh $\Omega^h$:
+    $$F^h(u^h) = \ell^h$$
+
+	\begin{itemize}
+	\item[$\circ$] $u^h$ denotes exact (algebraic) solution
+	\end{itemize}
+\end{itemize}
+
+\vspace{4mm}
+}
+\only<2>{
+\begin{itemize}
+\item \emph{goal}: to solve $F^h(u^h) = \ell^h$ on $\Omega^h$
+\item suppose $w^h$ is a not-yet-converged iterate:
+    $$r^h=\ell^h - F^h(w^h), \qquad \|r^h\| > \text{TOL}$$
+\item how can we improve $w^h$ \emph{without} globally linearizing $F^h$?
+
+	\begin{itemize}
+	\item are there alternatives to Newton's method?
+	\end{itemize}
+\item notes:
+    \setbeamertemplate{enumerate item}{\emph{\roman{enumi})}}
+    \begin{enumerate}
+    \item the \emph{residual} \quad $r^h = \ell^h - F^h(w^h)$ \quad is computable
+    \item the \emph{error} \quad $e^h = u^h-w^h$ \quad is unknown
+    \item our equation can be rewritten
+    $$F^h(u^h) - F^h(w^h) = r^h$$
+    \end{enumerate}
+\end{itemize}
+}
+\only<3-4>{
+\begin{itemize}
+\item \emph{updated goal}: from iterate $w^h$, to solve
+    $$F^h(u^h) - F^h(w^h) = r^h$$
+\item \alert{for $F^h$ linear}, convert this to the \emph{error equation}
+    $$F^h(e^h) = r^h$$
+\item an approximation solution $\tilde e^h$ would improve our iterate:
+    $$w^h \leftarrow w^h+\tilde e^h$$
+\item<4> but $F^h$ is not linear!
+\end{itemize}
+
+\vspace{5mm}
+}
+\only<5>{
+\begin{itemize}
+\item \emph{updated goal}: use a coarser mesh $\Omega^H$ to somehow estimate the solution $u^h$ in the nonlinear \emph{correction equation}
+    $${\color{FireBrick} F^h(u^h) - F^h(w^h) = r^h}$$
+\item basic multigrid idea: there are algorithms (\alert{smoothers}) which ``improve'' $w^h$ \dots use them a little first \dots then correct from the coarser mesh
+    \begin{itemize}
+    \item[$\circ$] ``improve'' means they remove high-frequency error components efficiently
+    \end{itemize}
+\end{itemize}
+
+\vspace{15mm}
+}
+\only<6>{
+\begin{itemize}
+\item \emph{nodewise problem}: for $\psi_i^h$ a hat function or dof, solve for $c\in\RR$ to make the residual at that location zero:
+	$${\color{FireBrick} \phi_i(c) = r^h(w^h + c \psi_i^h)[\psi_i^h] = 0}$$
+\item sweeping through and solving nodewise problems is a \alert{smoother}
+    \begin{itemize}
+    \item[$\circ$] Fourier analysis shows smoothing property
+    \item[$\circ$] after smoothing, $e^h$ and $r^h$ have smaller high-frequencies
+    \end{itemize}
+\item after smoothing, the correction equation on $\Omega^h$ should be accurately approximate-able on the coarser mesh $\Omega^H$
+\end{itemize}
+
+\vspace{14mm}
+}
+\only<7>{
+\begin{itemize}
+\item \emph{updated goal}: use a coarser mesh $\Omega^H$ to somehow estimate the solution $u^h$ in $F^h(u^h) - F^h(w^h) = r^h(w^h)$
+\item Brandt's (1977) \emph{full approximation scheme} (FAS) equation:
+	$${\color{FireBrick} F^H(u^H) - F^H(\iR w^h) = R \, r^h(w^h)}$$
+
+    \begin{itemize}
+    \item[$\circ$] $\iR:\mathcal{V}^h \to \mathcal{V}^H$ is node-wise \emph{injection}
+    \item[$\circ$] $R:(\mathcal{V}^h)' \to (\mathcal{V}^H)'$ is \emph{canonical restriction}
+    \item[$\circ$] note: if $w^h=u^h$ exactly then $u^H = \iR w^h$ since $F^H$ injective
+    \end{itemize}
+
+\item rewritten FAS equation: let ${\color{FireBrick} \ell^H = F^H(\iR w^h) + R\, r^h(w^h)}$ then
+    $${\color{FireBrick} F^H(u^H) = \ell^H}$$
+\end{itemize}
+}
+\end{frame}
+
+
+\begin{frame}{full approximation scheme (FAS) 2-mesh solver}
+
+\begin{center}
+fine mesh $=\Omega^h$\, \includegraphics[height=0.14\textheight]{../talk-oxford/images/fine-grid.png} \hspace{15mm} \includegraphics[height=0.14\textheight]{../talk-oxford/images/coarse-grid.png} \,$\Omega^H=$ coarse mesh
+\end{center}
+
+\begin{align*}
+&\text{pre-smooth over fine:} & & [\text{smoother updates } w^h] \\
+&\text{restrict:}                   & &\ell^H = F^H(\iR w^h) + R\, r^h(w^h) \\
+&\text{solve coarse:}                      & &F^H(w^H) = \ell^H \\
+&\text{correct:}                    & &w^h \leftarrow w^h + P(w^H - \iR w^h) \\
+&\text{post-smooth over fine:} & & [\text{smoother updates } w^h]
+\end{align*}
+
+\bigskip
+{\small
+\begin{itemize}
+\item $P: \mathcal{V}^H \to \mathcal{V}^h$ is \emph{canonical prolongation}
+\item \textbf{restrict}$+$(\textbf{solve coarse})$+$\textbf{correct} \, $=$ \, \emph{FAS coarse grid correction}
+\end{itemize}
+}
+\end{frame}
+
+
+\begin{frame}{nonlinear multigrid by FAS: \only<1>{V-cycle}\only<2>{FMG cycle}}
+
+\includegraphics[height=0.2\textheight]{../talk-oxford/images/mg-grids.png}
+
+\hspace{4mm} $J=3$ \hspace{13mm} $j=2$ \hspace{13mm} $j=1$ \hspace{12mm} $j=0$
+
+\bigskip
+\only<1>{
+\begin{columns}
+\begin{column}{0.75\textwidth}
+{\small
+\begin{pseudo}
+\pr{fas-vcycle}$(\ell^J;w^J)$: \\+
+    for $j=J$ downto $j=1$ \\+
+      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j; w^j)$ \\
+      $w^{j-1} = \iR w^j$ \\
+      $\ell^{j-1} = F^{j-1}(w^{j-1}) + R \left(\ell^j - F^j(w^j)\right)$ \\-
+    $\text{\pr{solve}}(\ell^0;w^0)$ \\
+    for $j=1$ to $j=J$ \\+
+      $w^j \gets w^j + P (w^{j-1} - \iR w^j)$ \\
+      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j;w^j)$ \\-
+\end{pseudo}
+}
+\end{column}
+\begin{column}{0.25\textwidth}
+\includegraphics[width=0.7\textwidth]{../talk-oxford/images/mg-vcycle.png}
+\end{column}
+\end{columns}
+}
+\only<2>{
+\vspace{6mm}
+
+\centering
+\input{../talk-dms/tikz/fcycle.tex}
+
+FMG $=$ full multigrid
+
+\vspace{6mm}
+}
+\end{frame}
+
+
+\begin{frame}{does it work?}
+
+\begin{itemize}
+\item FAS multigrid works \alert{very well} on nice nonlinear PDE problems
+\item example: Liouville-Bratu equation
+    $$-\nabla^2 u - e^u = 0$$
+with Dirichlet boundary conditions on $\Omega=(0,1)^2$
+\item discretize by (straightforward) finite differences
+\item minimal problem-specific code:
+    \begin{enumerate}
+    \item[1.] residual evaluation on grid level: $F^j(\cdot)$
+    \item[2.] pointwise smoother: $\phi_i(c) = 0 \,\forall i$
+        \begin{itemize}
+        \item[$\circ$] nonlinear Gauss-Seidel iteration
+        \end{itemize}
+    \item[3.] coarsest-level solve can be same as smoother, or more sophisticated (e.g.~Newton iteration)
+    \end{enumerate}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{the meaning of ``fast solver''}
+
+\begin{itemize}
+\item what does ``very well'' on the previous slide mean?
+\end{itemize}
+
+\begin{block}{definition} a solver is \emph{optimal} if work in flops, and/or run-time, is $O(N)$ for $N$ unknowns
+\end{block}
+
+\begin{itemize}
+\item since $\sim$1980: optimality can be achieved by multigrid for PDE problems with reasonably-smooth solutions
+\item in fact, multigrid people get greedy
+\begin{block}{definition} a solver shows \emph{textbook multigrid efficiency} if it does total work less than 10 times that of a single smoother sweep
+\end{block}
+    \begin{itemize}
+    \item[$\circ$] TME $\implies$ optimal
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Bratu model problem: TME}
+
+\begin{columns}
+\begin{column}{0.45\textwidth}
+\begin{itemize}
+\item \texttt{bratu.c}
+\item observed optimality:
+\begin{align*}
+\text{flops} &= O(N^1) \\
+\text{processor time} &= O(N^1)
+\end{align*}
+\item highest-resolution {\color{FireBrick} $12$-level V-cycle} has $N\approx 10^8$ unknowns
+\item compare $\approx 20\,\mu\,\text{s}/\text{N}$ for Poisson using Firedrake ($P_1$, geometric multigrid)
+\end{itemize}
+\end{column}
+\begin{column}{0.55\textwidth}
+\includegraphics[width=\textwidth]{../talk-dms/figs/bratu-time.png}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\section{FASCD = FAS multigrid for VIs}
+
+\begin{frame}{an FAS multigrid strategy for VIs}
+
+\begin{itemize}
+\item new algorithm (Bueler \& Farrell 2023):
+
+{\color{FireBrick} FASCD = full approximation scheme constraint decomposition}
+
+\bigskip
+\item what is ``constraint decomposition'' in FAS\underline{CD}?
+\end{itemize}
+\end{frame}
+
+\newcommand{\cK}{\mathcal{K}}
+
+\begin{frame}{subspace decomposition}
+
+\hfill \includegraphics[height=0.12\textheight]{../talk-oxford/images/mg-grids.png}
+
+{\footnotesize
+\hfill $\Omega^3$ \hspace{8.5mm} $\Omega^2$ \hspace{8.5mm} $\Omega^1$ \hspace{8.5mm} $\Omega^0$ \hspace{1mm}
+}
+
+\begin{itemize}
+\item start with subspace decomposition over nested meshes:
+    $$\Omega^j \subset \Omega^{j+1}$$
+\item the FE function spaces $\mathcal{V}^j$ over $\Omega^j$ are also nested:
+    $$\mathcal{V}^j \subset \mathcal{V}^{j+1}$$
+
+\begin{block}{definition}
+$\ds \mathcal{V}^J = \sum_{i=0}^J \mathcal{V}^i$ \quad is called a \emph{subspace decomposition} (Xu 1992)
+\end{block}
+    \begin{itemize}
+    \item[$\circ$] \emph{non}-unique vector space sum
+    \item[$\circ$] Xu's paper explains how to analyze linear multigrid for PDEs via subspace decomposition
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{constraint decomposition}
+
+\begin{itemize}
+\item Tai's (2003) constraint decomposition \emph{non-trivially} extends a subspace decomposition $\mathcal{V}^J = \sum_i\mathcal{V}^i$ to convex subsets
+\item suppose $\mathcal{K}^J \subset \mathcal{V}^J$ is a closed and convex subset
+\begin{block}{definition}
+$\ds \mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$ \quad is a \emph{constraint decomposition} (CD) if there are closed and convex subsets $\mathcal{K}^i\subset \mathcal{V}^i$, and (nonlinear) projections $\Pi_i : \mathcal{K}^J \to \mathcal{K}^i$, so that $\ds v = \sum_{i=0}^J \Pi_i v$ and a stability condition applies (not shown)
+\end{block}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{constraint decomposition}
+
+\begin{itemize}
+\item observation: generally $\mathcal{K}^i \not\subset \mathcal{K}^J$
+\end{itemize}
+
+\bigskip
+\begin{center}
+\includegraphics[width=0.6\textwidth]{../paper/genfigs/cartoon.pdf}
+
+\medskip
+{\small obstacle problem on a two-point mesh with $\mathcal{V} \cong \RR^2$}
+\end{center}
+\end{frame}
+
+
+\begin{frame}{iterations over constraint decomposition}
+
+\begin{itemize}
+\item Tai proposed abstract iterations for solving $VI(F,\ell,\mathcal{K})$ over a CD $\mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$
+
+{\small
+\begin{pseudo}[left-margin=-5mm]
+\pr{cd-mult}(u)\text{:} \\+
+    for $i = 0,\dots,m-1$: \\+
+        find $w_i\in \cK_i$ s.t. \\+
+            $\displaystyle \Big<F\Big(\sum_{j<i} w_j + w_i + \sum_{j>i} \Pi_j u\Big),\, v_i - w_i\Big> \ge \ip{\ell}{v_i - w_i} \,\forall v_i \in \cK_i$ \\--
+    return $w=\sum_i w_i\in\cK$
+\end{pseudo}
+}
+
+\medskip
+\item Tai's iterations are not practical because you compute on the finest level in fact
+\item we added two techniques: \emph{defect obstacles} on each level, and \emph{FAS coarse corrections}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{defect obstacles}
+
+\begin{itemize}
+\item recall $\mathcal{K} = \{v \ge \psi\}$ in an obstacle problem
+\begin{block}{definition}
+for finest-level admissible set $\mathcal{K}^J = \{v^J\ge \psi^J\} \subset \mathcal{V}^J$ and an iterate $w^J \in \mathcal{K}^J$, the \emph{defect obstacle} (Gr\"aser \& Kornhuber 2009) is
+    $$\chi^J = \psi^J - w^J \in \mathcal{V}^J$$
+\end{block}
+
+    \begin{itemize}
+    \item[$\circ$] note $\chi^J \le 0$
+    \end{itemize}
+\item we generate the CD through
+
+defect obstacles $\chi^j$ on each
+
+level via \emph{monotone restriction}:
+
+$$\chi^j = R^{\oplus} \chi^{j+1} \phantom{smdlfkaj asdfklj asdf sdfaa asddfas dsa}$$
+
+    \begin{itemize}
+    \item[$\circ$] a \emph{nonlinear} operator
+    \item[$\circ$] {\footnotesize also due to (Gr\"aser \& Kornhuber 2009)}
+    \end{itemize}
+\end{itemize}
+
+\vspace{-25mm}
+\hfill \mbox{\input{../talk-dms/tikz/Rplusminus.tex}}
+\end{frame}
+
+
+\begin{frame}{up and down sets}
+
+\begin{itemize}
+\item upward part in the FASCD V-cycle uses large admissible sets:
+    $$\mathcal{U}^j = \{z^j \ge \chi^j\}$$
+\item downward sets are smaller to guarantee admissibility of the upcoming coarse correction:
+    $$\mathcal{D}^j = \{y^j \ge \phi^j=\chi^j - \chi^{j-1}\}$$
+\item $\ds \mathcal{U}^j = \sum_{i=0}^j \mathcal{D}^i$ is a CD of the $j$th-level admissible set
+\end{itemize}
+
+\begin{center}
+\includegraphics[width=0.4\textwidth]{../talk-oxford/images/fascd-vcycle.png}
+\end{center}
+\end{frame}
+
+
+\begin{frame}{multilevel constraint decomposition in FASCD}
+
+\centering
+\includegraphics[width=0.7\textwidth]{../talk-dms/figs/innerconeapprox.png}
+\end{frame}
+
+
+\begin{frame}{full approximation scheme constraint decomposition}
+
+% case of lower obstacle only
+\begin{pseudo}[font=\small]
+\pr{fascd-vcycle}(J,\ell^J,\psi^J;w^J)\text{:} \\+
+    $\chi^J = \psi^J - w^J$ \\
+    for $j=J$ downto $j=1$ \\+
+      $\chi^{j-1} = \maxR \chi^j$ \\
+      $\phi^j = \chi^j - P\chi^{j-1}$ \\
+      $y^j = 0$ \\
+      $\text{\pr{smooth}}^{\text{\id{down}}}(\ell^j,\phi^j,w^j;y^j)$ \\
+      $w^{j-1} = \iR(w^j + y^j)$ \\
+      $\ell^{j-1} = f^{j-1}(w^{j-1}) + R \left(\ell^j - f^j(w^j+y^j)\right)$ \\-
+    $z^0 = 0$ \\
+    $\text{\pr{solve}}(\ell^0,\chi^0,w^0;z^0)$  \\
+    for $j=1$ to $j=J$ \\+
+      $z^j = y^{j} + P z^{j-1}$ \\
+      $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j,\chi^j,w^j;z^j)$  \\-
+    return $w^J+z^J$
+\end{pseudo}
+\end{frame}
+
+
+\begin{frame}{FASCD V-cycle: visualization on a 1D problem}
+
+\centering
+\includegraphics[width=0.85\textwidth]{../talk-dms/figs/vcycle-visualized.png}
+\end{frame}
+
+
+\begin{frame}{FASCD specifics}
+
+see paper (Bueler \& Farrell 2023) for:
+\begin{itemize}
+\item generalization to upper and lower obstacles:
+    $$\mathcal{K}^J = \{\underline{\psi}^J \le v^J \le \overline{\psi}^J\}$$
+\item stopping criteria
+    \begin{itemize}
+    \item[$\circ$] evaluate whether CP/KKT conditions are satisfied
+    \end{itemize}
+\item FMG cycle
+\item details of $O(m_J)$ smoother
+\end{itemize}
+\end{frame}
+
+
+\section{results}
+
+\begin{frame}{classical obstacle problem by FASCD}
+
+\only<1>{\includegraphics[width=0.75\textwidth]{../talk-dms/figs/ballitersV.png}}\only<2>{\includegraphics[width=0.75\textwidth]{../talk-dms/figs/ballitersVlog.png}}\only<3>{\includegraphics[width=0.75\textwidth]{../talk-dms/figs/ballitersVF.png}}\only<4>{\includegraphics[width=0.75\textwidth]{../talk-dms/figs/bothitersVF.png}} \hfill
+\only<1-3>{\includegraphics[width=0.2\textwidth]{../paper/fixfigs/ball-set.png}}%
+\only<4>{\includegraphics[width=0.2\textwidth]{../paper/fixfigs/spiral-set.png}}
+\end{frame}
+
+
+\begin{frame}{advection-diffusion of a concentration}
+
+\begin{itemize}
+\item suppose $u(x)$ is a concentration in $\Omega \subset \RR^d$: \qquad $0\le u\le 1$
+\item suppose it moves by combination of diffusion, advection by wind $\bm{X}(x)$, and source function $\phi(x)$:
+    $$-\eps \grad^2 u + \bm{X}\cdot \grad u = \phi$$
+\item two active sets (\emph{$d=2$ case}):
+    $$\underline{A}_u = \{u(x) = 0\} \hspace{22mm} \overline{A}_u = \{u(x) = 1\} \hspace{8mm}$$
+\end{itemize}
+
+\centering
+\includegraphics[width=0.27\textwidth]{../paper/fixfigs/poll2d-zero-set.png} \hspace{18mm}
+\includegraphics[width=0.27\textwidth]{../paper/fixfigs/poll2d-one-set.png}
+\end{frame}
+
+
+\begin{frame}{advection-diffusion of a concentration}
+
+\begin{center}
+\includegraphics[width=0.75\textwidth]{../talk-dms/figs/advdiff.png}
+\end{center}
+
+\scriptsize
+\begin{itemize}
+\item[] \emph{compare: linear programming (Klee-Minty cube?), spatial correlations}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{problem: geometry of flowing glacier ice in a climate}
+
+\begin{itemize}
+\item ``where are there glaciers?'' is a free-boundary problem
+\end{itemize}
+
+\includegraphics[width=1.02\textwidth]{../talk-oxford/images/alps-seguinot2018.png}
+
+\vspace{-2mm}
+\hfill {\tiny Sequinot et al.~(2018)}
+\end{frame}
+
+
+\begin{frame}{free-boundary problem: flowing glacier ice in a climate}
+
+\begin{itemize}
+\item glacier = incompressible, viscous fluid driven by gravity
+\item to find: ice surface elevation $s(t,x,y)$ and velocity $\bu(t,x,y,z)$
+\item over fixed bed topography with elevation $b(x,y)$
+    \begin{itemize}
+    \item[$\circ$] $s(t,x,y) \ge b(x,y)$
+    \end{itemize}
+\item in a \emph{climate} which adds or removes ice at a signed rate $a(t,x,y)$
+    \begin{itemize}
+    \item[$\circ$] data $a,b$ is defined on domain $\Omega \subset \RR^2$
+    \end{itemize}
+\end{itemize}
+
+\bigskip
+\hfill \mbox{\includegraphics[height=0.24\textheight]{../talk-oxford/images/domain-data.png} \quad $\stackrel{?}{\to}$ \quad \includegraphics[height=0.24\textheight]{../talk-oxford/images/domain-velocity.png}}
+\end{frame}
+
+
+\begin{frame}{glacier free-boundary problem: naive strong form}
+
+\begin{itemize}
+\item is this an adequate description?:
+\begin{align*}
+s &\ge b                    & &\text{everywhere in } \Omega \\
+\frac{\partial s}{\partial t} &= a + \bu|_s \cdot \bn_s & &\text{where } s(t,x,y) > b(x,y)
+\end{align*}
+\item notes:
+    \begin{itemize}
+    \item[$\circ$] surface velocity $\bu|_s$ is, \alert{in some manner}, determined by $s$
+        \begin{itemize}
+        \item $\bu|_s$ is generally a \emph{non-local} function of $s$
+        \end{itemize}
+    \item[$\circ$] $\bn_s=\left<-\grad s,1\right>$ is upward surface normal
+    \end{itemize}
+\end{itemize}
+
+\bigskip
+\hfill \mbox{\includegraphics[height=0.2\textheight]{../talk-oxford/images/domain-data.png} \quad $\stackrel{?}{\to}$ \quad \includegraphics[height=0.2\textheight]{../talk-oxford/images/domain-velocity.png}}
+\end{frame}
+
+
+\begin{frame}{glacier free-boundary problem: steady VI form}
+
+\begin{itemize}
+\item admissible surface elevations:\footnote{$(s-b)^{8/3} \stackrel{?}{\in} W^{1,4}(\Omega)$ so $\mathcal{V} \stackrel{?}{=} (W^{1,4})^{3/8}$ \dots  see (Jouvet \& Bueler, 2012)}
+    $$\mathcal{K} = \left\{r \in \mathcal{V} \,:\, r \ge b\right\}$$
+\item steady ($\frac{\partial s}{\partial t}=0$) VI problem for surface elevation $s\in\mathcal{K}$:
+	$$\ip{\Phi(s) - a}{r-s} \ge 0 \quad \text{ for all } r \in \mathcal{K}$$
+where
+    $$\Phi(s)=- \bu|_s \cdot \bn_s$$
+with extension by 0 to all of $\Omega$
+%\item $\bu$ is the velocity solution on
+%    $$\Lambda(s) = \{(x,y,z) : b(x,y) < z < s(x,y)\} \subset \RR^3$$
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{shallow ice approximation}
+
+\begin{itemize}
+\item the \emph{shallow ice approximation} is a highly-simplified view of conservation of momentum
+\item isothermal, nonsliding case:
+\begin{align*}
+\Phi(s) &= - \bu|_s \cdot \bn_s \\
+        &= - \frac{\gamma}{4} (s-b)^{4} |\grad s|^{4} - \grad \cdot\left(\frac{\gamma}{5} (s-b)^{5} |\grad s|^{2} \grad s\right)
+\end{align*}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{FASCD test case: simplified ice sheet the size of Greenland}
+
+\begin{itemize}
+\item \emph{ice sheet} = big glacier
+\end{itemize}
+
+\bigskip\bigskip
+\centering
+\includegraphics[width=\textwidth]{../paper/fixfigs/sialev8scene.png}
+\end{frame}
+
+
+\begin{frame}{FASCD: parallel weak scaling}
+
+\begin{itemize}
+\item observed optimality of FMG solver
+\item good parallel \emph{weak scaling} as well
+    \begin{itemize}
+    \item[$\circ$] each processor owns $641\times 641$ (sub) mesh
+    \item[$\circ$] $P=1024$ run had $20481^2=4.1\times 10^8$ unknowns
+    \item[] \dots and 88 meter resolution
+    \end{itemize}
+\end{itemize}
+
+\bigskip
+\centering
+\includegraphics[width=0.55\textwidth]{../talk-dms/figs/siaweaktime.png}
+\end{frame}
+
+
+\begin{frame}{summary and outlook}
+
+\begin{itemize}
+\item FASCD = new multilevel solver for VI (free-boundary) problems
+    \begin{itemize}
+    \item[$\circ$] implemented in Python Firedrake (over PETSc)
+    \end{itemize}
+\item observed optimality, even TME, in many cases
+    \begin{itemize}
+    \item[$\circ$] actually fast
+    \end{itemize}
+
+\bigskip\bigskip
+\item[] \textbf{{\color{FireBrick} to do:}}
+    \begin{itemize}
+    \item add mesh adaptivity to free boundary (Stefano)
+    \item implement in C inside PETSc
+    \item apply to space-time (\emph{parabolic}) VI problems
+    \item prove convergence
+    \item identify smoothers for problems like elastic contact
+    \item include membrane stresses in glacier case
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{references}
+
+{\footnotesize
+\input{references.tex}
+}
+\end{frame}
+
+\end{document}
