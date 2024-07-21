@@ -322,7 +322,7 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 	\item[$\circ$] $\mathcal{V}=H^1(\Omega)$, $F : \mathcal{V} \to \mathcal{V}'$ continuous, $\ell\in \mathcal{V}'$
 	\item[$\circ$] example is the Liouville-Bratu problem: $-\grad^2 u - e^u = f$
 	\end{itemize}
-\item discretization gives algebraic system on fine mesh $\Omega^h$:
+\item discretization\footnote{discretization = finite element (FE) method, throughout this talk} gives algebraic system on fine mesh $\Omega^h$:
     $${\color{FireBrick} F^h(u^h) = \ell^h}$$
 \end{itemize}
 
@@ -459,7 +459,7 @@ FMG $=$ full multigrid
 \begin{frame}{FAS reputation}
 
 \begin{itemize}
-\item FAS multigrid works \alert{very well} on nice nonlinear PDE problems
+\item FAS multigrid is a fast solver on nice nonlinear PDE problems
 \item example: Liouville-Bratu equation
     $$-\nabla^2 u - e^u = 0$$
 with Dirichlet boundary conditions on $\Omega=(0,1)^2$
@@ -476,39 +476,152 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \end{frame}
 
 
-\begin{frame}{the meanings of ``fast solver''}
+\begin{frame}{a meaning for ``fast solver''}
 
-\begin{itemize}
-\item what does ``very well'' on the previous slide mean?
 \begin{block}{definition} a solver is \emph{optimal} if work is $O(N)$ for $N$ unknowns
 \end{block}
-    \begin{itemize}
-    \item[$\circ$] measure work in flops or run-time
-    \item[$\circ$] constant iterations of $O(N)$ method $\implies$ optimal
-    \end{itemize}
-\end{itemize}
 
+\bigskip
 \begin{itemize}
-\item multigrid people get greedy:
-\begin{block}{definition} a solver shows \emph{textbook multigrid efficiency} if it does total work less than 10 times that of a single smoother sweep
-\end{block}
-    \begin{itemize}
-    \item[$\circ$] TME $\implies$ optimal
-    \end{itemize}
+\item one can measure work in flops or run-time
+\item constant iterations of $O(N)$ method $\implies$ optimal
 \end{itemize}
 \end{frame}
 
 
 \section{FASCD = FAS multigrid for VIs using constraint decomposition}
 
-\subsection{results}  % FIXME lead with results
+\subsection{results, and an application}
+
+\begin{frame}{classical obstacle problem by FASCD}
+
+\only<1>{recall:
+
+\centerline{\includegraphics[width=0.9\textwidth]{../talk-oxford/images/obstacle65.pdf}}}
+\only<2>{\includegraphics[width=0.75\textwidth]{figs/ballitersV.png}}\only<3>{\includegraphics[width=0.75\textwidth]{figs/ballitersVlog.png}}\only<4>{\includegraphics[width=0.75\textwidth]{figs/ballitersVF.png}}\only<5>{\includegraphics[width=0.75\textwidth]{figs/bothitersVF.png}} \hfill
+\only<2-4>{\includegraphics[width=0.2\textwidth]{../paper/fixfigs/ball-set.png}}%
+\only<5>{\includegraphics[width=0.2\textwidth]{../paper/fixfigs/spiral-set.png}}
+
+\only<2-5>{\noindent \scriptsize
+\emph{all results from Bueler \& Farrell (2024)}}
+\end{frame}
+
+
+\begin{frame}{advection-diffusion of a concentration}
+
+\begin{itemize}
+\item $u(x)$ is a concentration in $\Omega \subset \RR^d$: \qquad $\boxed{0\le u\le 1}$
+\item substance moves by diffusion, advection (wind $\bm{X}(x)$), and source ($\sigma(x)$):
+    $$-\eps \grad^2 u + \bm{X}\cdot \grad u = \sigma$$
+\item two active sets:
+    $$\underline{A}_u = \{u(x) = 0\} \hspace{22mm} \overline{A}_u = \{u(x) = 1\} \hspace{8mm}$$
+\end{itemize}
+
+\centering
+\includegraphics[width=0.27\textwidth]{../paper/fixfigs/poll2d-zero-set.png} \hspace{18mm}
+\includegraphics[width=0.27\textwidth]{../paper/fixfigs/poll2d-one-set.png}
+\end{frame}
+
+
+\begin{frame}{advection-diffusion of a concentration}
+
+\begin{center}
+\includegraphics[width=0.75\textwidth]{figs/advdiff.png}
+\end{center}
+
+\vspace{-3mm}
+\hfill \tiny \emph{Bueler \& Farrell (2024)}
+
+\medskip
+\scriptsize
+\begin{itemize}
+\item<2> compare linear programming (Klee-Minty cube?) \dots with strong spatial correlations
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{problem: geometry of flowing glacier ice in a climate}
+
+\begin{itemize}
+\item ``where are the glaciers?'' is a free-boundary problem
+\end{itemize}
+
+\includegraphics[width=1.02\textwidth]{../talk-oxford/images/alps-seguinot2018.png}
+
+\vspace{-2mm}
+\hfill {\tiny Seguinot et al.~(2018)}
+\end{frame}
+
+
+\begin{frame}{free-boundary problem: flowing glacier ice in a climate}
+
+\begin{itemize}
+\item glacier = incompressible, viscous fluid driven by gravity
+\item in a \emph{climate} which adds or removes ice at a signed rate $a(t,x,y)$
+\item over fixed bed topography with elevation $b(x,y)$
+    \begin{itemize}
+    \item[$\circ$] data $a,b$ is defined on domain $\Omega \subset \RR^2$
+    \end{itemize}
+\item to find: ice surface elevation $s(t,x,y)$ and velocity $\bu(t,x,y,z)$
+\item subject to constraint $\boxed{s\ge b}$
+\end{itemize}
+
+\bigskip
+\hfill \mbox{\includegraphics[height=0.24\textheight]{../talk-oxford/images/domain-data.png} \quad $\stackrel{?}{\to}$ \quad \includegraphics[height=0.24\textheight]{../talk-oxford/images/domain-velocity.png}}
+\end{frame}
+
+
+\begin{frame}{glacier free-boundary problem: steady VI form}
+
+\begin{itemize}
+\item admissible surface elevations:
+    $$\mathcal{K} = \left\{r \in \mathcal{V} \,:\, r \ge b\right\}$$
+\item steady-state VI problem for surface elevation $s\in\mathcal{K}$:
+	$$\ip{\Phi(s) - a}{r-s} \ge 0 \quad \text{ for all } r \in \mathcal{K}$$
+where $\Phi(s)=- \bu|_s \cdot \bn_s$
+\item in the isothermal, nonsliding, \emph{shallow ice approximation}\footnote{$=$ \emph{a highly-simplified view of conservation of momentum, in which} $(s-b)^{8/3} \in W^{1,4}(\Omega)$ \emph{so} $\mathcal{V} \stackrel{?}{=} (W^{1,4})^{3/8}$ \hfill \emph{(Jouvet \& Bueler, 2012)}} case:
+\begin{align*}
+\Phi(s) &= - \bu|_s \cdot \bn_s \\
+        &= - \frac{\gamma}{4} (s-b)^{4} |\grad s|^{4} - \grad \cdot\left(\frac{\gamma}{5} (s-b)^{5} |\grad s|^{2} \grad s\right)
+\end{align*}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{test case: ice sheet ($=$ big glacier) the size of Greenland}
+
+\centering
+\includegraphics[width=\textwidth]{../paper/fixfigs/sialev8scene.png}
+\end{frame}
+
+
+\begin{frame}{FASCD: parallel weak scaling}
+
+\begin{itemize}
+\item optimality of FMG solver (not shown)
+\item good parallel \emph{weak scaling}
+    \begin{itemize}
+    \item[$\circ$] each processor owns $641\times 641$ (sub) mesh
+    \item[$\circ$] $P=1024$ run had $20481^2=4.1\times 10^8$ unknowns
+    \item[] \dots and 88 meter resolution
+    \end{itemize}
+\end{itemize}
+
+\bigskip
+\centering
+\includegraphics[width=0.55\textwidth]{../talk-dms/figs/siaweaktime.png}
+
+\hfill \scriptsize
+\emph{Bueler \& Farrell (2024)}
+\end{frame}
+
 
 \subsection{algorithm details}
 
 \begin{frame}{an FAS multigrid strategy for VIs}
 
 \begin{itemize}
-\item new algorithm (Bueler \& Farrell 2023):
+\item new algorithm (Bueler \& Farrell 2024):
 
 {\color{FireBrick} FASCD = full approximation scheme constraint decomposition}
 
@@ -530,12 +643,10 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \begin{itemize}
 \item start with subspace decomposition over nested meshes:
     $$\Omega^j \subset \Omega^{j+1}$$
-\item the FE function spaces $\mathcal{V}^j$ over $\Omega^j$ are also nested:
+\item the FE vector spaces $\mathcal{V}^j$ over $\Omega^j$ are also nested:
     $$\mathcal{V}^j \subset \mathcal{V}^{j+1}$$
+\item $\mathcal{V}^J = \sum_{i=0}^J \mathcal{V}^i$ is called a \emph{subspace decomposition} (Xu 1992)
 
-\begin{block}{definition}
-$\ds \mathcal{V}^J = \sum_{i=0}^J \mathcal{V}^i$ \quad is called a \emph{subspace decomposition} (Xu 1992)
-\end{block}
     \begin{itemize}
     \item[$\circ$] \emph{non}-unique vector space sum
     \item[$\circ$] Xu's paper explains how to analyze linear multigrid for PDEs via subspace decomposition
@@ -547,7 +658,7 @@ $\ds \mathcal{V}^J = \sum_{i=0}^J \mathcal{V}^i$ \quad is called a \emph{subspac
 \begin{frame}{constraint decomposition}
 
 \begin{itemize}
-\item Tai's (2003) constraint decomposition \emph{non-trivially} extends a subspace decomposition $\mathcal{V}^J = \sum_i\mathcal{V}^i$ to convex subsets
+\item Tai's (2003) constraint decomposition \emph{non-trivially} extends subspace decomposition to convex subsets
 \item suppose $\mathcal{K}^J \subset \mathcal{V}^J$ is a closed and convex subset
 \begin{block}{definition}
 $\ds \mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$ \quad is a \emph{constraint decomposition} (CD) if there are closed and convex subsets $\mathcal{K}^i\subset \mathcal{V}^i$, and (nonlinear) projections $\Pi_i : \mathcal{K}^J \to \mathcal{K}^i$, so that $\ds v = \sum_{i=0}^J \Pi_i v$ and a stability condition applies (not shown)
@@ -575,7 +686,7 @@ $\ds \mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$ \quad is a \emph{constraint dec
 \begin{frame}{iterations over constraint decomposition}
 
 \begin{itemize}
-\item Tai proposed abstract iterations for solving $VI(F,\ell,\mathcal{K})$ over a CD $\mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$
+\item Tai proposed abstract iterations for solving $VI(F,\ell,\mathcal{K})$ over a CD $\mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$, specifically:
 
 {\small
 \begin{pseudo}[left-margin=-5mm]
@@ -587,9 +698,13 @@ $\ds \mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$ \quad is a \emph{constraint dec
 \end{pseudo}
 }
 
-\medskip
-\item Tai's iterations are not practical because you compute on the finest level in fact
-\item we added two techniques: \emph{defect obstacles} on each level, and \emph{FAS coarse corrections}
+\item Tai's iterations are not practical because you must evaluate all residuals on the finest level
+\item two techniques make a practical solver:
+
+    \begin{itemize}
+    \item[$\circ$] \emph{defect obstacles} on each level  \hfill {\scriptsize (Gr\"aser \& Kornhuber (2009)}
+    \item[$\circ$] \emph{FAS coarse corrections}  \hfill {\scriptsize (Bueler \& Farrell (2024)}
+    \end{itemize}
 \end{itemize}
 \end{frame}
 
@@ -597,16 +712,16 @@ $\ds \mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$ \quad is a \emph{constraint dec
 \begin{frame}{defect obstacles}
 
 \begin{itemize}
-\item recall $\mathcal{K} = \{v \ge \psi\}$ in an obstacle problem
+\item suppose $\mathcal{K} = \{v \ge \psi\}$ in an obstacle problem
 \begin{block}{definition}
-for finest-level admissible set $\mathcal{K}^J = \{v^J\ge \psi^J\} \subset \mathcal{V}^J$ and an iterate $w^J \in \mathcal{K}^J$, the \emph{defect obstacle} (Gr\"aser \& Kornhuber 2009) is
+for finest-level admissible set $\mathcal{K}^J = \{v^J\ge \psi^J\} \subset \mathcal{V}^J$ and an iterate $w^J \in \mathcal{K}^J$, the \emph{defect obstacle} is
     $$\chi^J = \psi^J - w^J \in \mathcal{V}^J$$
 \end{block}
 
     \begin{itemize}
     \item[$\circ$] note $\chi^J \le 0$
     \end{itemize}
-\item we generate the CD through
+\item generate the CD through
 
 defect obstacles $\chi^j$ on each
 
@@ -616,7 +731,6 @@ $$\chi^j = R^{\oplus} \chi^{j+1} \phantom{smdlfkaj asdfklj asdf sdfaa asddfas ds
 
     \begin{itemize}
     \item[$\circ$] a \emph{nonlinear} operator
-    \item[$\circ$] {\footnotesize also due to (Gr\"aser \& Kornhuber 2009)}
     \end{itemize}
 \end{itemize}
 
@@ -625,32 +739,37 @@ $$\chi^j = R^{\oplus} \chi^{j+1} \phantom{smdlfkaj asdfklj asdf sdfaa asddfas ds
 \end{frame}
 
 
-\begin{frame}{up and down sets}
+\begin{frame}{up and down CDs in FASCD}
+
+\begin{center}
+\includegraphics[width=0.4\textwidth]{../talk-oxford/images/fascd-vcycle.png}
+\end{center}
 
 \begin{itemize}
-\item upward part in the FASCD V-cycle uses large admissible sets:
+\item upward direction in V-cycle uses larger admissible sets:
     $$\mathcal{U}^j = \{z^j \ge \chi^j\}$$
 \item downward sets are smaller to guarantee admissibility of the upcoming coarse correction:
     $$\mathcal{D}^j = \{y^j \ge \phi^j=\chi^j - \chi^{j-1}\}$$
 \item $\ds \mathcal{U}^j = \sum_{i=0}^j \mathcal{D}^i$ is a CD of the $j$th-level admissible set
 \end{itemize}
+\end{frame}
+
+
+\begin{frame}{up and down CDs in FASCD}
 
 \begin{center}
-\includegraphics[width=0.4\textwidth]{../talk-oxford/images/fascd-vcycle.png}
-\end{center}
-\end{frame}
-
-
-\begin{frame}{multilevel constraint decomposition in FASCD}
-
-\centering
 \includegraphics[width=0.7\textwidth]{../talk-dms/figs/innerconeapprox.png}
+\end{center}
+
+\begin{itemize}
+\item all sets $\mathcal{U}^j$ and $\mathcal{D}^j$ are cones which include the origin
+\end{itemize}
 \end{frame}
 
 
-\begin{frame}{full approximation scheme constraint decomposition}
+\begin{frame}{FASCD = full approximation scheme constraint decomposition}
 
-% case of lower obstacle only
+\vspace{-2mm}
 \begin{pseudo}[font=\small]
 \pr{fascd-vcycle}(J,\ell^J,\psi^J;w^J)\text{:} \\+
     $\chi^J = \psi^J - w^J$ \\
@@ -668,25 +787,31 @@ $$\chi^j = R^{\oplus} \chi^{j+1} \phantom{smdlfkaj asdfklj asdf sdfaa asddfas ds
       $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j,\chi^j,w^j;z^j)$  \\-
     return $w^J+z^J$
 \end{pseudo}
+
+\vspace{-2mm}
+\tiny
+\begin{itemize}
+\item[] \emph{(unilateral (lower obstacle only) version shown for simplicity)}
+\end{itemize}
 \end{frame}
 
 
-\begin{frame}{FASCD V-cycle: visualization on a 1D problem}
+\begin{frame}{V-cycle: visualization on a 1D problem}
 
 \centering
 \includegraphics[width=0.85\textwidth]{../talk-dms/figs/vcycle-visualized.png}
 \end{frame}
 
 
-\begin{frame}{FASCD specifics}
+\begin{frame}{specifics}
 
-see paper (Bueler \& Farrell 2023) for:
+see (Bueler \& Farrell 2024) for:
 \begin{itemize}
 \item generalization to upper and lower obstacles:
     $$\mathcal{K}^J = \{\underline{\psi}^J \le v^J \le \overline{\psi}^J\}$$
 \item stopping criteria
     \begin{itemize}
-    \item[$\circ$] evaluate whether CP/KKT conditions are satisfied
+    \item[$\circ$] evaluates CP/KKT conditions
     \end{itemize}
 \item FMG cycle
 \item details of $O(m_J)$ smoother
@@ -694,158 +819,9 @@ see paper (Bueler \& Farrell 2023) for:
 \end{frame}
 
 
-% FIXME move earlier \section{results}
-
-\begin{frame}{classical obstacle problem by FASCD}
-
-\only<1>{\includegraphics[width=0.75\textwidth]{../talk-dms/figs/ballitersV.png}}\only<2>{\includegraphics[width=0.75\textwidth]{../talk-dms/figs/ballitersVlog.png}}\only<3>{\includegraphics[width=0.75\textwidth]{../talk-dms/figs/ballitersVF.png}}\only<4>{\includegraphics[width=0.75\textwidth]{../talk-dms/figs/bothitersVF.png}} \hfill
-\only<1-3>{\includegraphics[width=0.2\textwidth]{../paper/fixfigs/ball-set.png}}%
-\only<4>{\includegraphics[width=0.2\textwidth]{../paper/fixfigs/spiral-set.png}}
-\end{frame}
 
 
-\begin{frame}{advection-diffusion of a concentration}
 
-\begin{itemize}
-\item suppose $u(x)$ is a concentration in $\Omega \subset \RR^d$: \qquad $0\le u\le 1$
-\item suppose it moves by combination of diffusion, advection by wind $\bm{X}(x)$, and source function $\phi(x)$:
-    $$-\eps \grad^2 u + \bm{X}\cdot \grad u = \phi$$
-\item two active sets (\emph{$d=2$ case}):
-    $$\underline{A}_u = \{u(x) = 0\} \hspace{22mm} \overline{A}_u = \{u(x) = 1\} \hspace{8mm}$$
-\end{itemize}
-
-\centering
-\includegraphics[width=0.27\textwidth]{../paper/fixfigs/poll2d-zero-set.png} \hspace{18mm}
-\includegraphics[width=0.27\textwidth]{../paper/fixfigs/poll2d-one-set.png}
-\end{frame}
-
-
-\begin{frame}{advection-diffusion of a concentration}
-
-\begin{center}
-\includegraphics[width=0.75\textwidth]{../talk-dms/figs/advdiff.png}
-\end{center}
-
-\scriptsize
-\begin{itemize}
-\item[] \emph{compare: linear programming (Klee-Minty cube?), spatial correlations}
-\end{itemize}
-\end{frame}
-
-
-\begin{frame}{problem: geometry of flowing glacier ice in a climate}
-
-\begin{itemize}
-\item ``where are there glaciers?'' is a free-boundary problem
-\end{itemize}
-
-\includegraphics[width=1.02\textwidth]{../talk-oxford/images/alps-seguinot2018.png}
-
-\vspace{-2mm}
-\hfill {\tiny Sequinot et al.~(2018)}
-\end{frame}
-
-
-\begin{frame}{free-boundary problem: flowing glacier ice in a climate}
-
-\begin{itemize}
-\item glacier = incompressible, viscous fluid driven by gravity
-\item to find: ice surface elevation $s(t,x,y)$ and velocity $\bu(t,x,y,z)$
-\item over fixed bed topography with elevation $b(x,y)$
-    \begin{itemize}
-    \item[$\circ$] $s(t,x,y) \ge b(x,y)$
-    \end{itemize}
-\item in a \emph{climate} which adds or removes ice at a signed rate $a(t,x,y)$
-    \begin{itemize}
-    \item[$\circ$] data $a,b$ is defined on domain $\Omega \subset \RR^2$
-    \end{itemize}
-\end{itemize}
-
-\bigskip
-\hfill \mbox{\includegraphics[height=0.24\textheight]{../talk-oxford/images/domain-data.png} \quad $\stackrel{?}{\to}$ \quad \includegraphics[height=0.24\textheight]{../talk-oxford/images/domain-velocity.png}}
-\end{frame}
-
-
-\begin{frame}{glacier free-boundary problem: naive strong form}
-
-\begin{itemize}
-\item is this an adequate description?:
-\begin{align*}
-s &\ge b                    & &\text{everywhere in } \Omega \\
-\frac{\partial s}{\partial t} &= a + \bu|_s \cdot \bn_s & &\text{where } s(t,x,y) > b(x,y)
-\end{align*}
-\item notes:
-    \begin{itemize}
-    \item[$\circ$] surface velocity $\bu|_s$ is, \alert{in some manner}, determined by $s$
-        \begin{itemize}
-        \item $\bu|_s$ is generally a \emph{non-local} function of $s$
-        \end{itemize}
-    \item[$\circ$] $\bn_s=\left<-\grad s,1\right>$ is upward surface normal
-    \end{itemize}
-\end{itemize}
-
-\bigskip
-\hfill \mbox{\includegraphics[height=0.2\textheight]{../talk-oxford/images/domain-data.png} \quad $\stackrel{?}{\to}$ \quad \includegraphics[height=0.2\textheight]{../talk-oxford/images/domain-velocity.png}}
-\end{frame}
-
-
-\begin{frame}{glacier free-boundary problem: steady VI form}
-
-\begin{itemize}
-\item admissible surface elevations:\footnote{$(s-b)^{8/3} \stackrel{?}{\in} W^{1,4}(\Omega)$ so $\mathcal{V} \stackrel{?}{=} (W^{1,4})^{3/8}$ \dots  see (Jouvet \& Bueler, 2012)}
-    $$\mathcal{K} = \left\{r \in \mathcal{V} \,:\, r \ge b\right\}$$
-\item steady ($\frac{\partial s}{\partial t}=0$) VI problem for surface elevation $s\in\mathcal{K}$:
-	$$\ip{\Phi(s) - a}{r-s} \ge 0 \quad \text{ for all } r \in \mathcal{K}$$
-where
-    $$\Phi(s)=- \bu|_s \cdot \bn_s$$
-with extension by 0 to all of $\Omega$
-%\item $\bu$ is the velocity solution on
-%    $$\Lambda(s) = \{(x,y,z) : b(x,y) < z < s(x,y)\} \subset \RR^3$$
-\end{itemize}
-\end{frame}
-
-
-\begin{frame}{shallow ice approximation}
-
-\begin{itemize}
-\item the \emph{shallow ice approximation} is a highly-simplified view of conservation of momentum
-\item isothermal, nonsliding case:
-\begin{align*}
-\Phi(s) &= - \bu|_s \cdot \bn_s \\
-        &= - \frac{\gamma}{4} (s-b)^{4} |\grad s|^{4} - \grad \cdot\left(\frac{\gamma}{5} (s-b)^{5} |\grad s|^{2} \grad s\right)
-\end{align*}
-\end{itemize}
-\end{frame}
-
-
-\begin{frame}{FASCD test case: simplified ice sheet the size of Greenland}
-
-\begin{itemize}
-\item \emph{ice sheet} = big glacier
-\end{itemize}
-
-\bigskip\bigskip
-\centering
-\includegraphics[width=\textwidth]{../paper/fixfigs/sialev8scene.png}
-\end{frame}
-
-
-\begin{frame}{FASCD: parallel weak scaling}
-
-\begin{itemize}
-\item observed optimality of FMG solver
-\item good parallel \emph{weak scaling} as well
-    \begin{itemize}
-    \item[$\circ$] each processor owns $641\times 641$ (sub) mesh
-    \item[$\circ$] $P=1024$ run had $20481^2=4.1\times 10^8$ unknowns
-    \item[] \dots and 88 meter resolution
-    \end{itemize}
-\end{itemize}
-
-\bigskip
-\centering
-\includegraphics[width=0.55\textwidth]{../talk-dms/figs/siaweaktime.png}
-\end{frame}
 
 
 \begin{frame}{summary and outlook}
@@ -855,20 +831,20 @@ with extension by 0 to all of $\Omega$
     \begin{itemize}
     \item[$\circ$] implemented in Python Firedrake (over PETSc)
     \end{itemize}
-\item observed optimality, even TME, in many cases
+\item observed optimality in many cases
     \begin{itemize}
-    \item[$\circ$] actually fast
+    \item[$\circ$] actually fast on tested nonlinear PDE problems
     \end{itemize}
 
 \bigskip\bigskip
-\item[] \textbf{{\color{FireBrick} to do:}}
+\item many things \textbf{{\color{FireBrick} to do}}:
     \begin{itemize}
-    \item add mesh adaptivity to free boundary (Stefano)
-    \item implement in C inside PETSc
-    \item apply to space-time (\emph{parabolic}) VI problems
-    \item prove convergence
-    \item identify smoothers for problems like elastic contact
-    \item include membrane stresses in glacier case
+    \item[$\circ$] implement in C inside PETSc
+    \item[$\circ$] prove convergence; compare (Reusken, 1988)
+    \item[$\circ$] apply to space-time (\emph{parabolic}) VI problems
+    \item[$\circ$] add mesh adaptivity
+    \item[$\circ$] identify smoothers for problems like elastic contact
+    \item[$\circ$] include membrane stresses in glacier case
     \end{itemize}
 \end{itemize}
 \end{frame}
