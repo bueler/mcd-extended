@@ -70,6 +70,9 @@
 
 \newcommand{\bzero}{\bm{0}}
 
+\newcommand{\cK}{\mathcal{K}}
+\newcommand{\cV}{\mathcal{V}}
+
 \newcommand{\rhoi}{\rho_{\text{i}}}
 
 \newcommand{\ip}[2]{\left<#1,#2\right>}
@@ -89,8 +92,11 @@
 \newcommand{\minR}{R^{\bm{\ominus}}}
 \newcommand{\iR}{R^{\bullet}}
 
+\newcommand{\sdoi}[1]{\,{\tiny \href{https://doi.org/#1}{doi:#1}}}
 
-\title[FAS multigrid for VIs]{A full approximation scheme multilevel method \\ for solving nonlinear variational inequalities}
+
+
+\title[FASCD = multigrid for VIs]{A full approximation scheme multilevel method \\ for solving nonlinear variational inequalities}
 
 %\subtitle{\emph{}}
 
@@ -105,7 +111,7 @@
 %  \end{picture}
 %}
 
-\titlegraphic{\vspace{-18mm} \includegraphics[width=0.22\textwidth]{../talk-oxford/images/uafbw.png} \hfill \begin{minipage}{0.12\textwidth}
+\titlegraphic{\vspace{-18mm} \includegraphics[width=0.2\textwidth]{../talk-oxford/images/uafbw.png} \hfill \begin{minipage}{0.12\textwidth}
 \includegraphics[width=\textwidth]{../talk-oxford/images/oxford.png}
 
 \vspace{18mm}
@@ -131,6 +137,9 @@
 
 \begin{frame}{Outline}
   \tableofcontents
+
+\only<1>{\phantom{\emph{warning:} no convergence theorem}}
+\only<2>{\emph{warning:} no convergence theorem}
 \end{frame}
 
 
@@ -194,7 +203,7 @@ over
 \end{frame}
 
 
-\begin{frame}{example, cont.}
+\begin{frame}{example \dots and VI language}
 
 \begin{minipage}[t]{0.55\textwidth}
 \vspace{0pt}
@@ -210,9 +219,9 @@ over
 \begin{itemize}
 \item the solution defines subsets of $\Omega$:
    \begin{itemize}
-   \item[$\circ$] \emph{active set} $A_u = \{u = \psi\}$
-   \item[$\circ$] \emph{inactive set} $R_u = \{u> \psi\}$
-   \item[$\circ$] \emph{free boundary} $\Gamma_u=\partial R_u \cap \Omega$
+   \item[$\circ$] \emph{active set} \quad $A_u = \{u = \psi\}$
+   \item[$\circ$] \emph{inactive set} \quad $R_u = \{u> \psi\}$
+   \item[$\circ$] \emph{free boundary} \quad $\Gamma_u=\partial R_u \cap \Omega$
    \end{itemize}
 \item the \emph{complementarity problem} (CP) is a PDE-like strong form:
 \begin{equation*}
@@ -224,37 +233,22 @@ u - \psi \ge 0, \qquad -\grad^2 u - f \ge 0, \qquad (u - \psi)(-\grad^2 u - f) =
 \end{frame}
 
 
-\begin{frame}{geometrical meaning of VI}
+\begin{frame}{variational inequalities: general setting}
 
 \begin{itemize}
-\item the VI gives an ``angle condition'' for the test function $v-u$
-\item in optimization problems the VI is a consequence:
-$$J(u) \le J(v), \, \forall v \in \mathcal{K} \qquad \implies \qquad \ip{J'(u)}{v-u} \ge 0, \, \forall v \in \mathcal{K}$$
-\item for general VIs the angle condition \emph{is} the problem:
-   $$\ip{F(u)}{v-u} \ge 0 \quad \forall v \in \mathcal{K}$$    
-\end{itemize}
-
-\bigskip
-\begin{center}
-\includegraphics[width=0.4\textwidth]{figs/convexuv.png}
-\end{center}
-\end{frame}
-
-
-
-\begin{frame}{general variational inequalities}
-
-\begin{itemize}
-\item let $\mathcal{K}$ be a closed and convex subset of a Banach space $\mathcal{V}$
-\item suppose $F:\mathcal{K} \to \mathcal{V}'$ is a continuous operator
+\item $\mathcal{K}$ is a closed and convex subset of a Banach space $\mathcal{V}$
+\item $F:\mathcal{K} \to \mathcal{V}'$ is a continuous operator
     \begin{itemize}
     \item[$\circ$] $F$ is generally nonlinear
     \item[$\circ$] $F$ may be defined \emph{only} on $\mathcal{K}$
     \item[$\circ$] $F$ may \emph{not}\, be the derivative of an objective function $J$
     \end{itemize}
-\item the general variational inequality {\color{FireBrick} VI($F$,$\mathcal{K}$)} is
+\item the variational inequality {\color{FireBrick} VI($F$,$\mathcal{K}$)} is to find $u\in\cK$ so that
 	$${\color{FireBrick} \ip{F(u)}{v-u} \ge 0 \quad \text{ for all } v \in \mathcal{K}}$$
-\item when $\mathcal{K}$ is nontrivial, VI($F$,$\mathcal{K}$) is nonlinear even when $F$ is a linear operator
+
+    \begin{itemize}
+    \item[$\circ$] for nontrivial $\mathcal{K}$, VI($F$,$\mathcal{K}$) is nonlinear even if $F$ is linear
+    \end{itemize}
 \end{itemize}
 \end{frame}
 
@@ -281,7 +275,7 @@ $$J(u) \le J(v), \, \forall v \in \mathcal{K} \qquad \implies \qquad \ip{J'(u)}{
 
 \vspace{1.5mm}
 \item first-semester calculus:
-    $$u = \mathop{\textnormal{argmin}}_{x\in[a,b]} f(x) \quad \iff \quad f'(u)(v-u) \ge 0 \quad \forall v \in[a,b]$$
+    $$u = \mathop{\textnormal{argmin}}_{x\in[a,b]} f(x) \quad \implies \quad f'(u)(v-u) \ge 0 \quad \forall v \in[a,b]$$
 \end{itemize}
 
 \vspace{-5mm}
@@ -392,7 +386,7 @@ fine mesh $=\Omega^h$\, \includegraphics[height=0.14\textheight]{../talk-oxford/
 \begin{align*}
 &\text{pre-smooth over fine:} & & \text{smoother on } w^h \\
 &\text{restrict:}                   & &\ell^H = F^H(\iR w^h) + R\, r^h(w^h) \\
-&\text{solve coarse:}                      & &F^H(w^H) = \ell^H \\
+&\text{coarse solve:}               & &F^H(w^H) = \ell^H \\
 &\text{correct:}                    & &w^h \leftarrow w^h + P(w^H - \iR w^h) \\
 &\text{post-smooth over fine:} & & \text{smoother on } w^h
 \end{align*}
@@ -403,7 +397,7 @@ fine mesh $=\Omega^h$\, \includegraphics[height=0.14\textheight]{../talk-oxford/
 \item $R: (\mathcal{V}^h)' \to (\mathcal{V}^H)'$ is \emph{canonical restriction}
 \item $P: \mathcal{V}^H \to \mathcal{V}^h$ is \emph{canonical prolongation}
 \item $\iR: \mathcal{V}^h \to \mathcal{V}^H$ is \emph{injection}
-\item \textbf{restrict}$+$(\textbf{solve coarse})$+$\textbf{correct} \, $=$ \, \emph{FAS coarse grid correction}
+\item (restrict$+$coarse solve$+$correct) \, $=$ \, \emph{FAS coarse grid correction}
 \end{itemize}
 }
 \end{frame}
@@ -486,9 +480,9 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 
 \section{FASCD = FAS multigrid for VIs using constraint decomposition}
 
-\subsection{results, and an application}
+\subsection{results on test problems}
 
-\begin{frame}{classical obstacle problem by FASCD}
+\begin{frame}{test problem 1: classical obstacle problem}
 
 \only<1>{recall:
 
@@ -502,11 +496,11 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \end{frame}
 
 
-\begin{frame}{advection-diffusion of a concentration}
+\begin{frame}{test problem 2: advection-diffusion}
 
 \begin{itemize}
 \item $u(x)$ is a concentration in $\Omega \subset \RR^d$: \qquad $\boxed{0\le u\le 1}$
-\item substance moves by diffusion, advection (wind $\bm{X}(x)$), and source ($\sigma(x)$):
+\item concentration evolves by diffusion, advection, and source:
     $$-\eps \grad^2 u + \bm{X}\cdot \grad u = \sigma$$
 \item two active sets:
     $$\underline{A}_u = \{u(x) = 0\} \hspace{22mm} \overline{A}_u = \{u(x) = 1\} \hspace{8mm}$$
@@ -518,7 +512,7 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \end{frame}
 
 
-\begin{frame}{advection-diffusion of a concentration}
+\begin{frame}{test problem 2: advection-diffusion}
 
 \begin{center}
 \includegraphics[width=0.75\textwidth]{figs/advdiff.png}
@@ -526,29 +520,22 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 
 \vspace{-3mm}
 \hfill \tiny \emph{Bueler \& Farrell (2024)}
-
-\medskip
-\scriptsize
-\begin{itemize}
-\item<2> compare linear programming (Klee-Minty cube?) \dots with strong spatial correlations
-\end{itemize}
 \end{frame}
 
 
-\begin{frame}{problem: geometry of flowing glacier ice in a climate}
+\subsection{an application}
 
-\begin{itemize}
-\item ``where are the glaciers?'' is a free-boundary problem
-\end{itemize}
+\begin{frame}{``where are the glaciers?'' is a free-boundary problem}
 
-\includegraphics[width=1.02\textwidth]{../talk-oxford/images/alps-seguinot2018.png}
+\bigskip
+\includegraphics[width=1.01\textwidth]{../talk-oxford/images/alps-seguinot2018.png}
 
 \vspace{-2mm}
-\hfill {\tiny Seguinot et al.~(2018)}
+\hfill {\tiny \emph{Seguinot et al.~(2018)}}
 \end{frame}
 
 
-\begin{frame}{free-boundary problem: flowing glacier ice in a climate}
+\begin{frame}{inequality-constrained problem: flowing glacier ice in a climate}
 
 \begin{itemize}
 \item glacier = incompressible, viscous fluid driven by gravity
@@ -574,7 +561,7 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \item steady-state VI problem for surface elevation $s\in\mathcal{K}$:
 	$$\ip{\Phi(s) - a}{r-s} \ge 0 \quad \text{ for all } r \in \mathcal{K}$$
 where $\Phi(s)=- \bu|_s \cdot \bn_s$
-\item in the isothermal, nonsliding, \emph{shallow ice approximation}\footnote{$=$ \emph{a highly-simplified view of conservation of momentum, in which} $(s-b)^{8/3} \in W^{1,4}(\Omega)$ \emph{so} $\mathcal{V} \stackrel{?}{=} (W^{1,4})^{3/8}$ \hfill \emph{(Jouvet \& Bueler, 2012)}} case:
+\item in the isothermal, nonsliding, \emph{shallow ice approximation}\footnote{$=$ \emph{a highly-simplified view of conservation of momentum, in which} $(s-b)^{8/3} \in W^{1,4}(\Omega)$ \emph{so} $\mathcal{V} \stackrel{?}{=} (W^{1,4})^{3/8}$ \hfill \emph{Jouvet \& Bueler (2012)}} case:
 \begin{align*}
 \Phi(s) &= - \bu|_s \cdot \bn_s \\
         &= - \frac{\gamma}{4} (s-b)^{4} |\grad s|^{4} - \grad \cdot\left(\frac{\gamma}{5} (s-b)^{5} |\grad s|^{2} \grad s\right)
@@ -583,7 +570,7 @@ where $\Phi(s)=- \bu|_s \cdot \bn_s$
 \end{frame}
 
 
-\begin{frame}{test case: ice sheet ($=$ big glacier) the size of Greenland}
+\begin{frame}{test case: ice sheet the size of Greenland}
 
 \centering
 \includegraphics[width=\textwidth]{../paper/fixfigs/sialev8scene.png}
@@ -593,8 +580,8 @@ where $\Phi(s)=- \bu|_s \cdot \bn_s$
 \begin{frame}{FASCD: parallel weak scaling}
 
 \begin{itemize}
-\item optimality of FMG solver (not shown)
-\item good parallel \emph{weak scaling}
+\item optimality of FMG solver (left)
+\item good parallel \emph{weak scaling} (right)
     \begin{itemize}
     \item[$\circ$] each processor owns $641\times 641$ (sub) mesh
     \item[$\circ$] $P=1024$ run had $20481^2=4.1\times 10^8$ unknowns
@@ -603,29 +590,31 @@ where $\Phi(s)=- \bu|_s \cdot \bn_s$
 \end{itemize}
 
 \bigskip
-\centering
-\includegraphics[width=0.55\textwidth]{../talk-dms/figs/siaweaktime.png}
+\mbox{\includegraphics[width=0.5\textwidth]{figs/sia.png} \includegraphics[width=0.5\textwidth]{../talk-dms/figs/siaweaktime.png}}
 
 \hfill \scriptsize
 \emph{Bueler \& Farrell (2024)}
 \end{frame}
 
 
-\subsection{algorithm details}
+\subsection{the algorithm}
 
 \begin{frame}{an FAS multigrid strategy for VIs}
 
 \begin{itemize}
-\item new algorithm (Bueler \& Farrell 2024):
+\item new algorithm:\footnote{E.~Bueler \& P.~Farrell (2024). \emph{A full approximation scheme multilevel method for nonlinear variational inequalities}, SIAM J.~Sci.~Comput.~46 (4) \sdoi{10.1137/23M1594200}}
 
+\bigskip
 {\color{FireBrick} FASCD = full approximation scheme constraint decomposition}
 
 \bigskip
-\item what is ``constraint decomposition'' in FAS\underline{CD}?
+    \begin{itemize}
+    \item[$\circ$] what is ``constraint decomposition''?
+    \item[$\circ$] unilateral (lower obstacle) version shown, but bilateral or ``box constraints'' are implemented
+    \end{itemize}
 \end{itemize}
 \end{frame}
 
-\newcommand{\cK}{\mathcal{K}}
 
 \begin{frame}{subspace decomposition}
 
@@ -636,15 +625,15 @@ where $\Phi(s)=- \bu|_s \cdot \bn_s$
 }
 
 \begin{itemize}
-\item start with subspace decomposition over nested meshes:
+\item start with nested meshes:
     $$\Omega^j \subset \Omega^{j+1}$$
 \item the FE vector spaces $\mathcal{V}^j$ over $\Omega^j$ are also nested:
     $$\mathcal{V}^j \subset \mathcal{V}^{j+1}$$
-\item $\mathcal{V}^J = \sum_{i=0}^J \mathcal{V}^i$ is called a \emph{subspace decomposition} (Xu 1992)
+\item $\mathcal{V}^J = \sum_{i=0}^J \mathcal{V}^i$ is called a \emph{subspace decomposition}
 
     \begin{itemize}
     \item[$\circ$] \emph{non}-unique vector space sum
-    \item[$\circ$] Xu's paper explains how to analyze linear multigrid for PDEs via subspace decomposition
+    \item[$\circ$] one may analyze linear multigrid for PDEs via subspace decomposition
     \end{itemize}
 \end{itemize}
 \end{frame}
@@ -653,8 +642,9 @@ where $\Phi(s)=- \bu|_s \cdot \bn_s$
 \begin{frame}{constraint decomposition}
 
 \begin{itemize}
-\item Tai's (2003) constraint decomposition \emph{non-trivially} extends subspace decomposition to convex subsets
+\item Tai (2003): constraint decomposition \emph{non-trivially} extends subspace decomposition to convex subsets
 \item suppose $\mathcal{K}^J \subset \mathcal{V}^J$ is a closed and convex subset
+\item suppose $\mathcal{V}^J = \sum_{i=0}^J \mathcal{V}^i$ is a subspace decomposition
 \begin{block}{definition}
 $\ds \mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$ \quad is a \emph{constraint decomposition} (CD) if there are closed and convex subsets $\mathcal{K}^i\subset \mathcal{V}^i$, and (nonlinear) projections $\Pi_i : \mathcal{K}^J \to \mathcal{K}^i$, so that $\ds v = \sum_{i=0}^J \Pi_i v$ and a stability condition applies (not shown)
 \end{block}
@@ -678,10 +668,11 @@ $\ds \mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$ \quad is a \emph{constraint dec
 \end{frame}
 
 
-\begin{frame}{iterations over constraint decomposition}
+\begin{frame}{iterations over a constraint decomposition}
 
 \begin{itemize}
-\item Tai proposed abstract iterations for solving $VI(F,\ell,\mathcal{K})$ over a CD $\mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$, specifically:
+\item Tai proposed abstract iterations for solving $VI(F,\ell,\mathcal{K})$ over a CD
+\item specifically the multiplicative/serial iteration:
 
 {\small
 \begin{pseudo}[left-margin=-5mm]
@@ -693,12 +684,12 @@ $\ds \mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$ \quad is a \emph{constraint dec
 \end{pseudo}
 }
 
-\item Tai's iterations are not practical because you must evaluate all residuals on the finest level
+\item this iteration is not practical because you must evaluate all residuals on the finest level
 \item two techniques make a practical solver:
 
     \begin{itemize}
-    \item[$\circ$] \emph{defect obstacles} on each level  \hfill {\scriptsize (Gr\"aser \& Kornhuber (2009)}
-    \item[$\circ$] \emph{FAS coarse corrections}  \hfill {\scriptsize (Bueler \& Farrell (2024)}
+    \item[$\circ$] \emph{defect obstacles} on each level  \hfill {\scriptsize Gr\"aser \& Kornhuber (2009)}
+    \item[$\circ$] \emph{FAS coarse corrections}  \hfill {\scriptsize Bueler \& Farrell (2024)}
     \end{itemize}
 \end{itemize}
 \end{frame}
@@ -757,7 +748,7 @@ $$\chi^j = R^{\oplus} \chi^{j+1} \phantom{smdlfkaj asdfklj asdf sdfaa asddfas ds
 \end{center}
 
 \begin{itemize}
-\item all sets $\mathcal{U}^j$ and $\mathcal{D}^j$ are cones which include the origin
+\item all sets $\mathcal{U}^j$ and $\mathcal{D}^j$ include the origin
 \end{itemize}
 \end{frame}
 
@@ -800,7 +791,7 @@ $$\chi^j = R^{\oplus} \chi^{j+1} \phantom{smdlfkaj asdfklj asdf sdfaa asddfas ds
 
 \begin{frame}{specifics}
 
-see (Bueler \& Farrell 2024) for:
+see Bueler \& Farrell (2024) for:
 \begin{itemize}
 \item generalization to upper and lower obstacles:
     $$\mathcal{K}^J = \{\underline{\psi}^J \le v^J \le \overline{\psi}^J\}$$
@@ -809,14 +800,9 @@ see (Bueler \& Farrell 2024) for:
     \item[$\circ$] evaluates CP/KKT conditions
     \end{itemize}
 \item FMG cycle
-\item details of $O(m_J)$ smoother
+\item details of $O(m_J)$ smoother: a few iterations of projected, reduced-space Newton with a few iterations of CG or GMRES, plus ILU preconditioning, on the linear step equations
 \end{itemize}
 \end{frame}
-
-
-
-
-
 
 
 \begin{frame}{summary and outlook}
@@ -824,24 +810,37 @@ see (Bueler \& Farrell 2024) for:
 \begin{itemize}
 \item FASCD = new multilevel solver for VI (free-boundary) problems
     \begin{itemize}
-    \item[$\circ$] implemented in Python Firedrake (over PETSc)
+    \item[$\circ$] implemented in Python using the Firedrake library
+    \item[$\circ$] observed optimality and actually fast on tested problems
     \end{itemize}
-\item observed optimality in many cases
-    \begin{itemize}
-    \item[$\circ$] actually fast on tested nonlinear PDE problems
-    \end{itemize}
-
-\bigskip\bigskip
 \item many things \textbf{{\color{FireBrick} to do}}:
     \begin{itemize}
-    \item[$\circ$] implement in C inside PETSc
+    \item[$\circ$] implement in C within PETSc
     \item[$\circ$] prove convergence; compare (Reusken, 1988)
-    \item[$\circ$] apply to space-time (\emph{parabolic}) VI problems
-    \item[$\circ$] add mesh adaptivity
-    \item[$\circ$] identify smoothers for problems like elastic contact
-    \item[$\circ$] include membrane stresses in glacier case
+    \item[$\circ$] mesh adaptivity, better smoothers, parabolic examples, \dots
     \end{itemize}
 \end{itemize}
+
+\bigskip\bigskip
+\begin{minipage}[T]{0.25\textwidth}
+\vspace{0pt}
+
+\includegraphics[width=0.8\textwidth]{figs/QRbuelerfarrell.png}
+
+\scriptsize paper in
+
+SIAM J.~Sci.~Comput.
+\end{minipage}
+\hfill
+\begin{minipage}[T]{0.25\textwidth}
+\vspace{0pt}
+
+\hfill \includegraphics[width=0.8\textwidth]{figs/QRfascd.png}
+
+\scriptsize \hfill code at bitbucket
+
+\phantom{foo}
+\end{minipage}
 \end{frame}
 
 
