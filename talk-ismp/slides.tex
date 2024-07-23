@@ -227,19 +227,16 @@ u - \psi \ge 0, \qquad -\grad^2 u - f \ge 0, \qquad (u - \psi)(-\grad^2 u - f) =
 \begin{frame}{geometrical meaning of VI}
 
 \begin{itemize}
-\item the VI gives an ``angle condition'' for the test function $v-u$:
-\item in optimization problems the condition is a consequence:
-\begin{align*}
-J(u) &\le J(v) \quad \forall v \in \mathcal{K} \\
-\implies \qquad \ip{J'(u)}{v-u} &\ge 0 \quad \forall v \in \mathcal{K}
-\end{align*}
-\item for general VIs the condition \emph{is} the problem:
+\item the VI gives an ``angle condition'' for the test function $v-u$
+\item in optimization problems the VI is a consequence:
+$$J(u) \le J(v), \, \forall v \in \mathcal{K} \qquad \implies \qquad \ip{J'(u)}{v-u} \ge 0, \, \forall v \in \mathcal{K}$$
+\item for general VIs the angle condition \emph{is} the problem:
    $$\ip{F(u)}{v-u} \ge 0 \quad \forall v \in \mathcal{K}$$    
 \end{itemize}
 
 \bigskip
 \begin{center}
-\includegraphics[width=0.4\textwidth]{../talk-dms/figs/convexuv.png}
+\includegraphics[width=0.4\textwidth]{figs/convexuv.png}
 \end{center}
 \end{frame}
 
@@ -283,15 +280,13 @@ J(u) &\le J(v) \quad \forall v \in \mathcal{K} \\
 \item the geometry of glaciers %\hfill $\longleftarrow$ \emph{more soon}
 
 \vspace{1.5mm}
-\item<2> first-semester calculus:
+\item first-semester calculus:
     $$u = \mathop{\textnormal{argmin}}_{x\in[a,b]} f(x) \quad \iff \quad f'(u)(v-u) \ge 0 \quad \forall v \in[a,b]$$
 \end{itemize}
 
 \vspace{-5mm}
 \begin{center}
-\only<1>{\vspace{20.5mm}}
-
-\includegraphics<2>[height=25mm]{../talk-oxford/images/calcone.png}
+\includegraphics[height=25mm]{../talk-oxford/images/calcone.png}
 \end{center}
 \end{frame}
 
@@ -463,15 +458,15 @@ FMG $=$ full multigrid
 \item example: Liouville-Bratu equation
     $$-\nabla^2 u - e^u = 0$$
 with Dirichlet boundary conditions on $\Omega=(0,1)^2$
-\item minimal problem-specific code:
-    \begin{enumerate}
-    \item[1.] residual evaluation on grid level: $F^j(\cdot)$
-    \item[2.] pointwise smoother: $\phi_i(c) = 0 \,\forall i$
-        \begin{itemize}
-        \item[$\circ$] nonlinear Gauss-Seidel iteration
-        \end{itemize}
-    \item[3.] coarsest-level solve can be same as smoother
-    \end{enumerate}
+%\item minimal problem-specific code:
+%    \begin{enumerate}
+%    \item[1.] residual evaluation on grid level: $F^j(\cdot)$
+%    \item[2.] pointwise smoother: $\phi_i(c) = 0 \,\forall i$
+%        \begin{itemize}
+%        \item[$\circ$] nonlinear Gauss-Seidel iteration
+%        \end{itemize}
+%    \item[3.] coarsest-level solve can be same as smoother
+%    \end{enumerate}
 \end{itemize}
 \end{frame}
 
