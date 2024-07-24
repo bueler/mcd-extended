@@ -305,61 +305,44 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 \only<1>{
 \begin{itemize}
 \item consider a nonlinear elliptic PDE problem:
-	$$F(u) = \ell$$
+	$${\color{FireBrick} F(u) = \ell}$$
 
 	\begin{itemize}
 	\item[$\circ$] $\mathcal{V}=H^1(\Omega)$, $F : \mathcal{V} \to \mathcal{V}'$ continuous, $\ell\in \mathcal{V}'$
-	\item[$\circ$] example is the Liouville-Bratu problem: $-\grad^2 u - e^u = f$
 	\end{itemize}
 \item discretization\footnote{discretization = finite element (FE) method, throughout this talk} gives algebraic system on fine mesh $\Omega^h$:
     $${\color{FireBrick} F^h(u^h) = \ell^h}$$
+\item suppose $w^h$ is a not-yet-converged iterate:
+    $$r^h=\ell^h - F^h(w^h), \qquad \|r^h\| > \text{TOL}$$
 \end{itemize}
-
-\vspace{4mm}
 }
 \only<2>{
 \begin{itemize}
-\item \emph{goal}: to solve $F^h(u^h) = \ell^h$ on $\Omega^h$
-\item suppose $w^h$ is a not-yet-converged iterate:
-    $$r^h=\ell^h - F^h(w^h), \qquad \|r^h\| > \text{TOL}$$
 \item how can we improve $w^h$ \emph{without} globally linearizing $F^h$?
 
 	\begin{itemize}
 	\item are there alternatives to Newton's method?
 	\end{itemize}
-\item notes:
-    \setbeamertemplate{enumerate item}{\emph{\roman{enumi})}}
-    \begin{enumerate}
-    \item \emph{residual} $r^h = \ell^h - F^h(w^h)$ is computable but \emph{error} $e^h = u^h-w^h$ is unknown
-    \item equation can be rewritten as \qquad $F^h(u^h) - F^h(w^h) = r^h$
-    \end{enumerate}
+\item rewrite the equation as the nonlinear \emph{correction equation}
+    $${\color{FireBrick} F^h(u^h) - F^h(w^h) = r^h}$$
+\item \underline{for $F^h$ linear}, convert the correction eqn to the \emph{error equation}
+    $$F^h(e^h) = r^h,$$
+with approximate solution $\tilde e^h$, and update $w^h \leftarrow w^h+\tilde e^h$
 \end{itemize}
 }
 \only<3>{
 \begin{itemize}
-\item \emph{goal}: from iterate $w^h$, to solve {\color{FireBrick} $F^h(u^h) - F^h(w^h) = r^h$}
-\item for $F^h$ linear, one may convert to the error equation
-    $$F^h(e^h) = r^h$$
-with approximate solution $\tilde e^h$, to improve the iterate
-    $$w^h \leftarrow w^h+\tilde e^h$$
+\item there are fast \emph{smoothers}: inexpensive algorithms which improve $w^h$ by efficiently removing high-frequency error components
+	\begin{itemize}
+	\item sweeping through and solving nodewise problems (nonlinear Gauss-Seidel) is a smoother
+	\end{itemize}
+\item how about low-frequency error components?
+\item \emph{idea}: use a coarser mesh $\Omega^H$ to estimate $u^h$ in the correction eqn
 \end{itemize}
 
 \vspace{5mm}
 }
 \only<4>{
-\begin{itemize}
-\item \emph{updated goal}: use a coarser mesh $\Omega^H$ to somehow estimate the solution $u^h$ in the nonlinear \emph{correction equation}
-    $${\color{FireBrick} F^h(u^h) - F^h(w^h) = r^h}$$
-\item \emph{smoothers}: there are inexpensive algorithms which improve $w^h$ by efficiently removing high-frequency error components
-	\begin{itemize}
-	\item sweeping through and solving nodewise problems (nonlinear Gauss-Seidel) is a smoother
-	\end{itemize}
-\item how about low-frequency error components?
-\end{itemize}
-
-\vspace{5mm}
-}
-\only<5>{
 \begin{itemize}
 \item Brandt's (1977) \emph{full approximation scheme} (FAS) equation:
 	$${\color{FireBrick} F^H(u^H) - F^H(\iR w^h) = R \, r^h(w^h)}$$
@@ -370,7 +353,8 @@ with approximate solution $\tilde e^h$, to improve the iterate
     \item[$\circ$] note: if $w^h=u^h$ exactly then $u^H = \iR w^h$ since $F^H$ injective
     \end{itemize}
 
-\item rewritten FAS equation: let $\ell^H = F^H(\iR w^h) + R\, r^h(w^h)$ then
+\item let $\ell^H = F^H(\iR w^h) + R\, r^h(w^h)$
+\item rewritten FAS equation:
     $${\color{FireBrick} F^H(u^H) = \ell^H}$$
 \end{itemize}
 }
@@ -448,32 +432,21 @@ FMG $=$ full multigrid
 \begin{frame}{FAS reputation}
 
 \begin{itemize}
-\item FAS multigrid is a fast solver on nice nonlinear PDE problems
-\item example: Liouville-Bratu equation
-    $$-\nabla^2 u - e^u = 0$$
-with Dirichlet boundary conditions on $\Omega=(0,1)^2$
-%\item minimal problem-specific code:
-%    \begin{enumerate}
-%    \item[1.] residual evaluation on grid level: $F^j(\cdot)$
-%    \item[2.] pointwise smoother: $\phi_i(c) = 0 \,\forall i$
-%        \begin{itemize}
-%        \item[$\circ$] nonlinear Gauss-Seidel iteration
-%        \end{itemize}
-%    \item[3.] coarsest-level solve can be same as smoother
-%    \end{enumerate}
-\end{itemize}
-\end{frame}
-
-
-\begin{frame}{a meaning for ``fast solver''}
-
-\begin{block}{definition} a solver is \emph{optimal} if work is $O(N)$ for $N$ unknowns
-\end{block}
+\item FAS multigrid is a \emph{fast solver} on nice nonlinear PDE problems
+    \begin{itemize}
+    \item[$\circ$] example: Liouville-Bratu equation $-\nabla^2 u - e^u = 0$
+    \end{itemize}
 
 \bigskip
+\item<2> what does ``fast solver'' mean?
+\end{itemize}
+
+\begin{block}<2>{definition} a solver is \emph{optimal} if work is $O(N)$ for $N$ unknowns
+\end{block}
+
 \begin{itemize}
-\item one can measure work in flops or run-time
-\item constant iterations of $O(N)$ method $\implies$ optimal
+\item<2> one can measure work in flops or run-time
+\item<2> constant iterations of $O(N)$ method $\implies$ optimal
 \end{itemize}
 \end{frame}
 
@@ -535,21 +508,18 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \end{frame}
 
 
-\begin{frame}{inequality-constrained problem: flowing glacier ice in a climate}
+\begin{frame}{the glacier free-boundary problem}
 
 \begin{itemize}
-\item glacier = incompressible, viscous fluid driven by gravity
-\item in a \emph{climate} which adds or removes ice at a signed rate $a(t,x,y)$
-\item over fixed bed topography with elevation $b(x,y)$
-    \begin{itemize}
-    \item[$\circ$] data $a,b$ is defined on domain $\Omega \subset \RR^2$
-    \end{itemize}
-\item to find: ice surface elevation $s(t,x,y)$ and velocity $\bu(t,x,y,z)$
-\item subject to constraint $\boxed{s\ge b}$
-\end{itemize}
+\item a \emph{glacier} is an incompressible, viscous fluid driven by gravity, with mass from a climate which adds or removes ice at a signed rate, over a fixed bed topography with elevation $b$
+\item to find: ice surface elevation $s$ (and velocity $\bu$) subject to constraint $\boxed{s\ge b}$
+\item test case: ice sheet the size of Greenland
 
 \bigskip
-\hfill \mbox{\includegraphics[height=0.24\textheight]{../talk-oxford/images/domain-data.png} \quad $\stackrel{?}{\to}$ \quad \includegraphics[height=0.24\textheight]{../talk-oxford/images/domain-velocity.png}}
+\begin{center}
+\includegraphics[width=0.65\textwidth]{../paper/fixfigs/sialev8scene.png}
+\end{center}
+\end{itemize}
 \end{frame}
 
 
@@ -559,7 +529,7 @@ with Dirichlet boundary conditions on $\Omega=(0,1)^2$
 \item admissible surface elevations:
     $$\mathcal{K} = \left\{r \in \mathcal{V} \,:\, r \ge b\right\}$$
 \item steady-state VI problem for surface elevation $s\in\mathcal{K}$:
-	$$\ip{\Phi(s) - a}{r-s} \ge 0 \quad \text{ for all } r \in \mathcal{K}$$
+       $$\ip{\Phi(s) - a}{r-s} \ge 0 \quad \text{ for all } r \in \mathcal{K}$$
 where $\Phi(s)=- \bu|_s \cdot \bn_s$
 \item in the isothermal, nonsliding, \emph{shallow ice approximation}\footnote{$=$ \emph{a highly-simplified view of conservation of momentum, in which} $(s-b)^{8/3} \in W^{1,4}(\Omega)$ \emph{so} $\mathcal{V} \stackrel{?}{=} (W^{1,4})^{3/8}$ \hfill \emph{Jouvet \& Bueler (2012)}} case:
 \begin{align*}
@@ -570,22 +540,14 @@ where $\Phi(s)=- \bu|_s \cdot \bn_s$
 \end{frame}
 
 
-\begin{frame}{test case: ice sheet the size of Greenland}
-
-\centering
-\includegraphics[width=\textwidth]{../paper/fixfigs/sialev8scene.png}
-\end{frame}
-
-
-\begin{frame}{FASCD: parallel weak scaling}
+\begin{frame}{optimality and weak scaling on a glacier problem}
 
 \begin{itemize}
 \item optimality of FMG solver (left)
 \item good parallel \emph{weak scaling} (right)
     \begin{itemize}
     \item[$\circ$] each processor owns $641\times 641$ (sub) mesh
-    \item[$\circ$] $P=1024$ run had $20481^2=4.1\times 10^8$ unknowns
-    \item[] \dots and 88 meter resolution
+    \item[$\circ$] $P=1024$ run had $20481^2=4.1\times 10^8$ unknowns and 88 meter resolution
     \end{itemize}
 \end{itemize}
 
@@ -608,10 +570,7 @@ where $\Phi(s)=- \bu|_s \cdot \bn_s$
 {\color{FireBrick} FASCD = full approximation scheme constraint decomposition}
 
 \bigskip
-    \begin{itemize}
-    \item[$\circ$] what is ``constraint decomposition''?
-    \item[$\circ$] unilateral (lower obstacle) version shown, but bilateral or ``box constraints'' are implemented
-    \end{itemize}
+\item<2> but what is ``constraint decomposition''?
 \end{itemize}
 \end{frame}
 
@@ -633,7 +592,7 @@ where $\Phi(s)=- \bu|_s \cdot \bn_s$
 
     \begin{itemize}
     \item[$\circ$] \emph{non}-unique vector space sum
-    \item[$\circ$] one may analyze linear multigrid for PDEs via subspace decomposition
+    %\item[$\circ$] one may analyze linear multigrid for PDEs via subspace decomposition
     \end{itemize}
 \end{itemize}
 \end{frame}
@@ -684,12 +643,12 @@ $\ds \mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$ \quad is a \emph{constraint dec
 \end{pseudo}
 }
 
-\item this iteration is not practical because you must evaluate all residuals on the finest level
-\item two techniques make a practical solver:
+\item \dots but not practical because you evaluate residuals on finest level
+\item two techniques make a practical solver (Bueler \& Farrell, 2024):
 
     \begin{itemize}
     \item[$\circ$] \emph{defect obstacles} on each level  \hfill {\scriptsize Gr\"aser \& Kornhuber (2009)}
-    \item[$\circ$] \emph{FAS coarse corrections}  \hfill {\scriptsize Bueler \& Farrell (2024)}
+    \item[$\circ$] \emph{FAS coarse corrections}  \hfill {\scriptsize Brandt (1977)}
     \end{itemize}
 \end{itemize}
 \end{frame}
@@ -800,7 +759,7 @@ see Bueler \& Farrell (2024) for:
     \item[$\circ$] evaluates CP/KKT conditions
     \end{itemize}
 \item FMG cycle
-\item details of $O(m_J)$ smoother: a few iterations of projected, reduced-space Newton with a few iterations of CG or GMRES, plus ILU preconditioning, on the linear step equations
+\item details of the $O(m_j)$ smoother used in the results: a few iterations of projected, reduced-space Newton with a few iterations of CG+ICC or GMRES+ILU on the linear step equations
 \end{itemize}
 \end{frame}
 
@@ -811,7 +770,7 @@ see Bueler \& Farrell (2024) for:
 \item FASCD = new multilevel solver for VI (free-boundary) problems
     \begin{itemize}
     \item[$\circ$] implemented in Python using the Firedrake library
-    \item[$\circ$] observed optimality and actually fast on tested problems
+    \item[$\circ$] observed optimality, and actually fast on tested problems
     \end{itemize}
 \item many things \textbf{{\color{FireBrick} to do}}:
     \begin{itemize}
