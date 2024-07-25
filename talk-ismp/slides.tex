@@ -120,6 +120,7 @@
 %% to start section counter at 0 see
 %% https://tex.stackexchange.com/questions/170222/change-the-numbering-in-beamers-table-of-content
 
+\setbeamertemplate{page number in head/foot}[appendixframenumber]
 
 \begin{document}
 \beamertemplatenavigationsymbolsempty
@@ -308,9 +309,9 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 	$${\color{FireBrick} F(u) = \ell}$$
 
 	\begin{itemize}
-	\item[$\circ$] $\mathcal{V}=H^1(\Omega)$, $F : \mathcal{V} \to \mathcal{V}'$ continuous, $\ell\in \mathcal{V}'$
+	\item[$\circ$] $\mathcal{V}=H^1(\Omega)$, $F : \mathcal{V} \to \mathcal{V}'$ continuous bijection, $\ell\in \mathcal{V}'$
 	\end{itemize}
-\item discretization\footnote{discretization = finite element (FE) method, throughout this talk} gives algebraic system on fine mesh $\Omega^h$:
+\item finite element (FE) discretization gives algebraic system on fine mesh $\Omega^h$:
     $${\color{FireBrick} F^h(u^h) = \ell^h}$$
 \item suppose $w^h$ is a not-yet-converged iterate:
     $$r^h=\ell^h - F^h(w^h), \qquad \|r^h\| > \text{TOL}$$
@@ -321,7 +322,7 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
 \item how can we improve $w^h$ \emph{without} globally linearizing $F^h$?
 
 	\begin{itemize}
-	\item are there alternatives to Newton's method?
+	\item alternatives to Newton's method?
 	\end{itemize}
 \item rewrite the equation as the nonlinear \emph{correction equation}
     $${\color{FireBrick} F^h(u^h) - F^h(w^h) = r^h}$$
@@ -329,18 +330,20 @@ $\Omega^h$\, \includegraphics[height=0.16\textheight]{../talk-oxford/images/fine
     $$F^h(e^h) = r^h,$$
 with approximate solution $\tilde e^h$, and update $w^h \leftarrow w^h+\tilde e^h$
 \end{itemize}
+
+\vspace{6mm}
 }
 \only<3>{
 \begin{itemize}
 \item there are fast \emph{smoothers}: inexpensive algorithms which improve $w^h$ by efficiently removing high-frequency error components
 	\begin{itemize}
-	\item sweeping through and solving nodewise problems (nonlinear Gauss-Seidel) is a smoother
+	\item nonlinear Gauss-Seidel: sweep through mesh and solving nodewise problems with e.g.~1-variable Newton
 	\end{itemize}
-\item how about low-frequency error components?
+\item but how about low-frequency error components?
 \item \emph{idea}: use a coarser mesh $\Omega^H$ to estimate $u^h$ in the correction eqn
 \end{itemize}
 
-\vspace{5mm}
+\vspace{26.5mm}
 }
 \only<4>{
 \begin{itemize}
@@ -350,13 +353,15 @@ with approximate solution $\tilde e^h$, and update $w^h \leftarrow w^h+\tilde e^
     \begin{itemize}
     \item[$\circ$] $\iR:\mathcal{V}^h \to \mathcal{V}^H$ is node-wise \emph{injection}
     \item[$\circ$] $R:(\mathcal{V}^h)' \to (\mathcal{V}^H)'$ is \emph{canonical restriction}
-    \item[$\circ$] note: if $w^h=u^h$ exactly then $u^H = \iR w^h$ since $F^H$ injective
+    \item[$\circ$] if $w^h=u^h$ exactly then $u^H = \iR w^h$ since $F^H$ injective
     \end{itemize}
 
 \item let $\ell^H = F^H(\iR w^h) + R\, r^h(w^h)$
 \item rewritten FAS equation:
     $${\color{FireBrick} F^H(u^H) = \ell^H}$$
 \end{itemize}
+
+\vspace{2mm}
 }
 \end{frame}
 
@@ -364,15 +369,15 @@ with approximate solution $\tilde e^h$, and update $w^h \leftarrow w^h+\tilde e^
 \begin{frame}{full approximation scheme (FAS): 2-mesh cycle}
 
 \begin{center}
-fine mesh $=\Omega^h$\, \includegraphics[height=0.14\textheight]{../talk-oxford/images/fine-grid.png} \hspace{15mm} \includegraphics[height=0.14\textheight]{../talk-oxford/images/coarse-grid.png} \,$\Omega^H=$ coarse mesh
+fine mesh $\Omega^h$ \, \includegraphics[height=0.14\textheight]{../talk-oxford/images/fine-grid.png} \hspace{15mm} \includegraphics[height=0.14\textheight]{../talk-oxford/images/coarse-grid.png} \,coarse mesh $\Omega^H$
 \end{center}
 
 \begin{align*}
-&\text{pre-smooth over fine:} & & \text{smoother on } w^h \\
-&\text{restrict:}                   & &\ell^H = F^H(\iR w^h) + R\, r^h(w^h) \\
-&\text{coarse solve:}               & &F^H(w^H) = \ell^H \\
-&\text{correct:}                    & &w^h \leftarrow w^h + P(w^H - \iR w^h) \\
-&\text{post-smooth over fine:} & & \text{smoother on } w^h
+&\text{1. pre-smooth:}   & & \text{smoother on } w^h \\
+&\text{2. restrict:}     & &\ell^H = F^H(\iR w^h) + R\, r^h(w^h) \\
+&\text{3. coarse solve:} & & \text{solve } F^H(w^H) = \ell^H \\
+&\text{4. correct:}      & &w^h \leftarrow w^h + P(w^H - \iR w^h) \\
+&\text{5. post-smooth:}  & & \text{smoother on } w^h
 \end{align*}
 
 \bigskip
@@ -381,7 +386,7 @@ fine mesh $=\Omega^h$\, \includegraphics[height=0.14\textheight]{../talk-oxford/
 \item $R: (\mathcal{V}^h)' \to (\mathcal{V}^H)'$ is \emph{canonical restriction}
 \item $P: \mathcal{V}^H \to \mathcal{V}^h$ is \emph{canonical prolongation}
 \item $\iR: \mathcal{V}^h \to \mathcal{V}^H$ is \emph{injection}
-\item (restrict$+$coarse solve$+$correct) \, $=$ \, \emph{FAS coarse grid correction}
+\item 2,3,4 \, $=$ \, \emph{FAS coarse grid correction}
 \end{itemize}
 }
 \end{frame}
@@ -446,7 +451,7 @@ FMG $=$ full multigrid
 
 \begin{itemize}
 \item<2> one can measure work in flops or run-time
-\item<2> constant iterations of $O(N)$ method $\implies$ optimal
+\item<2> constant $O(1)$ iterations of $O(N)$ method $\implies$ optimal
 \end{itemize}
 \end{frame}
 
@@ -457,15 +462,11 @@ FMG $=$ full multigrid
 
 \begin{frame}{test problem 1: classical obstacle problem}
 
-\only<1>{recall:
+\only<1>{\includegraphics[width=0.75\textwidth]{figs/ballitersV.png}}\only<2>{\includegraphics[width=0.75\textwidth]{figs/ballitersVlog.png}}\only<3>{\includegraphics[width=0.75\textwidth]{figs/ballitersVF.png}}\only<4>{\includegraphics[width=0.75\textwidth]{figs/bothitersVF.png}} \hfill
+\only<1-3>{\includegraphics[width=0.2\textwidth]{../paper/fixfigs/ball-set.png}}%
+\only<4>{\includegraphics[width=0.2\textwidth]{../paper/fixfigs/spiral-set.png}}
 
-\centerline{\includegraphics[width=0.9\textwidth]{../talk-oxford/images/obstacle65.pdf}}}
-\only<2>{\includegraphics[width=0.75\textwidth]{figs/ballitersV.png}}\only<3>{\includegraphics[width=0.75\textwidth]{figs/ballitersVlog.png}}\only<4>{\includegraphics[width=0.75\textwidth]{figs/ballitersVF.png}}\only<5>{\includegraphics[width=0.75\textwidth]{figs/bothitersVF.png}} \hfill
-\only<2-4>{\includegraphics[width=0.2\textwidth]{../paper/fixfigs/ball-set.png}}%
-\only<5>{\includegraphics[width=0.2\textwidth]{../paper/fixfigs/spiral-set.png}}
-
-\only<2-5>{\noindent \scriptsize
-\emph{all results from Bueler \& Farrell (2024)}}
+\only<1-4>{\noindent \scriptsize \emph{all results from Bueler \& Farrell (2024)}}
 \end{frame}
 
 
@@ -627,28 +628,25 @@ $\ds \mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$ \quad is a \emph{constraint dec
 \end{frame}
 
 
-\begin{frame}{iterations over a constraint decomposition}
+\begin{frame}{iterations over a multilevel constraint decomposition}
 
 \begin{itemize}
-\item Tai proposed abstract iterations for solving $VI(F,\ell,\mathcal{K})$ over a CD
+\item Tai (2003) proposed abstract iterations for solving $VI(F,\ell,\mathcal{K})$ over a CD
 \item specifically the multiplicative/serial iteration:
-
-{\small
-\begin{pseudo}[left-margin=-5mm]
+\begin{pseudo}[left-margin=-3mm,font=\small]
 \pr{cd-mult}(u)\text{:} \\+
     for $i = 0,\dots,m-1$: \\+
-        find $w_i\in \cK_i$ s.t. \\+
-            $\displaystyle \Big<F\Big(\sum_{j<i} w_j + w_i + \sum_{j>i} \Pi_j u\Big),\, v_i - w_i\Big> \ge \ip{\ell}{v_i - w_i} \,\forall v_i \in \cK_i$ \\--
+        find $w_i\in \cK_i$ s.t.~$\forall v_i \in \cK_i$ \\+
+            $\displaystyle \Big<F\Big(\sum_{j<i} w_j + w_i + \sum_{j>i} \Pi_j u\Big),\, v_i - w_i\Big> \ge \ip{\ell}{v_i - w_i}$ \\--
     return $w=\sum_i w_i\in\cK$
 \end{pseudo}
-}
 
-\item \dots but not practical because you evaluate residuals on finest level
-\item two techniques make a practical solver (Bueler \& Farrell, 2024):
+\item \dots but not practical for a multilevel CD because you evaluate residuals on finest level
+\item two innovations make a practical solver (Bueler \& Farrell, 2024):
 
     \begin{itemize}
-    \item[$\circ$] \emph{defect obstacles} on each level  \hfill {\scriptsize Gr\"aser \& Kornhuber (2009)}
-    \item[$\circ$] \emph{FAS coarse corrections}  \hfill {\scriptsize Brandt (1977)}
+    \item[$\circ$] defect obstacles on each level  \hfill {\scriptsize Gr\"aser \& Kornhuber (2009)}
+    \item[$\circ$] FAS coarse corrections  \hfill {\scriptsize Brandt (1977)}
     \end{itemize}
 \end{itemize}
 \end{frame}
@@ -657,25 +655,25 @@ $\ds \mathcal{K}^J = \sum_{i=0}^J \mathcal{K}^i$ \quad is a \emph{constraint dec
 \begin{frame}{defect obstacles}
 
 \begin{itemize}
-\item suppose $\mathcal{K} = \{v \ge \psi\}$ in an obstacle problem
+\item suppose $\mathcal{K} = \{v \ge \psi\}$, a unilateral obstacle problem
 \begin{block}{definition}
-for finest-level admissible set $\mathcal{K}^J = \{v^J\ge \psi^J\} \subset \mathcal{V}^J$ and an iterate $w^J \in \mathcal{K}^J$, the \emph{defect obstacle} is
+given a finest-level admissible set $\mathcal{K}^J = \{v^J\ge \psi^J\} \subset \mathcal{V}^J$, and an admissible iterate $w^J \in \mathcal{K}^J$, the \emph{defect obstacle} is
     $$\chi^J = \psi^J - w^J \in \mathcal{V}^J$$
 \end{block}
 
     \begin{itemize}
     \item[$\circ$] note $\chi^J \le 0$
     \end{itemize}
-\item generate the CD through
+\item multilevel: generate defect
 
-defect obstacles $\chi^j$ on each
+obstacles $\chi^j$ on each level
 
-level via \emph{monotone restriction}:
+ via \emph{monotone restriction}:
 
 $$\chi^j = R^{\oplus} \chi^{j+1} \phantom{smdlfkaj asdfklj asdf sdfaa asddfas dsa}$$
 
     \begin{itemize}
-    \item[$\circ$] a \emph{nonlinear} operator
+    \item[$\circ$] $R^{\oplus}$ is nonlinear
     \end{itemize}
 \end{itemize}
 
@@ -718,7 +716,7 @@ $$\chi^j = R^{\oplus} \chi^{j+1} \phantom{smdlfkaj asdfklj asdf sdfaa asddfas ds
 \begin{pseudo}[font=\small]
 \pr{fascd-vcycle}(J,\ell^J,\psi^J;w^J)\text{:} \\+
     $\chi^J = \psi^J - w^J$ \\
-    for $j=J$ downto $j=1$ \\+
+    for $j=J$ downto $j=1$: \\+
       $\chi^{j-1} = \maxR \chi^j$ \\
       $\phi^j = \chi^j - P\chi^{j-1}$ \\
       $y^j = 0$ \\
@@ -727,21 +725,18 @@ $$\chi^j = R^{\oplus} \chi^{j+1} \phantom{smdlfkaj asdfklj asdf sdfaa asddfas ds
       $\ell^{j-1} = f^{j-1}(w^{j-1}) + R \left(\ell^j - f^j(w^j+y^j)\right)$ \\-
     $z^0 = 0$ \\
     $\text{\pr{solve}}(\ell^0,\chi^0,w^0;z^0)$  \\
-    for $j=1$ to $j=J$ \\+
+    for $j=1$ to $j=J$: \\+
       $z^j = y^{j} + P z^{j-1}$ \\
       $\text{\pr{smooth}}^{\text{\id{up}}}(\ell^j,\chi^j,w^j;z^j)$  \\-
     return $w^J+z^J$
 \end{pseudo}
 
 \vspace{-2mm}
-\tiny
-\begin{itemize}
-\item[] \emph{(unilateral (lower obstacle only) version shown for simplicity)}
-\end{itemize}
+\tiny \hfill \emph{unilateral (lower obstacle only) version shown for simplicity}
 \end{frame}
 
 
-\begin{frame}{V-cycle: visualization on a 1D problem}
+\begin{frame}{V-cycle visualization (1D unilateral obstacle problem)}
 
 \centering
 \includegraphics[width=0.85\textwidth]{../talk-dms/figs/vcycle-visualized.png}
@@ -759,7 +754,7 @@ see Bueler \& Farrell (2024) for:
     \item[$\circ$] evaluates CP/KKT conditions
     \end{itemize}
 \item FMG cycle
-\item details of the $O(m_j)$ smoother used in the results: a few iterations of projected, reduced-space Newton with a few iterations of CG+ICC or GMRES+ILU on the linear step equations
+\item details of the $O(m_j)$ smoother used in the results: a few iterations of a reduced-space Newton method, with a few iterations of CG+ICC or GMRES+ILU on the linear step equations
 \end{itemize}
 \end{frame}
 
@@ -767,28 +762,33 @@ see Bueler \& Farrell (2024) for:
 \begin{frame}{summary and outlook}
 
 \begin{itemize}
-\item FASCD = new multilevel solver for VI (free-boundary) problems
+\item FASCD = new multilevel solver for VI problems
     \begin{itemize}
-    \item[$\circ$] implemented in Python using the Firedrake library
+    \item[$\circ$] implemented in Python using the \href{https://www.firedrakeproject.org/}{Firedrake FE library (\texttt{firedrakeproject.org})}
     \item[$\circ$] observed optimality, and actually fast on tested problems
     \end{itemize}
-\item many things \textbf{{\color{FireBrick} to do}}:
+{\small
+\item much work to do:
     \begin{itemize}
-    \item[$\circ$] implement in C within PETSc
+    \item[$\circ$] implement in C within \href{https://petsc.org/release/}{PETSc (\texttt{petsc.org})}
     \item[$\circ$] prove convergence; compare (Reusken, 1988)
     \item[$\circ$] mesh adaptivity, better smoothers, parabolic examples, \dots
     \end{itemize}
+}
 \end{itemize}
 
 \bigskip\bigskip
-\begin{minipage}[T]{0.25\textwidth}
+\footnotesize
+
+\noindent \href{https://epubs.siam.org/doi/10.1137/23M1594200}{\texttt{doi/10.1137/23M1594200}} \hfill \href{https://bitbucket.org/pefarrell/fascd/}{\texttt{bitbucket.org/pefarrell/fascd/}}
+
+\smallskip
+\begin{minipage}[T]{0.35\textwidth}
 \vspace{0pt}
 
-\includegraphics[width=0.8\textwidth]{figs/QRbuelerfarrell.png}
+\includegraphics[width=0.57\textwidth]{figs/QRbuelerfarrell.png}
 
-\scriptsize paper in
-
-SIAM J.~Sci.~Comput.
+\scriptsize the paper (SIAM J.~Sci.~Comput.)
 \end{minipage}
 \hfill
 \begin{minipage}[T]{0.25\textwidth}
@@ -796,12 +796,12 @@ SIAM J.~Sci.~Comput.
 
 \hfill \includegraphics[width=0.8\textwidth]{figs/QRfascd.png}
 
-\scriptsize \hfill code at bitbucket
-
-\phantom{foo}
+\scriptsize \hfill the code
 \end{minipage}
 \end{frame}
 
+
+\appendix
 
 \begin{frame}{references}
 
